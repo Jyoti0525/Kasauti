@@ -1,0 +1,102 @@
+{
+  "$defs": {
+    "DefaultEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "attr": {
+          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "title": "Attr",
+          "type": "string"
+        },
+        "entity_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity Key"
+        },
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "os_versions": {
+          "default": "*",
+          "title": "Os Versions",
+          "type": "string"
+        },
+        "reference": {
+          "minLength": 3,
+          "title": "Reference",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "vendor_manual",
+            "vendor_doc",
+            "curated"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "id",
+        "attr",
+        "value",
+        "source",
+        "reference"
+      ],
+      "title": "DefaultEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "defaults": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DefaultEntry"
+      },
+      "title": "Defaults",
+      "type": "array"
+    }
+  },
+  "title": "DefaultsFile",
+  "type": "object"
+}

@@ -1,0 +1,8 @@
+# Gitleaks configuration. Authored configs in datasets/ contain placeholder "secrets"
+# (PLACEHOLDER, $9$PLACEHOLDER…) by design; they are documented in datasets/SOURCES.md.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented placeholder secrets in the authored corpus and test fixtures"
+regexes = ['''PLACEHOLDER''']

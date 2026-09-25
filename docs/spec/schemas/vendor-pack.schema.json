@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "ShapeFamily": {
+      "description": "The seven structural families plus the flat fallback (PLAN §6.1).",
+      "enum": [
+        "indent",
+        "brace",
+        "set_path",
+        "block_edit",
+        "path_command",
+        "xml",
+        "json_yaml",
+        "flat"
+      ],
+      "title": "ShapeFamily",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "comment_markers": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Comment Markers",
+      "type": "array"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "format_version": {
+      "const": 1,
+      "title": "Format Version",
+      "type": "integer"
+    },
+    "id": {
+      "pattern": "^[a-z0-9][a-z0-9_]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "negation_words": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Negation Words",
+      "type": "array"
+    },
+    "os_family": {
+      "title": "Os Family",
+      "type": "string"
+    },
+    "pack_version": {
+      "minimum": 1,
+      "title": "Pack Version",
+      "type": "integer"
+    },
+    "shape_family": {
+      "$ref": "#/$defs/ShapeFamily"
+    },
+    "time_unit": {
+      "default": "seconds",
+      "enum": [
+        "seconds",
+        "minutes"
+      ],
+      "title": "Time Unit",
+      "type": "string"
+    },
+    "vendor": {
+      "title": "Vendor",
+      "type": "string"
+    }
+  },
+  "required": [
+    "format_version",
+    "id",
+    "name",
+    "vendor",
+    "os_family",
+    "shape_family",
+    "pack_version"
+  ],
+  "title": "VendorManifest",
+  "type": "object"
+}

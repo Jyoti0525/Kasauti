@@ -1,0 +1,963 @@
+# Kasauti (कसौटी): Master Plan
+
+**SIH 2026 · PS 26155 · AI-Driven Multi-Vendor Network Security Compliance Auditor**
+National Technical Research Organisation (NTRO) · Software · Blockchain & Cybersecurity
+
+> **Kasauti (कसौटी)**: AI-Driven Multi-Vendor Network Security Compliance Auditor
+> *हर डिवाइस, हर मानक की कसौटी पर* ("every device, held to every standard")
+>
+> A *kasauti* is the touchstone used to test whether gold is pure. "कसौटी पर खरा उतरना" means "to pass the test, to meet the standard", which is exactly the question compliance asks of every device: does it meet CIS, NIST, STIG and ISO? The name was chosen by the team on 2026-09-25. No existing software product by that name was found.
+
+| | |
+|---|---|
+| Version | **v5 (frozen)**, 2026-09-25. A complete rewrite that consolidates v1–v4 into one coherent design (v4 archived at `docs/archive/PLAN-v4.md`). v5.1 adds references and object resolution (§9.1) |
+| Change control | From here on, the plan changes only on **evidence**: a milestone result, a failed assumption, or a new official requirement. Log every change in Appendix C |
+| Source of truth | The official PS text. Every section traces back to it (§2) |
+| How to read | Executive summary → Part A (the problem) → Part B (the design) → Part C (the build) → Part D (how we win) |
+
+---
+
+## Executive summary
+
+**The problem.** Enterprise and critical-infrastructure networks run devices from dozens of vendors. Each speaks its own configuration dialect, and each must meet CIS, NIST SP 800-53, DISA STIG and ISO/IEC 27001. Today that means manual checklists or expensive, vendor-locked tools that go blind the moment a new vendor, OS version or platform (SONiC, cloud security groups) shows up.
+
+**Our answer, in three sentences.**
+1. We read configurations by their **shape**, not their vendor: seven structural families cover practically every network OS, so a new vendor almost never needs new code.
+2. We turn every line into **facts with proof** in a vendor-neutral Security Baseline Model, using a small, precise *mapping language*. An AI engine of independent signals proposes the mappings; for an unseen vendor it can **read the vendor's own command manual**; humans approve.
+3. We judge those facts against all four frameworks at once, and every finding carries its evidence, a **fix that has been verified by re-auditing it**, and a **digital signature and transparency-log proof** that nobody altered it.
+
+**Four pillars that set us apart:**
+
+| Pillar | One-line promise | What the evaluator sees |
+|---|---|---|
+| **P1 Learns any vendor** | Unseen vendor → useful audit in minutes, not a code release | A Huawei config at 22% understood; the Studio already quotes Huawei's manual; 6 approvals later the coverage bar reads 85% |
+| **P2 Proves its fixes** | Every remediation is applied to a copy of the config and re-audited before we recommend it; firewall rulesets analysed for shadowed and redundant rules | "Preview fix": FAIL → PASS, zero regressions; "Rule 14 never fires, rule 3 shadows it" |
+| **P3 Trustworthy by design** | The auditor itself is hardened, its learning loop can't be quietly poisoned, and its reports are signed and logged | A PDF with a valid signature (optionally an Indian DSC); one edited byte → "signature invalid" |
+| **P4 Measured, not claimed** | Published accuracy on public data, including a leave-one-vendor-out test that *proves* unseen-vendor learning | One slide of honest numbers and a learning curve |
+
+**Deliberate restraint.** No cloud AI, no LLM ever deciding a verdict, no auto-pushing changes to devices, no bolt-on blockchain network, no per-vendor hand-written parsers, no copied CIS/ISO text. Each is a conscious choice, explained in §3.
+
+---
+
+# Part A: Understanding the problem
+
+## 1. What the PS really tests
+
+### 1.1 The explicit asks
+Normalise to a vendor-neutral schema; compare against the chosen framework; learn unrecognised syntax through an interactive, low-code training GUI without redeploying; single and bulk upload; multi-framework evaluation; one PDF per device with identity (including serial and hardware), Pass/Fail with severity, and step-by-step device-specific CLI remediation; a modular design that absorbs new vendors, standards and OS versions without code changes. The full checklist is in §2.
+
+### 1.2 The implicit tests (what an NTRO evaluator will actually probe)
+1. **Does it really handle a vendor it has never seen?** This is the heart of the PS ("traditional parsers fail because they cannot predict … newly acquired or proprietary hardware"). A demo that only shows pre-built vendors misses the point.
+2. **Are its verdicts correct, and can it prove them?** A single false PASS in a security audit is worse than no audit. Absence of a line is not evidence of safety.
+3. **Can an engineer actually run the remediation?** Generic advice ("disable telnet") isn't a remediation path. The PS asks for device-specific, step-by-step command sequences.
+4. **Is the tool itself secure?** It will hold every configuration in the organisation. NTRO will notice if the auditor is the weakest link.
+5. **Can it live in Indian critical infrastructure?** Air-gapped sites, open-source preference (MeitY OSS policy), Indian digital-signature practice, vendors common in India (Huawei, Ruijie, Sangfor, Hillstone appear in the PS for a reason).
+
+### 1.3 The genuinely hard parts, ranked
+1. **Semantics, not syntax.** One security property is often spread over several lines and blocks (telnet can be enabled per vty range, per interface, or globally), expressed with negations, lists and units, or *not expressed at all* (a vendor default that differs by OS version).
+2. **Unseen vendors.** No examples, no parser, maybe a manual.
+3. **Correct remediation** without real devices to test on.
+4. **Trust:** in the AI (hallucination, manipulation), in the training loop (a bad mapping silently flips verdicts), and in the reports (tampering).
+
+The design in Part B is built around these four, in this order.
+
+---
+
+## 2. Requirements traceability
+
+Every requirement has a design home, a demo moment, and a **testable acceptance criterion**.
+
+| ID | Official requirement | Design | Acceptance criterion (testable) |
+|---|---|---|---|
+| R-01 | Normalise to a vendor-neutral schema ("Security Baseline Model") | §8 SBM, §9 mapping language | Same security posture expressed in 7 vendor syntaxes yields identical SBM facts (golden tests) |
+| R-02 | Deviation analysis vs chosen framework (e.g. ssh_version = 2) | §12 rule engine | Each rule has a passing and a failing fixture per seed vendor; all green in CI |
+| R-03 | Unrecognised structure → interactive training GUI with raw lines, low-code mapping, heuristics update, **no redeploy** | §10 semantic engine, §11 Training Studio | An approved mapping changes the next audit's result with the server process never restarted |
+| R-04 | Unified ingestion: single **and bulk**, any device | §5 ingestion | 100 mixed files (incl. zip) ingested; malformed files reported, never crash |
+| R-05 | Dedicated, intuitive AI training GUI | §11 | A new user maps a Huawei pattern unaided in < 60 s (hallway test) |
+| R-06 | Multi-framework, user-selected (CIS, NIST, STIG, ISO) | §12.4 crosswalk hub | Toggling frameworks changes the report's control matrix; every control ID traceable to an official source |
+| R-07 | **One PDF per device** | §15 | Bulk audit of N devices → N signed PDFs |
+| R-07a | Identity incl. **serial numbers, hardware** | §7 identity resolver | Serial/model shown with its source; "not present in supplied artefacts" when absent, never blank |
+| R-07b | Pass/Fail + **risk severity** | §12.6–12.7 | Severity shown with its derivation (base + exposure) |
+| R-07c | **Device-specific, step-by-step CLI** remediation | §14 | Every FAIL on a seed vendor has pre-check → change → verify → save → rollback, re-audit verified |
+| R-08 | New vendors / standards / OS versions **without code changes** | §4.4 packs, §9.4 version scoping | Import a vendor pack, a framework pack and a version-scoped mapping at runtime; zero code diff |
+| R-09 | User-friendly, robust | §18 UX, §22 budgets, §17 hardening | Fuzzed inputs never crash; WCAG 2.1 AA target; performance budgets met |
+| Hint | Netmiko/NAPALM data collection | §5.3 optional live collection | Read-only collection from one lab device (stretch-tier) |
+| Hint | NLP / pattern matching for unseen keywords | §10 signals S1, S3, S4, S5 | LOVO evaluation (§21) |
+| Hint | Dynamic PDF per model and software version | §15.2 | Two IOS versions of the same config produce version-specific remediation |
+| D-1 | Source code link | GitHub, Apache-2.0 (private until submission) | Public at submission |
+| D-2 | README with setup | §27.4 | Clean-machine setup in ≤ 3 commands, verified by a teammate who didn't build it |
+| D-3 | Architecture doc **≤ 2 pages** | §27.3 | Two pages, printed, readable |
+| D-4 | Demo video **≤ 2 min** | §27.1 | ≤ 2:00, every pillar visible |
+| D-5 | Presentation **≤ 5 slides** | §27.2 | Five slides |
+
+---
+
+## 3. Principles and deliberate non-goals
+
+### 3.1 Principles
+1. **Proof-carrying verdicts.** Every PASS/FAIL links to exact file, line, raw text, the mapping that interpreted it, and who approved that mapping.
+2. **Absence is not safety.** Missing information resolves through version-aware vendor defaults, or becomes REVIEW. It is never a silent PASS.
+3. **AI proposes, humans dispose, and the rules decide.** Only approved mappings feed verdicts. Verdicts come from a deterministic rule engine.
+4. **Content is data.** Vendors, mappings, defaults, rules, frameworks and remediation recipes are signed, versioned packs loaded at runtime.
+5. **Deterministic core, reproducible audits.** Same input + same knowledge-base version + same rule-set version produce byte-identical results.
+6. **Offline and open.** Runs air-gapped on a laptop; every dependency is permissively licensed (MeitY OSS policy aligned).
+7. **The auditor passes its own audit.** Hardened like the crown-jewel store it is.
+
+### 3.2 What we deliberately don't do, and why
+| We don't… | Because… |
+|---|---|
+| Write a parser per vendor | That's exactly the "hard-coded library" the PS says goes obsolete. We parse shapes (§6) |
+| Send configs to cloud AI | Configs are a full map of critical infrastructure |
+| Let an LLM decide anything | Hallucination and prompt injection are unsolved. An LLM is at most one optional voter (§10) |
+| Auto-push fixes to devices | An auditor that changes production is a new attack path. We generate, verify and sign; humans apply |
+| Run a blockchain network | The PS doesn't ask for one; it would add attack surface and break air-gapped use. We use the right primitive, a transparency log (§16) |
+| Show a compliance % without a coverage % | 100% compliant on 10% of controls understood is a lie. We always show both (§12.6) |
+| Invent control IDs or copy CIS/ISO text | IDs only from official sources; licences respected (§20.1) |
+| Build microservices / Kubernetes | Single operator, air-gapped, minimal attack surface → modular monolith (§4) |
+
+---
+
+# Part B: The design
+
+## 4. Architecture at a glance
+
+### 4.1 Pipeline
+
+```
+            ┌──────────── INPUTS ─────────────┐
+            │ upload (file/zip/folder)  ·  companion show-outputs  ·  optional read-only live collection │
+            └──────────────────┬──────────────┘
+                               ▼
+ ① INGEST & EVIDENCE VAULT   validate · sandboxed parse worker · SHA-256 · AES-GCM at rest · secret masking
+                               ▼
+ ② SHAPE PARSING             7 structural families → Universal Config Tree (statements with path, tokens, lines)
+                               ▼
+ ③ IDENTITY                  vendor/OS fingerprint · hostname · model · serial · hardware (source per field)
+                               ▼
+ ④ MAPPING                   approved mappings (the mapping language, §9) → facts with evidence
+        │ unmapped, security-relevant patterns
+        ▼
+ ⑤ SEMANTIC ENGINE           S1 structure · S3 vendor manual · S4 lexicon · S5 embeddings · S6 few-shot memory (+ stretch S7, S8)
+        │ ranked, explained suggestions
+        ▼
+ ⑥ TRAINING STUDIO  ─ approve (four-eyes if verdict-flipping) → regression gate → knowledge base vN+1 → hot reload
+                               ▼
+ ⑦ SECURITY BASELINE MODEL   entities + facts (explicit / vendor_default / absent / unknown) + derived device facts
+                               ▼
+ ⑧ COMPLIANCE ENGINE         rules × entities → PASS / FAIL / REVIEW / N/A · crosswalk hub → CIS · NIST · STIG · ISO
+        │                    firewall & cloud policy analysis (shadowing, redundancy, exposure)
+                               ▼
+ ⑨ RISK & REMEDIATION        severity = base × exposure · fix intent → vendor commands → FIX PREVIEW (re-audit) → rollback
+                               ▼
+ ⑩ OUTPUTS                   signed per-device PDF · JSON / CSV / OSCAL · dashboard · transparency-log proof
+```
+
+### 4.2 Architectural style
+- **Modular monolith.** One FastAPI application plus a pool of worker processes. Parsing and evaluation run in workers with CPU, memory and time limits, so a hostile file can't take down the server.
+- **Deterministic core, ports and adapters.** The pipeline core (text → tree → facts → findings → fixes) is pure functions with no I/O. The same core powers the web API and a CLI (`kasauti audit router.cfg --framework nist`), which also opens a future CI/CD use (checking configs before deployment).
+- **Storage.** SQLite in WAL mode by default (zero setup, single file, easy to back up air-gapped); PostgreSQL for multi-user servers. The evidence vault is an encrypted, content-addressed store on disk. Packs and models are signed files on disk.
+
+### 4.3 Components
+| Module | Responsibility |
+|---|---|
+| `ingest` | Upload API, archive handling, validation, hashing, vault encryption, secret masking |
+| `shape` | Family detection, 7 family parsers + flat fallback → Universal Config Tree |
+| `identity` | Vendor/OS fingerprinting, identity resolver |
+| `mapping` | Mapping-language compiler and matcher, fact emission, derivations |
+| `semantic` | Signals S1–S8, fusion, manual ingestion, few-shot memory, background training, eval gate |
+| `studio` | Training queue, template induction, impact preview, governance workflow |
+| `sbm` | Schema, entity store, defaults resolver, derivation engine |
+| `rules` | Rule language, applicability, crosswalk hub, scoring, severity |
+| `policy` | Firewall/cloud ruleset analysis |
+| `remediation` | Fix intents, recipe rendering, inverse mappings, hier_config/JSON-Patch application, fix preview, rollback |
+| `report` | PDF (ReportLab), exports (JSON/CSV/OSCAL), PAdES signing (pyHanko) |
+| `trust` | Merkle transparency log, checkpoints, proofs, verifier CLI |
+| `packs` | Pack loading, schema validation, Ed25519 signature verification, hot reload |
+| `auth` | Sessions, Argon2id, TOTP MFA, RBAC |
+| `api` / `cli` / `web` | FastAPI routes, command-line interface, React front end |
+
+### 4.4 Packs: how "no code changes" actually works (R-08)
+```
+packs/
+  vendors/<vendor_os>/
+    pack.yaml            # shape family, negation words, comment markers, unit conventions
+    detect.yaml          # fingerprint signatures
+    identity.yaml        # where hostname / version / model / serial appear (config + show outputs)
+    defaults.yaml        # vendor defaults, scoped by OS version range (manual-extracted or curated)
+    mappings/*.yaml      # statements → facts (seeded + learned in the Studio)
+    recipes/*.yaml       # fix intents → command sequences, scoped by OS version range
+    verify.yaml          # pre-check / verify show-commands per domain
+    manual/              # optional: ingested command-manual corpus (S3)
+  frameworks/<framework>/
+    catalog.json         # official control IDs + titles (licence-safe)
+    crosswalk.yaml       # our rule IDs → this framework's control IDs, with source
+  rules/*.yaml           # vendor-neutral rules with fixtures
+```
+Each pack is **data only** (schema-validated YAML/JSON; no code, no pickle) and **Ed25519-signed**. A new vendor is almost always a new pack in an existing shape family. A new standard is a framework pack. A new OS version is version-scoped entries. The only change that needs code is a genuinely new *shape* family, and the flat-line fallback covers even that in the meantime.
+
+---
+
+## 5. Ingestion and the evidence vault
+
+### 5.1 Inputs
+- Config files (`.txt .cfg .conf .log .xml .json .yaml`), `.zip` archives, folders; single or bulk.
+- **Companion files** per device (`show version`, `show inventory`, `get system status`, `show system info`, `show chassis hardware`, `display version`, `display esn`): the reliable source of serials and hardware (§7).
+- Pairing: files are grouped into devices by hostname and filename stem, with a manual correction UI.
+
+### 5.2 Handling
+- Limits on size, archive entries and nesting depth; path normalisation (zip-slip); `defusedxml` (XXE, billion laughs); encoding detection; binary sniffing.
+- **Sandboxed parsing:** each file is parsed in a worker process with CPU/memory/time limits.
+- **Evidence vault:** originals stored immutable, content-addressed by SHA-256, encrypted with AES-256-GCM under envelope keys. Only the `admin` role can decrypt originals. Everyone else sees the masked view.
+- **Masking that keeps auditability:** the secret value is hidden but its *kind* is kept (`password 7 ****`, `secret 9 ****`, `snmp community ****(RO)`), so rules like "no reversible password types" still work.
+- Every ingested artefact's hash is appended to the transparency log (§16).
+
+### 5.3 Optional live collection (PS hint: Netmiko/NAPALM)
+Read-only collection via NAPALM (core drivers: EOS, IOS, IOS-XR, NX-OS, Junos; community drivers: FortiOS, PAN-OS) for `get_config` and `get_facts` (which includes serial and model), or Netmiko for show commands. Credentials are held in memory only, SSH host keys are verified, and a read-only device account is recommended. Stretch-tier: we have no physical devices, so it's tested against one containerised lab NOS.
+
+---
+
+## 6. Structural parsing: the Universal Config Tree
+
+### 6.1 Seven shape families
+| Family | Examples | Tree rule |
+|---|---|---|
+| **Indent** | Cisco IOS/IOS-XE/NX-OS, Arista EOS, Aruba-CX, Dell OS10, Huawei VRP, Ruijie, Allied Telesis, H3C | Child = deeper indent; `!` / `#` separators |
+| **Brace** | Juniper Junos, VyOS, PAN-OS CLI | `{ }` nesting, `;` terminators |
+| **Set-path** | `set …` forms of Junos/VyOS/PAN-OS, Check Point Gaia, Extreme EXOS | Path = leading tokens |
+| **Block-edit** | Fortinet FortiOS (and similar) | `config … / edit … / set … / next / end` |
+| **Path-command** | MikroTik RouterOS | `/ip service` + `set … key=value` |
+| **XML** | PAN-OS XML, pfSense/OPNsense, Sophos exports | Element path |
+| **JSON/YAML** | SONiC `config_db.json`, AWS/Azure/GCP exports, Meraki API, Cumulus NVUE | Key path |
+| *Flat fallback* | Anything else | One statement per line |
+
+**Family detection** scores each family's structural signals (indent regularity, brace balance, `config/edit/next/end` markers, XML/JSON validity, leading `set`/`/`), and it's usually unambiguous. Vendor fingerprinting (§7) runs on top.
+
+### 6.2 Statements and pattern keys
+Every leaf becomes a **Statement** `{path: [parent blocks…], tokens, text, line_start, line_end, family}`. For example: `path = ["line vty 0 4"], text = "transport input ssh telnet"`.
+
+A **pattern key** abstracts variables (`<INT> <IP> <IFNAME> <STR> <LIST>`) using **Drain3** template mining (MIT). 48 interface blocks collapse into one pattern, so the admin teaches a pattern once, not 48 times.
+
+---
+
+## 7. Device identity (R-07a)
+
+Serial numbers are usually **not** in configuration files, so identity is resolved from several sources in priority order, and the report shows which source each field came from:
+1. **Live facts:** NAPALM `get_facts` (vendor, model, serial, OS version, hostname).
+2. **Companion show outputs,** parsed with TextFSM / ntc-templates (Apache-2.0) where templates exist, and with the mapping language otherwise.
+3. **Config headers and markers:** FortiGate `#config-version=<model>-<version>…`, Junos `version …;`, PAN-OS XML `version` attributes, Cisco `version` / `hostname`, SONiC `DEVICE_METADATA`.
+4. **Manual entry** in the UI.
+
+Missing fields are stated explicitly ("Serial: not present in supplied artefacts; upload `show inventory` to populate"). Identity also drives **role inference** (router / switch / firewall / cloud filter / white-box), which decides rule applicability and report sections.
+
+---
+
+## 8. The Security Baseline Model (R-01)
+
+### 8.1 Entities, not a flat dictionary
+Security properties live at different scopes (per device, per vty range, per interface, per user, per rule). A flat key-value schema can't say "telnet is enabled on vty 5–15 only". The SBM is a small **entity model**:
+
+| Entity | Key attributes |
+|---|---|
+| `Device` | hostname, vendor, os_family, os_version, model, serial, hardware, role |
+| `MgmtService` | kind (ssh/telnet/http/https/snmp/netconf/…), enabled, version, ciphers, macs, kex |
+| `MgmtSession` | kind (console/vty/web/api), range, transport, access_filter, idle_timeout_s, auth_method |
+| `Interface` | name, zone, role (untrusted / trusted / mgmt, inferred + overridable), admin_up, mgmt_protocols, filters_in/out |
+| `LocalUser` | name, privilege, hash_type |
+| `AuthServer` | kind (tacacs/radius/ldap), host, key_present |
+| `LogTarget` | host, transport, severity; plus flags: timestamps, admin_logged, config_change_logged |
+| `TimeSource` | host, authenticated |
+| `SnmpCommunity` / `SnmpUser` | access, filter / auth, priv |
+| `CryptoProfile` | purpose (ike/ipsec/ssh/tls), algorithms, dh_group, lifetimes |
+| `FilterRule` | position, src, dst, service, action, log, enabled, zone_from, zone_to, name |
+| `Banner`, `PasswordPolicy`, `LockoutPolicy`, `RoutingAuth`, `L2Port`, `Tunnel` | domain-specific attributes |
+
+### 8.2 Facts with four states and evidence
+Every attribute is a **Fact**: `{value, state: explicit | vendor_default | absent | unknown, evidence: [{file, lines, raw, mapping_id@version, approved_by}]}`.
+- `explicit`: stated in the config.
+- `vendor_default`: not stated, resolved from `defaults.yaml` **for this OS version** (defaults genuinely change between releases).
+- `absent`: not stated and no default known.
+- `unknown`: statements exist but weren't understood (unmapped).
+
+Rules decide how to treat `absent` and `unknown` (normally REVIEW, §12.1).
+
+### 8.3 Derivations: vendor mapping stays local, security meaning stays global
+Device-level security facts are **derived** from entities by small, versioned formulas, for example:
+
+```
+management.telnet_reachable :=
+    any(MgmtService[kind=telnet].enabled)
+ or any(MgmtSession[kind=vty].transport ∋ telnet)
+ or any(Interface.mgmt_protocols ∋ telnet)
+```
+A vendor mapping only has to say what *its* line means locally ("this vty range allows telnet"). The security meaning ("is telnet reachable at all?") is defined once, for every vendor. Derived facts carry the union of their inputs' evidence.
+
+### 8.4 Aligned with OpenConfig
+Where an equivalent exists, SBM names map to **OpenConfig** paths (the industry's vendor-neutral YANG models, Apache-2.0), e.g. `/system/ssh-server/config/protocol-version`, `/system/telnet-server/config/enable`, `/system/aaa`, `/system/logging`, `/system/ntp`. Compliance-specific extras (hash types, lockout, rule hygiene) live in an `x-sbm` extension. We extend the industry's schema instead of inventing one, and it opens a future path to gNMI/NETCONF collection. The SBM is versioned (`sbm_version`) with migrations.
+
+---
+
+## 9. The mapping language: how a vendor line becomes a fact
+
+This is the core of the system. It's small enough to be edited by clicks in the Training Studio, expressive enough for very different syntaxes, and invertible so it can also produce remediation.
+
+### 9.1 Six primitives
+| Primitive | Meaning | Studio action that creates it |
+|---|---|---|
+| `entity` | This block/statement opens or names an entity (e.g. `line vty 0 4` → MgmtSession vty 0–4) | "This block is a **[entity type]** named **[token]**" |
+| `set` | A slot's value becomes an attribute (with typed slots and transforms) | Click a token → "this is **[attribute]**" |
+| `assert` | Presence of the statement means attribute = constant | "This line means **[attribute] = [value]**" |
+| `members` | Each item in a list slot is added to a set attribute | "Each word here is a **[protocol/server/…]**" |
+| `negation` | The vendor's negation form inverts the fact (`no`, `undo`, `unset`, `delete`, `disable`, `disabled=yes`) | "The opposite is written with **[undo]**" (usually auto-detected, or read from the manual) |
+| `default` | What holds when nothing is stated, per OS version range | "If absent, the default is **[value]**" (often pre-filled from the manual) |
+
+**References (the seventh building block).** Configs constantly point at other named things: `access-class MGMT-ACL in` on a vty line, `set srcaddr "LAN_GRP"` in a FortiOS policy, `<source><member>web-servers</member>` in PAN-OS, security-group IDs referenced by other AWS groups, `user-interface … acl 2001` on Huawei. A `ref` primitive records "this attribute points to entity X by name". After parsing, a **resolver** links references to their targets:
+- It expands address/service **objects and groups** (recursively, with cycle detection) into concrete IP and port sets.
+- It flags **dangling references** (a policy pointing at an object that doesn't exist) as findings of their own.
+
+Without this, firewall analysis (§13) would be comparing object *names* instead of the addresses behind them, and "is management restricted by an ACL?" couldn't be answered. With it, derivations can follow the chain vty → ACL → permitted sources.
+
+**Transforms** handle the messy reality: value maps (`enable/disable → true/false`), boolean inversion (`disable-telnet yes` → telnet false), **unit normalisation** (Cisco `exec-timeout 10 0` → 600 s; FortiOS `admintimeout 5` minutes → 300 s), list splitting, and case folding.
+
+### 9.2 Worked example: one property, eight platforms, six primitives
+| Platform | What the config says | Primitives | Resulting facts |
+|---|---|---|---|
+| Cisco IOS-XE | `line vty 0 4` → ` transport input ssh telnet` | `entity` + `members` | MgmtSession[vty 0–4].transport = {ssh, telnet} → derived: telnet reachable |
+| Juniper Junos | `system { services { telnet; } }` | `assert` (presence) | MgmtService[telnet].enabled = true |
+| Fortinet FortiOS | `config system interface` → `edit "wan1"` → `set allowaccess ping https telnet` | `entity` + `members` | Interface[wan1].mgmt_protocols ∋ telnet (and wan1 is untrusted → severity rises, §12.7) |
+| Palo Alto PAN-OS | `<deviceconfig><system><service><disable-telnet>no</disable-telnet>` | `set` + inversion | MgmtService[telnet].enabled = true |
+| Huawei VRP | `telnet server enable` / `undo telnet server enable` | `assert` + `negation(undo)` | MgmtService[telnet].enabled = true / false |
+| MikroTik RouterOS | `/ip service` → `set telnet disabled=yes` | `entity` + `set` + inversion | MgmtService[telnet].enabled = false |
+| SONiC | nothing about telnet in `config_db.json` | `default` | MgmtService[telnet].enabled = false (vendor_default) |
+| Cisco, line absent | nothing stated | `default` scoped by OS version | resolved per release, else REVIEW |
+
+Six primitives cover eight very different syntaxes. That's the evidence that a small language, not a per-vendor parser, is the right abstraction. (AWS security groups express a *different* property, exposure of port 23 to the internet, as `FilterRule` entities, handled by §13.)
+
+### 9.3 Stored form (what a learned mapping looks like)
+```yaml
+id: fortinet_fortios/interface-allowaccess
+vendor: fortinet_fortios
+os_versions: ">=6.0"
+context: ["config system interface", "edit <STR:ifname>"]
+entity: {type: Interface, key: ifname}
+match: "set allowaccess <LIST:protocols>"
+effect: {members: Interface.mgmt_protocols, from: protocols,
+         map: {ping: icmp, https: https, http: http, ssh: ssh, telnet: telnet, snmp: snmp}}
+negation: "unset allowaccess"
+provenance: {version: 3, proposed_by: trainer:asha, approved_by: [approver:ravi], signals: [S3, S5]}
+```
+
+### 9.4 Version scoping
+Mappings, defaults and recipes all carry `os_versions` ranges. When a vendor changes syntax or defaults in a new release, we add a scoped entry and the old one keeps serving older devices. This is the PS's "firmware updates make hard-coded libraries obsolete" problem, solved as data.
+
+### 9.5 Why this matters beyond parsing
+- The **Training Studio** is a visual editor for exactly this language, so "low-code" has precise semantics rather than being a free-form tagging screen.
+- The language is **invertible**. Given a mapping and a desired value, we can *render* the command (`set allowaccess ping https` without telnet, or `undo telnet server enable`). Teaching the system to read a vendor also teaches it to fix that vendor (§14).
+
+---
+
+## 10. The semantic engine: suggesting mappings without a single point of failure
+
+### 10.1 Why not "just use an LLM"
+A single LLM has four structural limits here:
+1. It **hallucinates** and isn't reproducible.
+2. It can be **manipulated** by text inside the config (descriptions and banners are attacker-writable; 2026 research shows this works against LLM-based security analysis).
+3. It needs **hardware** we can't assume (a 4 GB laptop GPU; air-gapped sites).
+4. It **doesn't know rare vendors**: Huawei, Sangfor, Hillstone and Ruijie syntax is thin in training data.
+
+So suggestions come from **independent signals that fail differently**, fused and gated by human approval.
+
+### 10.2 The signals
+| # | Signal | What it contributes | Technology | Research basis | Tier |
+|---|---|---|---|---|---|
+| S1 | **Structure** | Block context, negation form, pattern key, value types | Shape parsers + Drain3 | Drain; Selfstarter/Diffy templates | Core |
+| S2 | **Approved knowledge base** | Exact, human-approved mappings (the only signal that feeds verdicts) | Mapping language (§9) | — | Core |
+| S3 | **Vendor-manual grounding** | For unseen vendors: which documented command this line is, what it does, its `undo` form and its default | Manual ingester (§10.4); seed corpus from **NAssim** (MIT: 12,406 Huawei NE40E + Nokia 7750 SR command entries) | **NAssim, ACM SIGCOMM '22**: device models from manuals, 9.1× faster onboarding | Core ★ |
+| S4 | **Security lexicon** | Cross-vendor synonyms (`telnet`/`stelnet`/`admin-telnet`, `logging`/`info-center`/`syslog`, `snmp-server`/`snmp-agent`), aligned to OpenConfig names | Curated YAML + rapidfuzz | OpenConfig | Core |
+| S5 | **Semantic embeddings + reranker** | Closeness of line (or its manual description) to SBM attribute descriptions and to approved examples from *other* vendors | sentence-transformers; model **chosen by benchmark** (§21) from Qwen3-Embedding-0.6B, granite-embedding-small-english-r2, SecureBERT2.0, bge-small; reranker Qwen3-Reranker-0.6B / bge-reranker-v2-m3 | NAssim's NetBERT; domain-adapted compliance mapping (arXiv 2607.06364) | Core |
+| S6 | **Few-shot memory** | Learns from every approval, at two speeds (§10.5) | Prototype/kNN memory + background contrastive fine-tune (SetFit / sentence-transformers) | NAssim fine-tuned on 110–381 expert pairs | Core ★ |
+| S7 | Fleet consensus | Values that differ from same-role peers; value-type inference | Template-with-holes + outlier scoring | Selfstarter (NSDI '20), Diffy (PLDI '24) | Stretch |
+| S8 | LLM voter | Broad general knowledge; drafting explanations | Local Granite 4.2-3B or Qwen3.5-4B via Ollama (localhost only), or an org-hosted open model | "Verified Prompt Programming" (HotNets '23): LLMs need verifiers | Stretch |
+
+★ Not seen in any SIH 26155 repository we reviewed (§26).
+
+### 10.3 Fusion, confidence and trust
+- Each signal returns `(candidate attribute, score)` or abstains. A **stacking model** (logistic regression over signal scores, retrained from Studio decisions) ranks the candidates.
+- Confidence starts as calibrated thresholds. Once the evaluation set is large enough, **conformal prediction** (MAPIE, BSD-3) produces candidate *sets* with a stated coverage ("90% confident it's one of these two"). An empty set means "don't know", and we never guess.
+- **Every suggestion explains itself:** which signals agreed, the manual excerpt, and the three nearest approved lines from other vendors.
+- **Trust policy:** suggestions only pre-fill the Studio. Nothing reaches a verdict until approved (§11.4).
+
+### 10.4 Manual grounding (S3), step by step
+1. **Input:** a vendor CLI reference (HTML/PDF) uploaded by the admin, or a pre-parsed corpus (NAssim).
+2. **Segment** into command entries using a vendor-agnostic section lexicon ("Format/Syntax", "Function/Description", "Parameters", "Views/Modes", "Default").
+3. **Compile** each syntax line (`{a | b}` alternatives, `[optional]`, `<param>`) into a matcher (RE2, linear-time).
+4. **Extract** the description, the `undo`/`no` form, parameter types and ranges, and "*By default, …*" sentences.
+5. **Ground** an unknown config line by syntax match against the compiled commands (high precision). If nothing matches, fall back to embedding search over descriptions.
+6. **Map** the command description to SBM attribute descriptions (S5).
+
+By-products:
+- auto-filled `defaults.yaml` entries (default states come from the vendor's own manual)
+- negation forms
+- **syntax checking of generated remediation commands** against the manual grammar (§14.4)
+
+### 10.5 Learning at two speeds
+- **Instant (seconds):** every approval is added to a prototype/kNN memory over frozen embeddings, and patterns still pending in the queue are re-ranked immediately. This is what the live demo shows.
+- **Background (minutes, optional GPU):** once enough new labels accumulate, a contrastive fine-tune (SetFit / sentence-transformers trainer) produces a candidate model. It's **promoted only if it beats the current model** on the evaluation gate (§21), including the leave-one-vendor-out split. Model files are safetensors with pinned hashes.
+
+### 10.6 Degradation ladder
+| What's available | Behaviour |
+|---|---|
+| All core signals | Best suggestions |
+| No GPU | Identical results; background training slower |
+| No manual for this vendor | S1 + S4 + S5 + S6 still suggest; the admin teaches a few lines; S6 learns |
+| Completely novel vendor, novel shape | Flat-line fallback + lexicon + embeddings → Studio; coverage climbs with each approval |
+| LLM absent (the default) | No loss of core function; S8 is additive only |
+
+---
+
+## 11. The Training Studio (R-03, R-05)
+
+### 11.1 Flow
+1. **Queue of patterns, not lines**, ranked by security relevance × number of devices affected. It shows the per-vendor coverage bar.
+2. **Card:** the raw line(s) with block context, vendor/OS, the top suggestions with their explanation, and the manual excerpt if S3 matched.
+3. **Teach by example:** the admin clicks tokens to make them slots (value, name, list) or literals. The system proposes the generalisation by **anti-unification** (the least general pattern covering the examples) and lists the other lines it would match. The admin can tighten or loosen it by clicking.
+4. **Pick meaning:** a searchable SBM attribute tree plus one of the six primitives, with transform and unit pickers.
+5. **Impact preview:** "matches 37 lines on 4 devices; Interface.mgmt_protocols changes on 4 devices; **2 findings flip FAIL → PASS**, 1 PASS → FAIL."
+6. Approve / Ignore (not security-relevant; this trains the relevance filter) / Defer.
+
+### 11.2 After approval
+Knowledge base v(n+1) → regression gate (§11.4) → hot reload → affected audits re-run → coverage bar moves. The server process is never restarted.
+
+### 11.3 Ergonomics
+Keyboard-first (approve/next/skip), bulk-approve for high-confidence clusters, and undo. Every decision is recorded with author, time, signals and knowledge-base version.
+
+### 11.4 Governance: a learning loop that can't be quietly poisoned
+Training data is a security boundary. A wrong mapping (`telnet enable` taught as "disabled") would silently turn every device green.
+- **Roles:** `trainer` proposes, `approver` approves. They're separate RBAC roles.
+- **Four-eyes on verdict flips:** if the impact preview shows *any* finding moving FAIL → PASS, a second approver (≠ trainer) is required.
+- **Regression gate:** before activation, every vendor's golden configs must reproduce their expected SBM snapshots and verdicts, apart from the intended changes.
+- **Label audit:** cleanlab flags approvals that disagree strongly with the other signals and the fleet, for re-review.
+- **Versioning and rollback:** every knowledge-base version is kept, diffable, one-click revertible, and logged in the transparency log.
+
+---
+
+## 12. Compliance engine (R-02, R-06, R-07b)
+
+### 12.1 Rule language
+Rules are vendor-neutral, quantified over SBM entities, and ship with their own tests:
+```yaml
+id: MGMT-TELNET-01
+title: Clear-text Telnet management is not reachable
+intent: Credentials must never cross the network in clear text.
+for_each: Device
+assert: not management.telnet_reachable
+on_absent: resolve_default          # vendor+version default, else REVIEW
+on_unknown: review
+severity: {base: high}
+exposure: [telnet_on_untrusted_interface]        # raises to critical (§12.7)
+fix_intent: {make: management.telnet_reachable, equal: false}
+refs:
+  nist_800_53r5: [CM-7, AC-17(2), SC-8]
+  disa_stig: auto        # matched from imported vendor STIGs, human-confirmed (§12.4)
+  cis: {cisco_ios_xe_17: "<rec id>", fortios_7: "<rec id>"}
+  iso_27001_2022: derived    # via NIST OLIR #155 (§12.4)
+fixtures:
+  pass: [cisco_ios_xe/telnet_off.cfg, junos/no_telnet.conf]
+  fail: [cisco_ios_xe/telnet_vty.cfg, fortios/wan_telnet.conf]
+```
+```yaml
+id: MGMT-SESSION-TIMEOUT-01
+for_each: MgmtSession where kind in [console, vty, web]
+assert: idle_timeout_s > 0 and idle_timeout_s <= 600
+```
+Per-entity rules give per-entity findings ("vty 5–15: `exec-timeout 0 0` means sessions never time out", with exact lines). The operators are declarative (`== != < <= in ∋ any all none count matches exists`), and there's no `eval`.
+
+### 12.2 Rule quality gate
+Every rule ships with: its intent, official references, `on_absent`/`on_unknown` semantics, at least one passing and one failing fixture per seed vendor it applies to, and a fix intent. CI fails if any is missing. **No rule may cite a control ID that isn't in an imported official catalog.** Pure hardening checks without a benchmark are labelled "hardening best practice", never given invented numbers.
+
+### 12.3 Scope: about 50 rules in 10 domains
+Management plane, AAA, logging, time, SNMP, services, crypto, filtering, L2, routing authentication. Depth beats breadth: the top 25 rules get curated remediation recipes on every seed vendor. The rest rely on inverse mappings (§14).
+
+### 12.4 Crosswalk hub: every framework ID traceable to an official source
+NIST SP 800-53 r5 is the **hub**. Every rule is anchored to NIST controls. Every other framework hangs off the hub through an *official* bridge wherever one exists:
+
+| Framework | Source of IDs (licence) | Bridge to our rules |
+|---|---|---|
+| **NIST SP 800-53 r5** | Official OSCAL catalog (public domain / CC0) | Authored per rule, peer-reviewed |
+| **DISA STIG** | Imported XCCDF for the vendor's STIG (US Gov, public domain) | Our semantic engine proposes rule↔STIG matches from rule text vs STIG check text; a human confirms. **Consistency check:** the STIG rule's CCIs → NIST (DISA CCI list) must overlap our NIST anchors. (Part of the CCI list still references 800-53 **Rev 4**, so we translate through NIST's Rev4→Rev5 mapping and flag any gaps) |
+| **ISO/IEC 27001:2022** | Annex A control numbers only (copyrighted standard) | **Derived from NIST via NIST OLIR #155**, the official SP 800-53 r5 → ISO/IEC 27001:2022 informative reference, then reviewed |
+| **CIS Benchmarks** | Recommendation IDs from the free benchmark PDFs, per vendor/version (CC BY-NC-SA: IDs + our own wording, with attribution) | Authored per rule and vendor |
+| **NCIIPC** (if obtained) | NCIIPC guidelines | A framework pack like any other |
+
+A CI "crosswalk lint" rejects unknown IDs, missing anchors and inconsistent STIG↔NIST pairs.
+
+### 12.5 Applicability
+Rules declare the roles and features they apply to, so a switch isn't failed on VPN rules and a cloud security group isn't failed on console timeouts. Non-applicable rules are N/A and listed, not hidden.
+
+### 12.6 Statuses and scoring: always two numbers
+- Status per rule and entity: **PASS / FAIL / REVIEW** (absent or unknown evidence, or an unapproved mapping) **/ N/A**.
+- **Compliance %** = PASS / (PASS + FAIL) over applicable rules, per framework.
+- **Coverage %** = (PASS + FAIL) / applicable rules: how much we could actually judge.
+- Both are shown everywhere, so nobody mistakes "100% compliant" on 10% coverage for safety.
+- NIST control status rolls up from its rules: all pass → satisfied; some fail → partially satisfied.
+
+### 12.7 Severity: base × exposure, explained
+- **Base** comes from the STIG category where mapped (CAT I → High, CAT II → Medium, CAT III → Low), otherwise from our reviewed rating.
+- **Exposure modifiers**, each bounded and explainable, give the final Critical / High / Medium / Low:
+  - raised when the weakness is reachable from an **untrusted interface/zone** (inferred from zone names like untrust/outside/wan, public addressing, default-route egress; the admin can override)
+  - raised for perimeter-firewall roles
+  - lowered when a compensating control exists (management restricted to a management subnet)
+- Every finding shows "High (base) → **Critical**: telnet allowed on `wan1` (untrusted)".
+
+---
+
+## 13. Firewall and cloud policy analysis (P2)
+
+The PS names "granular ACLs" among its hardening protocols. Checking only for "any-any" is shallow, so we analyse the **whole ordered ruleset** of every firewall and cloud filter, using the classic taxonomy of **Al-Shaer & Hamed (Firewall Policy Advisor, IEEE INFOCOM 2004)**:
+
+| Anomaly | Meaning | Why it matters |
+|---|---|---|
+| **Shadowing** | An earlier rule matches everything a later rule matches, with a different action | The later rule never fires. The admin believes something is blocked/allowed that isn't |
+| **Redundancy** | A rule is fully covered by another with the same action | Dead rules hide intent and slow review |
+| **Generalisation** | A broader later rule covers an earlier exception | Often intended; flagged for review |
+| **Correlation** | Partial overlap with different actions | Order-dependent behaviour, a classic source of mistakes |
+
+Plus hygiene checks:
+- any-any allows
+- allow rules without logging
+- clear-text or legacy services (Telnet/FTP/SMBv1) from untrusted zones
+- disabled or stale rules
+- management ports exposed to the internet
+
+For **AWS**, the analysis spans both layers: stateless NACLs and stateful security groups. This two-layer case was formalised in a 2026 *Future Internet* paper. Implementation uses interval arithmetic on address and port ranges (Python `ipaddress`, no extra dependency), **after** the reference resolver (§9.1) has expanded every address/service object and group into concrete sets. That step is what makes shadowing detection correct on real firewalls, where rules almost never contain raw IPs. It runs on SBM `FilterRule` entities, so every firewall vendor we can parse gets it for free.
+
+---
+
+## 14. Remediation engine (R-07c, P2)
+
+### 14.1 From finding to fix
+Each rule declares a **fix intent** (e.g. make `telnet_reachable` false). The engine turns it into concrete changes for *the specific entities in evidence*. That means this device's actual vty ranges, interfaces and policy IDs, not a generic snippet.
+
+### 14.2 Command sources (in priority order)
+1. **Curated recipes** in the vendor pack, scoped by OS version and templated with entity context (Jinja2 sandboxed).
+2. **Inverse mappings:** render the approved mapping with the desired value, using the vendor's negation form. This covers every vendor taught in the Studio.
+3. **STIG fix text** for the imported vendor STIGs (reference and wording).
+4. **AI draft** (only if S8 is enabled), labelled "AI-drafted: verify before use", and never shown as verified.
+
+### 14.3 Fix preview: every recommended fix is proven by re-auditing it
+- **Indent / brace / set-path families:** build the intended config (running + fix lines), then **hier_config** (MIT) computes the minimal, correctly ordered command sequence, predicts the **future config** and generates the **rollback**.
+- **XML / JSON families (PAN-OS, SONiC, AWS):** express the fix as an exact patch (RFC 6902 JSON Patch / XML edit) and apply it to a copy.
+- Then **re-parse and re-audit the predicted config.** A fix is marked **Verified** only if its target finding flips FAIL → PASS and **no other finding regresses**.
+
+This is the "verifier in the loop" idea from HotNets '23 and the 2026 configuration-repair benchmarks, done fully offline.
+
+### 14.4 Syntax assurance
+Generated commands are checked against the vendor's manual grammar where a manual has been ingested (S3), and against hier_config's platform rules otherwise. The badges shown are:
+- ✓ Re-audit verified
+- ✓ Syntax checked (manual / platform)
+- Source: curated / inverse mapping / STIG / AI draft
+
+### 14.5 Output format (every FAIL on a seed vendor)
+```
+! Pre-check        show running-config | section line vty
+! Change           configure terminal
+                    line vty 0 4
+                     transport input ssh
+                    end
+! Verify           show running-config | section line vty   → expect "transport input ssh"
+! Save             copy running-config startup-config
+! Rollback         configure terminal / line vty 0 4 / transport input ssh telnet / end
+Badges: ✓ Re-audit verified (FAIL→PASS, 0 regressions)  ✓ Syntax: cisco_ios platform rules  · Source: curated recipe
+```
+Non-CLI platforms get their native form: AWS CLI (`aws ec2 revoke-security-group-ingress …`), PAN-OS `set` commands, SONiC `config` commands or JSON patches.
+
+**Never auto-applied.** We generate, verify and sign. People apply.
+
+### 14.6 Honesty about verification without devices
+"Verified" means *verified against our own model of the device* (re-parse + re-audit), plus syntax checks. It does **not** mean tested on hardware. The report says so. Where a containerised NOS is available (e.g. Arista cEOS, Nokia SR Linux, SONiC-VS), recipes can additionally earn a "lab-tested" badge (stretch).
+
+---
+
+## 15. Reporting (R-07)
+
+### 15.1 Per-device PDF anatomy (ReportLab)
+1. **Cover and device profile:** hostname, vendor, model, **serial**, hardware, OS version, role, the source of each identity field, config SHA-256, audit ID, date, knowledge-base and rule-set versions, frameworks selected.
+2. **Executive summary:** per framework, Compliance % *and* Coverage %; severity distribution; top 5 risks in plain language.
+3. **Control matrix:** rule → framework control IDs → status → severity, per selected framework.
+4. **Detailed findings** (FAIL first, by severity): what and why; expected vs actual; **evidence lines with line numbers**; severity derivation; **step-by-step remediation with badges**.
+5. **Firewall policy analysis** (firewalls and cloud filters only): anomalies with the rule pairs involved.
+6. **Assurance and transparency:** lines understood, unmapped patterns, REVIEW items, which mappings were human-taught (and by whom).
+7. **Appendix:** methodology, framework attributions (CIS attribution required), glossary, provenance (versions, transparency-log inclusion proof, signature details).
+
+### 15.2 Customised by model and software version (PS hint)
+Remediation is selected by OS-version range, sections by role, and version-specific notes are included (e.g. defaults that changed in this release).
+
+### 15.3 Signatures, including Indian DSC
+Every PDF carries a **PAdES digital signature** (pyHanko, MIT). It uses a key generated at install by default. It can also be an **organisational certificate, or an officer's Class-3 DSC on a USB token via PKCS#11**, the digital-signature practice recognised under India's IT Act. Any PDF reader shows whether the report has been altered since signing.
+
+### 15.4 Exports
+Machine-readable JSON (full SBM, findings, evidence), CSV (findings), a fleet summary PDF, and **OSCAL assessment-results** (NIST's machine-readable format) so results can flow into GRC tools. OSCAL comes after the spine is done.
+
+---
+
+## 16. Trust layer: the blockchain decision
+
+**Is blockchain required?** No. The PS text never mentions it. "Blockchain & Cybersecurity" is the theme bucket, and the PS itself is about cybersecurity. A blockchain network would add servers, consensus, keys and attack surface, and it would break air-gapped deployment.
+
+**What we take from blockchain is tamper-evident history, via the primitive that secures the web's certificates.** Certificate Transparency (RFC 9162) and Sigstore's Rekor use this design:
+- Every evidence hash, mapping approval, knowledge-base version and report hash is appended to a **Merkle-tree transparency log** (RFC 9162-style hashing).
+- The log issues **signed checkpoints**: Ed25519-signed tree roots.
+- **Inclusion proofs:** anyone holding a report can check it was logged at audit time. The proof is embedded in the PDF appendix.
+- **Consistency proofs:** anyone can check the log only ever grew and was never rewritten.
+- An offline **verifier CLI** (`kasauti verify report.pdf`) checks the signature, the inclusion proof and the checkpoint without trusting our server. An external auditor (or NCIIPC) can run it.
+- **Optional anchoring:** checkpoints can be exported to an external ledger or witness if an organisation wants one. That's a documented adapter, not built by default.
+
+**Why this beats a SHA-256 hash chain** (what other teams did): a chain proves order but gives no compact proof for one record, and a quietly truncated tail isn't detectable without an outside reference. Merkle proofs plus signed checkpoints fix both.
+
+---
+
+## 17. Platform security: the auditor passes its own audit (P3)
+
+The platform holds topology, ACLs, password hashes, SNMP communities and VPN peers for an entire organisation. It's hardened accordingly. We self-assess against **OWASP ASVS Level 2** as a checklist.
+
+| Asset / threat | Attack | Control |
+|---|---|---|
+| Stored configs | Disk theft, backup leak, curious insider | AES-256-GCM vault (envelope keys; key from OS keystore or passphrase); masked views; only admins decrypt originals; retention policy |
+| Accounts | Guessing, stolen sessions | Argon2id; **TOTP MFA** (enforced at first admin login); lockout + rate limits; server-side sessions in HttpOnly/SameSite/Secure cookies; CSRF tokens; idle timeout |
+| Authorisation | Viewer approves mappings; auditor edits rules | RBAC (`viewer`, `auditor`, `trainer`, `approver`, `admin`), least privilege, all actions logged |
+| **Learning loop** | Poisoned or careless mapping flips verdicts | Four-eyes on verdict flips, regression gate, cleanlab label audit, rollback (§11.4) |
+| Uploads | Zip bomb, zip-slip, XXE, billion laughs, giant or binary files | Limits, path normalisation, defusedxml, sniffing, **sandboxed worker processes** with resource limits |
+| Patterns | ReDoS from admin- or pack-supplied regex | **RE2** (linear time) everywhere |
+| Templates | Server-side template injection | Jinja2 **SandboxedEnvironment**, whitelisted filters |
+| Packs | Poisoned or code-carrying pack imports | Data-only packs, schema validation, **Ed25519 signatures**, quarantine for unsigned packs |
+| Models | Swapped or malicious weights | **safetensors** only, SHA-256-pinned manifest checked at start-up |
+| LLM (if enabled) | Prompt injection via config text | Free text stripped, delimited input, schema-constrained output, the LLM never decides |
+| Reports and history | Forgery, deletion | PAdES signatures; transparency log (§16) |
+| Live collection | Credential theft, MITM | Read-only accounts, host-key verification, in-memory credentials |
+| Supply chain | Compromised dependency | Hash-locked lockfile (uv), CycloneDX SBOM, pip-audit / npm audit, bandit, gitleaks, trivy in CI |
+| Exposure | Tool reachable on the LAN | Localhost binding by default; TLS, CSP, HSTS and other security headers when exposed; Ollama bound to 127.0.0.1 |
+| Air gap | No internet at site | Offline installer, bundled models, **signed offline updates** for packs and catalogs |
+
+**Secure development:** `SECURITY.md` (threat model, reporting), security test suite (authentication, upload abuse, ReDoS, SSTI, poisoning gate, signature tampering), SBOM per release.
+
+**We practise what we audit:** MFA, lockout, admin-action logging, encrypted management and least privilege are exactly the controls we check on devices.
+
+---
+
+## 18. User experience (R-09)
+
+### 18.1 Screens
+| Screen | Purpose |
+|---|---|
+| **Dashboard** | Fleet Compliance % and Coverage % per framework and vendor; top failing controls; riskiest devices; coverage per vendor |
+| **New audit** | Name → frameworks → scope domains → drop files (single/bulk/zip + companions) → start |
+| **Audit results** | Device list with scores, identity completeness, signed-PDF download (single or bulk zip) |
+| **Device view** | Findings table (filter by framework/severity); Monaco config viewer with evidence highlighted; entity/SBM explorer; policy-analysis tab; **fix preview** |
+| **Provenance drawer** | Click any finding: raw line → mapping (who approved, when, which signals) → fact → rule → framework controls → fix → verification |
+| **Training Studio** | Pattern queue, suggestions with explanations, token-click teaching, impact preview, approvals, coverage bars |
+| **Knowledge base** | Mappings per vendor, versions and diffs, rollback, pack import/export with signature status |
+| **Frameworks and rules** | Enable frameworks, browse rules with crosswalks and fixtures |
+| **Admin and trust** | Users and roles, MFA, transparency-log checkpoint, integrity verification |
+
+### 18.2 Design principles
+Evidence first (every number clickable down to a config line); two numbers, never one; plain-language findings with technical detail one click away; keyboard-first Studio; honest empty states and error messages; WCAG 2.1 AA target; light and dark themes.
+
+---
+
+# Part C: Building it
+
+## 19. Technology stack (final; every licence verified 2026-09-25 against PyPI / npm / Hugging Face / GitHub)
+
+### 19.1 Backend (Python 3.12)
+| Purpose | Choice | Licence |
+|---|---|---|
+| API / server | FastAPI, Uvicorn, python-multipart | MIT, BSD-3, Apache-2.0 |
+| Schema | Pydantic v2 | MIT |
+| Persistence | SQLAlchemy 2 + Alembic; SQLite (default) / PostgreSQL | MIT; public domain; PostgreSQL licence |
+| PG driver | psycopg 3 | LGPL-3.0 (unmodified library use) |
+| Workers | multiprocessing pool + DB job table (no broker) | PSF |
+| Template mining | Drain3 | MIT |
+| Remediation | hier_config; Aerleon (ACL rendering) | MIT; Apache-2.0 |
+| Show-output parsing | TextFSM, ntc-templates, TTP | Apache-2.0, Apache-2.0, MIT |
+| Live collection (stretch) | NAPALM, Netmiko (Paramiko underneath) | Apache-2.0, MIT (Paramiko LGPL-2.1, unmodified) |
+| XML / YAML | defusedxml, lxml, PyYAML (safe_load) | PSF, BSD-3, MIT |
+| Safe regex | google-re2 | BSD-3 |
+| Templates | Jinja2 (sandboxed) | BSD-3 |
+| PDF + signing | ReportLab, matplotlib, **pyHanko** | BSD, PSF-style, MIT |
+| Crypto | cryptography (AES-GCM, Ed25519) | Apache-2.0 / BSD-3 |
+| Auth | argon2-cffi, pyotp | MIT, MIT |
+| Logging | structlog | MIT / Apache-2.0 |
+
+### 19.2 AI / ML
+| Purpose | Choice | Licence |
+|---|---|---|
+| Embedding runtime | sentence-transformers 6 | Apache-2.0 |
+| Embedding models (benchmark shortlist) | Qwen3-Embedding-0.6B; granite-embedding-small-english-r2 (47M); SecureBERT2.0-biencoder; bge-small-en-v1.5 | Apache-2.0 ×3, MIT |
+| Rerankers (benchmark) | Qwen3-Reranker-0.6B; bge-reranker-v2-m3 | Apache-2.0 |
+| Classical ML, stacking | scikit-learn, numpy | BSD-3 |
+| Few-shot fine-tune | SetFit 1.2 / sentence-transformers trainer | Apache-2.0 |
+| Calibration | MAPIE (conformal) | BSD-3 |
+| Label audit | cleanlab | Apache-2.0 |
+| Fuzzy matching | rapidfuzz | MIT |
+| Model files | safetensors | Apache-2.0 |
+| LLM (stretch) | Ollama / llama.cpp; Granite 4.2-3B or Qwen3.5-4B | MIT runtimes; Apache-2.0 models |
+
+### 19.3 Frontend (TypeScript)
+React 19, Vite, TypeScript, Tailwind 4, Radix primitives with shadcn/ui patterns, TanStack Query and Table, Zustand, Recharts, Monaco editor, react-dropzone, lucide icons (all MIT except TypeScript Apache-2.0 and lucide ISC). Tests: Vitest, Playwright.
+
+### 19.4 Engineering and CI
+uv (hash-locked), ruff, mypy, pytest, Hypothesis (property tests), eslint, prettier, pre-commit; CycloneDX SBOM, pip-audit, npm audit, bandit, gitleaks, trivy; Docker Compose for packaging. **Our licence:** Apache-2.0 (includes a patent grant, which suits government adoption).
+
+### 19.5 Considered and rejected
+| Candidate | Why not |
+|---|---|
+| ciscoconfparse2 | GPL-3.0; also a per-vendor-parser approach |
+| PyMuPDF | AGPL-3.0 |
+| Redis 8 | RSALv2 / SSPLv1 / AGPLv3; not needed |
+| Llama 3.x, Gemma (incl. EmbeddingGemma) | Custom, non-OSI licences |
+| Qwen2.5-3B (currently installed locally) | Research licence; use `qwen2.5:1.5b` (Apache-2.0) or the choices above |
+| Cloud LLM APIs | Data sovereignty |
+| Batfish (as the core parser) | Hand-written per-vendor grammars plus a heavy Java service; we reuse its Apache-licensed example configs as data only |
+| WeasyPrint | Heavy GTK dependencies on Windows |
+| pgvector / FAISS | Unnecessary at our scale (plain numpy) |
+| JWT in browser storage | Can be stolen through XSS |
+| Microservices | Attack surface and operational weight without benefit |
+
+---
+
+## 20. Content and data
+
+### 20.1 Framework content and licences
+| Source | Status | What we ship |
+|---|---|---|
+| NIST SP 800-53 r5 (OSCAL) | Public domain / CC0 | Full catalog |
+| NIST OLIR #155 (800-53 r5 → ISO 27001:2022) | Public NIST informative reference | Mapping rows |
+| DISA STIGs (XCCDF) + CCI list | US Government works, public domain | Titles, severity, check/fix text, CCIs |
+| CIS Benchmarks | CC BY-NC-SA 4.0 | IDs + our own wording + attribution; no copied text |
+| ISO/IEC 27001:2022 | Copyrighted | Control numbers + our own short descriptions |
+| NCIIPC guidelines | To be obtained | A framework pack if permitted |
+
+### 20.2 Configurations
+1. **Authored corpus:** hardened and weak variants for each seed vendor, written from vendor documentation and peer-reviewed. These are the golden fixtures.
+2. **Batfish repository** (Apache-2.0): example networks and grammar test configs (Cisco, Juniper, Arista, Palo Alto, …).
+3. **Mutation generator:** injects catalogued violations into hardened configs to produce labelled test sets (§21).
+4. **Containerised NOS labs** (stretch; disk-permitting): SONiC-VS, Nokia SR Linux, Arista cEOS, for authentic configs, show outputs and lab-tested recipes.
+5. `datasets/SOURCES.md` records source, licence and hash for every file.
+
+### 20.3 Manuals
+NAssim corpus (MIT; Huawei NE40E + Nokia 7750 SR), downloaded at setup rather than vendored, since the content derives from vendor manuals. Admins can ingest their own vendor manuals at runtime.
+
+### 20.4 Seed vendors and the unseen-vendor demo
+- **Seeds (7):** Cisco IOS-XE, Arista EOS, Juniper Junos/SRX, Fortinet FortiOS, Palo Alto PAN-OS (XML), AWS security groups + NACLs (JSON), SONiC (`config_db.json`). That's routers, switches, firewalls, cloud and white-box, over 5 of the 7 shape families. SONiC and cloud security groups are the PS's own examples of where traditional parsers fail.
+- **Unseen demo vendor:** **Huawei VRP**. Its manual is available through NAssim, so the demo exercises S3. It's also highly relevant to Indian networks, and it's never in the seed packs.
+- **Second unseen:** MikroTik (a new shape family, no manual), showing the no-manual path of the degradation ladder.
+
+### 20.5 NCIIPC outreach
+nciipc.gov.in refused connections from our research environment (2026-09-25) and also didn't open from the developer's own browser and laptop (2026-09-26). The developer therefore writes to helpdesk1@nciipc.gov.in asking for published guidelines, sanctioned samples or a hardening baseline. Nothing in the build depends on a reply; if material arrives and its use is permitted, it becomes a framework pack. An NCIIPC-aligned framework pack would be highly relevant to NTRO.
+
+---
+
+## 21. Evaluation methodology (P4: measured, not claimed)
+
+### 21.1 Datasets
+| ID | Contents | Purpose |
+|---|---|---|
+| E1 Golden set | Authored + Batfish configs with hand-verified SBM snapshots and verdicts | Correctness, regression gate |
+| E2 Mapping set | 400–600 labelled (statement → attribute) pairs across seeds + Huawei (NAssim-assisted) | Suggestion quality; model selection |
+| E3 Mutation set | Hardened configs × catalogued violation operators (per vendor) | Detection precision/recall; *mutation testing for compliance* |
+| E4 Fix set | Every E3 violation | Fix success rate (re-audit verified) |
+| E5 Policy set | Synthetic rulesets with planted shadowing/redundancy/correlation + real examples | Policy-analysis precision/recall |
+
+### 21.2 Protocols
+- **Leave-one-vendor-out (LOVO).** For each vendor V, remove all of V's mappings. Then measure the zero-shot suggestion quality for V (with and without V's manual), and the **learning curve** after 0 / 5 / 10 / 20 approvals. This is the scientific version of "handles unseen vendors", and the core of our P4 slide.
+- **Ablations.** Remove each signal in turn (S3, S4, S5, S6, S8) and report the change. This shows there's no single point of failure and quantifies what each signal is worth (including "no LLM").
+- **Model selection.** The embedding models and rerankers in §19.2 compete on E2 under LOVO. The winner is chosen by Recall@1 and Recall@5, with speed as a tie-breaker.
+
+### 21.3 Metrics and initial targets (to be confirmed by measurement, and reported honestly)
+| Metric | Target |
+|---|---|
+| **False-PASS rate** on E1/E3 (the metric that matters most in security) | **0** |
+| Detection recall / precision on E3, seed vendors | ≥ 95% / ≥ 95% |
+| Coverage of security-relevant lines, seed vendors | ≥ 95% |
+| LOVO zero-shot Recall@5 (with manual / without) | ≥ 60% / ≥ 40% (for reference: NAssim reported ~73% Recall@30 in 2022) |
+| Huawei coverage after ≤ 20 approvals | ≥ 80% |
+| Fix success (FAIL→PASS, no regressions) on E4, seed vendors | ≥ 95% |
+| Policy anomalies on E5 | 100% on planted cases (it's an exact algorithm) |
+
+---
+
+## 22. Performance and robustness budgets (laptop: i5-12500H, 16 GB, no LLM)
+| Budget | Target |
+|---|---|
+| Parse + map + evaluate a 5,000-line config | < 2 s |
+| Per-device signed PDF | < 3 s |
+| Bulk: 100 mixed configs end-to-end | < 3 min |
+| Studio suggestion latency per pattern | < 300 ms (cached embeddings) |
+| Memory, full stack | < 2.5 GB |
+| Cold start (models loaded) | < 20 s |
+| Hostile inputs (fuzz corpus) | 0 crashes, 0 hangs beyond limits |
+
+---
+
+## 23. Engineering practice and repository layout
+```
+kasauti/
+  backend/kasauti/{ingest,shape,identity,mapping,semantic,studio,sbm,rules,policy,remediation,report,trust,packs,auth,api,cli}
+  frontend/
+  packs/{vendors,frameworks,rules}
+  datasets/{authored,batfish,mutations,SOURCES.md}
+  eval/{harness,reports}
+  tools/{import_oscal,import_stig,import_cci,import_olir,ingest_manual,mutate,sign_pack}
+  docs/{PLAN.md,ARCHITECTURE.md,SECURITY.md,archive/}
+  README.md  LICENSE  docker-compose.yml
+```
+- **Definition of done:** tests (unit + fixtures), types, docs, security checks green, reviewed by one teammate.
+- **Branching:** short-lived feature branches → PR → review → `main`. `main` is always demo-able from Milestone 1 on.
+- **CI:** lint, types, tests, rule quality gate, crosswalk lint, golden regression, SBOM and security scans.
+
+---
+
+## 24. Team and ownership
+
+**Actual team (2026-09-26): one developer + Claude.** The six roles below remain as *work areas* for organising tasks. Review steps that assumed a second human (code review, config peer review, clean-machine setup) are adapted in `docs/TODO.md` (S.01, C.06, M7.07). The hallway test (R-05) still uses someone outside the project.
+| # | Role | Owns | Pillar |
+|---|---|---|---|
+| 1 | Lead / architect | SBM, mapping language, rule language, integration, final demo | All |
+| 2 | Parsing & identity | Ingestion, shape families, identity, manual ingester (S3) | P1 |
+| 3 | AI/ML | Signals S4–S6, fusion, evaluation harness, LOVO, ablations | P1, P4 |
+| 4 | Compliance & network content | Rules, fixtures, crosswalks, STIG/OSCAL/CCI/OLIR import, recipes | P2 |
+| 5 | Frontend & UX | All screens, Training Studio, provenance drawer | P1 |
+| 6 | Security, reporting & DevOps | Platform hardening, signing, transparency log, PDF, CI, packaging, video | P3 |
+
+---
+
+## 25. Milestones (gated by exit criteria, not dates; there's no fixed deadline)
+| Milestone | Exit criteria | Fallback if blocked |
+|---|---|---|
+| **M0 Foundations** | Private repo + CI + security scanners; SBM v0, mapping and rule languages v0; pack format frozen; 3 authored configs; eval harness skeleton; `SECURITY.md` draft | — |
+| **M1 Walking skeleton** | One Cisco config → tree → mappings → SBM → 10 rules → unsigned PDF, end to end | Simplify the entity model before adding breadth |
+| **M2 Spine** | 7 seed vendors, ~50 rules with fixtures, 4 frameworks via the crosswalk hub, identity resolver, PDF v1, Studio v1 (teach, approve, hot reload), dashboard | Cut to 5 seed vendors (keep SONiC and AWS: they're the PS's own examples) |
+| **M3 P1 Learns any vendor** | S3 manual grounding, S5 benchmarked, S6 two-speed learning, governance (four-eyes, regression gate), LOVO results | If S3 Recall@5 on Huawei stays < 40%: present S3 as supporting evidence and lead the demo with teach-by-example + instant learning |
+| **M4 P2 Proves its fixes** | Fix intents, recipes for the top 25 rules × seed vendors, inverse mappings, fix preview with hier_config / JSON Patch, rollback, policy analysis | Keep fix preview for indent/brace families; plain recipes elsewhere |
+| **M5 P3 Trustworthy** | Vault encryption, MFA/RBAC, sandboxed workers, RE2 and sandboxed templates, signed packs, PAdES signing, transparency log + verifier CLI, security test suite | Transparency log without consistency proofs (inclusion only) |
+| **M6 P4 + polish** | Full evaluation report, performance budgets met, UX polish, accessibility pass | — |
+| **M7 Deliverables** | Video, slides, 2-page architecture doc, README; clean-machine setup test; three full dry runs; repo made public | — |
+
+---
+
+# Part D: Winning
+
+## 26. Competitive position
+
+**Commercial and open-source landscape.**
+- **Titania Nipper:** CIS-accredited, evidence-rich, step-by-step CLI remediation, even an air-gapped edition, but a closed, fixed device library.
+- **Tufin / AlgoSec:** firewall-policy management suites.
+- **Batfish:** deep open-source analysis with hand-written per-vendor grammars.
+- **Firewall Orchestrator:** firewall documentation.
+
+**None of them lets an administrator teach it a new vendor.**
+
+**Other SIH 26155 teams (5 public repositories reviewed on 2026-09-25).** The common baseline across them: a vendor-neutral model, "AI proposes, rules decide", a training page, SHA-256 chained reports, offline operation, UNKNOWN for missing data. The strongest had multi-signal matching with BGE embeddings and template induction. Several used per-vendor parsers, and one used a GPL library.
+
+**What we have that we didn't see anywhere:**
+1. Manual-grounded learning of unseen vendors, including auto-extracted defaults.
+2. A precise, invertible mapping language, so learning to read a vendor also gives remediation for it.
+3. A learning loop treated as a security boundary (four-eyes on verdict flips, regression gate).
+4. Re-audit-verified fixes with rollback.
+5. Full ruleset anomaly analysis.
+6. A Merkle transparency log with signed checkpoints and DSC-signable PDFs.
+7. Leave-one-vendor-out evaluation with ablations.
+8. Every framework ID traceable to an official source (OSCAL, STIG/CCI, OLIR).
+
+**Caveat:** we saw 5 of roughly 500 teams. These pillars were chosen because they're hard to reproduce quickly, not because nobody else could think of them. Execution will decide.
+
+**Operational:** keep the repository private until submission.
+
+## 27. Deliverables
+
+### 27.1 Demo video (≤ 2:00)
+| Time | Beat |
+|---|---|
+| 0:00–0:10 | Hook: seven vendors, seven dialects, one question: "Is this network compliant, and can you *prove* it?" |
+| 0:10–0:30 | Bulk upload of 7 configs incl. SONiC and AWS; CIS + NIST + STIG selected; fleet dashboard with Compliance % and Coverage % |
+| 0:30–0:55 | **P2:** Palo Alto: rule 14 is shadowed by rule 3; telnet allowed on the untrusted zone raises it to Critical. "Preview fix" → re-audit → FAIL→PASS, zero regressions, rollback ready |
+| 0:55–1:30 | **P1:** Unseen Huawei config at 22% coverage. The Studio quotes Huawei's own manual ("`undo telnet server enable` … default: disabled"). 6 approvals; the bar climbs to 85% live; re-audit; Huawei-syntax fixes appear |
+| 1:30–1:48 | **P3:** The signed PDF opens with a valid signature; one edited byte → invalid. Trying to approve a verdict-flipping mapping alone → "second approver required" |
+| 1:48–2:00 | **P4:** Numbers: false-PASS 0, LOVO learning curve, ablation "no LLM needed". Close: offline, open source, NTRO-ready |
+
+### 27.2 Slides (5)
+1. **The problem and the gap:** multi-vendor reality; checklists vs vendor lock-in; why parsers fail.
+2. **Kasauti:** the pipeline on one diagram; shape families + mapping language + SBM.
+3. **P1 Learns any vendor:** signals, manual grounding, Training Studio, governance, the LOVO learning curve.
+4. **P2 + P3 Proves and protects:** verified fixes, policy analysis, signed reports, transparency log, platform threat model.
+5. **P4 + deployment:** metrics table, stack and licences (MeitY OSS aligned), air-gapped deployment, roadmap.
+
+### 27.3 Architecture document (2 pages)
+- Page 1: the pipeline diagram, the component table, and the mapping-language worked example (§9.2).
+- Page 2: SBM entities, semantic engine and governance, crosswalk hub, remediation verification, security and trust.
+
+### 27.4 README
+- Top: 60-second pitch, demo GIF, links to video, slides and architecture doc.
+- Quick start in three commands (Docker) plus native setup.
+- Sample data, "teach a new vendor" walkthrough, "add a framework" walkthrough.
+- Evaluation results table, security model summary, licences and attributions.
+- Verified by a teammate on a clean machine.
+
+## 28. Risks
+| Risk | Mitigation |
+|---|---|
+| Scope explosion | Spine → pillars → stretch, gated milestones |
+| A wrong security statement in the demo (bad ID or command) | Rule quality gate, official-ID lint, peer review of recipes, re-audit verification |
+| False PASS | Four-state facts, version-scoped defaults, REVIEW semantics, zero-false-PASS gate |
+| Manual grounding underperforms | Kill criterion at M3; teach-by-example + instant learning carry the demo |
+| No real devices | Authored + Batfish + mutation corpora; honest "verified against model" labelling; optional container labs |
+| Laptop limits (≈3 GB free RAM, 30 GB disk) | No LLM in the core; small embedding models; native dev over Docker; prune images |
+| Licence mistakes | Verified licence table; CI licence check on the lockfile |
+| Live demo failure | Pre-recorded video, seeded demo database, fully offline |
+| Other teams converge on similar ideas | Depth (evaluation, governance, verification, trust) is hard to copy; keep the repo private until submission |
+
+## 29. Open decisions
+1. ~~Product name~~: decided, **Kasauti (कसौटी)**.
+2. ~~Team size and names~~: decided, **one developer + Claude** (§24).
+3. ~~NCIIPC outreach owner~~: decided, the developer, by email (§20.5).
+4. Whether live collection makes the demo (depends on lab availability and disk).
+5. What evaluators get to run: Docker image vs native installer.
+
+---
+
+## Appendix A: research and references
+- NAssim: Chen et al., *Software-Defined Network Assimilation*, ACM SIGCOMM 2022. [paper](https://libinliu0189.github.io/papers/NAssim-sigcomm22.pdf), [data (MIT)](https://github.com/AmyWorkspace/nassim)
+- Selfstarter: Kakarla et al., *Finding Network Misconfigurations by Automatic Template Inference*, NSDI 2020. [link](https://www.usenix.org/conference/nsdi20/presentation/kakarla)
+- Diffy: *Data-Driven Bug Finding for Configurations*, PLDI 2024. [code (MIT)](https://github.com/microsoft/DiffyConfigAnalyzer)
+- Mondal et al., *What do LLMs need to Synthesize Correct Router Configurations?*, HotNets 2023. [arXiv](https://arxiv.org/abs/2307.04945)
+- Cornetto: *Benchmarking LLM-Driven Network Configuration Repair* (2026). [arXiv](https://arxiv.org/abs/2604.22513); *Evaluating Agentic Configuration Repair* (2026). [arXiv](https://arxiv.org/html/2606.06212)
+- Astragalus: *Automatic Configuration Repair for Production Networks* (2026). [arXiv](https://arxiv.org/html/2605.22092)
+- *Automated Compliance Mapping with Domain-Adapted Sentence Transformers* (2026). [arXiv](https://arxiv.org/pdf/2607.06364)
+- Prompt injection via log content (2026). [arXiv 2605.24421](https://arxiv.org/html/2605.24421), [arXiv 2607.14493](https://arxiv.org/html/2607.14493)
+- Al-Shaer & Hamed, *Firewall Policy Advisor*, IEEE INFOCOM 2004. [link](https://www.researchgate.net/publication/4011766_Firewall_Policy_Advisor_for_Anomaly_Discovery_and_Rule_Editing); two-layer cloud filtering algebra (2026). [doi](https://doi.org/10.3390/fi18080426)
+- Certificate Transparency, RFC 9162; Sigstore Rekor
+- NIST SP 800-53 r5 and OSCAL content: [CSRC](https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final), [OSCAL content](https://github.com/usnistgov/oscal-content); NIST OLIR #155 (800-53 r5 → ISO 27001:2022). [catalog](https://csrc.nist.gov/projects/olir/informative-reference-catalog/details?referenceId=155)
+- DISA STIG library and CCI. [cyber.mil](https://www.cyber.mil/stigs/downloads), [STIG browser](https://cyber.trackr.live/stig)
+- CIS Benchmarks terms. [link](https://www.cisecurity.org/terms-of-use-for-non-member-cis-products)
+- OpenConfig models. [repo](https://github.com/openconfig/public)
+- hier_config. [repo](https://github.com/netdevops/hier_config), [docs](https://hier-config.readthedocs.io/en/latest/)
+- MeitY Policy on Adoption of Open Source Software. [pdf](https://www.meity.gov.in/static/uploads/2024/02/policy_on_adoption_of_oss.pdf)
+- Titania Nipper. [product](https://titania.com/products/nipper)
+
+## Appendix B: development environment (measured 2026-09-25)
+i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB, **30.6 GB free disk**. Python 3.12.8, Node 20, Git, Ollama (qwen2.5:1.5b ✓ Apache-2.0; qwen2.5:3b ✗ research licence), Docker installed with the engine not running, WSL available. Native development day to day; Docker only for packaging.
+
+## Appendix C: changelog
+- **v1:** first architecture, stack, traceability.
+- **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
+- **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
+- **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.2 (2026-09-26, M0 build evidence):** refinements found while freezing the specs (details in `docs/spec/`):
+  - The SBM gains `LoggingPolicy`, for the device-wide logging flags §8.1 put beside `LogTarget`, and `ObjectDef`, the targets of `ref`. `CryptoProfile` gets `dh_groups` (a set) and `lifetime_s`.
+  - Derivations live in `packs/derivations/` (content is data), an addition to the §4.4 layout.
+  - Entity keys use braces for slots (`key: "{ifname}"`). §9.3's `key: ifname` shorthand is rejected with a hint, because stored literally it would merge all interfaces.
+  - Evaluation is four-valued (TRUE/FALSE/ABSENT/UNKNOWN), and a quantifier over zero entities is ABSENT rather than FALSE. This closes a false-PASS path where "nothing parsed" would read as "nothing wrong".
+  - Licence policy is strict for runtime dependencies. Unmodified LGPL/MPL is allowed only for dev-only tools.
+  - Encoding detection uses charset-normalizer (MIT), not chardet (LGPL).
+- **v5.1.1 (2026-09-26):** evidence-based updates. Team is solo + Claude (§24), with review steps adapted in TODO.md. NCIIPC site unreachable from the developer's own machine too, so outreach is email-only (§20.5). Open decisions 2 and 3 closed (§29). Task breakdown created in `docs/TODO.md`.
+- **v5.1:** added the `ref` primitive and reference resolver (object/group expansion, dangling-reference findings); plan frozen under evidence-based change control.
+- **v5:** full rewrite into one coherent design. New: the **mapping language** (six primitives, worked example, invertibility); the **entity-based SBM** with derivations; a **rule language** with quantifiers and mandatory fixtures; the **crosswalk hub** with official bridges (OLIR #155, CCI with Rev4→Rev5 handling); **verdict-flip four-eyes** governance; **fix preview** via hier_config future/rollback and JSON Patch; manual-grounded syntax checking of fixes; **Compliance % + Coverage %**; exposure-based severity; **DSC-signable PDFs**; RFC 9162-style transparency log; **LOVO evaluation, ablations, mutation testing**; performance budgets; acceptance criteria per requirement; milestone fallbacks; deliberate non-goals.

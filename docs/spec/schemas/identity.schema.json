@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "IdentitySource": {
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Context",
+          "type": "array"
+        },
+        "pattern": {
+          "title": "Pattern",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "config",
+            "show_version",
+            "show_inventory",
+            "get_system_status",
+            "show_system_info",
+            "show_chassis_hardware",
+            "display_version",
+            "display_esn"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "pattern"
+      ],
+      "title": "IdentitySource",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "fields": {
+      "additionalProperties": {
+        "items": {
+          "$ref": "#/$defs/IdentitySource"
+        },
+        "type": "array"
+      },
+      "propertyNames": {
+        "enum": [
+          "hostname",
+          "vendor",
+          "os_version",
+          "model",
+          "serial",
+          "hardware"
+        ]
+      },
+      "title": "Fields",
+      "type": "object"
+    }
+  },
+  "required": [
+    "fields"
+  ],
+  "title": "IdentitySpec",
+  "type": "object"
+}

@@ -1,0 +1,14 @@
+# Device-level security meanings, written once for every vendor (PLAN §8.3).
+# A vendor mapping says what its line means locally; these formulas say what it means for security.
+
+derivations:
+  - id: management.telnet_reachable
+    version: 1
+    type: bool
+    description: >
+      Clear-text Telnet can reach the management plane through any path: a Telnet service,
+      a vty range that accepts Telnet, or an interface that allows Telnet management.
+    expr: >
+      any(MgmtService where key == 'telnet': enabled)
+      or any(MgmtSession where kind == 'vty': transport contains 'telnet')
+      or any(Interface: mgmt_protocols contains 'telnet')

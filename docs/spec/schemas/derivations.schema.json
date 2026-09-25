@@ -1,0 +1,61 @@
+{
+  "$defs": {
+    "Derivation": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "minLength": 5,
+          "title": "Description",
+          "type": "string"
+        },
+        "expr": {
+          "title": "Expr",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "bool",
+            "int",
+            "str",
+            "set",
+            "list"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "type",
+        "description",
+        "expr"
+      ],
+      "title": "Derivation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "derivations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Derivation"
+      },
+      "title": "Derivations",
+      "type": "array"
+    }
+  },
+  "title": "DerivationFile",
+  "type": "object"
+}

@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "CrosswalkEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "controls": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Controls",
+          "type": "array"
+        },
+        "reviewed_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed By"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "authored",
+            "olir-155",
+            "stig-cci",
+            "semantic-proposal"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule",
+        "controls",
+        "source"
+      ],
+      "title": "CrosswalkEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "entries": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/CrosswalkEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "format_version": {
+      "const": 1,
+      "title": "Format Version",
+      "type": "integer"
+    },
+    "framework": {
+      "pattern": "^[a-z0-9][a-z0-9_]*$",
+      "title": "Framework",
+      "type": "string"
+    }
+  },
+  "required": [
+    "format_version",
+    "framework"
+  ],
+  "title": "Crosswalk",
+  "type": "object"
+}

@@ -1,0 +1,89 @@
+# SBM attribute -> OpenConfig path (PLAN §8.4).
+#
+# Paths were checked against openconfig/public release models (openconfig-system,
+# -system-terminal, -system-logging, -aaa, -platform, -acl, -interfaces; fetched 2026-09-26).
+# Anything without a real OpenConfig equivalent is listed under `x-sbm` (our extension) instead
+# of being given an invented path. A test fails if any SBM attribute is in neither list.
+
+openconfig:
+  Device.hostname: /system/config/hostname
+  Device.vendor: /components/component/state/mfg-name
+  Device.os_version: /components/component/state/software-version
+  Device.model: /components/component/state/part-no
+  Device.serial: /components/component/state/serial-no
+  Device.hardware: /components/component/state/hardware-version
+  MgmtService.enabled: /system/{ssh-server|telnet-server}/config/enable
+  MgmtService.version: /system/ssh-server/config/protocol-version
+  MgmtSession.idle_timeout_s: /system/{ssh-server|telnet-server}/config/timeout
+  Interface.admin_up: /interfaces/interface/config/enabled
+  LocalUser.privilege: /system/aaa/authentication/users/user/config/role
+  LocalUser.hash_type: /system/aaa/authentication/users/user/config/password-hashed
+  AuthServer.host: /system/aaa/server-groups/server-group/servers/server/config/address
+  LogTarget.host: /system/logging/remote-servers/remote-server/config/host
+  LogTarget.severity: /system/logging/remote-servers/remote-server/selectors/selector/config/severity
+  TimeSource.host: /system/ntp/servers/server/config/address
+  TimeSource.authenticated: /system/ntp/config/enable-ntp-auth
+  Banner.text: /system/config/{login-banner|motd-banner}
+  FilterRule.position: /acl/acl-sets/acl-set/acl-entries/acl-entry/config/sequence-id
+  FilterRule.action: /acl/acl-sets/acl-set/acl-entries/acl-entry/actions/config/forwarding-action
+  FilterRule.log: /acl/acl-sets/acl-set/acl-entries/acl-entry/actions/config/log-action
+  FilterRule.ruleset: /acl/acl-sets/acl-set/config/name
+  Interface.filters_in: /acl/interfaces/interface/ingress-acl-sets
+  Interface.filters_out: /acl/interfaces/interface/egress-acl-sets
+
+x-sbm:
+  - Device.os_family
+  - Device.role
+  - MgmtService.ciphers
+  - MgmtService.macs
+  - MgmtService.kex
+  - MgmtSession.kind
+  - MgmtSession.range
+  - MgmtSession.transport
+  - MgmtSession.access_filter
+  - MgmtSession.auth_method
+  - Interface.zone
+  - Interface.role
+  - Interface.mgmt_protocols
+  - AuthServer.kind
+  - AuthServer.key_present
+  - LogTarget.transport  # OC has only a TLS boolean (transport-security), not udp/tcp/tls
+  - PasswordPolicy.min_length
+  - PasswordPolicy.complexity_required
+  - PasswordPolicy.reversible_encryption_blocked
+  - PasswordPolicy.max_age_days
+  - LockoutPolicy.max_attempts
+  - LockoutPolicy.lockout_s
+  - LoggingPolicy.timestamps
+  - LoggingPolicy.admin_logged
+  - LoggingPolicy.config_change_logged
+  - SnmpCommunity.access
+  - SnmpCommunity.filter
+  - SnmpCommunity.is_well_known
+  - SnmpUser.auth
+  - SnmpUser.priv
+  - CryptoProfile.purpose
+  - CryptoProfile.algorithms
+  - CryptoProfile.dh_groups
+  - CryptoProfile.lifetime_s
+  - FilterRule.name
+  - FilterRule.src
+  - FilterRule.dst
+  - FilterRule.service
+  - FilterRule.enabled
+  - FilterRule.zone_from
+  - FilterRule.zone_to
+  - ObjectDef.kind
+  - ObjectDef.members
+  - Banner.present
+  - RoutingAuth.protocol
+  - RoutingAuth.scope
+  - RoutingAuth.method
+  - L2Port.mode
+  - L2Port.port_security
+  - L2Port.bpdu_guard
+  - L2Port.native_vlan
+  - L2Port.storm_control
+  - Tunnel.kind
+  - Tunnel.peer
+  - Tunnel.crypto_profile

@@ -1,0 +1,12 @@
+# Normalise source files to LF so hashes and line numbers are identical on every OS.
+* text=auto eol=lf
+
+# Dataset files are evidence: store them byte-for-byte. Their SHA-256 is recorded in
+# datasets/SOURCES.md and line numbers in findings must match the original exactly.
+datasets/** -text
+backend/tests/fixtures/** -text
+
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary

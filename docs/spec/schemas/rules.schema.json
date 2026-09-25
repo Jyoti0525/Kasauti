@@ -1,0 +1,300 @@
+{
+  "$defs": {
+    "Domain": {
+      "description": "The ten rule domains (PLAN §12.3).",
+      "enum": [
+        "management_plane",
+        "aaa",
+        "logging",
+        "time",
+        "snmp",
+        "services",
+        "crypto",
+        "filtering",
+        "l2",
+        "routing_auth"
+      ],
+      "title": "Domain",
+      "type": "string"
+    },
+    "FixIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "equal": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Equal"
+        },
+        "make": {
+          "minLength": 1,
+          "title": "Make",
+          "type": "string"
+        }
+      },
+      "required": [
+        "make",
+        "equal"
+      ],
+      "title": "FixIntent",
+      "type": "object"
+    },
+    "Fixtures": {
+      "additionalProperties": false,
+      "properties": {
+        "fail": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fail",
+          "type": "array"
+        },
+        "pass": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Pass",
+          "type": "array"
+        }
+      },
+      "title": "Fixtures",
+      "type": "object"
+    },
+    "OnMissing": {
+      "description": "What a rule does when a fact it needs is ``absent`` or ``unknown``.\n\nThere is deliberately no ``pass`` option: absence is never evidence of safety (§3.1).",
+      "enum": [
+        "resolve_default",
+        "review",
+        "fail",
+        "not_applicable"
+      ],
+      "title": "OnMissing",
+      "type": "string"
+    },
+    "Refs": {
+      "additionalProperties": false,
+      "properties": {
+        "cis": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Cis",
+          "type": "object"
+        },
+        "disa_stig": {
+          "anyOf": [
+            {
+              "const": "auto",
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "default": [],
+          "title": "Disa Stig"
+        },
+        "iso_27001_2022": {
+          "anyOf": [
+            {
+              "const": "derived",
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "default": "derived",
+          "title": "Iso 27001 2022"
+        },
+        "nist_800_53r5": {
+          "default": [],
+          "items": {
+            "pattern": "^[A-Z]{2}-\\d{1,2}(\\(\\d{1,2}\\))?$",
+            "type": "string"
+          },
+          "title": "Nist 800 53R5",
+          "type": "array"
+        }
+      },
+      "title": "Refs",
+      "type": "object"
+    },
+    "Role": {
+      "enum": [
+        "router",
+        "switch",
+        "firewall",
+        "cloud_filter",
+        "white_box"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "applies_to": {
+          "default": [
+            "router",
+            "switch",
+            "firewall",
+            "cloud_filter",
+            "white_box"
+          ],
+          "items": {
+            "$ref": "#/$defs/Role"
+          },
+          "title": "Applies To",
+          "type": "array"
+        },
+        "assert": {
+          "title": "Assert",
+          "type": "string"
+        },
+        "domain": {
+          "$ref": "#/$defs/Domain"
+        },
+        "exposure": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Exposure",
+          "type": "array"
+        },
+        "fix_intent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FixIntent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "fixtures": {
+          "$ref": "#/$defs/Fixtures"
+        },
+        "for_each": {
+          "title": "For Each",
+          "type": "string"
+        },
+        "hardening_best_practice": {
+          "default": false,
+          "title": "Hardening Best Practice",
+          "type": "boolean"
+        },
+        "id": {
+          "pattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-\\d{2}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "intent": {
+          "minLength": 5,
+          "title": "Intent",
+          "type": "string"
+        },
+        "on_absent": {
+          "$ref": "#/$defs/OnMissing",
+          "default": "review"
+        },
+        "on_unknown": {
+          "$ref": "#/$defs/OnMissing",
+          "default": "review"
+        },
+        "refs": {
+          "$ref": "#/$defs/Refs"
+        },
+        "severity": {
+          "$ref": "#/$defs/SeveritySpec"
+        },
+        "title": {
+          "minLength": 5,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "intent",
+        "domain",
+        "for_each",
+        "assert",
+        "severity"
+      ],
+      "title": "Rule",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "SeveritySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "base": {
+          "$ref": "#/$defs/Severity"
+        }
+      },
+      "required": [
+        "base"
+      ],
+      "title": "SeveritySpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "rules": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Rule"
+      },
+      "title": "Rules",
+      "type": "array"
+    }
+  },
+  "title": "RuleFile",
+  "type": "object"
+}

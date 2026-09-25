@@ -1,0 +1,1546 @@
+{
+  "$defs": {
+    "AuthServer": {
+      "additionalProperties": false,
+      "properties": {
+        "host": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "key_present": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "kind": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "AuthServer",
+          "default": "AuthServer",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "AuthServer",
+      "type": "object"
+    },
+    "Banner": {
+      "additionalProperties": false,
+      "description": "``key`` is the banner kind (motd, login, exec). Banner text is attacker-writable free\ntext: it is stored for display only and never fed to any AI signal (PLAN §17).",
+      "properties": {
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "present": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "text": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "Banner",
+          "default": "Banner",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Banner",
+      "type": "object"
+    },
+    "CryptoProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithms": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "dh_groups": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "lifetime_s": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "purpose": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "CryptoProfile",
+          "default": "CryptoProfile",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "CryptoProfile",
+      "type": "object"
+    },
+    "Device": {
+      "additionalProperties": false,
+      "properties": {
+        "hardware": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "hostname": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "default": "device",
+          "title": "Key",
+          "type": "string"
+        },
+        "model": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "os_family": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "os_version": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "role": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "serial": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "Device",
+          "default": "Device",
+          "title": "Type",
+          "type": "string"
+        },
+        "vendor": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        }
+      },
+      "title": "Device",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "description": "A pointer from a fact back to the exact source lines and the mapping that read them.",
+      "properties": {
+        "approved_by": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Approved By",
+          "type": "array"
+        },
+        "file": {
+          "minLength": 1,
+          "title": "File",
+          "type": "string"
+        },
+        "line_end": {
+          "minimum": 1,
+          "title": "Line End",
+          "type": "integer"
+        },
+        "line_start": {
+          "minimum": 1,
+          "title": "Line Start",
+          "type": "integer"
+        },
+        "mapping_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mapping Id"
+        },
+        "mapping_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mapping Version"
+        },
+        "raw": {
+          "title": "Raw",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file",
+        "line_start",
+        "line_end",
+        "raw"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "FactState": {
+      "enum": [
+        "explicit",
+        "vendor_default",
+        "absent",
+        "unknown"
+      ],
+      "title": "FactState",
+      "type": "string"
+    },
+    "Fact_Annotated_frozenset_str___PlainSerializer__": {
+      "additionalProperties": false,
+      "properties": {
+        "default_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default Source"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "state": {
+          "$ref": "#/$defs/FactState",
+          "default": "absent"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "title": "Fact[Annotated[frozenset[str], PlainSerializer]]",
+      "type": "object"
+    },
+    "Fact_Union_bool__int__str__": {
+      "additionalProperties": false,
+      "properties": {
+        "default_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default Source"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "state": {
+          "$ref": "#/$defs/FactState",
+          "default": "absent"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "title": "Fact[Union[bool, int, str]]",
+      "type": "object"
+    },
+    "Fact_bool_": {
+      "additionalProperties": false,
+      "properties": {
+        "default_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default Source"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "state": {
+          "$ref": "#/$defs/FactState",
+          "default": "absent"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "title": "Fact[bool]",
+      "type": "object"
+    },
+    "Fact_int_": {
+      "additionalProperties": false,
+      "properties": {
+        "default_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default Source"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "state": {
+          "$ref": "#/$defs/FactState",
+          "default": "absent"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "title": "Fact[int]",
+      "type": "object"
+    },
+    "Fact_str_": {
+      "additionalProperties": false,
+      "properties": {
+        "default_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default Source"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "state": {
+          "$ref": "#/$defs/FactState",
+          "default": "absent"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "title": "Fact[str]",
+      "type": "object"
+    },
+    "FilterRule": {
+      "additionalProperties": false,
+      "description": "One entry of an ordered ruleset (ACL, firewall policy, security group, NACL).",
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "dst": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "enabled": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "log": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "name": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "position": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "ruleset": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "service": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "src": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "FilterRule",
+          "default": "FilterRule",
+          "title": "Type",
+          "type": "string"
+        },
+        "zone_from": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "zone_to": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "FilterRule",
+      "type": "object"
+    },
+    "Interface": {
+      "additionalProperties": false,
+      "properties": {
+        "admin_up": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "filters_in": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "filters_out": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "mgmt_protocols": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "role": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "Interface",
+          "default": "Interface",
+          "title": "Type",
+          "type": "string"
+        },
+        "zone": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Interface",
+      "type": "object"
+    },
+    "L2Port": {
+      "additionalProperties": false,
+      "properties": {
+        "bpdu_guard": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "native_vlan": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "port_security": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "storm_control": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "L2Port",
+          "default": "L2Port",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "L2Port",
+      "type": "object"
+    },
+    "LocalUser": {
+      "additionalProperties": false,
+      "properties": {
+        "hash_type": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "privilege": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "LocalUser",
+          "default": "LocalUser",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "LocalUser",
+      "type": "object"
+    },
+    "LockoutPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "default": "lockout-policy",
+          "title": "Key",
+          "type": "string"
+        },
+        "lockout_s": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "max_attempts": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "LockoutPolicy",
+          "default": "LockoutPolicy",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "title": "LockoutPolicy",
+      "type": "object"
+    },
+    "LogTarget": {
+      "additionalProperties": false,
+      "properties": {
+        "host": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "transport": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "LogTarget",
+          "default": "LogTarget",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "LogTarget",
+      "type": "object"
+    },
+    "LoggingPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "admin_logged": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "config_change_logged": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "default": "logging-policy",
+          "title": "Key",
+          "type": "string"
+        },
+        "timestamps": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "LoggingPolicy",
+          "default": "LoggingPolicy",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "title": "LoggingPolicy",
+      "type": "object"
+    },
+    "MgmtService": {
+      "additionalProperties": false,
+      "description": "A management-plane service; ``key`` is its kind (ssh, telnet, http, https, snmp, …).",
+      "properties": {
+        "ciphers": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "enabled": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "kex": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "macs": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "MgmtService",
+          "default": "MgmtService",
+          "title": "Type",
+          "type": "string"
+        },
+        "version": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "MgmtService",
+      "type": "object"
+    },
+    "MgmtSession": {
+      "additionalProperties": false,
+      "description": "A way in: console, vty range, web or API session.",
+      "properties": {
+        "access_filter": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "auth_method": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "idle_timeout_s": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "range": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "transport": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "MgmtSession",
+          "default": "MgmtSession",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "MgmtSession",
+      "type": "object"
+    },
+    "ObjectDef": {
+      "additionalProperties": false,
+      "description": "A named object that other statements reference; ``key`` is ``<kind>:<name>``.",
+      "properties": {
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "members": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "ObjectDef",
+          "default": "ObjectDef",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "ObjectDef",
+      "type": "object"
+    },
+    "PasswordPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "complexity_required": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "default": "password-policy",
+          "title": "Key",
+          "type": "string"
+        },
+        "max_age_days": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "min_length": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "reversible_encryption_blocked": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "PasswordPolicy",
+          "default": "PasswordPolicy",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "title": "PasswordPolicy",
+      "type": "object"
+    },
+    "RoutingAuth": {
+      "additionalProperties": false,
+      "description": "``key`` is ``<protocol>:<scope>``, e.g. ``ospf:area 0`` or ``bgp:neighbor 192.0.2.1``.",
+      "properties": {
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "method": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "protocol": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "scope": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "RoutingAuth",
+          "default": "RoutingAuth",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "RoutingAuth",
+      "type": "object"
+    },
+    "SnmpCommunity": {
+      "additionalProperties": false,
+      "description": "``key`` is an ordinal (``community-1``), never the community string, which is a secret.",
+      "properties": {
+        "access": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "filter": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "is_well_known": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "type": {
+          "const": "SnmpCommunity",
+          "default": "SnmpCommunity",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "SnmpCommunity",
+      "type": "object"
+    },
+    "SnmpUser": {
+      "additionalProperties": false,
+      "properties": {
+        "auth": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "priv": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "SnmpUser",
+          "default": "SnmpUser",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "SnmpUser",
+      "type": "object"
+    },
+    "TimeSource": {
+      "additionalProperties": false,
+      "properties": {
+        "authenticated": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "host": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "type": {
+          "const": "TimeSource",
+          "default": "TimeSource",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "TimeSource",
+      "type": "object"
+    },
+    "Tunnel": {
+      "additionalProperties": false,
+      "properties": {
+        "crypto_profile": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "peer": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "Tunnel",
+          "default": "Tunnel",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Tunnel",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "All entities and derived facts for one device, in a canonical order.\n\nEntities are sorted by (type, key) on construction so that serialisation is byte-identical\nfor identical input (PLAN §3.1, principle 5).",
+  "properties": {
+    "derived": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Fact_Union_bool__int__str__"
+      },
+      "title": "Derived",
+      "type": "object"
+    },
+    "device": {
+      "$ref": "#/$defs/Device"
+    },
+    "entities": {
+      "default": [],
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "AuthServer": "#/$defs/AuthServer",
+            "Banner": "#/$defs/Banner",
+            "CryptoProfile": "#/$defs/CryptoProfile",
+            "Device": "#/$defs/Device",
+            "FilterRule": "#/$defs/FilterRule",
+            "Interface": "#/$defs/Interface",
+            "L2Port": "#/$defs/L2Port",
+            "LocalUser": "#/$defs/LocalUser",
+            "LockoutPolicy": "#/$defs/LockoutPolicy",
+            "LogTarget": "#/$defs/LogTarget",
+            "LoggingPolicy": "#/$defs/LoggingPolicy",
+            "MgmtService": "#/$defs/MgmtService",
+            "MgmtSession": "#/$defs/MgmtSession",
+            "ObjectDef": "#/$defs/ObjectDef",
+            "PasswordPolicy": "#/$defs/PasswordPolicy",
+            "RoutingAuth": "#/$defs/RoutingAuth",
+            "SnmpCommunity": "#/$defs/SnmpCommunity",
+            "SnmpUser": "#/$defs/SnmpUser",
+            "TimeSource": "#/$defs/TimeSource",
+            "Tunnel": "#/$defs/Tunnel"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/Device"
+          },
+          {
+            "$ref": "#/$defs/MgmtService"
+          },
+          {
+            "$ref": "#/$defs/MgmtSession"
+          },
+          {
+            "$ref": "#/$defs/Interface"
+          },
+          {
+            "$ref": "#/$defs/LocalUser"
+          },
+          {
+            "$ref": "#/$defs/AuthServer"
+          },
+          {
+            "$ref": "#/$defs/PasswordPolicy"
+          },
+          {
+            "$ref": "#/$defs/LockoutPolicy"
+          },
+          {
+            "$ref": "#/$defs/LogTarget"
+          },
+          {
+            "$ref": "#/$defs/LoggingPolicy"
+          },
+          {
+            "$ref": "#/$defs/TimeSource"
+          },
+          {
+            "$ref": "#/$defs/SnmpCommunity"
+          },
+          {
+            "$ref": "#/$defs/SnmpUser"
+          },
+          {
+            "$ref": "#/$defs/CryptoProfile"
+          },
+          {
+            "$ref": "#/$defs/FilterRule"
+          },
+          {
+            "$ref": "#/$defs/ObjectDef"
+          },
+          {
+            "$ref": "#/$defs/Banner"
+          },
+          {
+            "$ref": "#/$defs/RoutingAuth"
+          },
+          {
+            "$ref": "#/$defs/L2Port"
+          },
+          {
+            "$ref": "#/$defs/Tunnel"
+          }
+        ]
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "sbm_version": {
+      "default": "0.1",
+      "title": "Sbm Version",
+      "type": "string"
+    }
+  },
+  "title": "SecurityBaselineModel",
+  "type": "object"
+}

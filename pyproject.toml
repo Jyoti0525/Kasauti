@@ -1,0 +1,91 @@
+[project]
+name = "kasauti"
+version = "0.1.0"
+description = "Kasauti (कसौटी): AI-driven multi-vendor network security compliance auditor"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.12,<3.13"
+# Every dependency's licence is verified at the source before it is added (docs/TODO.md S.03)
+# and checked again in CI by tools/check_licences.py.
+dependencies = [
+    "pydantic>=2.13,<3",      # MIT
+    "pyyaml>=6.0.3,<7",       # MIT
+    "structlog>=26.1,<27",    # MIT OR Apache-2.0
+]
+
+[project.scripts]
+kasauti = "kasauti.cli.main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",            # MIT
+    "hypothesis>=6.168",      # MPL-2.0 (dev only, unmodified)
+    "ruff>=0.16",             # MIT
+    "mypy>=2.3",              # MIT
+    "types-PyYAML>=6.0.12",   # Apache-2.0
+    "pre-commit>=4.6",        # MIT
+    "pip-audit>=2.10",        # Apache-2.0
+    "bandit>=1.9",            # Apache-2.0
+    "cyclonedx-bom>=7.4",     # Apache-2.0
+]
+
+[build-system]
+requires = ["hatchling>=1.32"]  # MIT
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/kasauti"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["backend", "eval", "tools"]
+extend-exclude = ["frontend", "datasets", "docs/archive", ".playwright-mcp"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "S", "SIM", "RUF", "N", "C4", "PT", "PL", "PTH", "TRY", "ERA"]
+ignore = [
+    "PLR2004",  # magic values are fine in a rule engine's tests
+    "TRY003",   # descriptive exception messages are wanted
+    "PLR0913",
+    "PLR0911",  # a recursive-descent parser naturally returns from many branches
+]
+
+# The docs use proper typography (en dashes in ranges such as E1–E5, M1–M3).
+allowed-confusables = ["–"]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/tests/**" = ["S101", "PLR2004", "S603"]
+"eval/tests/**" = ["S101"]
+"tools/**" = ["T201"]
+"tools/tests/**" = ["S101", "T201"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = ["backend", "eval", "tools"]
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+files = ["backend/kasauti", "eval/harness", "tools"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests", "eval/tests", "tools/tests"]
+pythonpath = ["backend", "eval", "tools"]
+addopts = "-ra --strict-markers --strict-config --import-mode=importlib"
+xfail_strict = true
+markers = [
+    "golden: golden regression tests (PLAN §21.1 E1)",
+    "spec: executable spec tests that turn green as milestones land",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]

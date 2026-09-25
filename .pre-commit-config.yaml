@@ -1,0 +1,37 @@
+# Same checks as CI, run locally before every commit: `uv run pre-commit install`.
+# Local hooks call the tools pinned in uv.lock, so there is one source of versions.
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy (strict)
+        entry: uv run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: packs
+        name: validate packs
+        entry: uv run kasauti packs validate packs
+        language: system
+        files: ^packs/
+        pass_filenames: false
+      - id: schemas
+        name: JSON Schemas up to date
+        entry: uv run python tools/export_schemas.py --check
+        language: system
+        files: ^backend/kasauti/(packs|mapping|rules|sbm)/
+        pass_filenames: false
+      - id: no-large-files
+        name: no files over 1 MB
+        entry: python -c "import sys,os; big=[f for f in sys.argv[1:] if os.path.getsize(f)>1_048_576]; print(*big); sys.exit(bool(big))"
+        language: system

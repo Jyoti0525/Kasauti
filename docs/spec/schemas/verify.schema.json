@@ -1,0 +1,63 @@
+{
+  "$defs": {
+    "Domain": {
+      "description": "The ten rule domains (PLAN §12.3).",
+      "enum": [
+        "management_plane",
+        "aaa",
+        "logging",
+        "time",
+        "snmp",
+        "services",
+        "crypto",
+        "filtering",
+        "l2",
+        "routing_auth"
+      ],
+      "title": "Domain",
+      "type": "string"
+    },
+    "VerifyCommands": {
+      "additionalProperties": false,
+      "properties": {
+        "precheck": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Precheck",
+          "type": "array"
+        },
+        "verify": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Verify",
+          "type": "array"
+        }
+      },
+      "required": [
+        "precheck",
+        "verify"
+      ],
+      "title": "VerifyCommands",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "domains": {
+      "additionalProperties": {
+        "$ref": "#/$defs/VerifyCommands"
+      },
+      "propertyNames": {
+        "$ref": "#/$defs/Domain"
+      },
+      "title": "Domains",
+      "type": "object"
+    }
+  },
+  "title": "VerifyFile",
+  "type": "object"
+}

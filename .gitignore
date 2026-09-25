@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# Node (frontend lands in M2)
+node_modules/
+frontend/dist/
+
+# Runtime data: never commit configs, vaults, databases or keys
+/var/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+vault/
+*.key
+*.pem
+*.p12
+secrets/
+
+# Model weights are downloaded and hash-pinned, never committed (PLAN §17)
+models/
+*.safetensors
+*.bin
+*.gguf
+
+# Evaluation outputs (reports are generated; keep the harness only)
+eval/reports/*
+!eval/reports/.gitkeep
+
+# Raw third-party data is fetched by tools, not committed unless recorded in SOURCES.md
+datasets/_downloads/
+datasets/nassim/
+
+# Local tooling and scratch
+.playwright-mcp/
+.idea/
+.vscode/
+*.log
+sbom*.json

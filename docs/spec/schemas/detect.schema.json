@@ -1,0 +1,67 @@
+{
+  "$defs": {
+    "Signature": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "contains",
+            "line_prefix",
+            "regex",
+            "json_key",
+            "xml_path"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "pattern": {
+          "minLength": 1,
+          "title": "Pattern",
+          "type": "string"
+        },
+        "weight": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "pattern",
+        "weight"
+      ],
+      "title": "Signature",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "min_score": {
+      "default": 0.5,
+      "exclusiveMinimum": 0,
+      "maximum": 10,
+      "title": "Min Score",
+      "type": "number"
+    },
+    "signatures": {
+      "items": {
+        "$ref": "#/$defs/Signature"
+      },
+      "minItems": 1,
+      "title": "Signatures",
+      "type": "array"
+    }
+  },
+  "required": [
+    "signatures"
+  ],
+  "title": "DetectSpec",
+  "type": "object"
+}

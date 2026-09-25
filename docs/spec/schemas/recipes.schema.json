@@ -1,0 +1,165 @@
+{
+  "$defs": {
+    "FixIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "equal": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Equal"
+        },
+        "make": {
+          "minLength": 1,
+          "title": "Make",
+          "type": "string"
+        }
+      },
+      "required": [
+        "make",
+        "equal"
+      ],
+      "title": "FixIntent",
+      "type": "object"
+    },
+    "Recipe": {
+      "additionalProperties": false,
+      "properties": {
+        "expect": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expect"
+        },
+        "fix_intent": {
+          "$ref": "#/$defs/FixIntent"
+        },
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "os_versions": {
+          "default": "*",
+          "title": "Os Versions",
+          "type": "string"
+        },
+        "source": {
+          "default": "curated",
+          "enum": [
+            "curated",
+            "stig"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "steps": {
+          "$ref": "#/$defs/RecipeSteps"
+        }
+      },
+      "required": [
+        "id",
+        "fix_intent",
+        "steps"
+      ],
+      "title": "Recipe",
+      "type": "object"
+    },
+    "RecipeSteps": {
+      "additionalProperties": false,
+      "properties": {
+        "change": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Change",
+          "type": "array"
+        },
+        "precheck": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Precheck",
+          "type": "array"
+        },
+        "rollback": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Rollback",
+          "type": "array"
+        },
+        "save": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Save",
+          "type": "array"
+        },
+        "verify": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Verify",
+          "type": "array"
+        }
+      },
+      "required": [
+        "precheck",
+        "change",
+        "verify",
+        "rollback"
+      ],
+      "title": "RecipeSteps",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "recipes": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Recipe"
+      },
+      "title": "Recipes",
+      "type": "array"
+    }
+  },
+  "title": "RecipeFile",
+  "type": "object"
+}

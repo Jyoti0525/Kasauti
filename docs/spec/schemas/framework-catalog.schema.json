@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "Control": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "default": "",
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Control",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "controls": {
+      "items": {
+        "$ref": "#/$defs/Control"
+      },
+      "title": "Controls",
+      "type": "array"
+    },
+    "format_version": {
+      "const": 1,
+      "title": "Format Version",
+      "type": "integer"
+    },
+    "framework": {
+      "pattern": "^[a-z0-9][a-z0-9_]*$",
+      "title": "Framework",
+      "type": "string"
+    },
+    "licence": {
+      "title": "Licence",
+      "type": "string"
+    },
+    "retrieved": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "title": "Retrieved",
+      "type": "string"
+    },
+    "source_url": {
+      "title": "Source Url",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "format_version",
+    "framework",
+    "title",
+    "version",
+    "source_url",
+    "licence",
+    "retrieved",
+    "controls"
+  ],
+  "title": "FrameworkCatalog",
+  "type": "object"
+}

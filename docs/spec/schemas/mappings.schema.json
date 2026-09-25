@@ -1,0 +1,440 @@
+{
+  "$defs": {
+    "AssertEffect": {
+      "additionalProperties": false,
+      "properties": {
+        "assert": {
+          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "title": "Assert",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "assert",
+        "value"
+      ],
+      "title": "AssertEffect",
+      "type": "object"
+    },
+    "EntitySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "key"
+      ],
+      "title": "EntitySpec",
+      "type": "object"
+    },
+    "Mapping": {
+      "additionalProperties": false,
+      "properties": {
+        "context": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Context",
+          "type": "array"
+        },
+        "effect": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SetEffect"
+            },
+            {
+              "$ref": "#/$defs/AssertEffect"
+            },
+            {
+              "$ref": "#/$defs/MembersEffect"
+            },
+            {
+              "$ref": "#/$defs/RefEffect"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/SetEffect"
+                  },
+                  {
+                    "$ref": "#/$defs/AssertEffect"
+                  },
+                  {
+                    "$ref": "#/$defs/MembersEffect"
+                  },
+                  {
+                    "$ref": "#/$defs/RefEffect"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effect"
+        },
+        "entity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EntitySpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "pattern": "^[a-z0-9_]+/[a-z0-9][a-z0-9_\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "match": {
+          "title": "Match",
+          "type": "string"
+        },
+        "negation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "auto",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "auto",
+          "title": "Negation"
+        },
+        "os_versions": {
+          "default": "*",
+          "title": "Os Versions",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "vendor": {
+          "title": "Vendor",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "vendor",
+        "match",
+        "provenance"
+      ],
+      "title": "Mapping",
+      "type": "object"
+    },
+    "MembersEffect": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "From",
+          "type": "string"
+        },
+        "map": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Map"
+        },
+        "members": {
+          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "title": "Members",
+          "type": "string"
+        },
+        "transform": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "invert",
+                  "lower",
+                  "upper"
+                ],
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/UnitTransform"
+              },
+              {
+                "$ref": "#/$defs/SplitTransform"
+              }
+            ]
+          },
+          "title": "Transform",
+          "type": "array"
+        }
+      },
+      "required": [
+        "members",
+        "from"
+      ],
+      "title": "MembersEffect",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "approved_by": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Approved By",
+          "type": "array"
+        },
+        "proposed_by": {
+          "minLength": 1,
+          "title": "Proposed By",
+          "type": "string"
+        },
+        "signals": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Signals",
+          "type": "array"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "version",
+        "proposed_by"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "RefEffect": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "From",
+          "type": "string"
+        },
+        "ref": {
+          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "title": "Ref",
+          "type": "string"
+        },
+        "target": {
+          "enum": [
+            "acl",
+            "address",
+            "address_group",
+            "service",
+            "service_group",
+            "any_object"
+          ],
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "from",
+        "target"
+      ],
+      "title": "RefEffect",
+      "type": "object"
+    },
+    "SetEffect": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "patternProperties": {
+                "^[a-z][a-z0-9_]*$": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            }
+          ],
+          "title": "From"
+        },
+        "map": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Map"
+        },
+        "set": {
+          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "title": "Set",
+          "type": "string"
+        },
+        "transform": {
+          "default": [],
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "invert",
+                  "lower",
+                  "upper"
+                ],
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/UnitTransform"
+              },
+              {
+                "$ref": "#/$defs/SplitTransform"
+              }
+            ]
+          },
+          "title": "Transform",
+          "type": "array"
+        }
+      },
+      "required": [
+        "set",
+        "from"
+      ],
+      "title": "SetEffect",
+      "type": "object"
+    },
+    "SplitTransform": {
+      "additionalProperties": false,
+      "properties": {
+        "split": {
+          "minLength": 1,
+          "title": "Split",
+          "type": "string"
+        }
+      },
+      "required": [
+        "split"
+      ],
+      "title": "SplitTransform",
+      "type": "object"
+    },
+    "UnitTransform": {
+      "additionalProperties": false,
+      "description": "Normalise a numeric slot to the SBM's unit (seconds for durations).",
+      "properties": {
+        "unit": {
+          "enum": [
+            "ms",
+            "seconds",
+            "minutes",
+            "hours",
+            "days"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unit"
+      ],
+      "title": "UnitTransform",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "mappings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Mapping"
+      },
+      "title": "Mappings",
+      "type": "array"
+    }
+  },
+  "title": "MappingFile",
+  "type": "object"
+}
