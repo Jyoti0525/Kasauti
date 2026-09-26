@@ -21,8 +21,10 @@ from kasauti.packs.model import (
     DefaultsFile,
     DerivationFile,
     DetectSpec,
+    ExposureFile,
     FrameworkCatalog,
     IdentitySpec,
+    InferenceFile,
     MappingFile,
     Recipe,
     RecipeFile,
@@ -32,6 +34,7 @@ from kasauti.packs.model import (
 )
 from kasauti.rules import expr as ex
 from kasauti.rules.derivation import Derivation, DerivationError, order_and_check
+from kasauti.rules.enrich import Exposure, Inference
 from kasauti.rules.model import Rule
 
 DATA_SUFFIXES = frozenset({".yaml", ".yml", ".json", ".md", ".txt", ".html", ".sig"})
@@ -63,6 +66,9 @@ class RuleSet:
     rules: tuple[Rule, ...]
     derivations: tuple[Derivation, ...]
     """In dependency order."""
+    inferences: tuple[Inference, ...] = ()
+    """In file order: the first inference to fill an attribute wins."""
+    exposures: tuple[Exposure, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -172,27 +178,64 @@ def load_vendor_pack(root: Path) -> VendorPack:
     )
 
 
-def load_ruleset(rules_dir: Path, derivations_dir: Path) -> RuleSet:
-    c = _Collector(_data_only(rules_dir) + _data_only(derivations_dir))
+def load_ruleset(
+    rules_dir: Path,
+    derivations_dir: Path,
+    inferences_dir: Path | None = None,
+    exposures_dir: Path | None = None,
+) -> RuleSet:
+    """Rules and the vendor-neutral content they depend on. ``inferences/`` and ``exposures/``
+    default to siblings of ``rules/`` (``packs/inferences``, ``packs/exposures``)."""
+    inferences_dir = inferences_dir or rules_dir.parent / "inferences"
+    exposures_dir = exposures_dir or rules_dir.parent / "exposures"
+    dirs = [d for d in (rules_dir, derivations_dir, inferences_dir, exposures_dir) if d.exists()]
+    c = _Collector([p for d in dirs for p in _data_only(d)])
     derivations = _many(c, derivations_dir.glob("*.yaml"), DerivationFile, lambda f: f.derivations)
     rules = _many(c, rules_dir.glob("*.yaml"), RuleFile, lambda f: f.rules)
+    inferences: list[Inference] = _many(
+        c, inferences_dir.glob("*.yaml"), InferenceFile, lambda f: f.inferences
+    )
+    exposures: list[Exposure] = _many(
+        c, exposures_dir.glob("*.yaml"), ExposureFile, lambda f: f.exposures
+    )
     ordered: list[Derivation] = []
     try:
         ordered = order_and_check(derivations)
     except DerivationError as err:
         c.problems.append(f"derivations: {err}")
     types: dict[str, ex.Type] = {d.id: d.type for d in derivations}
+    by_exposure = {e.id: e for e in exposures}
+    for inf in inferences:
+        c.problems += [f"inference {inf.id}: {e}" for e in inf.check(types)]
+    for exp in exposures:
+        c.problems += [f"exposure {exp.id}: {e}" for e in exp.check(types)]
     for rule in rules:
         c.problems += [f"rule {rule.id}: {e}" for e in rule.check(types)]
+        entity, _ = rule.scope
         if rule.fix_intent is not None:
             make = rule.fix_intent.make
-            entity, _ = rule.scope
             if make not in types and ex.attribute_type(entity, make) is None:
                 c.problems.append(f"rule {rule.id}: fix_intent.make {make!r} is not a known fact")
+        for name in rule.exposure:
+            found = by_exposure.get(name)
+            if found is None:
+                c.problems.append(f"rule {rule.id}: unknown exposure {name!r}")
+            elif entity not in found.scopes:
+                c.problems.append(
+                    f"rule {rule.id}: exposure {name!r} doesn't apply to {entity} "
+                    f"(scopes: {', '.join(found.scopes)})"
+                )
     c.problems += _duplicates("rule", (r.id for r in rules))
+    c.problems += _duplicates("inference", (i.id for i in inferences))
+    c.problems += _duplicates("exposure", (e.id for e in exposures))
     if c.problems:
         raise PackError(c.problems)
-    return RuleSet(tuple(sorted(rules, key=lambda r: r.id)), tuple(ordered))
+    return RuleSet(
+        tuple(sorted(rules, key=lambda r: r.id)),
+        tuple(ordered),
+        tuple(inferences),
+        tuple(sorted(exposures, key=lambda e: e.id)),
+    )
 
 
 def load_framework_pack(root: Path) -> FrameworkPack:

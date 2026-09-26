@@ -31,10 +31,17 @@ def _v02_to_v03(data: RawSBM) -> RawSBM:
     return data
 
 
+def _v03_to_v04(data: RawSBM) -> RawSBM:
+    """0.3 -> 0.4 (M2): the ``Reference`` entity type and ``ObjectDef.expanded`` are new.
+    Older documents had no resolver, so they simply have no references."""
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
 MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.1": ("0.2", _v01_to_v02),
     "0.2": ("0.3", _v02_to_v03),
+    "0.3": ("0.4", _v03_to_v04),
 }
 
 

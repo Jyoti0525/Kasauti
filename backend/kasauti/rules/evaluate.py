@@ -145,6 +145,11 @@ class Evaluator:
             self._members[entity_type] = found
         return self._members[entity_type]
 
+    def entity(self, entity_id: str) -> Entity | None:
+        """The entity a finding names, including a materialised singleton."""
+        etype = entity_id.split("[", 1)[0]
+        return next((e for e in self.members(etype) if e.entity_id == entity_id), None)
+
     def eval(self, node: ex.Expr, scope: Entity | None) -> Val:  # noqa: PLR0912 - one case per node
         match node:
             case ex.Lit(value=value):

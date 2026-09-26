@@ -73,6 +73,7 @@ rules:
     on_absent: review
     on_unknown: review
     severity: {base: medium}
+    exposure: [mgmt_reachable_from_untrusted]
     fix_intent: {make: access_filter, equal: MGMT-ACL}   # the recipe asks for the site's ACL
     refs:
       nist_800_53r5: [AC-3, AC-17]
@@ -91,6 +92,7 @@ rules:
     on_absent: resolve_default   # the default differs by release (1.99 before IOS XE 17.10)
     on_unknown: review
     severity: {base: high}
+    exposure: [mgmt_reachable_from_untrusted]
     fix_intent: {make: management.ssh_v1_negotiable, equal: false}
     refs:
       nist_800_53r5: [AC-17(2), SC-8, SC-13]
@@ -151,6 +153,7 @@ rules:
     on_absent: resolve_default
     on_unknown: review
     severity: {base: high}
+    exposure: [perimeter_firewall]
     fix_intent: {make: filtering.permit_all_present, equal: false}
     refs:
       nist_800_53r5: [SC-7(5), AC-4]
@@ -167,16 +170,13 @@ rules:
       filter, so only expected traffic reaches the device and what is behind it.
     domain: filtering
     applies_to: [router, firewall]
-    # Untrusted: an explicit role, or a zone or description naming the outside (the admin can
-    # set roles explicitly; PLAN §12.7).
-    for_each: >-
-      Interface where (exists(role) and role == 'untrusted')
-      or (exists(zone) and zone matches '(?i)untrust|outside|internet|wan')
-      or (exists(description) and description matches '(?i)\b(wan|internet|isp|outside|untrust(ed)?)\b')
+    # Untrusted: set by the admin, or inferred from zone or description (packs/inferences).
+    for_each: Interface where exists(role) and role == 'untrusted'
     assert: exists(filters_in)
     on_absent: review
     on_unknown: review
     severity: {base: high}
+    exposure: [perimeter_firewall]
     fix_intent: {make: filters_in, equal: EDGE-IN}   # the recipe asks for the site's ACL
     refs:
       nist_800_53r5: [SC-7]

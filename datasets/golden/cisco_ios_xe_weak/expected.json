@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "1f7c5d11c4f11075432b8efb",
+  "audit_id": "481b683eea381bae2b3b022f",
   "input": {
     "file": "weak.cfg",
     "sha256": "11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "f49c1ca424a2c96eabfdbb1a0aff720bc6cfe1472af70995f8436592f5345f69",
-    "ruleset_version": "3fcc4ad5119f30e80d30187500de8eb00aa0945efbb32c713fac6489e6f4057d",
+    "kb_version": "61b3f05abe812602dba00d551475bac881bb666b8dbe5d7a0778f09ecc3b38ae",
+    "ruleset_version": "3d8e5c699abbfcc616ac1ad2669fc6761b5cdf0606e8103b1f9953510c61da37",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -68,7 +68,7 @@
       "passed": 0,
       "failed": 21,
       "review": 0,
-      "not_applicable": 0,
+      "not_applicable": 2,
       "compliance_pct": 0.0,
       "coverage_pct": 100.0
     }
@@ -265,6 +265,18 @@
       "hardening_best_practice": false
     },
     {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "title": "The ACL guarding remote management exists and doesn't permit everyone",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
       "rule_id": "MGMT-WEB-ACL-01",
       "title": "Web management accepts only permitted sources",
       "domain": "management_plane",
@@ -273,6 +285,18 @@
       "nist_800_53r5": [
         "AC-3",
         "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "title": "Every reference points at something that exists",
+      "domain": "filtering",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "CM-6",
+        "AC-3"
       ],
       "hardening_best_practice": false
     },
@@ -339,7 +363,9 @@
       "status": "not satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
-        "MGMT-WEB-ACL-01"
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01",
+        "REF-DANGLING-01"
       ]
     },
     {
@@ -380,6 +406,7 @@
       "status": "not satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01"
       ]
     },
@@ -454,6 +481,7 @@
       "title": "Configuration Settings",
       "status": "not satisfied",
       "rules": [
+        "REF-DANGLING-01",
         "SNMP-COMMUNITY-01"
       ]
     },
@@ -742,7 +770,7 @@
       "severity_reason": "High (base)",
       "reason": "Untrusted interfaces filter inbound traffic: is violated for Interface[GigabitEthernet1].",
       "actual": [
-        "Interface[GigabitEthernet1].description = WAN uplink",
+        "Interface[GigabitEthernet1].role = untrusted",
         "Interface[GigabitEthernet1].filters_in: missing"
       ],
       "defaults_used": [],
@@ -763,7 +791,7 @@
           "line_start": 25,
           "line_end": 25,
           "raw": "description WAN uplink",
-          "mapping_id": "cisco_ios_xe/interface-description",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -831,8 +859,8 @@
       "rule_id": "MGMT-HTTP-01",
       "entity_id": "Device[device]",
       "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "High (base)",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
       "reason": "Unencrypted HTTP management is disabled: is violated for the device.",
       "actual": [
         "management.http_enabled = true",
@@ -846,6 +874,28 @@
           "line_end": 21,
           "raw": "ip http server",
           "mapping_id": "cisco_ios_xe/ip-http-server",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -968,8 +1018,8 @@
       "rule_id": "MGMT-SSH-V2-01",
       "entity_id": "Device[device]",
       "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "High (base)",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
       "reason": "SSH management uses protocol version 2 only: is violated for the device (using the vendor default for this OS version).",
       "actual": [
         "management.ssh_v1_negotiable = true",
@@ -982,6 +1032,28 @@
         "cisco_ios_xe/defaults.yaml#ssh-compatibility-mode"
       ],
       "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
         {
           "file": "weak.cfg",
           "line_start": 49,
@@ -1010,8 +1082,8 @@
       "rule_id": "MGMT-TELNET-01",
       "entity_id": "Device[device]",
       "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "High (base)",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: telnet is reachable and an untrusted interface lets it through (no inbound filter, or telnet allowed on it)",
       "reason": "Clear-text Telnet management is not reachable: is violated for the device.",
       "actual": [
         "management.telnet_reachable = true",
@@ -1022,6 +1094,28 @@
       ],
       "defaults_used": [],
       "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
         {
           "file": "weak.cfg",
           "line_start": 49,
@@ -1072,8 +1166,8 @@
       "rule_id": "MGMT-VTY-ACL-01",
       "entity_id": "MgmtSession[vty 0-4]",
       "status": "FAIL",
-      "severity": "medium",
-      "severity_reason": "Medium (base)",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
       "reason": "Remote management lines accept only permitted sources: is violated for MgmtSession[vty 0-4].",
       "actual": [
         "MgmtSession[vty 0-4].kind = vty",
@@ -1081,6 +1175,28 @@
       ],
       "defaults_used": [],
       "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
         {
           "file": "weak.cfg",
           "line_start": 49,
@@ -1098,8 +1214,8 @@
       "rule_id": "MGMT-VTY-ACL-01",
       "entity_id": "MgmtSession[vty 5-15]",
       "status": "FAIL",
-      "severity": "medium",
-      "severity_reason": "Medium (base)",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
       "reason": "Remote management lines accept only permitted sources: is violated for MgmtSession[vty 5-15].",
       "actual": [
         "MgmtSession[vty 5-15].kind = vty",
@@ -1107,6 +1223,28 @@
       ],
       "defaults_used": [],
       "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
         {
           "file": "weak.cfg",
           "line_start": 54,
@@ -1121,11 +1259,22 @@
       ]
     },
     {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: nothing matches `Reference where attribute == 'MgmtSession.access_filter'` on this device.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
       "rule_id": "MGMT-WEB-ACL-01",
       "entity_id": "MgmtService[http]",
       "status": "FAIL",
-      "severity": "medium",
-      "severity_reason": "Medium (base)",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
       "reason": "Web management accepts only permitted sources: is violated for MgmtService[http].",
       "actual": [
         "MgmtService[http].enabled = true",
@@ -1143,6 +1292,28 @@
           "approved_by": [
             "maintainer"
           ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
         }
       ]
     },
@@ -1150,8 +1321,8 @@
       "rule_id": "MGMT-WEB-ACL-01",
       "entity_id": "MgmtService[https]",
       "status": "FAIL",
-      "severity": "medium",
-      "severity_reason": "Medium (base)",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
       "reason": "Web management accepts only permitted sources: is violated for MgmtService[https].",
       "actual": [
         "MgmtService[https].enabled = true",
@@ -1169,15 +1340,48 @@
           "approved_by": [
             "maintainer"
           ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
         }
       ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: nothing matches `Reference` on this device.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
       "entity_id": "Device[device]",
       "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "High (base)",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
       "reason": "No SNMP community is well known or writable: is violated for the device.",
       "actual": [
         "snmp.weak_community_present = true",
@@ -1187,6 +1391,28 @@
       ],
       "defaults_used": [],
       "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
         {
           "file": "weak.cfg",
           "line_start": 42,
@@ -1362,10 +1588,10 @@
   ],
   "assurance": {
     "statements": 38,
-    "understood": 28,
-    "unmapped": 10,
+    "understood": 29,
+    "unmapped": 9,
     "near_miss": 0,
-    "understood_pct": 73.7,
+    "understood_pct": 76.3,
     "unmapped_patterns": [
       {
         "pattern_key": "ip address <IP> <IP>",
@@ -1398,12 +1624,6 @@
         "example": "ip domain name example.net"
       },
       {
-        "pattern_key": "ip access-list extended EDGE-IN",
-        "count": 1,
-        "first_line": 37,
-        "example": "ip access-list extended EDGE-IN"
-      },
-      {
         "pattern_key": "logging buffered <INT>",
         "count": 1,
         "first_line": 40,
@@ -1425,6 +1645,13 @@
           "maintainer"
         ],
         "facts": 2
+      },
+      {
+        "mapping": "cisco_ios_xe/acl-extended@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
       },
       {
         "mapping": "cisco_ios_xe/con-exec-timeout@1",
@@ -1537,6 +1764,13 @@
           "maintainer"
         ],
         "facts": 2
+      },
+      {
+        "mapping": "inference/interface.role.untrusted_by_description@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
       }
     ],
     "defaults_used": [
@@ -1551,7 +1785,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.3",
+    "sbm_version": "0.4",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1729,10 +1963,10 @@
         "default_source": null
       },
       "role": {
-        "value": null,
-        "state": "absent",
+        "value": "router",
+        "state": "vendor_default",
         "evidence": [],
-        "default_source": null
+        "default_source": "cisco_ios_xe/pack.yaml#default_role"
       }
     },
     "entities": [
@@ -1926,9 +2160,21 @@
           "default_source": null
         },
         "role": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "untrusted",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 25,
+              "line_end": 25,
+              "raw": "description WAN uplink",
+              "mapping_id": "inference/interface.role.untrusted_by_description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "admin_up": {
@@ -2981,6 +3227,53 @@
           "default_source": null
         },
         "auth_method": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "acl:EDGE-IN",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 37,
+            "line_end": 37,
+            "raw": "ip access-list extended EDGE-IN",
+            "mapping_id": "cisco_ios_xe/acl-extended",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "ip access-list extended EDGE-IN",
+              "mapping_id": "cisco_ios_xe/acl-extended",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
           "value": null,
           "state": "absent",
           "evidence": [],

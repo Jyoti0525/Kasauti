@@ -20,8 +20,9 @@ from pydantic import (
 from kasauti.mapping.model import AttrPath, Mapping, Pattern, slot_names
 from kasauti.packs.versions import validate_range
 from kasauti.rules.derivation import Derivation
+from kasauti.rules.enrich import Exposure, Inference
 from kasauti.rules.expr import Scalar, attribute_type
-from kasauti.rules.model import Domain, FixIntent, Rule
+from kasauti.rules.model import Domain, FixIntent, Role, Rule
 from kasauti.sbm.entities import ENTITY_TYPES, SINGLETON_TYPES
 from kasauti.shape.model import ShapeFamily
 
@@ -55,6 +56,9 @@ class VendorManifest(_Strict):
     comment_markers: tuple[str, ...] = ()
     time_unit: Literal["seconds", "minutes"] = "seconds"
     """The vendor's usual unit for bare timeouts; mappings still state units explicitly."""
+    default_role: Role | None = None
+    """The device role when no inference decides one (FortiOS: firewall). Recorded as a
+    ``vendor_default``, so an inferred or admin-set role always wins (PLAN §7)."""
     description: str = ""
 
 
@@ -226,6 +230,14 @@ class RuleFile(_Strict):
 
 class DerivationFile(_Strict):
     derivations: tuple[Derivation, ...] = ()
+
+
+class InferenceFile(_Strict):
+    inferences: tuple[Inference, ...] = ()
+
+
+class ExposureFile(_Strict):
+    exposures: tuple[Exposure, ...] = ()
 
 
 # --- frameworks/<framework>/ -------------------------------------------------------------------

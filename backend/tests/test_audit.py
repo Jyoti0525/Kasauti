@@ -27,11 +27,17 @@ def kb() -> KnowledgeBase:
 
 def test_weak_config_fails_every_rule_with_its_lines(kb: KnowledgeBase) -> None:
     result = audit(read_file(WEAK), kb)
-    assert {r.rule_id: r.status for r in result.rules} == dict.fromkeys(
-        (r.id for r in kb.ruleset.rules), Status.FAIL
-    )
+    statuses = {r.rule_id: r.status for r in result.rules}
+    # The weak config references no ACL or object, so the reference rules have nothing to judge.
+    assert statuses.pop("REF-DANGLING-01") is Status.NOT_APPLICABLE
+    assert statuses.pop("MGMT-VTY-ACL-02") is Status.NOT_APPLICABLE
+    assert set(statuses.values()) == {Status.FAIL}
     telnet = next(f for f in result.findings if f.rule_id == "MGMT-TELNET-01")
-    assert [e.line_start for e in telnet.evidence] == [49, 53, 54, 57]
+    # The vty lines that allow Telnet, plus the WAN interface that makes it Critical (§12.7).
+    assert {49, 53, 54, 57} <= {e.line_start for e in telnet.evidence}
+    assert telnet.severity == "critical"
+    assert telnet.severity_reason is not None
+    assert telnet.severity_reason.startswith("High (base) → Critical")
     (score,) = result.scores
     assert (score.compliance_pct, score.coverage_pct) == (0.0, 100.0)
 

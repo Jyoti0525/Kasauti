@@ -142,9 +142,13 @@ class _Styles:
         self.big = ParagraphStyle("big", parent=self.body, fontSize=22, leading=26)
 
 
+# Typography the built-in (cp1252) fonts can't draw, spelled out rather than shown as "?".
+_ASCII = str.maketrans({"→": "->", "←": "<-", "≥": ">=", "≤": "<=", "∋": "contains", "≠": "!="})
+
+
 def _safe(text: object) -> str:
     """Escape for ReportLab markup and keep to characters the built-in fonts can draw."""
-    raw = str(text)
+    raw = str(text).translate(_ASCII)
     printable = "".join(
         ch if ch in "\t\n" or (ch.isprintable() and _encodable(ch)) else "?" for ch in raw
     )

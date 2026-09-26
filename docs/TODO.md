@@ -251,10 +251,10 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
   The source is recorded for each field. *(§7)* `@parse`
 - [x] **M2.20** A missing field is stated explicitly, never left blank: "Serial: not present in supplied artefacts; upload `show inventory` to populate". *(R-07a AC)* `@parse` Done early (M1): missing fields are stated with what to upload, e.g. "Serial: not present in supplied artefacts; upload `show inventory` or `show version` to populate".
 - [ ] **M2.21** UI for manual identity entry. *(§7 source 4)* `@ui`
-- [ ] **M2.22** Role inference (router / switch / firewall / cloud filter / white-box), which drives rule applicability and report sections. *(§7)* `@parse`
+- [~] **M2.22** Role inference (router / switch / firewall / cloud filter / white-box), which drives rule applicability and report sections. *(§7)* `@parse` Engine done: data-driven inferences (`packs/inferences/roles.yaml`, `kasauti/rules/enrich.py`) for untrusted interfaces (zone/description) and device role (zones → firewall, L2 ports → switch), plus a pack `default_role`. Public-address and default-route signals come with the packs that carry addresses.
 
 ### 2E · Mapping and SBM, completed
-- [ ] **M2.23** `ref` primitive and reference resolver:
+- [~] **M2.23** `ref` primitive and reference resolver: Resolver done (`kasauti/mapping/resolve.py`): `Reference` entities (SBM 0.4), dangling detection, vty → ACL → permits-any chain, recursive group expansion with cycle detection; rules REF-DANGLING-01, MGMT-VTY-ACL-02; tests. The Cisco case is live; the FortiOS, PAN-OS, AWS and Huawei cases land with their packs.
   - link references to their targets
   - expand address/service objects and groups recursively, with cycle detection
   - raise dangling-reference findings
@@ -293,7 +293,7 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
 - [ ] **M2.46** Rule quality gate live in CI: all required fields, fixtures per seed vendor, a fix intent. A check with no benchmark is labelled "hardening best practice", never given an invented number. *(§12.2)* `@sec`
 - [ ] **M2.47** Applicability by role and feature. N/A rules are listed, not hidden. *(§12.5)* `@lead`
 - [ ] **M2.48** Per-framework scoring, and NIST control roll-up (satisfied / partially satisfied). *(§12.6)* `@lead`
-- [ ] **M2.49** Severity = base × exposure:
+- [x] **M2.49** Severity = base × exposure: Done: `packs/exposures/exposures.yaml` + `adjust_severity`; one level per exposure, capped, missing facts never trigger; the reason reads "High (base) → Critical: …". STIG CAT-based bases arrive with the STIG import (M2.51).
   - **Base:** STIG CAT I → High, II → Medium, III → Low; otherwise our reviewed rating.
   - **Raised:** when the weakness is reachable from an untrusted interface or zone (inferred from zone names like untrust/outside/wan, public addressing and default-route egress; the admin can override), and for perimeter-firewall roles.
   - **Lowered:** when a compensating control exists.

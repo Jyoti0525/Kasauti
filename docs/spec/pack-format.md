@@ -19,6 +19,8 @@ packs/
     crosswalk.yaml              our rule IDs -> this framework's control IDs, with source
   rules/*.yaml                  vendor-neutral rules with fixtures
   derivations/*.yaml            device-level security meanings (addition to PLAN §4.4, see below)
+  inferences/*.yaml             roles a config implies (untrusted interfaces, device role)
+  exposures/*.yaml              severity modifiers: base × exposure (PLAN §12.7)
 ```
 
 ## Rules for every pack

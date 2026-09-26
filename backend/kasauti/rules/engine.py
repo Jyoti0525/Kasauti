@@ -24,6 +24,7 @@ from functools import cache
 
 from kasauti.packs.loader import RuleSet
 from kasauti.rules import expr as ex
+from kasauti.rules.enrich import Exposure, adjust_severity
 from kasauti.rules.evaluate import (
     TRUE,
     Evaluator,
@@ -53,12 +54,36 @@ _ON_MISSING = {
 def evaluate_rules(sbm: SecurityBaselineModel, ruleset: RuleSet) -> tuple[Finding, ...]:
     """Every rule against one device, rules in id order, entities in key order."""
     derived = {mode: derive(sbm, ruleset.derivations, use_defaults=mode) for mode in (False, True)}
+    exposures = {e.id: e for e in ruleset.exposures}
     findings: list[Finding] = []
     for rule in ruleset.rules:
         use_defaults = rule.on_absent is OnMissing.RESOLVE_DEFAULT
         ev = Evaluator(sbm, use_defaults=use_defaults, derived=derived[use_defaults])
-        findings.extend(evaluate_rule(rule, sbm, ev))
+        applicable = [exposures[x] for x in rule.exposure if x in exposures]
+        findings.extend(_with_exposure(f, applicable, ev) for f in evaluate_rule(rule, sbm, ev))
     return tuple(findings)
+
+
+def _with_exposure(finding: Finding, exposures: Sequence[Exposure], ev: Evaluator) -> Finding:
+    """Adjust the severity of a FAIL or REVIEW by the rule's exposures (PLAN §12.7)."""
+    if finding.severity is None or not exposures:
+        return finding
+    entity = ev.entity(finding.entity_id)
+    if entity is None:
+        return finding
+    severity, reason, evidence = adjust_severity(finding.severity, exposures, ev, entity)
+    merged = {
+        (e.file, e.line_start, e.line_end, e.mapping_ref): e for e in (*finding.evidence, *evidence)
+    }
+    return finding.model_copy(
+        update={
+            "severity": severity,
+            "severity_reason": reason,
+            "evidence": tuple(
+                sorted(merged.values(), key=lambda e: (e.file, e.line_start, e.mapping_ref or ""))
+            ),
+        }
+    )
 
 
 def evaluate_rule(rule: Rule, sbm: SecurityBaselineModel, ev: Evaluator) -> list[Finding]:

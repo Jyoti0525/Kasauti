@@ -80,6 +80,14 @@ x-sbm:
   - FilterRule.zone_to
   - ObjectDef.kind
   - ObjectDef.members
+  - ObjectDef.expanded
+  - Reference.source
+  - Reference.attribute
+  - Reference.target_kind
+  - Reference.name
+  - Reference.resolved
+  - Reference.target
+  - Reference.permits_any
   - Banner.present
   - RoutingAuth.protocol
   - RoutingAuth.scope

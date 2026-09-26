@@ -1,4 +1,4 @@
-# Security Baseline Model (v0.3)
+# Security Baseline Model (v0.4)
 
 Implements PLAN §8 (requirement R-01). Source of truth: `backend/kasauti/sbm/`; JSON Schema:
 `schemas/sbm.schema.json`; OpenConfig alignment: `backend/kasauti/sbm/openconfig.yaml`.
@@ -19,13 +19,18 @@ The model enforces these combinations, so an impossible fact can't be constructe
 
 ## Entities
 
-Twenty-one entity types: the eighteen in PLAN §8.1 plus three additions it needs elsewhere:
+Twenty-two entity types: the eighteen in PLAN §8.1 plus four additions it needs elsewhere:
 
 - `LoggingPolicy` (singleton) holds the device-wide logging flags §8.1 lists beside
   `LogTarget` (timestamps, admin_logged, config_change_logged). They describe the device,
   not a target.
 - `ObjectDef` (`key` = `<kind>:<name>`) holds named ACLs, address/service objects and groups:
   the targets of the `ref` primitive and the reference resolver (§9.1, v5.1).
+- `Reference` (0.4): one statement pointing at another named thing, created by the reference
+  resolver (PLAN §9.1): `source`, `attribute`, `target_kind`, `name`, `resolved`, `target`, and
+  for ACL targets `permits_any` (the chain vty line → ACL → permitted sources). It is *unknown*
+  if a permit entry's sources, or any line inside the ACL, weren't understood. Dangling
+  references are ordinary facts that rules judge (REF-DANGLING-01).
 - `TimePolicy` (singleton, 0.2) holds `auth_enforced`: whether the device rejects time from
   unauthenticated sources (`ntp authenticate`; OpenConfig `enable-ntp-auth`).
   `TimeSource.authenticated` only says a key is configured for that server, which isn't
@@ -62,12 +67,13 @@ rely on (PLAN §3.1, principle 5).
 
 ## Versioning
 
-`sbm_version` is `"0.3"`. Loading a document with another version fails with a pointer to
+`sbm_version` is `"0.4"`. Loading a document with another version fails with a pointer to
 `kasauti.sbm.migrations`, which upgrades stored documents step by step (one pure function per
 version change, never edited after release). 0.1 → 0.2 adds the empty sets above; 0.2 → 0.3
 adds four optional attributes (`MgmtService.access_filter`, `Interface.description`,
-`Interface.proxy_arp`, `PasswordPolicy.cleartext_passwords_encrypted`). Everything an older
-document says is kept (tested).
+`Interface.proxy_arp`, `PasswordPolicy.cleartext_passwords_encrypted`); 0.3 → 0.4 adds
+`Reference` and `ObjectDef.expanded` (members after recursive group expansion, *unknown* on a
+cycle or a missing member). Everything an older document says is kept (tested).
 
 ## OpenConfig alignment
 

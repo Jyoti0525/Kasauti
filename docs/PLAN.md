@@ -951,6 +951,25 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.5 (2026-09-26, M2 engine completion):**
+  - **Inferences and exposures are pack data**, in the same expression language, not hidden
+    code (`packs/inferences/`, `packs/exposures/`):
+    - Interface and device roles are inferred only where the config is silent, and the
+      evidence shows the inference.
+    - Severity is base × exposure, and the plan's own §12.7 example is now literal output:
+      "High (base) → Critical: telnet is reachable and an untrusted interface lets it through".
+  - **The reference resolver (§9.1) creates `Reference` entities (SBM 0.4)**, so these are
+    ordinary facts rules judge:
+    - dangling references;
+    - the chain vty → ACL → permitted sources;
+    - recursive group expansion, with cycle detection.
+  - **Two new rules:** REF-DANGLING-01 and MGMT-VTY-ACL-02.
+  - **A false-PASS path, caught by a test and closed:** an ACL entry line no mapping could read
+    was invisible, so "the ACL doesn't permit everyone" could come out *false* instead of
+    *unknown*. Lines inside an object's block that nothing understood are now recorded against
+    that object.
+  - **Also caught by the new validation:** an exposure cited by MGMT-TELNET-01 since M1 had
+    never been defined. The loader now rejects unknown exposures and scope mismatches.
 - **v5.1.4 (2026-09-26, M1 hardening):** both M1 limits removed.
   - **Every Cisco default is now sourced from Cisco's documentation** (TODO C.06), with the
     sentence quoted in `docs/reviews/cisco_ios_xe.md`. A default the docs don't state has no

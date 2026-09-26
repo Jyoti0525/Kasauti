@@ -1,5 +1,16 @@
 {
   "$defs": {
+    "Role": {
+      "enum": [
+        "router",
+        "switch",
+        "firewall",
+        "cloud_filter",
+        "white_box"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
     "ShapeFamily": {
       "description": "The seven structural families plus the flat fallback (PLAN §6.1).",
       "enum": [
@@ -25,6 +36,17 @@
       },
       "title": "Comment Markers",
       "type": "array"
+    },
+    "default_role": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Role"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "description": {
       "default": "",

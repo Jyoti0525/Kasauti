@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "699d2be1d27f21091e15967a",
+  "audit_id": "a1c7904c9e605b5a04518133",
   "input": {
     "file": "hardened.cfg",
     "sha256": "aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2",
@@ -52,8 +52,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "f49c1ca424a2c96eabfdbb1a0aff720bc6cfe1472af70995f8436592f5345f69",
-    "ruleset_version": "3fcc4ad5119f30e80d30187500de8eb00aa0945efbb32c713fac6489e6f4057d",
+    "kb_version": "61b3f05abe812602dba00d551475bac881bb666b8dbe5d7a0778f09ecc3b38ae",
+    "ruleset_version": "3d8e5c699abbfcc616ac1ad2669fc6761b5cdf0606e8103b1f9953510c61da37",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -66,7 +66,7 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 20,
+      "passed": 22,
       "failed": 0,
       "review": 0,
       "not_applicable": 1,
@@ -266,6 +266,18 @@
       "hardening_best_practice": false
     },
     {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "title": "The ACL guarding remote management exists and doesn't permit everyone",
+      "domain": "management_plane",
+      "status": "PASS",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
       "rule_id": "MGMT-WEB-ACL-01",
       "title": "Web management accepts only permitted sources",
       "domain": "management_plane",
@@ -274,6 +286,18 @@
       "nist_800_53r5": [
         "AC-3",
         "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "title": "Every reference points at something that exists",
+      "domain": "filtering",
+      "status": "PASS",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "CM-6",
+        "AC-3"
       ],
       "hardening_best_practice": false
     },
@@ -340,7 +364,9 @@
       "status": "satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
-        "MGMT-WEB-ACL-01"
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01",
+        "REF-DANGLING-01"
       ]
     },
     {
@@ -381,6 +407,7 @@
       "status": "satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01"
       ]
     },
@@ -455,6 +482,7 @@
       "title": "Configuration Settings",
       "status": "satisfied",
       "rules": [
+        "REF-DANGLING-01",
         "SNMP-COMMUNITY-01"
       ]
     },
@@ -826,7 +854,7 @@
       "severity_reason": null,
       "reason": "Untrusted interfaces filter inbound traffic: holds for Interface[GigabitEthernet1].",
       "actual": [
-        "Interface[GigabitEthernet1].description = WAN uplink",
+        "Interface[GigabitEthernet1].role = untrusted",
         "Interface[GigabitEthernet1].filters_in = {EDGE-IN}"
       ],
       "defaults_used": [],
@@ -847,7 +875,7 @@
           "line_start": 53,
           "line_end": 53,
           "raw": "description WAN uplink",
-          "mapping_id": "cisco_ios_xe/interface-description",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1328,6 +1356,60 @@
       ]
     },
     {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "entity_id": "Reference[MgmtSession[vty 0-4].access_filter -> MGMT-ACL]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "The ACL guarding remote management exists and doesn't permit everyone: holds for Reference[MgmtSession[vty 0-4].access_filter -> MGMT-ACL].",
+      "actual": [
+        "Reference[MgmtSession[vty 0-4].access_filter -> MGMT-ACL].attribute = MgmtSession.access_filter",
+        "Reference[MgmtSession[vty 0-4].access_filter -> MGMT-ACL].resolved = true",
+        "Reference[MgmtSession[vty 0-4].access_filter -> MGMT-ACL].permits_any = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 112,
+          "line_end": 112,
+          "raw": "access-class MGMT-ACL in",
+          "mapping_id": "cisco_ios_xe/vty-range-access-class",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "entity_id": "Reference[MgmtSession[vty 5-15].access_filter -> MGMT-ACL]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "The ACL guarding remote management exists and doesn't permit everyone: holds for Reference[MgmtSession[vty 5-15].access_filter -> MGMT-ACL].",
+      "actual": [
+        "Reference[MgmtSession[vty 5-15].access_filter -> MGMT-ACL].attribute = MgmtSession.access_filter",
+        "Reference[MgmtSession[vty 5-15].access_filter -> MGMT-ACL].resolved = true",
+        "Reference[MgmtSession[vty 5-15].access_filter -> MGMT-ACL].permits_any = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 117,
+          "line_end": 117,
+          "raw": "access-class MGMT-ACL in",
+          "mapping_id": "cisco_ios_xe/vty-range-access-class",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
       "rule_id": "MGMT-WEB-ACL-01",
       "entity_id": "Device[device]",
       "status": "N/A",
@@ -1337,6 +1419,81 @@
       "actual": [],
       "defaults_used": [],
       "evidence": []
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[GigabitEthernet1].filters_in -> EDGE-IN]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[GigabitEthernet1].filters_in -> EDGE-IN].",
+      "actual": [
+        "Reference[Interface[GigabitEthernet1].filters_in -> EDGE-IN].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 55,
+          "line_end": 55,
+          "raw": "ip access-group EDGE-IN in",
+          "mapping_id": "cisco_ios_xe/interface-access-group-in",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[MgmtSession[vty 0-4].access_filter -> MGMT-ACL]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[MgmtSession[vty 0-4].access_filter -> MGMT-ACL].",
+      "actual": [
+        "Reference[MgmtSession[vty 0-4].access_filter -> MGMT-ACL].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 112,
+          "line_end": 112,
+          "raw": "access-class MGMT-ACL in",
+          "mapping_id": "cisco_ios_xe/vty-range-access-class",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[MgmtSession[vty 5-15].access_filter -> MGMT-ACL]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[MgmtSession[vty 5-15].access_filter -> MGMT-ACL].",
+      "actual": [
+        "Reference[MgmtSession[vty 5-15].access_filter -> MGMT-ACL].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 117,
+          "line_end": 117,
+          "raw": "access-class MGMT-ACL in",
+          "mapping_id": "cisco_ios_xe/vty-range-access-class",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -1576,10 +1733,10 @@
   ],
   "assurance": {
     "statements": 92,
-    "understood": 53,
-    "unmapped": 39,
+    "understood": 55,
+    "unmapped": 37,
     "near_miss": 0,
-    "understood_pct": 57.6,
+    "understood_pct": 59.8,
     "unmapped_patterns": [
       {
         "pattern_key": "ip address <IP> <IP>",
@@ -1714,18 +1871,6 @@
         "example": "no cdp enable"
       },
       {
-        "pattern_key": "ip access-list standard MGMT-ACL",
-        "count": 1,
-        "first_line": 72,
-        "example": "ip access-list standard MGMT-ACL"
-      },
-      {
-        "pattern_key": "ip access-list extended EDGE-IN",
-        "count": 1,
-        "first_line": 76,
-        "example": "ip access-list extended EDGE-IN"
-      },
-      {
         "pattern_key": "aaa group server tacacs+ TACACS-GRP",
         "count": 1,
         "first_line": 87,
@@ -1815,6 +1960,27 @@
         "facts": 2
       },
       {
+        "mapping": "cisco_ios_xe/acl-ext-src-any@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 5
+      },
+      {
+        "mapping": "cisco_ios_xe/acl-extended@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/acl-standard@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
         "mapping": "cisco_ios_xe/acl-std-any@1",
         "approved_by": [
           "maintainer"
@@ -1868,7 +2034,7 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 7
       },
       {
         "mapping": "cisco_ios_xe/interface-description@1",
@@ -2050,7 +2216,7 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 2
+        "facts": 16
       },
       {
         "mapping": "cisco_ios_xe/vty-range-exec-timeout@1",
@@ -2072,6 +2238,13 @@
           "maintainer"
         ],
         "facts": 1
+      },
+      {
+        "mapping": "inference/interface.role.untrusted_by_description@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
       }
     ],
     "defaults_used": [
@@ -2082,7 +2255,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.3",
+    "sbm_version": "0.4",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2278,10 +2451,10 @@
         "default_source": null
       },
       "role": {
-        "value": null,
-        "state": "absent",
+        "value": "router",
+        "state": "vendor_default",
         "evidence": [],
-        "default_source": null
+        "default_source": "cisco_ios_xe/pack.yaml#default_role"
       }
     },
     "entities": [
@@ -2444,9 +2617,23 @@
           "default_source": null
         },
         "src": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 77,
+              "line_end": 77,
+              "raw": "10 deny tcp any any eq telnet log",
+              "mapping_id": "cisco_ios_xe/acl-ext-src-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "dst": {
@@ -2565,9 +2752,23 @@
           "default_source": null
         },
         "src": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "20 deny udp any any eq snmp log",
+              "mapping_id": "cisco_ios_xe/acl-ext-src-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "dst": {
@@ -2686,9 +2887,23 @@
           "default_source": null
         },
         "src": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 79,
+              "line_end": 79,
+              "raw": "30 permit tcp any host 203.0.113.2 eq 22 log",
+              "mapping_id": "cisco_ios_xe/acl-ext-src-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "dst": {
@@ -2807,9 +3022,23 @@
           "default_source": null
         },
         "src": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "40 permit icmp any any echo-reply",
+              "mapping_id": "cisco_ios_xe/acl-ext-src-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "dst": {
@@ -3369,9 +3598,21 @@
           "default_source": null
         },
         "role": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "untrusted",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 53,
+              "line_end": 53,
+              "raw": "description WAN uplink",
+              "mapping_id": "inference/interface.role.untrusted_by_description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "admin_up": {
@@ -4758,6 +4999,100 @@
         }
       },
       {
+        "key": "acl:EDGE-IN",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 76,
+            "line_end": 76,
+            "raw": "ip access-list extended EDGE-IN",
+            "mapping_id": "cisco_ios_xe/acl-extended",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 76,
+              "line_end": 76,
+              "raw": "ip access-list extended EDGE-IN",
+              "mapping_id": "cisco_ios_xe/acl-extended",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "acl:MGMT-ACL",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 72,
+            "line_end": 72,
+            "raw": "ip access-list standard MGMT-ACL",
+            "mapping_id": "cisco_ios_xe/acl-standard",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 72,
+              "line_end": 72,
+              "raw": "ip access-list standard MGMT-ACL",
+              "mapping_id": "cisco_ios_xe/acl-standard",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
         "key": "password-policy",
         "evidence": [],
         "type": "PasswordPolicy",
@@ -4813,6 +5148,435 @@
           "value": null,
           "state": "absent",
           "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[GigabitEthernet1].filters_in -> EDGE-IN",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 55,
+            "line_end": 55,
+            "raw": "ip access-group EDGE-IN in",
+            "mapping_id": "cisco_ios_xe/interface-access-group-in",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[GigabitEthernet1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "ip access-group EDGE-IN in",
+              "mapping_id": "cisco_ios_xe/interface-access-group-in",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.filters_in",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "ip access-group EDGE-IN in",
+              "mapping_id": "cisco_ios_xe/interface-access-group-in",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "ip access-group EDGE-IN in",
+              "mapping_id": "cisco_ios_xe/interface-access-group-in",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "EDGE-IN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "ip access-group EDGE-IN in",
+              "mapping_id": "cisco_ios_xe/interface-access-group-in",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "ip access-group EDGE-IN in",
+              "mapping_id": "cisco_ios_xe/interface-access-group-in",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[acl:EDGE-IN]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "ip access-group EDGE-IN in",
+              "mapping_id": "cisco_ios_xe/interface-access-group-in",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 79,
+              "line_end": 79,
+              "raw": "30 permit tcp any host 203.0.113.2 eq 22 log",
+              "mapping_id": "cisco_ios_xe/acl-ext-src-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "MgmtSession[vty 0-4].access_filter -> MGMT-ACL",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 112,
+            "line_end": 112,
+            "raw": "access-class MGMT-ACL in",
+            "mapping_id": "cisco_ios_xe/vty-range-access-class",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "MgmtSession[vty 0-4]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "MgmtSession.access_filter",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "MGMT-ACL",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[acl:MGMT-ACL]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "MgmtSession[vty 5-15].access_filter -> MGMT-ACL",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 117,
+            "line_end": 117,
+            "raw": "access-class MGMT-ACL in",
+            "mapping_id": "cisco_ios_xe/vty-range-access-class",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "MgmtSession[vty 5-15]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 117,
+              "line_end": 117,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "MgmtSession.access_filter",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 117,
+              "line_end": 117,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 117,
+              "line_end": 117,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "MGMT-ACL",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 117,
+              "line_end": 117,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 117,
+              "line_end": 117,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[acl:MGMT-ACL]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 117,
+              "line_end": 117,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 117,
+              "line_end": 117,
+              "raw": "access-class MGMT-ACL in",
+              "mapping_id": "cisco_ios_xe/vty-range-access-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         }
       },

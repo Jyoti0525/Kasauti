@@ -8,6 +8,7 @@ pack_version: 2
 negation_words: ["no"]
 comment_markers: ["!"]
 time_unit: minutes
+default_role: router
 description: >
   Seed pack (PLAN §20.4, TODO M1.09 / M2.26) for Cisco IOS XE 16.x/17.x running-configs.
   Mappings are seed content approved through repository review ("maintainer"); anything a

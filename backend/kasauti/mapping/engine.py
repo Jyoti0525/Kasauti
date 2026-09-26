@@ -25,10 +25,11 @@ from dataclasses import dataclass
 
 from kasauti.ingest.mask import mask_secrets
 from kasauti.mapping import effects as fx
-from kasauti.mapping.builder import EntityRef, FactAcc, SbmBuilder
+from kasauti.mapping.builder import EntityRef, FactAcc, RefRecord, SbmBuilder
 from kasauti.mapping.defaults import apply_defaults
 from kasauti.mapping.match import Captures, Compiled, tokenize_path
-from kasauti.mapping.model import ORDINAL, Mapping, Word
+from kasauti.mapping.model import ORDINAL, Mapping, RefEffect, Word
+from kasauti.mapping.resolve import resolve_references
 from kasauti.packs.model import DefaultEntry
 from kasauti.packs.versions import Version, VersionRange
 from kasauti.rules.expr import attribute_type
@@ -89,6 +90,7 @@ def apply_mappings(
     warnings = apply_defaults(
         engine.builder, defaults, os_version, f"{pack_id}/" if pack_id else ""
     )
+    resolve_references(engine.builder)
     stats = MappingStats(
         statements=len(tree.statements),
         mapped=engine.mapped,
@@ -145,6 +147,16 @@ class _Engine:
                 self._apply(stmt, hits)
                 continue
             self.unmapped.append(stmt)
+            owner = self.builder.blocks.get(stmt.path)
+            if owner is not None:
+                self.builder.unread_children.setdefault(owner, []).append(
+                    Evidence(
+                        file=self.tree.source_file,
+                        line_start=stmt.line_start,
+                        line_end=stmt.line_end,
+                        raw=mask_secrets(stmt.text),
+                    )
+                )
             if self._near_miss(stmt, path):
                 self.near_miss += 1
 
@@ -226,6 +238,7 @@ class _Engine:
                     # are evidence of their own facts, not of where the entity is.
                     entity.evidence.append(ev)
                     opened.add(target)
+                    self.builder.blocks.setdefault((*stmt.path, stmt.text), target)
             for eff in m.effects:
                 etype, attr = eff.attr.split(".", 1)
                 ref = target if target and target[0] == etype else self.builder.singleton(etype)
@@ -237,6 +250,11 @@ class _Engine:
                     raise RuntimeError(f"{m.id}: unknown attribute {eff.attr}")
                 outcome = fx.evaluate(eff, hit.caps, kind, negated=hit.negated)
                 _record(self.builder.entity(ref).fact(attr), outcome, ev)
+                if isinstance(eff, RefEffect) and isinstance(outcome, fx.SetValue | fx.AddItems):
+                    names = outcome.items if isinstance(outcome, fx.AddItems) else {outcome.value}
+                    self.builder.refs.extend(
+                        RefRecord(ref, eff.attr, eff.target, str(n), ev) for n in sorted(names)
+                    )
 
     def _key(
         self, m: Mapping, caps: Captures, keys: dict[tuple[str, str], str], *, count: bool

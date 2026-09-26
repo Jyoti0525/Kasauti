@@ -238,6 +238,30 @@ class ObjectDef(Entity):
     kind: StrFact = StrFact()
     """address | address_group | service | service_group | acl"""
     members: SetFact = SetFact()
+    expanded: SetFact = SetFact()
+    """Groups only: members after recursive expansion of nested groups (0.4). Unknown if the
+    nesting has a cycle or names an object that doesn't exist."""
+
+
+class Reference(Entity):
+    """One statement pointing at another named thing (PLAN §9.1 ``ref``, 0.4): an ACL on a vty
+    line, an address group in a policy. Created by the reference resolver, so dangling
+    references and "which sources does this ACL permit?" are facts rules can judge.
+    ``key`` is ``<source entity>.<attribute> -> <name>``."""
+
+    type: Literal["Reference"] = "Reference"
+    source: StrFact = StrFact()
+    """The referring entity, e.g. ``MgmtSession[vty 0-4]``."""
+    attribute: StrFact = StrFact()
+    """``MgmtSession.access_filter``"""
+    target_kind: StrFact = StrFact()
+    """acl | address | address_group | service | service_group | any_object"""
+    name: StrFact = StrFact()
+    resolved: BoolFact = BoolFact()
+    target: StrFact = StrFact()
+    """The entity it resolves to, e.g. ``ObjectDef[acl:MGMT-ACL]``."""
+    permits_any: BoolFact = BoolFact()
+    """ACL targets only: some entry permits traffic from any source."""
 
 
 # --- Domain-specific ------------------------------------------------------------------------
@@ -298,6 +322,7 @@ AnyEntity = Annotated[
     | CryptoProfile
     | FilterRule
     | ObjectDef
+    | Reference
     | Banner
     | RoutingAuth
     | L2Port
@@ -325,6 +350,7 @@ ENTITY_TYPES: dict[str, type[Entity]] = {
         CryptoProfile,
         FilterRule,
         ObjectDef,
+        Reference,
         Banner,
         RoutingAuth,
         L2Port,

@@ -27,3 +27,5 @@ expected_statuses:
   MGMT-TELNET-01: FAIL              # W18 vty 0-4 ssh+telnet, W19 vty 5-15 telnet only
   MGMT-VTY-ACL-01: FAIL             # W18, W19 no access-class
   MGMT-BANNER-01: FAIL              # W20 no login banner
+  REF-DANGLING-01: N/A             # no references in the config
+  MGMT-VTY-ACL-02: N/A             # no access-class on any vty line

@@ -1252,6 +1252,15 @@
           "title": "Evidence",
           "type": "array"
         },
+        "expanded": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -1357,6 +1366,99 @@
         }
       },
       "title": "PasswordPolicy",
+      "type": "object"
+    },
+    "Reference": {
+      "additionalProperties": false,
+      "description": "One statement pointing at another named thing (PLAN §9.1 ``ref``, 0.4): an ACL on a vty\nline, an address group in a policy. Created by the reference resolver, so dangling\nreferences and \"which sources does this ACL permit?\" are facts rules can judge.\n``key`` is ``<source entity>.<attribute> -> <name>``.",
+      "properties": {
+        "attribute": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "permits_any": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "resolved": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "source": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "target": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "target_kind": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "Reference",
+          "default": "Reference",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Reference",
       "type": "object"
     },
     "RoutingAuth": {
@@ -1692,6 +1794,7 @@
             "MgmtSession": "#/$defs/MgmtSession",
             "ObjectDef": "#/$defs/ObjectDef",
             "PasswordPolicy": "#/$defs/PasswordPolicy",
+            "Reference": "#/$defs/Reference",
             "RoutingAuth": "#/$defs/RoutingAuth",
             "SnmpCommunity": "#/$defs/SnmpCommunity",
             "SnmpUser": "#/$defs/SnmpUser",
@@ -1754,6 +1857,9 @@
             "$ref": "#/$defs/ObjectDef"
           },
           {
+            "$ref": "#/$defs/Reference"
+          },
+          {
             "$ref": "#/$defs/Banner"
           },
           {
@@ -1778,7 +1884,7 @@
       "type": "object"
     },
     "sbm_version": {
-      "default": "0.3",
+      "default": "0.4",
       "title": "Sbm Version",
       "type": "string"
     },

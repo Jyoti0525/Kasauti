@@ -18,6 +18,8 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 | `cisco_ios_xe/hardened.cfg` | Cisco IOS-XE 17.9, edge router | 121 | `aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2` | commands cross-checked against Cisco docs (C.06, see `docs/reviews/cisco_ios_xe.md`) |
 | `cisco_ios_xe/weak.cfg` | Cisco IOS-XE 17.9, weak twin | 59 | `11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946` | commands cross-checked against Cisco docs (C.06) |
 | `cisco_ios_xe/fixtures/web_mgmt_restricted.cfg` | Cisco IOS-XE 17.9, HTTPS management behind an ACL (pass fixture for MGMT-WEB-ACL-01) | 16 | `b7a21e0d5106bdd3c0e5eb6d6eff77a1d41f0ed3b3719a5ad3530de5d3bc257d` | commands cross-checked against Cisco docs (C.06) |
+| `cisco_ios_xe/fixtures/vty_acl_permits_any.cfg` | Cisco IOS-XE 17.9, vty lines behind an ACL that permits any source (fail fixture for MGMT-VTY-ACL-02) | 16 | `aebeb3dd78ca32ab8971c7d8263e994d678d9811a625a00d212bbd752b08b2ba` | commands cross-checked against Cisco docs (C.06) |
+| `cisco_ios_xe/fixtures/vty_acl_dangling.cfg` | Cisco IOS-XE 17.9, vty lines naming an ACL that doesn't exist (fail fixture for REF-DANGLING-01, MGMT-VTY-ACL-02) | 12 | `be369df0c87e40094137d0abaa4f0a106313089b524a71b6ea0605e593488b1e` | commands cross-checked against Cisco docs (C.06) |
 | `juniper_junos/hardened.conf` | Junos OS 23.4, branch SRX | 158 | `fd6dbf78b9086b337fdf5b3f9e31e4e5b1c469a5ad7d52a738b82fcc3aaa1fda` | written; doc cross-check pending (C.06) |
 
 References used: Cisco IOS XE 17 configuration guides (security, SSH, AAA, SNMP, NTP, system
@@ -62,8 +64,8 @@ above, never from the engine's output.
 
 | Case | Input | Labels |
 |---|---|---|
-| `cisco_ios_xe_weak` | `authored/cisco_ios_xe/weak.cfg` | all 21 rules FAIL; every weakness W1–W20 is judged by at least one rule |
-| `cisco_ios_xe_hardened` | `authored/cisco_ios_xe/hardened.cfg` | 20 rules PASS; MGMT-WEB-ACL-01 N/A (no web server runs) |
+| `cisco_ios_xe_weak` | `authored/cisco_ios_xe/weak.cfg` | 21 rules FAIL, covering every weakness W1–W20; REF-DANGLING-01 and MGMT-VTY-ACL-02 N/A (no references) |
+| `cisco_ios_xe_hardened` | `authored/cisco_ios_xe/hardened.cfg` | 22 rules PASS; MGMT-WEB-ACL-01 N/A (no web server runs) |
 
 History: on 2026-09-26 the hardened twin changed to `security passwords min-length 15` (NIST SP
 800-63B-4's minimum for single-factor passwords) and `no ip proxy-arp` on GigabitEthernet3, so

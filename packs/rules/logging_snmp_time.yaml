@@ -31,6 +31,7 @@ rules:
     on_absent: resolve_default   # "no communities" is only known from the vendor default
     on_unknown: review
     severity: {base: high}
+    exposure: [mgmt_reachable_from_untrusted]
     fix_intent: {make: snmp.weak_community_present, equal: false}
     refs:
       nist_800_53r5: [IA-5, CM-6]

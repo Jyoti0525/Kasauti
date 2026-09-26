@@ -84,6 +84,17 @@ class FactAcc:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class RefRecord:
+    """A ``ref`` effect as it was read: who points at what, and on which line."""
+
+    source: EntityRef
+    attribute: str
+    target_kind: str
+    name: str
+    evidence: Evidence
+
+
 @dataclass
 class EntityAcc:
     evidence: list[Evidence] = field(default_factory=list)
@@ -98,6 +109,12 @@ class SbmBuilder:
         self.entities: dict[EntityRef, EntityAcc] = {}
         self.unread: dict[str, list[Evidence]] = {}
         self.known_empty: dict[str, str] = {}
+        self.refs: list[RefRecord] = []
+        self.blocks: dict[tuple[str, ...], EntityRef] = {}
+        """Block path -> the entity its header opened (``("ip access-list standard M",)``)."""
+        self.unread_children: dict[EntityRef, list[Evidence]] = {}
+        """Lines inside an entity's block that no mapping understood. The resolver won't
+        conclude "no entry permits everyone" about an ACL with unread entries."""
         self._device_seed = device or Device()
         dev = self.entity(("Device", "device"))
         for attr, fact in self._device_seed:

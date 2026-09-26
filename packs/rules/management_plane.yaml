@@ -10,7 +10,7 @@ rules:
     on_absent: resolve_default          # vendor + version default, else REVIEW
     on_unknown: review
     severity: {base: high}
-    exposure: [telnet_on_untrusted_interface]   # raises to critical (PLAN §12.7, M2)
+    exposure: [telnet_on_untrusted_interface, vty_access_restricted]   # PLAN §12.7
     fix_intent: {make: management.telnet_reachable, equal: false}
     refs:
       nist_800_53r5: [CM-7, AC-17(2), SC-8]
@@ -47,6 +47,7 @@ rules:
     on_absent: resolve_default
     on_unknown: review
     severity: {base: high}
+    exposure: [mgmt_reachable_from_untrusted]
     fix_intent: {make: management.http_enabled, equal: false}
     refs:
       nist_800_53r5: [CM-7, SC-8, AC-17(2)]
@@ -65,6 +66,7 @@ rules:
     on_absent: review
     on_unknown: review
     severity: {base: medium}
+    exposure: [mgmt_reachable_from_untrusted]
     fix_intent: {make: access_filter, equal: MGMT-ACL}   # the recipe asks for the site's ACL
     refs:
       nist_800_53r5: [AC-3, AC-17]
@@ -73,3 +75,45 @@ rules:
     fixtures:
       pass: [cisco_ios_xe/hardened.cfg]
       fail: [cisco_ios_xe/weak.cfg]
+
+  - id: MGMT-VTY-ACL-02
+    title: The ACL guarding remote management exists and doesn't permit everyone
+    intent: >
+      An access-class only protects the vty lines if the ACL it names exists and actually
+      narrows the sources. A missing ACL or one that permits any source leaves the lines open.
+      This follows the chain vty line -> ACL -> permitted sources (PLAN §9.1).
+    domain: management_plane
+    for_each: Reference where attribute == 'MgmtSession.access_filter'
+    assert: resolved and not permits_any
+    on_absent: review
+    on_unknown: review
+    severity: {base: medium}
+    exposure: [mgmt_reachable_from_untrusted]
+    fix_intent: {make: permits_any, equal: false}
+    refs:
+      nist_800_53r5: [AC-3, AC-17]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/fixtures/vty_acl_permits_any.cfg]
+
+  - id: REF-DANGLING-01
+    title: Every reference points at something that exists
+    intent: >
+      A filter, access-class or policy that names a missing ACL or object usually filters
+      nothing at all, while the configuration still looks protected.
+    domain: filtering
+    for_each: Reference
+    assert: resolved
+    on_absent: review
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: resolved, equal: true}
+    refs:
+      nist_800_53r5: [CM-6, AC-3]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/fixtures/vty_acl_dangling.cfg]

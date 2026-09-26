@@ -1,0 +1,41 @@
+# Roles a configuration implies but doesn't state (PLAN §7, §12.7; TODO M2.22).
+# Inferences only fill absent facts, in file order; an admin's explicit role always wins.
+# Vendor-neutral: they read SBM facts, so every vendor pack benefits.
+
+inferences:
+  # --- Interfaces facing the outside ------------------------------------------------------------
+  - id: interface.role.untrusted_by_zone
+    version: 1
+    description: >
+      An interface in a zone whose name says it faces the outside (untrust, outside, internet,
+      wan, isp) is untrusted.
+    for_each: Interface
+    when: "exists(zone) and zone matches '(?i)(^|[^a-z])(untrust(ed)?|outside|internet|wan|isp)([^a-z]|$)'"
+    set: {role: untrusted}
+
+  - id: interface.role.untrusted_by_description
+    version: 1
+    description: >
+      An interface whose description says it faces the outside (WAN, internet, ISP, outside,
+      untrusted) is untrusted. Descriptions are the admin's own words, so this is a hint the
+      admin can override, never a verdict on its own.
+    for_each: Interface
+    when: "exists(description) and description matches '(?i)(^|[^a-z])(wan|internet|isp|outside|untrust(ed)?)([^a-z]|$)'"
+    set: {role: untrusted}
+
+  # --- Device role ------------------------------------------------------------------------------
+  - id: device.role.firewall_by_zones
+    version: 1
+    description: >
+      A device whose policies move traffic between security zones is a firewall.
+    for_each: Device
+    when: "any(FilterRule: exists(zone_from) or exists(zone_to))"
+    set: {role: firewall}
+
+  - id: device.role.switch_by_l2_ports
+    version: 1
+    description: >
+      A device with switch ports (access or trunk) and no zone-based policy is a switch.
+    for_each: Device
+    when: "any(L2Port: exists(mode))"
+    set: {role: switch}

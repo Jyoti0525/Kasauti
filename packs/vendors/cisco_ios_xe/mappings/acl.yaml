@@ -9,6 +9,40 @@
 # Full ruleset semantics (object expansion, shadowing, redundancy) are the policy analyser's
 # job (TODO M4.13-M4.22); these mappings give it and the M2 rules the entries to work on.
 mappings:
+  # --- The ACLs themselves (targets of access-class / access-group references) --------------
+  - id: cisco_ios_xe/acl-extended
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "acl:{acl}"}
+    match: "ip access-list extended <STR:acl>"
+    effect: {assert: ObjectDef.kind, value: acl}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-standard
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "acl:{acl}"}
+    match: "ip access-list standard <STR:acl>"
+    effect: {assert: ObjectDef.kind, value: acl}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-numbered
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "acl:{acl}"}
+    match: "access-list <INT:acl> <LIST>"
+    effect: {assert: ObjectDef.kind, value: acl}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # Remarks are comments: understood, and they neither permit nor deny anything.
+  - id: cisco_ios_xe/acl-remark
+    vendor: cisco_ios_xe
+    context: ["ip access-list <STR:kind> <STR:acl>"]
+    entity: {type: ObjectDef, key: "acl:{acl}"}
+    match: "remark [<LIST>]"
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
   # --- Named extended ACLs ------------------------------------------------------------------
   - id: cisco_ios_xe/acl-ext-entry
     vendor: cisco_ios_xe
@@ -20,6 +54,36 @@ mappings:
       - {set: FilterRule.position, from: seq}
       - {set: FilterRule.action, from: action, map: {permit: permit, deny: deny}}
       - {members: FilterRule.service, from: proto}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # Source of an entry for any protocol (destination and ports follow in <LIST>).
+  - id: cisco_ios_xe/acl-ext-src-any
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> <STR:proto> any <LIST>"
+    effect: {assert: FilterRule.src, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # Source of an entry for any protocol (destination and ports follow in <LIST>).
+  - id: cisco_ios_xe/acl-ext-src-host
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> <STR:proto> host <IP:s> <LIST>"
+    effect: {members: FilterRule.src, from: s}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # Source of an entry for any protocol (destination and ports follow in <LIST>).
+  - id: cisco_ios_xe/acl-ext-src-net
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> <STR:proto> <IP:sn> <IP:sw> <LIST>"
+    effect: {members: FilterRule.src, template: "{sn} {sw}"}
     negation: null
     provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 

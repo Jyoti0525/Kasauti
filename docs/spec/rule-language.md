@@ -121,3 +121,48 @@ derivations:
 Derivations live in `packs/derivations/*.yaml`. They're type-checked, may reference each
 other, and are evaluated in dependency order; cycles and duplicates are load errors. A derived
 fact's evidence is the union of the evidence of the facts it read (PLAN §8.3).
+
+## 5. Inferences
+
+Facts a configuration implies but never states, such as an interface facing the internet or a
+device being a firewall, come from inferences in `packs/inferences/*.yaml` (PLAN §7, §12.7):
+
+```yaml
+inferences:
+  - id: interface.role.untrusted_by_description
+    version: 1
+    description: An interface described as WAN, internet, ISP or outside is untrusted.
+    for_each: Interface
+    when: "exists(description) and description matches '(?i)(^|[^a-z])(wan|internet)([^a-z]|$)'"
+    set: {role: untrusted}
+```
+
+- They run after mapping and defaults, in file order, and only fill *absent* attributes. An
+  explicit (admin-set) value always wins, and the first inference to fill an attribute wins.
+- The condition is evaluated in the defaults view. The inferred fact is `explicit`, and its
+  evidence is the lines that made the condition true, labelled `inference/<id>@<version>` so a
+  reader sees why.
+- A vendor pack may declare `default_role` (FortiOS: firewall). It is applied last, as a
+  `vendor_default`, only if no inference decided the role.
+
+## 6. Exposures: severity is base × exposure
+
+A rule lists exposure ids; each exposure (`packs/exposures/*.yaml`) moves a FAIL or REVIEW
+finding's severity one level when its condition is TRUE (PLAN §12.7):
+
+```yaml
+exposures:
+  - id: telnet_on_untrusted_interface
+    direction: raise            # or lower (a compensating control)
+    scopes: [Device]            # entity types a rule may be quantified over to use it
+    when: >
+      management.telnet_reachable
+      and any(Interface where exists(role) and role == 'untrusted': not exists(filters_in))
+    explain: telnet is reachable and an untrusted interface lets it through
+```
+
+The finding then reads "High (base) → Critical: telnet is reachable and an untrusted interface
+lets it through", and its evidence includes the lines behind the exposure. Severity stays
+between Low and Critical. A condition that is ABSENT or UNKNOWN never moves severity:
+missing facts are no evidence either way. The loader rejects a rule that names an unknown
+exposure or one whose scopes don't include the rule's entity type.

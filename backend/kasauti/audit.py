@@ -34,6 +34,7 @@ from kasauti.packs.loader import (
     load_vendor_pack,
 )
 from kasauti.rules.engine import evaluate_rules
+from kasauti.rules.enrich import apply_default_role, apply_inferences
 from kasauti.rules.evaluate import with_derived
 from kasauti.rules.model import Domain, Finding, Severity, Status
 from kasauti.rules.scoring import (
@@ -49,6 +50,8 @@ from kasauti.shape.model import Statement
 from kasauti.shape.parse import parse_text
 
 FORMAT_VERSION = 1
+CONTENT_DIRS = ("rules", "derivations", "inferences", "exposures")
+"""Vendor-neutral content; any change to it is a new rule-set version."""
 
 
 class AuditError(ValueError):
@@ -80,8 +83,8 @@ def load_kb(packs_root: Path) -> KnowledgeBase:
         vendor_packs=vendor,
         ruleset=ruleset,
         frameworks=frameworks,
-        version=_tree_hash(packs_root, ("vendors", "frameworks", "rules", "derivations")),
-        ruleset_version=_tree_hash(packs_root, ("rules", "derivations")),
+        version=_tree_hash(packs_root, (*CONTENT_DIRS, "vendors", "frameworks")),
+        ruleset_version=_tree_hash(packs_root, CONTENT_DIRS),
     )
 
 
@@ -244,7 +247,11 @@ def audit(
         pack_id=pack.manifest.id,
         device=ident.device,
     )
-    sbm = with_derived(mapped.sbm, kb.ruleset.derivations)
+    enriched = apply_inferences(mapped.sbm, kb.ruleset.inferences, kb.ruleset.derivations)
+    enriched = apply_default_role(
+        enriched, pack.manifest.default_role, f"{pack.manifest.id}/pack.yaml#default_role"
+    )
+    sbm = with_derived(enriched, kb.ruleset.derivations)
     findings = evaluate_rules(sbm, kb.ruleset)
     statuses = rule_statuses(kb.ruleset.rules, findings)
 

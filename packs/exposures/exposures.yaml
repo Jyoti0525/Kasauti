@@ -1,0 +1,33 @@
+# Severity modifiers (PLAN §12.7; TODO M2.49). Each one moves a FAIL/REVIEW finding's
+# severity by one level when its condition is TRUE, and says why in the report:
+# "High (base) → Critical: <explain>". Missing facts never trigger a modifier.
+
+exposures:
+  - id: telnet_on_untrusted_interface
+    direction: raise
+    scopes: [Device]
+    when: >
+      management.telnet_reachable
+      and (any(Interface where exists(role) and role == 'untrusted': mgmt_protocols contains 'telnet')
+           or any(Interface where exists(role) and role == 'untrusted': not exists(filters_in)))
+    explain: telnet is reachable and an untrusted interface lets it through (no inbound filter, or telnet allowed on it)
+
+  - id: mgmt_reachable_from_untrusted
+    direction: raise
+    scopes: [Device, MgmtService, MgmtSession, SnmpCommunity, LocalUser, Reference]
+    when: "any(Interface where exists(role) and role == 'untrusted': not exists(filters_in))"
+    explain: an untrusted interface has no inbound filter, so the management plane is reachable from outside
+
+  - id: perimeter_firewall
+    direction: raise
+    scopes: [Device, Interface, FilterRule]
+    when: "exists(Device.role) and Device.role == 'firewall'"
+    explain: the device is a firewall, so its filtering is the perimeter
+
+  - id: vty_access_restricted
+    direction: lower
+    scopes: [Device]
+    when: >
+      all(MgmtSession where kind == 'vty': exists(access_filter))
+      and none(Reference where attribute == 'MgmtSession.access_filter': permits_any or not resolved)
+    explain: every vty line is limited by an ACL that exists and doesn't permit everyone

@@ -27,3 +27,5 @@ expected_statuses:
   MGMT-TELNET-01: PASS              # vty 0-4 ssh only, vty 5-15 none
   MGMT-VTY-ACL-01: PASS             # access-class MGMT-ACL on both vty ranges
   MGMT-BANNER-01: PASS              # banner login
+  REF-DANGLING-01: PASS             # EDGE-IN and MGMT-ACL exist
+  MGMT-VTY-ACL-02: PASS             # MGMT-ACL exists and permits only 10.10.10.0/24
