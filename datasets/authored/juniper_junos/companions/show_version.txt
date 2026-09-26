@@ -1,0 +1,8 @@
+admin@BR-SRX1> show version
+Hostname: BR-SRX1
+Model: srx345
+Junos: 23.4R1.9
+JUNOS Software Release [23.4R1.9]
+JUNOS OS Kernel 64-bit  [20231205.3f2b1c0_builder_stable_12]
+JUNOS OS libs [20231205.3f2b1c0_builder_stable_12]
+JUNOS modules [20231218.071522_builder_junos_234_r1]

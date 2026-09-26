@@ -150,3 +150,18 @@ access. The hardened twin was already compliant (`group TACACS-GRP local`).
   that protocol, never all of it.
 
 Source: [IP Access List Overview, IOS XE 16.9](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-16-9/sec-data-acl-xe-16-9-book/sec-access-list-ov.html).
+
+## Addendum (v5.1.18, M2.05): companion outputs
+
+`identity.yaml` now reads `show version` and `show inventory`, before the configuration
+(PLAN §7), and lists every component with a serial.
+
+- `show version`: `Cisco IOS XE Software, Version 17.06.01a` (release), `<host> uptime is …`
+  (host name, used to refuse another device's output), `cisco <platform> (…) processor with …`
+  (hardware), `Processor board ID <serial>`. Source: [ASR 1000 Software Configuration Guide,
+  IOS XE 17, Installing the Software using install Commands](https://www.cisco.com/c/en/us/td/docs/routers/asr1000/software/configuration/xe-17/asr1000-sw-config-xe-17/m_installing-the-software-using-install-commands.html).
+- `show inventory`: `NAME: "…", DESCR: "…"` then `PID: … , VID: … , SN: …`, the chassis
+  first. Source: [Catalyst 9300 Command Reference, IOS XE 16.9, Interface and Hardware
+  Commands](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/16-9/command_reference/b_169_9300_cr/interface_and_hardware_commands.html).
+- Not read: `Model Number :` and `System Serial Number :` in Catalyst `show version`. The
+  pages checked cut their example short, so the format isn't confirmed ("no quote, no pattern").

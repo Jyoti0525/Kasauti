@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "2acde107bd2be7271848bef3",
+  "audit_id": "39d658c2c8663a39bf6c42bd",
   "input": {
     "file": "weak.cfg",
     "sha256": "11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946",
@@ -51,7 +51,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "9d547f7c3bd0ab35c0be0db8a1c9b5c1109ce85d4df2e48f2a99ed8a78a8932c",
+    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
     "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
@@ -4033,5 +4033,7 @@
     "known_empty": {},
     "unread": {}
   },
-  "warnings": []
+  "warnings": [],
+  "companions": [],
+  "inventory": []
 }

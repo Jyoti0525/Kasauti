@@ -181,3 +181,12 @@ from the weakness catalogue in `datasets/SOURCES.md`. All 14 planted weaknesses 
 13 rules FAIL, because P8 and P9 both fail MGMT-WEB-ACL-01. The hardened unit passes 19 rules;
 2 are REVIEW (SSH version; lockout through its TACACS+ authentication profile) and 2 N/A (no
 vty lines). False-PASS rate across all ten golden cases: 0/109.
+
+## Addendum (v5.1.18, M2.05): companion outputs
+
+`show system info` is read before the configuration (PLAN §7): one `key: value` per line,
+`hostname`, `model`, `serial`, `sw-version`, `family`. Source: Palo Alto Networks knowledge
+base [kA10g000000Cld9CAC](https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000Cld9CAC).
+
+Fixed: the pack named this source `show version`; the PAN-OS command is `show system info`,
+which the report now names.

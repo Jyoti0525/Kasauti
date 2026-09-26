@@ -84,3 +84,15 @@ def test_no_file_the_upload_accepts_can_outgrow_the_result_limit(tmp_path: Path)
     result = audit_file(_payload(tmp_path, dense))
     assert len(encode_result(result)) <= 2.5 * len(dense)
     assert RESULT_LIMIT >= 3 * MAX_BYTES
+
+
+def test_a_companion_output_on_its_own_says_what_it_is(tmp_path: Path) -> None:
+    junos = REPO / "datasets" / "authored" / "juniper_junos"
+    payload = _payload(tmp_path, (junos / "companions" / "show_version.txt").read_bytes())
+    with pytest.raises(JobError) as caught:
+        audit_file(payload)
+    assert str(caught.value) == (
+        "core/weak.cfg: `show version` output from a Juniper Junos OS device, not a "
+        "configuration; it adds the serial number and hardware to that device's audit "
+        "(kasauti audit <config> --companion <file>)"
+    )

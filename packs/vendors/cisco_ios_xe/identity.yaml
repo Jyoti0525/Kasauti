@@ -1,9 +1,16 @@
 # Where each identity field appears (PLAN §7). A running-config has hostname and the release
-# train (`version 17.9`); serial, model and the exact release come from companion outputs
-# (show version / show inventory, TODO M2.05). Sources are tried in order.
+# train (`version 17.9`); serial, model and the exact release come from companion outputs,
+# which are read first (TODO M2.05). Formats from Cisco's documentation:
+#   show version: "Cisco IOS XE Software, Version 17.06.01a", "<host> uptime is …",
+#     "cisco <platform> (1RU) processor with …", "Processor board ID FDO2521M27S"
+#     (ASR 1000 Software Configuration Guide, IOS XE 17, "Installing the Software using
+#     install Commands")
+#   show inventory: NAME:/DESCR: then PID:/VID:/SN:, the chassis first (Catalyst 9300 Command
+#     Reference, IOS XE 16.9, "Interface and Hardware Commands", show inventory)
 fields:
   hostname:
     - {source: config, pattern: "hostname <STR:value>"}
+    - {source: show_version, pattern: "<STR:value> uptime is <LIST>"}
   os_version:
     - {source: config, pattern: "version <STR:value>"}
     - {source: show_version, pattern: "Cisco IOS XE Software, Version <STR:value>"}
@@ -14,3 +21,20 @@ fields:
     - {source: show_version, pattern: "Processor board ID <STR:value>"}
   hardware:
     - {source: show_version, pattern: "cisco <STR:value> <LIST>"}
+
+companions:
+  show_version:
+    min_score: 0.6
+    signatures:
+      - {id: iosxe-software, kind: line_prefix, pattern: "Cisco IOS XE Software, Version ", weight: 0.6}
+      - {id: processor-board, kind: line_prefix, pattern: "Processor board ID ", weight: 0.3}
+      - {id: config-register, kind: line_prefix, pattern: "Configuration register is ", weight: 0.1}
+  show_inventory:
+    min_score: 0.6
+    signatures:
+      - {id: udi, kind: regex, pattern: '^\s*PID: \S*\s*, VID: [^,]*, SN: ', weight: 0.6}
+      - {id: entity, kind: regex, pattern: '^NAME: "[^"]*", DESCR: "', weight: 0.4}
+
+inventory:
+  - source: show_inventory
+    record: '(?m)^NAME: "(?P<name>[^"]*)", DESCR: "(?P<description>[^"]*)"[ \t]*\r?\n[ \t]*PID: (?P<part>[^ ,]*)[ \t]*, VID: (?P<version>[^,\r\n]*?)[ \t]*, SN: (?P<serial>[^ \t\r\n]*)'

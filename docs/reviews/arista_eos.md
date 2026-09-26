@@ -118,3 +118,13 @@ Cisco: the first method decides, and a named `aaa group server tacacs+ <name>` c
   the interface ACL's `permit tcp any host … eq ssh` again counts as letting any source in.
 
 Source: [ACLs and Route Maps](https://www.arista.com/en/um-eos/eos-acls-and-route-maps).
+
+## Addendum (v5.1.18, M2.05): companion outputs
+
+`show version` is read before the configuration header (PLAN §7): the model alone on the first
+line (`Arista DCS-7150S-64-CL-F`), `Hardware version:`, `Serial number:`, `Software image
+version:`. It names no host. Source: [EOS User Manual, Command-Line Interface (CLI), Viewing
+the Model Number](https://www.arista.com/en/um-eos/eos-command-line-interface-cli).
+
+Fixed: the model pattern was `Arista <STR:value> <LIST>`, and a `LIST` slot needs at least one
+token, so it could never match the documented line. It is now `Arista <STR:value>`.

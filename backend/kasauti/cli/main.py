@@ -71,11 +71,13 @@ def _audit(args: argparse.Namespace) -> int:
     try:
         kb = load_kb(args.packs)
         artifact = read_file(args.config)
+        companions = [read_file(path) for path in args.companion]
         result = audit(
             artifact,
             kb,
             vendor=args.vendor,
             frameworks=tuple(dict.fromkeys(FRAMEWORK_ALIASES[f] for f in args.framework)),
+            companions=companions,
         )
     except (IngestError, AuditError) as err:
         print(f"kasauti: {err}", file=sys.stderr)
@@ -266,6 +268,10 @@ def _report_date(given: str | None) -> str:
 def _print_summary(result: AuditResult, written: Sequence[Path]) -> None:
     host = result.identity["hostname"].value or result.input.file
     print(f"{host}  ({result.kb.vendor_pack}, chosen by {result.detection.chosen_by})")
+    ident = result.identity
+    known = [f"{f} {ident[f].value}" for f in ("model", "serial", "os_version") if ident[f].value]
+    if known:
+        print(f"  {', '.join(known).replace('os_version', 'release')}")
     for sc in result.scores:
         comp = "n/a" if sc.compliance_pct is None else f"{sc.compliance_pct:.1f}%"
         cov = "n/a" if sc.coverage_pct is None else f"{sc.coverage_pct:.1f}%"
@@ -302,6 +308,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="framework to score against (repeatable; default: nist)",
     )
     aud.add_argument("--vendor", help="vendor pack id, if fingerprinting can't tell")
+    aud.add_argument(
+        "--companion",
+        type=Path,
+        action="append",
+        default=[],
+        metavar="FILE",
+        help="the device's `show version`, `show inventory`… output, for its serial number and "
+        "hardware (repeat for each file)",
+    )
     aud.add_argument("--packs", type=Path, default=Path("packs"), help="knowledge base root")
     aud.add_argument("--out", type=Path, default=Path(), help="where to write the report")
     aud.add_argument("--date", help="report date YYYY-MM-DD (default: today)")

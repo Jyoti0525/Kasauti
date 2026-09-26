@@ -1,0 +1,21 @@
+FGT-EDGE # get system status
+Version: FortiGate-60F v7.4.8,build2795,250523 (GA)
+Security Level: 1
+Firmware Signature: certified
+Virus-DB: 92.08125(2025-06-10 10:21)
+IPS-DB: 30.00811(2025-06-09 23:35)
+Serial-Number: FGT60FTK24031795
+BIOS version: 05000033
+Log hard disk: Not available
+Hostname: FGT-EDGE
+Private Encryption: Disable
+Operation Mode: NAT
+Current virtual domain: root
+Max number of virtual domains: 10
+Virtual domains status: 1 in NAT mode, 0 in TP mode
+Virtual domain configuration: disable
+FIPS-CC mode: disable
+Current HA mode: standalone
+Branch point: 2795
+Release Version Information: GA
+System time: Tue Jun 10 14:02:11 2025

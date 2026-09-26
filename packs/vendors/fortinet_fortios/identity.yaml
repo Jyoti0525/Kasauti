@@ -1,13 +1,27 @@
 # Where identity appears (PLAN §7). A FortiGate backup starts with a comment header:
 #   #config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=admin
-# (model, then release). The host name is in `config system global`.
+# (model, then release). The host name is in `config system global`. `get system status`
+# (read first, TODO M2.05) prints "Version: FortiGate-VM64-KVM v6.4.2,build1723,200730 (GA)",
+# "Serial-Number: …" and "Hostname: …" (FortiGate Administration Guide 7.4, VM license, CLI
+# troubleshooting; Fortinet Community technical tip "Explaining 'get system status' command
+# output").
 fields:
   hostname:
     - {source: config, context: ["config system global"], pattern: "set hostname <STR:value>"}
+    - {source: get_system_status, pattern: "Hostname: <STR:value>"}
   os_version:
     - {source: config, regex: '^#config-version=[A-Z0-9]+-(?P<value>[0-9]+\.[0-9]+\.[0-9]+)-'}
-    - {source: show_version, regex: '^Version: \S+ v(?P<value>[0-9]+\.[0-9]+\.[0-9]+),'}
+    - {source: get_system_status, regex: '^Version: \S+ v(?P<value>[0-9]+\.[0-9]+\.[0-9]+),'}
   model:
     - {source: config, regex: '^#config-version=(?P<value>F[A-Z0-9]+)-'}
+    - {source: get_system_status, regex: '^Version: (?P<value>Forti\S+) v[0-9]'}
   serial:
-    - {source: show_version, pattern: "Serial-Number: <STR:value>"}
+    - {source: get_system_status, pattern: "Serial-Number: <STR:value>"}
+
+companions:
+  get_system_status:
+    min_score: 0.7
+    signatures:
+      - {id: version, kind: regex, pattern: '^Version: Forti\S+ v[0-9]', weight: 0.5}
+      - {id: serial-number, kind: line_prefix, pattern: "Serial-Number: ", weight: 0.3}
+      - {id: virtual-domain, kind: line_prefix, pattern: "Current virtual domain: ", weight: 0.2}

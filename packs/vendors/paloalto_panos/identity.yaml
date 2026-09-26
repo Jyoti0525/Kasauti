@@ -1,14 +1,26 @@
 # Where identity appears (PLAN §7). The root element carries the release:
 #   <config version="11.1.0" urldb="paloaltonetworks" detail-version="11.1.2">
 # (`version` is the configuration schema, `detail-version` the running release). The host
-# name is in deviceconfig/system.
+# name is in deviceconfig/system. `show system info` (read first, TODO M2.05) prints one
+# "key: value" per line: hostname, ip-address, model, serial, sw-version, family (Palo Alto
+# Networks knowledge base kA10g000000Cld9CAC).
 fields:
   hostname:
     - {source: config, context: ["deviceconfig", "system"], pattern: "hostname <STR:value>"}
+    - {source: show_system_info, pattern: "hostname: <STR:value>"}
   os_version:
     - {source: config, regex: 'detail-version="(?P<value>[0-9]+\.[0-9]+\.[0-9]+)"'}
-    - {source: show_version, pattern: "sw-version: <STR:value>"}
+    - {source: show_system_info, pattern: "sw-version: <STR:value>"}
   model:
-    - {source: show_version, pattern: "model: <STR:value>"}
+    - {source: show_system_info, pattern: "model: <STR:value>"}
   serial:
-    - {source: show_version, pattern: "serial: <STR:value>"}
+    - {source: show_system_info, pattern: "serial: <STR:value>"}
+
+companions:
+  show_system_info:
+    min_score: 0.8
+    signatures:
+      - {id: sw-version, kind: line_prefix, pattern: "sw-version: ", weight: 0.4}
+      - {id: serial, kind: line_prefix, pattern: "serial: ", weight: 0.2}
+      - {id: model, kind: line_prefix, pattern: "model: ", weight: 0.2}
+      - {id: family, kind: line_prefix, pattern: "family: ", weight: 0.2}

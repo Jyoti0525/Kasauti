@@ -19,8 +19,10 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict
 
 from kasauti import __version__
+from kasauti.identity import companion as companion_files
+from kasauti.identity.companion import COMMANDS, Companion
 from kasauti.identity.detect import Detection, choose, detect_vendor, input_warnings, score_pack
-from kasauti.identity.resolve import resolve_identity
+from kasauti.identity.resolve import companion_value, resolve_identity
 from kasauti.ingest.mask import mask_secrets
 from kasauti.ingest.model import Artifact
 from kasauti.mapping.engine import apply_mappings
@@ -133,6 +135,30 @@ class IdentityField(_Out):
     """Where the value came from, or the sentence explaining why it's missing."""
 
 
+class CompanionInfo(_Out):
+    """A companion output given with the configuration (TODO M2.05), used or not."""
+
+    file: str
+    sha256: str
+    command: str | None
+    """The companion kind recognised (``show_version``…), or None."""
+    used: bool
+    note: str | None = None
+    """Why it wasn't used."""
+
+
+class InventoryItem(_Out):
+    """A hardware component, from a companion output (R-07a)."""
+
+    name: str
+    description: str | None
+    part: str | None
+    version: str | None
+    serial: str
+    source: str
+    """The command, file and line it came from."""
+
+
 class KbInfo(_Out):
     kasauti_version: str
     kb_version: str
@@ -211,6 +237,8 @@ class AuditResult(_Out):
     assurance: Assurance
     sbm: SecurityBaselineModel
     warnings: tuple[str, ...] = ()
+    companions: tuple[CompanionInfo, ...] = ()
+    inventory: tuple[InventoryItem, ...] = ()
 
     def canonical_json(self) -> str:
         return self.model_dump_json(indent=2) + "\n"
@@ -225,7 +253,11 @@ def audit(
     *,
     vendor: str | None = None,
     frameworks: Sequence[str] = (NIST,),
+    companions: Sequence[Artifact] = (),
 ) -> AuditResult:
+    """Audit ``artifact``, a configuration. ``companions`` are command outputs from the same
+    device (``show version``…), read for its identity and hardware; one that isn't recognised
+    for the chosen vendor, or names another host, is listed with the reason and not used."""
     unknown = [f for f in frameworks if f not in kb.frameworks]
     if unknown:
         raise AuditError(f"framework(s) not installed: {', '.join(unknown)}")
@@ -238,7 +270,11 @@ def audit(
         sha256=artifact.sha256,
     )
     warnings.extend(input_warnings(artifact.text, pack, tree))
-    ident = resolve_identity(tree, pack, detection if detection.matched else None, artifact.text)
+    fingerprint = detection if detection.matched else None
+    ident = resolve_identity(tree, pack, fingerprint, artifact.text)
+    used, companion_infos = _pair(companions, pack, kb, ident.device.hostname.value, warnings)
+    if used:
+        ident = resolve_identity(tree, pack, fingerprint, artifact.text, used)
     mapped = apply_mappings(
         tree,
         pack.mappings,
@@ -264,9 +300,10 @@ def audit(
         else {}
     )
 
+    given = "".join(f"|{c.sha256}" for c in sorted(companions, key=lambda c: c.sha256))
     return AuditResult(
         audit_id=hashlib.sha256(
-            f"{artifact.sha256}|{kb.version}|{__version__}|{pack.manifest.id}".encode()
+            f"{artifact.sha256}|{kb.version}|{__version__}|{pack.manifest.id}{given}".encode()
         ).hexdigest()[:24],
         input=InputInfo(
             file=artifact.name,
@@ -334,7 +371,78 @@ def audit(
         ),
         sbm=sbm,
         warnings=(*warnings, *mapped.warnings),
+        companions=companion_infos,
+        inventory=tuple(
+            InventoryItem(
+                name=c.name,
+                description=c.description,
+                part=c.part,
+                version=c.version,
+                serial=c.serial,
+                source=f"{COMMANDS[c.kind]} ({c.file} line {c.line})",
+            )
+            for c in companion_files.components(used, pack)
+        ),
     )
+
+
+def _pair(
+    given: Sequence[Artifact],
+    pack: VendorPack,
+    kb: KnowledgeBase,
+    hostname: str | None,
+    warnings: list[str],
+) -> tuple[list[Companion], tuple[CompanionInfo, ...]]:
+    """The companions that belong with this configuration, and a record of every one given.
+    Another vendor's output, or one that names another host, is refused: its serial number
+    in this device's report would be worse than none."""
+    used: list[Companion] = []
+    infos: list[CompanionInfo] = []
+    for art in sorted(given, key=lambda a: (a.name, a.sha256)):
+        found = companion_files.recognise(art.text, pack)
+        kind: str | None = None
+        note: str | None
+        if found is None:
+            note = _unrecognised(art, pack, kb)
+        else:
+            companion = companion_files.read(art, found)
+            kind, note = companion.kind, _mismatch(companion, pack, hostname, used)
+            if note is None:
+                used.append(companion)
+        if note is not None:
+            warnings.append(f"{art.name}: {note}; not used")
+        infos.append(
+            CompanionInfo(
+                file=art.name, sha256=art.sha256, command=kind, used=note is None, note=note
+            )
+        )
+    return used, tuple(infos)
+
+
+def _unrecognised(art: Artifact, pack: VendorPack, kb: KnowledgeBase) -> str:
+    other = companion_files.classify(
+        art.text, [p for p in kb.vendor_packs.values() if p is not pack]
+    )
+    if other is not None:
+        other_pack, detection = other
+        return (
+            f"looks like {COMMANDS[detection.pack_id]} output from a {other_pack.manifest.name}"
+            f" device, not {pack.manifest.name}"
+        )
+    read = ", ".join(COMMANDS[k] for k in pack.identity.companions) or "none"
+    return f"not the output of a command {pack.manifest.name} identity is read from ({read})"
+
+
+def _mismatch(
+    companion: Companion, pack: VendorPack, hostname: str | None, used: Sequence[Companion]
+) -> str | None:
+    """Why ``companion`` can't be used with this configuration, or None."""
+    command = COMMANDS[companion.kind]
+    own = companion_value(companion, pack, "hostname")
+    if own is not None and hostname is not None and own[0].casefold() != hostname.casefold():
+        return f"{command} output from host {own[0]}, not {hostname}"
+    first = next((c.name for c in used if c.kind == companion.kind), None)
+    return None if first is None else f"a second {command}; {first} is used"
 
 
 def _choose_pack(

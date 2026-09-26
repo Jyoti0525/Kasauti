@@ -62,7 +62,7 @@ Every item below is installed or used by a task in this file. Re-verify each lic
 | Workers | multiprocessing pool + DB job table (no broker, no Redis) | PSF | M2.03, M5.02 |
 | Pattern keys | in-house, keyword-literal (Drain3 dropped, PLAN v5.1.3) | ours | M1.03 |
 | Encoding detection | charset-normalizer | MIT | M1.01 |
-| Show-output parsing | TextFSM, ntc-templates, TTP | Apache-2.0, Apache-2.0, MIT | M2.19 |
+| Show-output parsing | the mapping language and RE2 in each pack (TextFSM, ntc-templates, TTP dropped, v5.1.18: Python backtracking `re` over device output) | Apache-2.0 (ours) | M2.05 |
 | XML / YAML | defusedxml (SAX), PyYAML (safe loader, aliases refused) | PSF, MIT | M2.07, M2.14, M2.15 |
 | Safe regex | google-re2 (in use since M1 for `matches` and fingerprints) | BSD-3 | M1.10, M3.03, M5.06 |
 | Templates | Jinja2 (SandboxedEnvironment) | BSD-3 | M4.02, M5.07 |
@@ -239,7 +239,13 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
     - **Memory:** each worker caps itself before running anything (`kasauti/jobs/limits.py`: Windows job object, POSIX `RLIMIT_AS`); default 2 GiB, `kasauti serve --worker-memory`. A file that needs more fails with "it needed more than the 2048 MiB of memory a worker may use".
     - **Speed:** vendor detection parsed the file once per shape family although no signature reads the tree; now only when one does. A 2.65 MB audit: 55 → 37 s, peak memory 1.17 → 0.54 GB (including the result no longer being serialised three times).
     - **Checked live** through `kasauti serve`: a 2.5 MiB dense configuration succeeds (80 MiB of JSON stored as 2 MiB); a 7 MiB hostile one fails with the memory message. Tests: 17 for results, pool tests for compressed limits, damaged or bomb results and the memory ceiling, the migration both ways with data, timeouts, lazy detection, the result-size margin; PostgreSQL 17 passes the database, job and store tests.
-- [ ] **M2.05** Companion files: `show version`, `show inventory`, `get system status`, `show system info`, `show chassis hardware`, `display version`, `display esn`. *(§5.1, §7)* `@parse`
+- [x] **M2.05** Companion files: `show version`, `show inventory`, `get system status`, `show system info`, `show chassis hardware`, `display version`, `display esn`. *(§5.1, §7)* `@parse` Done (v5.1.18): `kasauti/identity/companion.py`, `identity.yaml` `companions` and `inventory`; no new dependency.
+  - **Recognising:** each pack declares signatures per output it reads, scored like the vendor fingerprint; a pack can't declare a source it can't recognise. `display version` / `display esn` are ready for a Huawei pack, which stays out of the seeds (M2.35).
+  - **Reading:** fields by the mapping language or RE2 over the output parsed as flat text; hardware components by RE2 records spanning lines (Cisco NAME/PID pairs, Junos table rows), with placeholder serials (`BUILTIN`) skipped. Not TextFSM/ntc-templates/TTP: all three run Python's backtracking `re` over device output.
+  - **Pairing, safely:** a companion is read before the configuration (§7). One from another host, another vendor, or a second copy of one command is refused, with the reason in the result and a warning; another device's serial in a report would be worse than none. The audit id covers the companions; their order doesn't matter.
+  - **Where it shows:** `kasauti audit r1.cfg --companion show_version.txt …`; the result's `identity` sources name file and line, plus `companions` and `inventory`; the PDF device profile gains a hardware inventory table. An upload of a companion alone says what it is and how it's used (pairing uploads is M2.06).
+  - **Seed packs:** the formats read were checked against each vendor's documentation (review addenda in `docs/reviews/`); fixed FortiOS and PAN-OS naming a `show version` their OS doesn't have, and Arista's model pattern, which could never match. Authored samples for all five in `datasets/authored/*/companions/` (hashes in `datasets/SOURCES.md`). With companions, all five give serial, model and exact release with their sources, and no verdict changes.
+  - **Tests:** 26 in `tests/identity/test_companion.py` (recognition per vendor and never across vendors or of configurations, identity with sources, inventory, refusals, order independence, the PDF table, the pack format), plus the CLI, the worker message and lazy detection.
 - [ ] **M2.06** Group files into devices by hostname and filename stem, with a manual correction UI. *(§5.1)* `@parse` `@ui`
 - [ ] **M2.07** Input limits:
   - file size, archive entries and nesting depth
@@ -263,9 +269,9 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
 
 ### 2D · Identity (§7, R-07a)
 - [~] **M2.18** Vendor/OS fingerprinting from `detect.yaml`. *(§7, §4.4)* `@parse` Engine done early (M1) for all five signature kinds; only the Cisco pack exists yet.
-- [~] **M2.19** Identity resolver, in priority order: Source 3 (config) done early (M1) with a source per field; companion outputs and manual entry pending.
+- [~] **M2.19** Identity resolver, in priority order: Source 3 (config) done early (M1) with a source per field; source 2 (companion outputs) done in M2.05, before the configuration as §7 orders; manual entry pending.
   1. live facts (stretch, X.04)
-  2. companion show outputs via TextFSM / ntc-templates / TTP, else the mapping language
+  2. companion show outputs, read by each pack's `identity.yaml` (M2.05)
   3. config headers: FortiGate `#config-version`, Junos `version`, PAN-OS XML `version` attributes, Cisco `version`/`hostname`, SONiC `DEVICE_METADATA`
   4. manual entry
 

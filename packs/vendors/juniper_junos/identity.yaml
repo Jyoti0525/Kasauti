@@ -1,8 +1,14 @@
 # Where identity fields appear in Junos output (PLAN §7). The configuration carries the host
-# name and the release; model and serial come from `show version` / `show chassis hardware`.
+# name and the release; model and serial come from companion outputs, read first (TODO M2.05).
+# Formats from Juniper's CLI reference:
+#   show version: "Hostname: mx480-a", "Model: mx480", "Junos: 24.4R1.9", then "JUNOS … [build]"
+#   show chassis hardware: "Hardware inventory:", a column header "Item Version Part number
+#     Serial number Description", then one row per component, "Chassis" first with the
+#     chassis serial and model ("Chassis  JN1230686AFB  MX480")
 fields:
   hostname:
     - {source: config, context: ["system"], pattern: "host-name <STR:value>"}
+    - {source: show_version, pattern: "Hostname: <STR:value>"}
   os_version:
     - {source: config, pattern: "version <STR:value>"}
     - {source: show_version, pattern: "Junos: <STR:value>"}
@@ -12,3 +18,24 @@ fields:
     - {source: show_chassis_hardware, pattern: "Chassis <STR:value> <LIST>"}
   hardware:
     - {source: show_chassis_hardware, pattern: "Chassis <STR> <LIST:value>"}
+
+companions:
+  show_version:
+    min_score: 0.7
+    signatures:
+      - {id: junos-release, kind: line_prefix, pattern: "Junos: ", weight: 0.5}
+      - {id: model, kind: line_prefix, pattern: "Model: ", weight: 0.3}
+      - {id: junos-package, kind: regex, pattern: '^JUNOS .*\[[^\]]+\]\s*$', weight: 0.2}
+  show_chassis_hardware:
+    min_score: 1.0
+    signatures:
+      - {id: inventory-header, kind: line_prefix, pattern: "Hardware inventory:", weight: 0.5}
+      - {id: columns, kind: regex, pattern: '^Item\s+Version\s+Part number\s+Serial number\s+Description', weight: 0.5}
+
+# One row per component (sub-components indented): name, optional "REV nn", optional part
+# number, serial, description. Rows without a serial (fan trays) don't match; built-in parts
+# show "BUILTIN" where the serial would be.
+inventory:
+  - source: show_chassis_hardware
+    not_serials: [BUILTIN]
+    record: '(?m)^[ \t]*(?P<name>[^ \t\r\n][^\r\n]*?)[ \t]+(?:(?P<version>[Rr][Ee][Vv] [^ \t\r\n]+)[ \t]+)?(?:(?P<part>[0-9]{3}-[0-9]{6})[ \t]+)?(?P<serial>[A-Z0-9]{6,})[ \t]+(?P<description>[^ \t\r\n][^\r\n]*)'

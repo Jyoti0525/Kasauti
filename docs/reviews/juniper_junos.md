@@ -96,3 +96,14 @@ the rule fails, as before. The hardened twin was already compliant (`[ tacplus p
   accepts) has no action read, so first-match evaluation treats it as uncertain.
 - No rule reads a Junos filter's `permits_any` yet (the lo0 filter is an interface filter); the
   hardened `PROTECT-RE` evaluates to "no unlisted source gets through", as before.
+
+## Addendum (v5.1.18, M2.05): companion outputs
+
+Read before the configuration (PLAN §7):
+
+- `show version`: `Hostname:`, `Model:`, `Junos:`, then `JUNOS … [build]` package lines.
+  Source: [show version, Junos OS CLI reference](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/command/show-version.html).
+- `show chassis hardware`: `Hardware inventory:`, the `Item Version Part number Serial number
+  Description` header, then one row per component, `Chassis` first with the chassis serial
+  and model; sub-components are indented, built-in parts show `BUILTIN` for the serial and
+  fan trays none. Source: [show chassis hardware, Junos OS CLI reference](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/command/show-chassis-hardware.html).

@@ -1,0 +1,9 @@
+EDGE-R1#show inventory
+NAME: "Chassis", DESCR: "Cisco C8000V Chassis"
+PID: C8000V            , VID: V00  , SN: 9KXQ2TGA7LM
+
+NAME: "module R0", DESCR: "Cisco C8000V Route Processor"
+PID: C8000V            , VID: V00  , SN: JAB2411K0QZ
+
+NAME: "module F0", DESCR: "Cisco C8000V Embedded Services Processor"
+PID: C8000V            , VID:      , SN: 

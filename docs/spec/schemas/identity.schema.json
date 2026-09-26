@@ -1,5 +1,38 @@
 {
   "$defs": {
+    "DetectSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "min_score": {
+          "default": 0.5,
+          "exclusiveMinimum": 0,
+          "maximum": 10,
+          "title": "Min Score",
+          "type": "number"
+        },
+        "signatures": {
+          "items": {
+            "$ref": "#/$defs/Signature"
+          },
+          "minItems": 1,
+          "title": "Signatures",
+          "type": "array"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/InputWarning"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "signatures"
+      ],
+      "title": "DetectSpec",
+      "type": "object"
+    },
     "IdentitySource": {
       "additionalProperties": false,
       "properties": {
@@ -55,10 +88,146 @@
       ],
       "title": "IdentitySource",
       "type": "object"
+    },
+    "InputWarning": {
+      "additionalProperties": false,
+      "description": "A pattern that says the file isn't what the audit expects (a PAN-OS Panorama export\nrather than a firewall's configuration). A match adds ``message`` to the audit's warnings;\nit never changes a verdict.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "contains",
+            "line_prefix",
+            "regex",
+            "json_key",
+            "xml_path"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 20,
+          "title": "Message",
+          "type": "string"
+        },
+        "pattern": {
+          "minLength": 1,
+          "title": "Pattern",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "pattern",
+        "message"
+      ],
+      "title": "InputWarning",
+      "type": "object"
+    },
+    "InventoryRecord": {
+      "additionalProperties": false,
+      "description": "One hardware component per match, from a companion output (R-07a \"hardware details\").\n\n``record`` is an RE2 expression searched over the whole output, so one record may span\nlines (Cisco ``show inventory`` prints ``NAME:``/``DESCR:`` on one line and ``PID:``/``SN:``\non the next). Named groups: ``name`` and ``serial`` are required; ``description``,\n``part`` and ``version`` are optional. A component whose serial comes out empty, or is one\nof ``not_serials`` (Junos prints ``BUILTIN`` for a part with no serial of its own), is\nskipped.",
+      "properties": {
+        "not_serials": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Not Serials",
+          "type": "array"
+        },
+        "record": {
+          "minLength": 1,
+          "title": "Record",
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "show_version",
+            "show_inventory",
+            "get_system_status",
+            "show_system_info",
+            "show_chassis_hardware",
+            "display_version",
+            "display_esn"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "record"
+      ],
+      "title": "InventoryRecord",
+      "type": "object"
+    },
+    "Signature": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "contains",
+            "line_prefix",
+            "regex",
+            "json_key",
+            "xml_path"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "pattern": {
+          "minLength": 1,
+          "title": "Pattern",
+          "type": "string"
+        },
+        "weight": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "pattern",
+        "weight"
+      ],
+      "title": "Signature",
+      "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
+    "companions": {
+      "additionalProperties": {
+        "$ref": "#/$defs/DetectSpec"
+      },
+      "propertyNames": {
+        "enum": [
+          "show_version",
+          "show_inventory",
+          "get_system_status",
+          "show_system_info",
+          "show_chassis_hardware",
+          "display_version",
+          "display_esn"
+        ]
+      },
+      "title": "Companions",
+      "type": "object"
+    },
     "fields": {
       "additionalProperties": {
         "items": {
@@ -78,6 +247,14 @@
       },
       "title": "Fields",
       "type": "object"
+    },
+    "inventory": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/InventoryRecord"
+      },
+      "title": "Inventory",
+      "type": "array"
     }
   },
   "required": [

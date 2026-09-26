@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "fcc0b4a84bb2d71978036c83",
+  "audit_id": "84acca5003e79be07d79cc97",
   "input": {
     "file": "weak.conf",
     "sha256": "3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a",
@@ -42,7 +42,7 @@
     },
     "serial": {
       "value": null,
-      "source": "Serial: not present in supplied artefacts; upload `show version` to populate"
+      "source": "Serial: not present in supplied artefacts; upload `get system status` to populate"
     },
     "hardware": {
       "value": null,
@@ -51,7 +51,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "9d547f7c3bd0ab35c0be0db8a1c9b5c1109ce85d4df2e48f2a99ed8a78a8932c",
+    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
     "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
     "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
@@ -3678,5 +3678,7 @@
     },
     "unread": {}
   },
-  "warnings": []
+  "warnings": [],
+  "companions": [],
+  "inventory": []
 }

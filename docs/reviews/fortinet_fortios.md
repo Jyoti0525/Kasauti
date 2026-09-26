@@ -169,3 +169,13 @@ Golden cases `fortinet_fortios_weak` (F1–F16) and `fortinet_fortios_hardened` 
 hand-labelled from the weakness catalogue in `datasets/SOURCES.md`. All 16 planted weaknesses
 are caught; the hardened unit passes 21 rules (2 N/A: no vty lines). False-PASS rate across all
 ten golden cases: 0/109. v5.1.12: local-in policies read (above); no golden verdict changed.
+
+## Addendum (v5.1.18, M2.05): companion outputs
+
+`get system status` is read before the configuration header (PLAN §7): `Version:
+FortiGate-VM64-KVM v6.4.2,build1723,200730 (GA)` (model and release), `Serial-Number:`,
+`Hostname:`. Sources: [Administration Guide 7.4, VM license, CLI troubleshooting](https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/416169/vm-license);
+[Technical Tip: Explaining 'get system status' command output](https://community.fortinet.com/fortigate-3/technical-tip-explaining-get-system-status-command-output-154964).
+
+Fixed: the pack named this source `show version`, which isn't a FortiOS command, so the report
+told the user to upload the wrong thing. It now says `get system status`.

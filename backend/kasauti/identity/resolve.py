@@ -1,15 +1,19 @@
 """Device identity (PLAN §7, R-07a; TODO M1.04, M2.19-M2.20).
 
 Sources in priority order: (1) live facts, (2) companion show outputs, (3) configuration
-headers and markers, (4) manual entry. M1 implements (3) from the pack's ``identity.yaml``;
-the others slot into the same function as they land. Each field records its source, and a
-field no source supplied is *stated* as missing, with what to upload to fill it.
+headers and markers, (4) manual entry. (3) came with M1 and (2) with M2.05, both read by the
+pack's ``identity.yaml``; the others slot into the same function as they land. The order is
+PLAN §7's, whatever order a pack lists its sources in: a companion's ``17.09.04a`` is more
+exact than a configuration's ``version 17.9``. Each field records its source, and a field no
+source supplied is *stated* as missing, with what to upload to fill it.
 """
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
+from kasauti.identity.companion import COMMANDS, Companion
 from kasauti.identity.detect import Detection, detection_evidence
 from kasauti.ingest.mask import mask_secrets
 from kasauti.mapping.match import match_tokens, tokenize_path
@@ -38,15 +42,6 @@ _LABELS = {
     "serial": "Serial",
     "hardware": "Hardware",
 }
-_COMPANION_NAMES = {
-    "show_version": "`show version`",
-    "show_inventory": "`show inventory`",
-    "get_system_status": "`get system status`",
-    "show_system_info": "`show system info`",
-    "show_chassis_hardware": "`show chassis hardware`",
-    "display_version": "`display version`",
-    "display_esn": "`display esn`",
-}
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,7 +57,11 @@ class Identity:
 
 
 def resolve_identity(
-    tree: ConfigTree, pack: VendorPack, detection: Detection | None, text: str
+    tree: ConfigTree,
+    pack: VendorPack,
+    detection: Detection | None,
+    text: str,
+    companions: Sequence[Companion] = (),
 ) -> Identity:
     facts: dict[str, Fact[str]] = {}
     sources: dict[str, str] = {}
@@ -77,16 +76,19 @@ def resolve_identity(
     for field in FIELDS:
         if field in facts:
             continue
-        for source in pack.identity.fields.get(field, ()):
+        declared = pack.identity.fields.get(field, ())
+        found = _first_companion(companions, declared)
+        if found is not None:
+            value, ev, kind = found
+            facts[field] = Fact.explicit(value, ev)
+            sources[field] = f"{COMMANDS[kind]} ({ev.file} line {ev.line_start})"
+            continue
+        for source in declared:
             if source.source != "config":
-                continue  # companion outputs: TODO M2.05/M2.19
-            found = (
-                _from_raw_lines(tree.source_file, text, source.regex)
-                if source.regex is not None
-                else _from_config(tree, source)
-            )
-            if found is not None:
-                value, ev = found
+                continue
+            found_config = _read(tree, text, source)
+            if found_config is not None:
+                value, ev = found_config
                 facts[field] = Fact.explicit(value, ev)
                 sources[field] = f"config line {ev.line_start}"
                 lines.add(ev.line_start)
@@ -94,6 +96,32 @@ def resolve_identity(
 
     missing = {field: _missing_text(field, pack) for field in FIELDS if field not in facts}
     return Identity(Device(**facts), sources, missing, frozenset(lines))  # type: ignore[arg-type]
+
+
+def companion_value(
+    companion: Companion, pack: VendorPack, field: IdentityField
+) -> tuple[str, Evidence] | None:
+    """What ``companion`` alone says ``field`` is (to check it belongs to this device)."""
+    found = _first_companion((companion,), pack.identity.fields.get(field, ()))
+    return None if found is None else found[:2]
+
+
+def _first_companion(
+    companions: Sequence[Companion], declared: Sequence[IdentitySource]
+) -> tuple[str, Evidence, str] | None:
+    for source in declared:
+        for companion in companions:
+            if companion.kind == source.source:
+                found = _read(companion.tree, companion.text, source)
+                if found is not None:
+                    return (*found, companion.kind)
+    return None
+
+
+def _read(tree: ConfigTree, text: str, source: IdentitySource) -> tuple[str, Evidence] | None:
+    if source.regex is not None:
+        return _from_raw_lines(tree.source_file, text, source.regex)
+    return _from_config(tree, source)
 
 
 def _from_raw_lines(file: str, text: str, pattern: str) -> tuple[str, Evidence] | None:
@@ -142,9 +170,9 @@ def _in_context(path: tuple[tuple[str, ...], ...], context: tuple[tuple[object, 
 
 def _missing_text(field: str, pack: VendorPack) -> str:
     companions = [
-        _COMPANION_NAMES[s.source]
+        COMMANDS[s.source]
         for s in pack.identity.fields.get(field, ())  # type: ignore[call-overload]
-        if s.source in _COMPANION_NAMES
+        if s.source in COMMANDS
     ]
     hint = f"; upload {' or '.join(dict.fromkeys(companions))} to populate" if companions else ""
     return f"{_LABELS[field]}: not present in supplied artefacts{hint}"

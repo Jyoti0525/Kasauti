@@ -222,11 +222,37 @@ def _cover(r: AuditResult, s: _Styles, generated: str) -> list[Any]:
             ]
         )
     out.append(_table(rows, (28 * mm, 45 * mm, 101 * mm)))
+    if r.inventory:
+        out += [Spacer(1, 3 * mm), _p("Hardware inventory", s.h2)]
+        parts = [[_p(h, s.cell) for h in ("Component", "Part", "Serial", "Description", "Source")]]
+        parts += [
+            [
+                _p(i.name, s.cell),
+                _p(" ".join(filter(None, (i.part, i.version))) or "-", s.cell),
+                _p(i.serial, s.cell),
+                _p(i.description or "-", s.cell),
+                _p(i.source, s.small),
+            ]
+            for i in r.inventory
+        ]
+        out.append(_table(parts, (32 * mm, 30 * mm, 30 * mm, 42 * mm, 40 * mm)))
     out += [Spacer(1, 4 * mm), _p("Audit", s.h1)]
     meta = [
         ("Configuration file", r.input.file),
         ("SHA-256", r.input.sha256),
         ("Shape family / encoding", f"{r.input.shape_family} / {r.input.encoding}"),
+        *(
+            [
+                (
+                    "Companion files",
+                    "; ".join(
+                        f"{c.file} ({c.command if c.used else 'not used'})" for c in r.companions
+                    ),
+                )
+            ]
+            if r.companions
+            else []
+        ),
         ("Vendor pack", f"{r.kb.vendor_pack} (chosen by {r.detection.chosen_by})"),
         ("Audit ID", r.audit_id),
         ("Report date", generated),

@@ -123,6 +123,24 @@ def test_cli_audit_writes_json_and_pdf(tmp_path: Path, capsys: pytest.CaptureFix
     assert (tmp_path / "weak.kasauti.pdf").read_bytes().startswith(b"%PDF")
 
 
+def test_cli_audit_reads_companion_outputs(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    companions = REPO / "datasets" / "authored" / "cisco_ios_xe" / "companions"
+    code = main(
+        [
+            *("audit", str(WEAK), "--packs", str(REPO / "packs"), "--out", str(tmp_path)),
+            *("--no-pdf", "--companion", str(companions / "show_inventory.txt")),
+            *("--companion", str(companions / "show_version.txt")),
+        ]
+    )
+    assert code == 0
+    assert "  model C8000V, serial 9KXQ2TGA7LM, release 17.09.04a" in capsys.readouterr().out
+    data = json.loads((tmp_path / "weak.kasauti.json").read_text(encoding="utf-8"))
+    assert data["identity"]["serial"]["source"] == "`show inventory` (show_inventory.txt line 3)"
+    assert [c["file"] for c in data["companions"]] == ["show_inventory.txt", "show_version.txt"]
+
+
 def test_cli_reports_bad_input_without_a_traceback(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

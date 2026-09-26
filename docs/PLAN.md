@@ -247,7 +247,7 @@ A **pattern key** abstracts variables by type (`<INT> <IP> <IFNAME> <STR>`) whil
 
 Serial numbers are usually **not** in configuration files, so identity is resolved from several sources in priority order, and the report shows which source each field came from:
 1. **Live facts:** NAPALM `get_facts` (vendor, model, serial, OS version, hostname).
-2. **Companion show outputs,** parsed with TextFSM / ntc-templates (Apache-2.0) where templates exist, and with the mapping language otherwise.
+2. **Companion show outputs,** recognised and read by each vendor pack's `identity.yaml`: signatures scored like the vendor fingerprint, fields read by the mapping language or RE2, hardware components by RE2 records (v5.1.18; not TextFSM, ntc-templates or TTP, which run Python's backtracking `re` over device output). An output that names another host, or comes from another vendor, is refused with the reason, never mixed in.
 3. **Config headers and markers:** FortiGate `#config-version=<model>-<version>…`, Junos `version …;`, PAN-OS XML `version` attributes, Cisco `version` / `hostname`, SONiC `DEVICE_METADATA`.
 4. **Manual entry** in the UI.
 
@@ -681,7 +681,7 @@ Evidence first (every number clickable down to a config line); two numbers, neve
 | Workers | multiprocessing pool + DB job table (no broker) | PSF |
 | Pattern keys | in-house, keyword-literal (Drain3 dropped in v5.1.3) | Apache-2.0 (ours) |
 | Remediation | hier_config; Aerleon (ACL rendering) | MIT; Apache-2.0 |
-| Show-output parsing | TextFSM, ntc-templates, TTP | Apache-2.0, Apache-2.0, MIT |
+| Show-output parsing | the mapping language and RE2, in each pack's `identity.yaml` (TextFSM, ntc-templates and TTP dropped in v5.1.18) | Apache-2.0 (ours) |
 | Live collection (stretch) | NAPALM, Netmiko (Paramiko underneath) | Apache-2.0, MIT (Paramiko LGPL-2.1, unmodified) |
 | XML / YAML | defusedxml (SAX, DTDs forbidden), PyYAML (safe loader, aliases refused) | PSF, MIT |
 | Safe regex | google-re2 | BSD-3 |
@@ -964,6 +964,22 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.18 (2026-09-27, M2.05 companion files):** Serials and hardware (R-07a) come from the
+  device's command outputs: `show version`, `show inventory`, `get system status`, `show
+  system info`, `show chassis hardware` (and `display version` / `display esn` for a pack that
+  declares them). Everything vendor-specific is pack data (R-08): `identity.yaml` gains
+  `companions` (signatures that recognise each output, scored like the vendor fingerprint)
+  and `inventory` (RE2 records, one hardware component per match), and a pack can't read an
+  output it can't recognise. §7's order is now enforced: a companion before the configuration.
+  An output from another host or vendor, or a second copy of one command, is refused with the
+  reason and listed in the result, never mixed in. The audit result gains `companions` and
+  `inventory`; the audit id covers the companions; the PDF device profile gains a hardware
+  inventory table. TextFSM, ntc-templates and TTP are dropped from the stack: all three
+  compile their templates with Python's backtracking `re` and run them over device output,
+  while every expression that meets untrusted text here is RE2 (checked in their sources,
+  2026-09-27). Seed packs' output formats were checked against each vendor's documentation;
+  two packs named a command their OS doesn't have (FortiOS and PAN-OS `show version`), and
+  Arista's model pattern could never match; all fixed.
 - **v5.1.17 (2026-09-27, large files):** Closes the result-size limit raised in v5.1.16, and the
   limits behind it. The 32 MiB result limit had in fact capped a configuration at about 1 MiB
   (an audit's JSON is 31 times its configuration). Results are now written by the worker as

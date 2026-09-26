@@ -1,0 +1,23 @@
+EDGE-R1#show version
+Cisco IOS XE Software, Version 17.09.04a
+Cisco IOS Software [Cupertino], Virtual XE Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 17.9.4a, RELEASE SOFTWARE (fc3)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2023 by Cisco Systems, Inc.
+
+ROM: IOS-XE ROMMON
+
+EDGE-R1 uptime is 12 weeks, 3 days, 4 hours, 17 minutes
+Uptime for this control processor is 12 weeks, 3 days, 4 hours, 19 minutes
+System returned to ROM by reload
+System image file is "bootflash:packages.conf"
+Last reload reason: reload
+
+cisco C8000V (VXE) processor (revision VXE) with 1987246K/3075K bytes of memory.
+Processor board ID 9KXQ2TGA7LM
+Router operating mode: Autonomous
+3 Gigabit Ethernet interfaces
+32768K bytes of non-volatile configuration memory.
+3964132K bytes of physical memory.
+11526144K bytes of virtual hard disk at bootflash:.
+
+Configuration register is 0x2102

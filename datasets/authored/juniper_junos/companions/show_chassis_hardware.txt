@@ -1,0 +1,9 @@
+admin@BR-SRX1> show chassis hardware
+Hardware inventory:
+Item             Version  Part number  Serial number     Description
+Chassis                                CY4217AF0381      SRX345
+Routing Engine   REV 0x10 650-066041   CY4217AF0381      RE-SRX345
+FPC 0            REV 07   650-066041   CY4217AF0381      FPC
+  PIC 0                    BUILTIN      BUILTIN           8x GE, 8x GE Base-T
+Power Supply 0   REV 03   740-058054   1GC24170126       PS 100W AC
+Fan Tray                                                 SRX345

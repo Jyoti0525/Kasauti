@@ -1,5 +1,8 @@
 # Where identity appears (PLAN §7). EOS prints model and release in the running-config header:
 #   ! device: leaf1 (DCS-7050SX3-48YC8, EOS-4.30.1F)
+# `show version` (read first, TODO M2.05) prints the model alone on its first line, then
+# "Hardware version:", "Serial number:", "Software image version:" (Arista EOS User Manual,
+# "Command-Line Interface (CLI)", Viewing the Model Number). It names no host.
 fields:
   hostname:
     - {source: config, pattern: "hostname <STR:value>"}
@@ -8,8 +11,17 @@ fields:
     - {source: show_version, pattern: "Software image version: <STR:value>"}
   model:
     - {source: config, regex: '^! device: \S+ \((?P<value>[^,]+),'}
-    - {source: show_version, pattern: "Arista <STR:value> <LIST>"}
+    - {source: show_version, pattern: "Arista <STR:value>"}
   serial:
     - {source: show_version, pattern: "Serial number: <STR:value>"}
   hardware:
     - {source: show_version, pattern: "Hardware version: <STR:value>"}
+
+companions:
+  show_version:
+    min_score: 0.6
+    signatures:
+      - {id: image-version, kind: line_prefix, pattern: "Software image version:", weight: 0.4}
+      - {id: serial-number, kind: line_prefix, pattern: "Serial number:", weight: 0.2}
+      - {id: internal-build, kind: line_prefix, pattern: "Internal build version:", weight: 0.2}
+      - {id: arista-model, kind: regex, pattern: '^Arista \S+\s*$', weight: 0.2}

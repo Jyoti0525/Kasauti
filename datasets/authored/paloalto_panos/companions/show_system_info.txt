@@ -1,0 +1,13 @@
+admin@PA-EDGE> show system info
+
+hostname: PA-EDGE
+ip-address: 192.0.2.10
+netmask: 255.255.255.0
+default-gateway: 192.0.2.1
+mac-address: 00:1b:17:a4:3c:10
+time: Tue Jun 10 14:05:43 2025
+uptime: 41 days, 6:12:08
+family: 400
+model: PA-440
+serial: 024101004173
+sw-version: 11.1.2

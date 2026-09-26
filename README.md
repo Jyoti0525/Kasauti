@@ -32,6 +32,19 @@ EDGE-R1  (cisco_ios_xe@1, chosen by fingerprint)
   wrote reports/weak.kasauti.pdf
 ```
 
+Configurations rarely hold a serial number. Add the device's command outputs (`show version`,
+`show inventory`, `get system status`, `show system info`, `show chassis hardware`) and the
+report names the serial, model, exact release and every hardware component, each with the file
+and line it came from. An output from another device is refused, with the reason:
+
+```bash
+C=datasets/authored/cisco_ios_xe
+uv run kasauti audit $C/weak.cfg --companion $C/companions/show_version.txt \
+    --companion $C/companions/show_inventory.txt --out reports
+# EDGE-R1  (cisco_ios_xe@2, chosen by fingerprint)
+#   model C8000V, serial 9KXQ2TGA7LM, release 17.09.04a
+```
+
 The web API runs on this machine only (the web screens arrive with M2.75):
 
 ```bash

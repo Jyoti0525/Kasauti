@@ -134,8 +134,64 @@ class IdentitySource(_Strict):
         return self
 
 
+CompanionKind = Literal[
+    "show_version",
+    "show_inventory",
+    "get_system_status",
+    "show_system_info",
+    "show_chassis_hardware",
+    "display_version",
+    "display_esn",
+]
+"""Command outputs that accompany a configuration (PLAN §5.1): the reliable source of serials
+and hardware, which configurations rarely hold."""
+INVENTORY_GROUPS = ("name", "description", "part", "version", "serial")
+
+
+class InventoryRecord(_Strict):
+    """One hardware component per match, from a companion output (R-07a "hardware details").
+
+    ``record`` is an RE2 expression searched over the whole output, so one record may span
+    lines (Cisco ``show inventory`` prints ``NAME:``/``DESCR:`` on one line and ``PID:``/``SN:``
+    on the next). Named groups: ``name`` and ``serial`` are required; ``description``,
+    ``part`` and ``version`` are optional. A component whose serial comes out empty, or is one
+    of ``not_serials`` (Junos prints ``BUILTIN`` for a part with no serial of its own), is
+    skipped.
+    """
+
+    source: CompanionKind
+    record: str = Field(min_length=1)
+    not_serials: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def _names_its_groups(self) -> Self:
+        regex.validate(self.record)
+        groups = set(regex.group_names(self.record))
+        if not {"name", "serial"} <= groups:
+            raise ValueError("an inventory record needs named groups (?P<name>…) and (?P<serial>…)")
+        if unknown := groups - set(INVENTORY_GROUPS):
+            raise ValueError(f"unknown inventory group(s): {', '.join(sorted(unknown))}")
+        return self
+
+
 class IdentitySpec(_Strict):
     fields: dict[IdentityField, tuple[IdentitySource, ...]]
+    companions: dict[CompanionKind, DetectSpec] = Field(default_factory=dict)
+    """How to recognise each companion output this pack reads (TODO M2.05): the same
+    signatures and scoring as the vendor fingerprint in ``detect.yaml``."""
+    inventory: tuple[InventoryRecord, ...] = ()
+
+    @model_validator(mode="after")
+    def _every_companion_is_recognisable(self) -> Self:
+        used = {s.source for sources in self.fields.values() for s in sources}
+        used |= {r.source for r in self.inventory}
+        used.discard("config")
+        if missing := sorted(used - set(self.companions)):
+            raise ValueError(
+                f"`companions` needs signatures for {', '.join(missing)}: a source that can't "
+                "be recognised is never read"
+            )
+        return self
 
 
 # --- defaults.yaml (PLAN §8.2, §9.4) -----------------------------------------------------------

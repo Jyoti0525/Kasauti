@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 from kasauti.ingest.mask import mask_secrets
 from kasauti.packs.loader import VendorPack
-from kasauti.packs.model import InputWarning, Signature
+from kasauti.packs.model import DetectSpec, InputWarning, Signature
 from kasauti.rules import regex
 from kasauti.sbm.facts import Evidence
 from kasauti.shape.model import ConfigTree
@@ -38,15 +38,27 @@ class Detection:
 
 
 def score_pack(text: str, pack: VendorPack, tree: ConfigTree | None = None) -> Detection:
-    lines = split_lines(text)
+    return score(text, pack.detect, pack.manifest.id, tree)
+
+
+def score(
+    text: str,
+    spec: DetectSpec,
+    name: str,
+    tree: ConfigTree | None = None,
+    lines: list[str] | None = None,
+) -> Detection:
+    """How well ``text`` matches ``spec``'s signatures: a vendor's fingerprint, or a companion
+    output's (``identity.yaml``)."""
+    lines = split_lines(text) if lines is None else lines
     matched: list[tuple[str, int]] = []
-    for sig in pack.detect.signatures:
+    for sig in spec.signatures:
         line = _match(sig, text, lines, tree)
         if line is not None:
             matched.append((sig.id, line))
-    weights = {s.id: s.weight for s in pack.detect.signatures}
+    weights = {s.id: s.weight for s in spec.signatures}
     total = round(sum(weights[sid] for sid, _ in matched), 6)
-    return Detection(pack.manifest.id, total, pack.detect.min_score, tuple(matched))
+    return Detection(name, total, spec.min_score, tuple(matched))
 
 
 def detect_vendor(text: str, packs: Sequence[VendorPack]) -> list[Detection]:

@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "f1a9a61712f5e8795eb895d5",
+  "audit_id": "fae2bf539ed408e0ac91b9f0",
   "input": {
     "file": "weak.xml",
     "sha256": "d7aad8397621ac42c0c313c3d53c939b85a04f89b41d7bd11b13bd092b1699eb",
@@ -37,11 +37,11 @@
     },
     "model": {
       "value": null,
-      "source": "Model: not present in supplied artefacts; upload `show version` to populate"
+      "source": "Model: not present in supplied artefacts; upload `show system info` to populate"
     },
     "serial": {
       "value": null,
-      "source": "Serial: not present in supplied artefacts; upload `show version` to populate"
+      "source": "Serial: not present in supplied artefacts; upload `show system info` to populate"
     },
     "hardware": {
       "value": null,
@@ -50,7 +50,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "9d547f7c3bd0ab35c0be0db8a1c9b5c1109ce85d4df2e48f2a99ed8a78a8932c",
+    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
     "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
@@ -4497,5 +4497,7 @@
     },
     "unread": {}
   },
-  "warnings": []
+  "warnings": [],
+  "companions": [],
+  "inventory": []
 }
