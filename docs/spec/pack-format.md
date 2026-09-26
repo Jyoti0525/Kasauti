@@ -53,6 +53,12 @@ defaults:
 A default decides verdicts when a config is silent, so `reference` is mandatory and every
 fact resolved from it carries `default_source: <pack>/defaults.yaml#<id>`.
 
+How a vendor's filters behave as a whole is a default too, on `Ruleset` (SBM 0.9): what
+happens to traffic no entry matches (`unmatched`), what an empty list does (`when_empty`), the
+evaluation order, and whether a ruleset guards the device itself (`applies_to: device`, with
+`entity_key` naming it, e.g. FortiOS `local-in`). Without a quoted entry, first-match
+evaluation assumes nothing and the answer is unknown.
+
 The second form is a **closed-world default**: the vendor ships *none* of a type.
 
 ```yaml

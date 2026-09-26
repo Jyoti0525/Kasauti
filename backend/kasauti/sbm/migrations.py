@@ -66,6 +66,15 @@ def _v07_to_v08(data: RawSBM) -> RawSBM:
     return data
 
 
+def _v08_to_v09(data: RawSBM) -> RawSBM:
+    """0.8 -> 0.9 (M2, first-match evaluation, named login lists): new entity type
+    ``Ruleset`` and new optional attributes ``MgmtService.port``, ``MgmtSession.login_methods``,
+    ``Interface.mgmt_protocols_v6``, ``Interface.mgmt_restricted``, ``FilterRule.interfaces``,
+    ``FilterRule.negated`` and ``FilterRule.narrowed``. Absent in older documents, which read
+    none of them."""
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
 MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.1": ("0.2", _v01_to_v02),
@@ -75,6 +84,7 @@ MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.5": ("0.6", _v05_to_v06),
     "0.6": ("0.7", _v06_to_v07),
     "0.7": ("0.8", _v07_to_v08),
+    "0.8": ("0.9", _v08_to_v09),
 }
 
 

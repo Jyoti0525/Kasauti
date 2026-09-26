@@ -68,6 +68,18 @@ x-sbm:
   - Interface.mgmt_permitted_sources  # OC has no per-interface management source list
   - ObjectDef.permitted_sources  # likewise (PAN-OS interface management profiles)
   - ObjectDef.destinations  # OC service definitions have no destination limit
+  - MgmtService.port  # OC ssh-server/telnet-server config has no port leaf
+  - MgmtSession.login_methods  # OC authentication-method is device-wide, not per line
+  - Interface.mgmt_protocols_v6
+  - Interface.mgmt_restricted  # computed by our first-match evaluation
+  - FilterRule.interfaces  # OC binds ACL sets to interfaces, not entries
+  - FilterRule.negated
+  - FilterRule.narrowed
+  - Ruleset.order  # OC acl-entries are ordered by sequence-id only
+  - Ruleset.unmatched  # OC acl-set has no default-action leaf
+  - Ruleset.when_empty
+  - Ruleset.applies_to
+  - Ruleset.family
   - LockoutPolicy.max_attempts
   - LockoutPolicy.lockout_s
   - LoggingPolicy.timestamps

@@ -122,3 +122,31 @@ tacacs+`/`radius`/`ldap`, a named group through `aaa group server <kind> <name>`
 naming a list other than `default` (`login authentication VTY`) makes the methods unknown,
 since named lists aren't resolved yet (REVIEW); a console list is left alone for break-glass
 access. The hardened twin was already compliant (`group TACACS-GRP local`).
+
+## Addendum (v5.1.12): named login lists, first-match ACLs
+
+- **Named login lists are read.** `aaa authentication login <name> <methods>` becomes an
+  object (`login_list:<name>`) read like the default list: its first method, a named server
+  group counting as its kind. A vty line's `login authentication <name>` takes that list
+  (`MgmtSession.login_methods`); `default` means the device default. Remote logins are judged
+  by what every vty line's list has in common, a line naming no list using the default, so a
+  TACACS+ default doesn't help vty lines whose own list is local (fixtures
+  `vty_login_list_central.cfg` PASS, `vty_login_list_local.cfg` FAIL). A line naming a list
+  that doesn't exist is REVIEW here and FAIL on REF-DANGLING-01. Rare limit: vty ranges using
+  *different* central protocols (one TACACS+, one RADIUS) share only `local` and FAIL; a false
+  FAIL to explain, never a false PASS. Console lines don't take part (break-glass access).
+- **ACLs are evaluated first match** (`kasauti/policy/firstmatch.py`). Cisco: "Cisco software
+  tests the packet against each criteria statement in the order in which these statements
+  are created. After a match is found, no more criteria statements are checked." and
+  "Although all access lists end with an implicit deny statement, we recommend use of an
+  explicit deny statement" (`acl-implicit-deny`). `deny any` before `permit any` now
+  restricts (was a false FAIL; fixture `vty_acl_first_match.cfg`).
+- **An empty access list permits everything**: "An interface or command with an empty access
+  list applied to it permits all traffic into the network." (`acl-empty-permits-all`). The
+  old check read an empty ACL as "permits no one": **a false PASS on MGMT-VTY-ACL-02**, now a
+  FAIL (fixture `vty_acl_empty.cfg`).
+- **Extended entries for any protocol** read their destination (`acl-ext-proto-*`: `any`,
+  `host`, network × the same); the ports after it aren't read, so the entry covers some of
+  that protocol, never all of it.
+
+Source: [IP Access List Overview, IOS XE 16.9](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-16-9/sec-data-acl-xe-16-9-book/sec-access-list-ov.html).

@@ -125,3 +125,79 @@ mappings:
     - maintainer
     signals:
     - manual
+- id: fortinet_fortios/admin-sport
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtService
+    key: https
+  match: set admin-sport <INT:p>
+  effect:
+    set: MgmtService.port
+    from: p
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ssh-port
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtService
+    key: ssh
+  match: set admin-ssh-port <INT:p>
+  effect:
+    set: MgmtService.port
+    from: p
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-port
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtService
+    key: http
+  match: set admin-port <INT:p>
+  effect:
+    set: MgmtService.port
+    from: p
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-telnet-port
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtService
+    key: telnet
+  match: set admin-telnet-port <INT:p>
+  effect:
+    set: MgmtService.port
+    from: p
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

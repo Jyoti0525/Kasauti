@@ -258,6 +258,9 @@
               },
               {
                 "$ref": "#/$defs/PrefixTransform"
+              },
+              {
+                "$ref": "#/$defs/PrependTransform"
               }
             ]
           },
@@ -288,6 +291,22 @@
         "prefix"
       ],
       "title": "PrefixTransform",
+      "type": "object"
+    },
+    "PrependTransform": {
+      "additionalProperties": false,
+      "description": "Put fixed text in front of each value: ``{prepend: \"tcp/\"}`` turns FortiOS's\n``tcp-portrange 443`` into ``tcp/443``, so a TCP port can't be mistaken for a UDP one.",
+      "properties": {
+        "prepend": {
+          "minLength": 1,
+          "title": "Prepend",
+          "type": "string"
+        }
+      },
+      "required": [
+        "prepend"
+      ],
+      "title": "PrependTransform",
       "type": "object"
     },
     "Provenance": {
@@ -381,10 +400,19 @@
             "server_group",
             "user_group",
             "auth_profile",
+            "login_list",
             "any_object"
           ],
           "title": "Target",
           "type": "string"
+        },
+        "unless": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Unless",
+          "type": "array"
         }
       },
       "required": [
@@ -508,6 +536,9 @@
               },
               {
                 "$ref": "#/$defs/PrefixTransform"
+              },
+              {
+                "$ref": "#/$defs/PrependTransform"
               }
             ]
           },

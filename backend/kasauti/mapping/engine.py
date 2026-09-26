@@ -96,6 +96,7 @@ def apply_mappings(
     active, skipped = _in_scope(mappings, os_version)
     engine = _Engine(tree, active, frozenset(negation_words))
     engine.run(device)
+    engine.builder.ensure_rulesets()
     warnings = apply_defaults(
         engine.builder, defaults, os_version, f"{pack_id}/" if pack_id else ""
     )
@@ -152,6 +153,7 @@ class _Engine:
 
     def run(self, device: Device | None) -> None:
         self.builder = SbmBuilder(device)
+        parents = {stmt.path for stmt in self.tree.statements}
         for stmt in self.tree.statements:
             self._header_lines.setdefault((*stmt.path, stmt.text), stmt.line_start)
             self._line = (
@@ -164,8 +166,18 @@ class _Engine:
                 self._apply(stmt, hits)
                 continue
             self.unmapped.append(stmt)
-            owner = self.builder.blocks.get(stmt.path)
-            if owner is not None:
+            # An unread line belongs to the nearest entity whose block encloses it (a Junos
+            # term owns what its `from { }` holds). A container's header (`from`, `config
+            # ipv6`) says nothing by itself: the lines inside it do.
+            owner = next(
+                (
+                    self.builder.blocks[stmt.path[:i]]
+                    for i in range(len(stmt.path), 0, -1)
+                    if stmt.path[:i] in self.builder.blocks
+                ),
+                None,
+            )
+            if owner is not None and (*stmt.path, stmt.text) not in parents:
                 self.builder.unread_children.setdefault(owner, []).append(
                     Evidence(
                         file=self.tree.source_file,
@@ -251,14 +263,17 @@ class _Engine:
                     continue  # `no interface X` removes, it doesn't describe
                 target = (m.entity.type, key)
                 entity = self.builder.entity(target)
+                # Lines inside the statement's block that no mapping reads are the entity's
+                # unread children (a FortiOS ``edit 3`` under ``config firewall local-in-policy``
+                # as much as a Cisco ``ip access-list``).
+                self.builder.blocks.setdefault((*stmt.path, stmt.text), target)
                 if not m.context and target not in opened:
                     # A context-free statement names the entity (``line vty 0 4``); child lines
                     # are evidence of their own facts, not of where the entity is.
                     entity.evidence.append(ev)
                     opened.add(target)
-                    self.builder.blocks.setdefault((*stmt.path, stmt.text), target)
             for eff in m.effects:
-                if isinstance(eff, UnknownEffect) and _read_elsewhere(eff, hit.caps):
+                if isinstance(eff, UnknownEffect | RefEffect) and _read_elsewhere(eff, hit.caps):
                     continue
                 etype, attr = eff.attr.split(".", 1)
                 ref = target if target and target[0] == etype else self.builder.singleton(etype)
@@ -377,7 +392,7 @@ def _combined(outcome: fx.Outcome | None, fact: FactAcc) -> fx.Outcome | None:
     return outcome
 
 
-def _read_elsewhere(eff: UnknownEffect, caps: Captures) -> bool:
+def _read_elsewhere(eff: UnknownEffect | RefEffect, caps: Captures) -> bool:
     return eff.from_ is not None and _text(caps.get(eff.from_)) in eff.unless
 
 

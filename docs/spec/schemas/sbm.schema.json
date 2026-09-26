@@ -652,6 +652,15 @@
           "title": "Evidence",
           "type": "array"
         },
+        "interfaces": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -668,6 +677,24 @@
         },
         "name": {
           "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "narrowed": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "negated": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
             "default_source": null,
             "evidence": [],
@@ -804,6 +831,24 @@
           }
         },
         "mgmt_protocols": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "mgmt_protocols_v6": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "mgmt_restricted": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
             "default_source": null,
@@ -1224,6 +1269,15 @@
             "value": null
           }
         },
+        "port": {
+          "$ref": "#/$defs/Fact_int_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "type": {
           "const": "MgmtService",
           "default": "MgmtService",
@@ -1292,6 +1346,15 @@
         },
         "kind": {
           "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "login_methods": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
             "default_source": null,
             "evidence": [],
@@ -1635,6 +1698,81 @@
       "title": "RoutingAuth",
       "type": "object"
     },
+    "Ruleset": {
+      "additionalProperties": false,
+      "description": "An ordered list of filter entries as a whole; ``key`` is the name the entries give in\n``FilterRule.ruleset``. The mapper creates one for every ruleset that has entries and every\nACL object, and quoted vendor defaults say how it behaves (0.9).",
+      "properties": {
+        "applies_to": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "family": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "order": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "Ruleset",
+          "default": "Ruleset",
+          "title": "Type",
+          "type": "string"
+        },
+        "unmatched": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "when_empty": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Ruleset",
+      "type": "object"
+    },
     "SnmpCommunity": {
       "additionalProperties": false,
       "description": "``key`` is an ordinal (``community-1``), never the community string, which is a secret.",
@@ -1932,6 +2070,7 @@
             "PasswordPolicy": "#/$defs/PasswordPolicy",
             "Reference": "#/$defs/Reference",
             "RoutingAuth": "#/$defs/RoutingAuth",
+            "Ruleset": "#/$defs/Ruleset",
             "SnmpCommunity": "#/$defs/SnmpCommunity",
             "SnmpUser": "#/$defs/SnmpUser",
             "TimePolicy": "#/$defs/TimePolicy",
@@ -1993,6 +2132,9 @@
             "$ref": "#/$defs/FilterRule"
           },
           {
+            "$ref": "#/$defs/Ruleset"
+          },
+          {
             "$ref": "#/$defs/ObjectDef"
           },
           {
@@ -2023,7 +2165,7 @@
       "type": "object"
     },
     "sbm_version": {
-      "default": "0.8",
+      "default": "0.9",
       "title": "Sbm Version",
       "type": "string"
     },

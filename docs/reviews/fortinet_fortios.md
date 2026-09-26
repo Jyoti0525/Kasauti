@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Pack | `packs/vendors/fortinet_fortios` (pack_version 1), 105 mappings |
+| Pack | `packs/vendors/fortinet_fortios` (pack_version 1), 162 mappings |
 | Date | 2026-09-26 |
 | Reviewer | Claude, delegated by the maintainer (as for the other seed packs) |
 | Tasks | TODO M2.29 (seed pack), C.06 (authored configs vs vendor docs), S.01 |
@@ -33,7 +33,13 @@ reference, rendered in a browser, because the pages load their tables with JavaS
 | `ntp-server-unauthenticated`, `ntp-authentication-off` | off | `authentication`: "Enable/disable authentication." Default disable (global and per server). The per-server default is not applied to FortiGuard's servers (`except_keys`) | [config system ntp](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/105110478/config-system-ntp) |
 | `ntp-sync-off` | off | `ntpsync`: "Enable/disable setting the FortiGate system time by synchronizing with an NTP Server." Default disable | same |
 | `ntp-fortiguard-servers` | FortiGuard in use | `type`: "Use the FortiGuard NTP server or any other available NTP Server." Default fortiguard | same |
-| `policy-action-deny` | deny | `action`: "Policy action (accept/deny/ipsec)." Default deny | [config firewall policy](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/333889629/config-firewall-policy) |
+| `policy-action-deny` | deny | `action`: "Policy action (accept/deny/ipsec)." Default deny. Local-in policies too: "Action performed on traffic matching the policy." Default deny; "if no action is set manually, then the action will default to deny" | [config firewall policy](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/333889629/config-firewall-policy), [config firewall local-in-policy](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/185227842/config-firewall-local-in-policy), [Local-in policy](https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy) |
+| `https-port-443`, `ssh-port-22`, `http-port-80`, `telnet-port-23` | 443, 22, 80, 23 | `admin-sport`: "Administrative access port for HTTPS." Default 443; `admin-ssh-port` 22; `admin-port` 80; `admin-telnet-port` 23 | [config system global](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global) |
+| `no-interface-mgmt-access-ipv6` | none | `ip6-allowaccess` (under `config ipv6`): "Allow management access to the interface." No default | [config system interface](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/317104469/config-system-interface) |
+| `local-in-guards-the-device`, `local-in6-…` | device | "local-in policies control inbound traffic that is going to a FortiGate interface"; "can be used to restrict administrative access" | [Local-in policy](https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy) |
+| `local-in-no-implicit-deny`, `local-in-empty-permits`, `local-in6-…` | permit | "Unlike IPv4 policies, there is no default implicit deny policy. The implicit deny policy should be placed at the bottom of the list of local-in-policies." The page covers `local-in-policy` and `local-in-policy6` | same |
+| `local-in-config-order`, `local-in6-config-order` | file order | "the way the policies are read by the FortiGate goes from top to bottom"; policies are reordered with `move`, so the ID isn't the order | [Fortinet Community: move the order of local-in policy](https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-move-the-order-local-in-policy-FortiGate/ta-p/300597) |
+| `policy-implicit-deny`, `policy-config-order` | deny, file order | "The policies are checked from top to bottom. The first rule that matches is applied"; "The default action for the implicit policy is to deny every traffic" | [Fortinet Community: how policy order works](https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-policy-order-works-on-FortiGate/ta-p/207381) |
 
 **Model defaults** (`curated`, each says what it models): one administrator session kind for
 GUI and CLI; HTTPS administration, like SSH, always offered (who may reach it is then judged
@@ -81,6 +87,25 @@ AAA server, SNMP community and firewall policy appears in the configuration.
   `SH2` → sha256 (fails AAA-LOCAL-PASSWORD-HASH-01: a fast hash is not a password KDF).
 - **HTTP administration** counts as clear-text only when `admin-https-redirect` is disabled.
   That is judged globally even if no interface lists `http`, which is conservative.
+- **Local-in policies are evaluated first match** (`kasauti/policy/firstmatch.py`, v5.1.12).
+  For each interface and management protocol it offers (`allowaccess`, and `ip6-allowaccess`
+  over IPv6), the question is whether a source no policy names is blocked. Policies are read
+  in file order; the first whose interfaces (`intf`, `any` for all), sources, destinations and
+  services all match decides; traffic none matches is allowed (no implicit deny). A deny counts
+  as blocking only if it matches *all* of that traffic: sources `all` (or a negated list
+  without `all`), destinations `all`, a service covering the protocol's port (`ALL`, or a
+  service object or group whose `tcp-portrange` includes it; the port is `admin-sport` and the
+  like, read or defaulted), in force always, and enabled. A schedule other than `always` or an
+  Internet-service source marks it `narrowed`: it blocks only part, so evaluation goes on. A
+  line in a policy nothing reads (`ha-mgmt-intf-only`) makes it uncertain, and an uncertain
+  entry that could have decided turns the answer into "can't tell". IPv4 and IPv6 are
+  separate tables: a protocol the interface offers over IPv6 needs an IPv6 local-in policy
+  too. Interfaces where every unlisted source is blocked list the protocol in
+  `Interface.mgmt_restricted`; the inference `mgmt_service.access_filter.device_filter.<svc>`
+  restricts the service when every interface offering it does.
+- **Port ranges carry their protocol** (`tcp/443`, `udp/53`) so a UDP 443 service isn't taken
+  for HTTPS. Lines that don't change what a local-in policy matches (`uuid`, `comments`,
+  `virtual-patch`, `logtraffic`, the Internet-service names) are read with no effect.
 
 ## 3. Commands in the authored configs (C.06)
 
@@ -96,7 +121,11 @@ custom`, `ntpserver` … `authentication`, `key-type SHA256`, `key`, `key-id`),
 `config firewall address` (`subnet`), `config firewall service custom` (`category`, `protocol`,
 `protocol-number`, `tcp-portrange`, `udp-portrange`), `config system admin` (`ip6-trusthost1`),
 `config firewall policy` (`name`, `srcintf`, `dstintf`,
-`action`, `srcaddr`, `dstaddr`, `schedule`, `service`, `logtraffic`, `nat`).
+`action`, `srcaddr`, `dstaddr`, `schedule`, `service`, `logtraffic`, `nat`). The local-in
+fixtures add `config firewall local-in-policy` (`intf`, `srcaddr`, `dstaddr`, `action`,
+`service`, `schedule`, `uuid`, `comments`; [CLI reference](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/185227842/config-firewall-local-in-policy),
+[example](https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy)), `config firewall service group` (`member`) and `config ipv6`
+(`ip6-address`, `ip6-allowaccess`).
 
 ## 4. Changes made while building and reviewing this pack
 
@@ -113,18 +142,24 @@ custom`, `ntpserver` … `authentication`, `key-type SHA256`, `key`, `key-id`),
 | A remote administrator has no password line | AAA-LOCAL-PASSWORD-HASH-01 was REVIEW for it | `hash_type: remote`; the rule skips accounts that store no password |
 | A service limited to some destinations (`set iprange`, `set fqdn`) | protocol IP with a destination range counted as all traffic: a false FAIL | `ObjectDef.destinations` (SBM 0.8); the resolver doesn't widen a destination-limited service. No default is documented ("Not Specified"), so `0.0.0.0` and the full range are taken as no limit |
 | "Management reachable from untrusted" meant "no inbound ACL" | on zone-based platforms (FortiOS, Junos) the explanation was wrong: zones don't guard the device's own services | the exposure now asks for no filter *and* no zone, or management protocols granted on the interface; only the wording of existing findings changed |
+| Local-in policies weren't read | a unit restricting administration by local-in policies instead of trusted hosts got FAIL on MGMT-WEB-ACL-01 | first-match evaluation (v5.1.12, above); pass fixture `fixtures/local_in_restricted.conf`, 18 test cases (order, negation, schedule, disabled, other port, moved HTTPS port, service group, other interface, factory-default ISDB policy, unread line, IPv6) |
+| `ip6-allowaccess` wasn't read | Telnet, HTTP or HTTPS offered only over IPv6 was invisible: a false PASS on MGMT-TELNET-01 and the HTTP rules (found while building the above) | read into `Interface.mgmt_protocols` (every rule sees it) and `mgmt_protocols_v6`; fail fixture `fixtures/local_in_ipv6_open.conf` |
+| `tcp-portrange` and `udp-portrange` items were bare numbers | a UDP 443 service would have counted as HTTPS | items carry their protocol (`prepend` transform); mappings at provenance version 2 |
 
 ## 5. Known limits (none gives a false PASS)
 
 The three gaps of the first review (trusted hosts, FortiGuard NTP, custom service objects) are
 closed (section 4). What remains is judged conservatively:
 
-- **Local-in policies** (`config firewall local-in-policy`) can also restrict administrator
-  access. They aren't read, so a unit relying on them instead of trusted hosts gets FAIL on
-  MGMT-WEB-ACL-01, with the reason shown; an auditor can overrule it. Reading them needs
-  first-match evaluation of an ordered list per interface and service, with traffic no policy
-  matches allowed. AWS network ACLs (M2.31) need the same ordered evaluation, so it will be
-  built once, there.
+- **Local-in policies that can't be settled give FAIL, not REVIEW.** An uncertain local-in
+  policy (a line nothing reads, a service not in the file, an accept to a specific device
+  address followed by a deny) makes the restriction "can't tell"; the inference then doesn't
+  fire, so MGMT-WEB-ACL-01 stays at FAIL with the policy lines as evidence. That is the
+  inference layer's general behaviour (never a PASS on an open question); an auditor can
+  overrule it.
+- **Internet-service sources** (ISDB) aren't expanded: a policy using them is `narrowed`, so
+  an ISDB deny never counts as blocking everyone, and an accept restricted to ISDB sources
+  counts as possibly open.
 - **FortiGuard NTP with global authentication enabled** is REVIEW until Fortinet documents
   whether that key covers FortiGuard's servers.
 
@@ -133,4 +168,4 @@ closed (section 4). What remains is judged conservatively:
 Golden cases `fortinet_fortios_weak` (F1–F16) and `fortinet_fortios_hardened` are
 hand-labelled from the weakness catalogue in `datasets/SOURCES.md`. All 16 planted weaknesses
 are caught; the hardened unit passes 21 rules (2 N/A: no vty lines). False-PASS rate across all
-ten golden cases: 0/109.
+ten golden cases: 0/109. v5.1.12: local-in policies read (above); no golden verdict changed.

@@ -6,7 +6,8 @@ from typing import Any
 
 import pytest
 
-from kasauti.mapping.engine import MappingResult, apply_mappings
+from kasauti.mapping.engine import MappingResult, _Engine, apply_mappings
+from kasauti.mapping.match import Compiled
 from kasauti.mapping.model import Mapping
 from kasauti.packs.model import DefaultEntry
 from kasauti.sbm.entities import Entity
@@ -924,3 +925,91 @@ def test_an_unknown_effect_marks_the_fact_unless_the_value_is_read_elsewhere(
                 "why": "not read at all",
             },
         )
+
+
+def test_prepend_tags_each_item_so_protocols_stay_apart() -> None:
+    ports = [
+        m(
+            id=f"v/{proto}",
+            context=["service <STR:s>"],
+            entity={"type": "ObjectDef", "key": "service:{s}"},
+            match=f"{proto}-portrange <LIST:r>",
+            effect={
+                "members": "ObjectDef.members",
+                "from": "r",
+                "transform": [{"prepend": f"{proto}/"}],
+            },
+            negation=None,
+        )
+        for proto in ("tcp", "udp")
+    ]
+    r = run("service DNS\n tcp-portrange 53\n udp-portrange 53 5353\n", ports)
+    members = entity(r, "ObjectDef", "service:DNS").members  # type: ignore[attr-defined]
+    assert members.value == {"tcp/53", "udp/53", "udp/5353"}
+
+
+LINE_LIST = m(
+    id="v/line-list",
+    context=["line vty <INT:a> <INT:b>"],
+    entity={"type": "MgmtSession", "key": "vty {a}-{b}"},
+    match="login authentication <STR:n>",
+    effect={
+        "ref": "MgmtSession.login_methods",
+        "from": "n",
+        "target": "login_list",
+        "expand": True,
+        "unless": ["default"],
+    },
+    negation=None,
+)
+NAMED_LIST_DEF = m(
+    id="v/list",
+    entity={"type": "ObjectDef", "key": "login_list:{n}"},
+    match="login list <STR:n> group <STR:g>",
+    effect=[
+        {"assert": "ObjectDef.kind", "value": "login_list"},
+        {"ref": "ObjectDef.members", "from": "g", "target": "server_group", "expand": True},
+    ],
+    negation=None,
+)
+
+
+def test_a_reference_is_skipped_for_names_that_are_read_elsewhere() -> None:
+    r = run("line vty 0 4\n login authentication default\n", [VTY, LINE_LIST])
+    assert not [e for e in r.sbm.entities if e.type == "Reference"]
+    vty = entity(r, "MgmtSession", "vty 0-4")
+    assert vty.login_methods.state is FactState.ABSENT  # type: ignore[attr-defined]
+
+
+def test_objects_expand_before_the_lines_that_name_them() -> None:
+    """A line's named list takes the list's server kind, not the server group's name."""
+    r = run(
+        "group tacacs TG\nlogin list VTY group TG\nline vty 0 4\n login authentication VTY\n",
+        [*LOGIN, NAMED_LIST_DEF, VTY, LINE_LIST],
+    )
+    vty = entity(r, "MgmtSession", "vty 0-4")
+    assert vty.login_methods.value == {"tacacs"}  # type: ignore[attr-defined]
+
+
+def test_lines_in_a_block_opened_under_a_context_are_its_unread_children() -> None:
+    """A FortiOS-style ``edit 3`` under a ``config`` block owns the lines inside it, so a line
+    no mapping reads makes the entry uncertain rather than silently ignored."""
+    entry = m(
+        id="v/entry",
+        context=["config rules"],
+        entity={"type": "FilterRule", "key": "r:{id}"},
+        match="edit <INT:id>",
+        effect={"assert": "FilterRule.ruleset", "value": "r"},
+        negation=None,
+    )
+    tree = parse_text(
+        "config rules\n    edit 3\n        set mystery on\n    next\nend\n",
+        source_file="f.conf",
+        family=ShapeFamily.BLOCK_EDIT,
+        fallback=False,
+    )
+    # The builder isn't exposed by apply_mappings, so run the engine itself.
+    engine = _Engine(tree, [Compiled(entry, 0)], frozenset())
+    engine.run(None)
+    unread = engine.builder.unread_children[("FilterRule", "r:3")]
+    assert [e.raw for e in unread] == ["set mystery on"]

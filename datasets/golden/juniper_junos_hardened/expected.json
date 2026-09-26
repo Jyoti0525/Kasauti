@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "82c6d88949b155812dad271a",
+  "audit_id": "2f71714f850a747215529667",
   "input": {
     "file": "hardened.conf",
     "sha256": "b6a504c35d9066a1b0da376dc94e82b7878c9f502fee8b7c0f159f08cdcc7cc9",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
-    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
+    "kb_version": "9d547f7c3bd0ab35c0be0db8a1c9b5c1109ce85d4df2e48f2a99ed8a78a8932c",
+    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -1260,10 +1260,10 @@
   ],
   "assurance": {
     "statements": 105,
-    "understood": 39,
-    "unmapped": 66,
+    "understood": 42,
+    "unmapped": 63,
     "near_miss": 0,
-    "understood_pct": 37.1,
+    "understood_pct": 40.0,
     "unmapped_patterns": [
       {
         "pattern_key": "family inet",
@@ -1288,12 +1288,6 @@
         "count": 3,
         "first_line": 72,
         "example": "address 198.51.100.2/30"
-      },
-      {
-        "pattern_key": "syslog",
-        "count": 2,
-        "first_line": 46,
-        "example": "syslog"
       },
       {
         "pattern_key": "any notice",
@@ -1422,6 +1416,12 @@
         "example": "ssh"
       },
       {
+        "pattern_key": "syslog",
+        "count": 1,
+        "first_line": 46,
+        "example": "syslog"
+      },
+      {
         "pattern_key": "file interactive-commands",
         "count": 1,
         "first_line": 52,
@@ -1518,18 +1518,6 @@
         "example": "firewall"
       },
       {
-        "pattern_key": "destination-port ssh",
-        "count": 1,
-        "first_line": 120,
-        "example": "destination-port ssh"
-      },
-      {
-        "pattern_key": "port ntp",
-        "count": 1,
-        "first_line": 130,
-        "example": "port ntp"
-      },
-      {
         "pattern_key": "then",
         "count": 1,
         "first_line": 135,
@@ -1600,7 +1588,7 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 3
+        "facts": 4
       },
       {
         "mapping": "juniper_junos/login-class-idle-timeout@1",
@@ -1701,6 +1689,20 @@
         "facts": 2
       },
       {
+        "mapping": "juniper_junos/term-destination-port@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/term-port@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
         "mapping": "juniper_junos/term-protocol@1",
         "approved_by": [
           "maintainer"
@@ -1726,14 +1728,14 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 2
       },
       {
         "mapping": "juniper_junos/unit-filter-input@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 8
+        "facts": 7
       },
       {
         "mapping": "juniper_junos/user-class@1",
@@ -1781,7 +1783,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.8",
+    "sbm_version": "0.9",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2208,6 +2210,36 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 130,
+              "line_end": 130,
+              "raw": "port ntp",
+              "mapping_id": "juniper_junos/term-port",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -2339,6 +2371,36 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 120,
+              "line_end": 120,
+              "raw": "destination-port ssh",
+              "mapping_id": "juniper_junos/term-destination-port",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -2446,6 +2508,24 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2507,6 +2587,18 @@
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
         },
         "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2597,6 +2689,18 @@
           "evidence": [],
           "default_source": null
         },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": false,
           "state": "vendor_default",
@@ -2651,6 +2755,18 @@
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
         },
         "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2928,6 +3044,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2970,6 +3092,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3022,6 +3150,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3064,6 +3198,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3140,6 +3280,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3182,6 +3328,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3234,6 +3386,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3276,6 +3434,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3359,6 +3523,12 @@
           "default_source": null
         },
         "auth_method": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "login_methods": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3595,16 +3765,62 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
+              "line_start": 134,
+              "line_end": 134,
+              "raw": "term DENY-REST",
+              "mapping_id": "juniper_junos/filter-term",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.conf",
+              "line_start": 137,
+              "line_end": 137,
+              "raw": "discard",
+              "mapping_id": "juniper_junos/term-then-block-discard",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
               ]
             }
           ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "PROTECT-RE",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#filter-implicit-discard"
+        },
+        "when_empty": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },

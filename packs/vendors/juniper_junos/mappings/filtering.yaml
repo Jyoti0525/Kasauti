@@ -672,3 +672,125 @@ mappings:
     - maintainer
     signals:
     - manual
+# Ports narrow a term to part of its protocol's traffic (never all of it); logging and
+# counting in `then { }` don't change what the term matches.
+- id: juniper_junos/term-destination-port
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - from
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: destination-port <LIST>
+  effect:
+    assert: FilterRule.narrowed
+    value: true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-source-port
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - from
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: source-port <LIST>
+  effect:
+    assert: FilterRule.narrowed
+    value: true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-port
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - from
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: port <LIST>
+  effect:
+    assert: FilterRule.narrowed
+    value: true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-block-syslog
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - then
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: syslog
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-block-log
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - then
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: log
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-block-count
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - then
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: count <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

@@ -194,3 +194,25 @@ defaults:
     reference: >-
       Model default: IOS XE ships no user ACL entries, and every configured ACL appears in the
       running-config, so a running-config without ACL entries has none.
+
+  # --- Access lists as a whole (first-match evaluation, kasauti/policy/firstmatch.py) --------
+  - id: acl-implicit-deny
+    attr: Ruleset.unmatched
+    value: deny
+    source: vendor_doc
+    reference: >-
+      Security Configuration Guide: Access Control Lists, IP Access List Overview: "Although all
+      access lists end with an implicit deny statement, we recommend use of an explicit deny
+      statement". Entries are tested "in the order in which these statements are created. After
+      a match is found, no more criteria statements are checked."
+      https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-16-9/sec-data-acl-xe-16-9-book/sec-access-list-ov.html
+
+  - id: acl-empty-permits-all
+    attr: Ruleset.when_empty
+    value: permit
+    source: vendor_doc
+    reference: >-
+      IP Access List Overview: "An interface or command with an empty access list applied to it
+      permits all traffic into the network." (A name with no access list at all is a dangling
+      reference: REF-DANGLING-01.)
+      https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_data_acl/configuration/xe-16-9/sec-data-acl-xe-16-9-book/sec-access-list-ov.html

@@ -630,11 +630,38 @@ CISCO_TACACS = (
         ("aaa authentication login default group radius local\n", Status.FAIL),  # no RADIUS server
         ("aaa authentication login default local group TACACS-GRP\n", Status.FAIL),
         ("aaa authentication login default group NO-SUCH-GROUP\n", Status.REVIEW),
-        # A vty line naming another list: not resolved yet, so REVIEW; `default` is the one read.
+        # A vty line naming a list that doesn't exist: what it checks can't be told (REVIEW;
+        # REF-DANGLING-01 names the line). `default` is the list read above.
         (
             "aaa authentication login default group TACACS-GRP local\n"
             "line vty 0 4\n login authentication VTY-LIST\n",
             Status.REVIEW,
+        ),
+        # Named lists on vty lines are read: remote logins go through the line's own list.
+        (
+            "aaa authentication login default local\n"
+            "aaa authentication login VTY-LIST group TACACS-GRP local\n"
+            "line vty 0 4\n login authentication VTY-LIST\n",
+            Status.PASS,
+        ),
+        (
+            "aaa authentication login VTY-LIST group tacacs+ local\n"
+            "line vty 0 4\n login authentication VTY-LIST\n",
+            Status.PASS,
+        ),
+        # A TACACS+ default doesn't help vty lines whose own list is local.
+        (
+            "aaa authentication login default group TACACS-GRP local\n"
+            "aaa authentication login VTY-LIST local\n"
+            "line vty 0 4\n login authentication VTY-LIST\n",
+            Status.FAIL,
+        ),
+        # Every vty line counts: 5-15 names no list, so it uses the local default.
+        (
+            "aaa authentication login default local\n"
+            "aaa authentication login VTY-LIST group TACACS-GRP local\n"
+            "line vty 0 4\n login authentication VTY-LIST\nline vty 5 15\n",
+            Status.FAIL,
         ),
         (
             "aaa authentication login default group TACACS-GRP local\n"
@@ -799,3 +826,149 @@ def test_panos_warns_when_the_file_is_not_a_whole_firewall_config(
     else:
         assert len(got) == 1
         assert warning in got[0]
+
+
+# --- FortiOS local-in policies (first-match evaluation) ------------------------------------------
+
+LOCAL_IN = """config system global
+{global_}end
+config system interface
+    edit "wan1"
+        set allowaccess ping https ssh
+        set role wan
+{ipv6}    next
+end
+config system admin
+    edit "admin"
+        set accprofile "super_admin"
+        set password ENC PB2PLACEHOLDERHASH
+    next
+end
+config firewall address
+    edit "all"
+    next
+    edit "NOC"
+        set subnet 203.0.113.0 255.255.255.0
+    next
+end
+config firewall service custom
+    edit "ALL"
+        set protocol IP
+    next
+    edit "HTTP"
+        set tcp-portrange 80
+    next
+    edit "HTTPS"
+        set tcp-portrange 443
+    next
+    edit "SSH"
+        set tcp-portrange 22
+    next
+end
+config firewall service group
+    edit "MGMT"
+        set member "HTTPS" "SSH"
+    next
+end
+{policies}"""
+
+ACCEPT_NOC = """    edit 1
+        set intf "wan1"
+        set srcaddr "NOC"
+        set dstaddr "all"
+        set action accept
+        set service "HTTPS" "SSH"
+        set schedule "always"
+    next
+"""
+
+
+def _deny_all(
+    pid: int = 2, service: str = '"HTTPS" "SSH"', extra: str = "", intf: str = "any"
+) -> str:
+    return (
+        f'    edit {pid}\n        set intf "{intf}"\n        set srcaddr "all"\n'
+        f'        set dstaddr "all"\n        set service {service}\n'
+        f'        set schedule "always"\n{extra}    next\n'
+    )
+
+
+def _local_in(*entries: str, table: str = "local-in-policy") -> str:
+    return f"config firewall {table}\n" + "".join(entries) + "end\n"
+
+
+def _web(kb: KnowledgeBase, policies: str, global_: str = "", ipv6: str = "") -> Status:
+    body = LOCAL_IN.format(global_=global_, ipv6=ipv6, policies=policies)
+    return _fortios(kb, body)["MGMT-WEB-ACL-01"]
+
+
+IPV6_HTTPS = "        config ipv6\n            set ip6-allowaccess https\n        end\n"
+
+
+@pytest.mark.parametrize(
+    ("policies", "global_", "ipv6", "expected"),
+    [
+        (_local_in(ACCEPT_NOC, _deny_all()), "", "", Status.PASS),
+        # No local-in policy denies anything: "there is no default implicit deny policy".
+        (_local_in(ACCEPT_NOC), "", "", Status.FAIL),
+        ("", "", "", Status.FAIL),
+        # First match: an accept from everyone before the deny lets everyone in.
+        (_local_in(ACCEPT_NOC.replace('"NOC"', '"all"'), _deny_all()), "", "", Status.FAIL),
+        # Order is the order in the file (policies are moved), not the policy ID.
+        (_local_in(_deny_all(pid=9), ACCEPT_NOC.replace('"NOC"', '"all"')), "", "", Status.PASS),
+        # A deny that isn't always in force, is disabled, or covers another port blocks nothing.
+        (_local_in(_deny_all(extra='        set schedule "weekdays"\n')), "", "", Status.FAIL),
+        (_local_in(_deny_all(extra="        set status disable\n")), "", "", Status.FAIL),
+        (_local_in(_deny_all(service='"HTTP" "SSH"')), "", "", Status.FAIL),
+        # HTTPS moved to 8443: a deny naming the HTTPS service (443) no longer covers it ...
+        (_local_in(_deny_all()), "    set admin-sport 8443\n", "", Status.FAIL),
+        # ... but one covering all services does.
+        (_local_in(_deny_all(service='"ALL"')), "    set admin-sport 8443\n", "", Status.PASS),
+        (_local_in(_deny_all(service='"MGMT"')), "", "", Status.PASS),  # through a service group
+        (_local_in(_deny_all(intf="wan2")), "", "", Status.FAIL),  # another interface
+        # Deny everyone except the NOC: a negated source.
+        (
+            _local_in(
+                _deny_all(extra="        set srcaddr-negate enable\n").replace('"all"', '"NOC"', 1)
+            ),
+            "",
+            "",
+            Status.PASS,
+        ),
+        # The factory-default policy denies known-malicious sources only, not everyone.
+        (
+            _local_in(
+                '    edit 1\n        set intf "any"\n        set dstaddr "all"\n'
+                "        set internet-service-src enable\n"
+                '        set internet-service-src-name "Tor-Exit.Node"\n'
+                '        set service "ALL"\n        set schedule "always"\n    next\n'
+            ),
+            "",
+            "",
+            Status.FAIL,
+        ),
+        # A line nothing reads might change what the deny matches: not counted as blocking.
+        (_local_in(_deny_all(extra="        set ha-mgmt-intf-only enable\n")), "", "", Status.FAIL),
+        # HTTPS over IPv6 needs an IPv6 local-in policy too.
+        (_local_in(_deny_all()), "", IPV6_HTTPS, Status.FAIL),
+        (
+            _local_in(_deny_all()) + _local_in(_deny_all(), table="local-in-policy6"),
+            "",
+            IPV6_HTTPS,
+            Status.PASS,
+        ),
+    ],
+)
+def test_fortios_local_in_policies_restrict_web_management(
+    kb: KnowledgeBase, policies: str, global_: str, ipv6: str, expected: Status
+) -> None:
+    assert _web(kb, policies, global_, ipv6) is expected
+
+
+def test_fortios_ipv6_management_access_counts_for_telnet(kb: KnowledgeBase) -> None:
+    body = LOCAL_IN.format(
+        global_="",
+        ipv6="        config ipv6\n            set ip6-allowaccess telnet\n        end\n",
+        policies="",
+    )
+    assert _fortios(kb, body)["MGMT-TELNET-01"] is Status.FAIL

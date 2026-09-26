@@ -312,8 +312,13 @@ defaults:
     value: deny
     source: vendor_doc
     reference: >-
-      config firewall policy, action: "Policy action (accept/deny/ipsec)." Default deny.
+      config firewall policy, action: "Policy action (accept/deny/ipsec)." Default deny. It
+      holds for local-in policies too: config firewall local-in-policy, action: "Action
+      performed on traffic matching the policy." Default deny; the Local-in policy guide: "When
+      you define a local-in policy, if no action is set manually, then the action will default
+      to deny."
       https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/333889629/config-firewall-policy
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/185227842/config-firewall-local-in-policy
 
   - id: no-filter-rules
     none_of: FilterRule
@@ -322,3 +327,172 @@ defaults:
       Model default: every firewall policy appears under `config firewall policy`; with none,
       FortiOS denies all traffic through the unit ("If the parameters do not match any
       configured policies, the traffic is denied").
+
+  # --- Management ports (so a local-in policy naming a service can be matched) ---------------
+  - id: https-port-443
+    attr: MgmtService.port
+    entity_key: https
+    value: 443
+    source: vendor_doc
+    reference: >-
+      config system global, admin-sport: "Administrative access port for HTTPS." Default 443.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: ssh-port-22
+    attr: MgmtService.port
+    entity_key: ssh
+    value: 22
+    source: vendor_doc
+    reference: >-
+      config system global, admin-ssh-port: "Administrative access port for SSH." Default 22.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: http-port-80
+    attr: MgmtService.port
+    entity_key: http
+    value: 80
+    source: vendor_doc
+    reference: >-
+      config system global, admin-port: "Administrative access port for HTTP." Default 80.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: telnet-port-23
+    attr: MgmtService.port
+    entity_key: telnet
+    value: 23
+    source: vendor_doc
+    reference: >-
+      config system global, admin-telnet-port: "Administrative access port for TELNET." Default 23.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: no-interface-mgmt-access-ipv6
+    attr: Interface.mgmt_protocols_v6
+    value: []
+    source: vendor_doc
+    reference: >-
+      config system interface, config ipv6, ip6-allowaccess: "Allow management access to the
+      interface." No default value: nothing is allowed over IPv6 unless listed.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/317104469/config-system-interface
+
+  # --- Local-in policies and firewall policies as a whole (kasauti/policy/firstmatch.py) -----
+  - id: local-in-guards-the-device
+    attr: Ruleset.applies_to
+    entity_key: local-in
+    value: device
+    source: vendor_doc
+    reference: >-
+      Local-in policy: "local-in policies control inbound traffic that is going to a FortiGate
+      interface." "Local-in policies can be used to restrict administrative access".
+      https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy
+
+  - id: local-in-ipv4
+    attr: Ruleset.family
+    entity_key: local-in
+    value: ipv4
+    source: vendor_doc
+    reference: >-
+      config firewall local-in-policy: "Configure user defined IPv4 local-in policies."
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/185227842/config-firewall-local-in-policy
+
+  - id: local-in-no-implicit-deny
+    attr: Ruleset.unmatched
+    entity_key: local-in
+    value: permit
+    source: vendor_doc
+    reference: >-
+      Local-in policy, Implicit deny rule: "Unlike IPv4 policies, there is no default implicit
+      deny policy. The implicit deny policy should be placed at the bottom of the list of
+      local-in-policies." Traffic no local-in policy matches is left to the interface's
+      `allowaccess` and the administrators' trusted hosts.
+      https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy
+
+  - id: local-in-empty-permits
+    attr: Ruleset.when_empty
+    entity_key: local-in
+    value: permit
+    source: vendor_doc
+    reference: >-
+      Same sentence: with no local-in policies there is nothing that denies.
+      https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy
+
+  - id: local-in-config-order
+    attr: Ruleset.order
+    entity_key: local-in
+    value: config
+    source: vendor_doc
+    reference: >-
+      Fortinet Community technical tip, How to move the order local-in policy: policies are
+      reordered with `move <id> before <id>`, and "the way the policies are read by the
+      FortiGate goes from top to bottom. Meaning that everything moved to the top ... will have
+      precedence over the other policies." The policy ID is not the order.
+      https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-move-the-order-local-in-policy-FortiGate/ta-p/300597
+
+  - id: local-in6-guards-the-device
+    attr: Ruleset.applies_to
+    entity_key: local-in6
+    value: device
+    source: vendor_doc
+    reference: >-
+      Local-in policy: "local-in policies control inbound traffic that is going to a FortiGate
+      interface"; IPv6 ones are configured under `config firewall local-in-policy6`.
+      https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy
+
+  - id: local-in6-ipv6
+    attr: Ruleset.family
+    entity_key: local-in6
+    value: ipv6
+    source: vendor_doc
+    reference: >-
+      config firewall local-in-policy6: "Configure user defined IPv6 local-in policies."
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/871912328/config-firewall-local-in-policy6
+
+  - id: local-in6-no-implicit-deny
+    attr: Ruleset.unmatched
+    entity_key: local-in6
+    value: permit
+    source: vendor_doc
+    reference: >-
+      The Local-in policy page covers `config firewall {local-in-policy | local-in-policy6}`:
+      "Unlike IPv4 policies, there is no default implicit deny policy."
+      https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy
+
+  - id: local-in6-empty-permits
+    attr: Ruleset.when_empty
+    entity_key: local-in6
+    value: permit
+    source: vendor_doc
+    reference: >-
+      Same sentence: with no IPv6 local-in policies there is nothing that denies.
+      https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/363127/local-in-policy
+
+  - id: local-in6-config-order
+    attr: Ruleset.order
+    entity_key: local-in6
+    value: config
+    source: vendor_doc
+    reference: >-
+      As for IPv4 local-in policies: read "from top to bottom", reordered with `move`.
+      https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-to-move-the-order-local-in-policy-FortiGate/ta-p/300597
+
+  - id: policy-implicit-deny
+    attr: Ruleset.unmatched
+    entity_key: policy
+    value: deny
+    source: vendor_doc
+    reference: >-
+      Fortinet Community technical tip, How policy order works on FortiGate: "If there is no
+      matching policy among the policies that have been configured for traffic, the packet
+      finally falls to what is always the last policy. It is an implicit policy. ... The default
+      action for the implicit policy is to deny every traffic."
+      https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-policy-order-works-on-FortiGate/ta-p/207381
+
+  - id: policy-config-order
+    attr: Ruleset.order
+    entity_key: policy
+    value: config
+    source: vendor_doc
+    reference: >-
+      Same tip: "The policies are checked from top to bottom. The first rule that matches is
+      applied, and subsequent rules are not evaluated." Policies are reordered in the list, so
+      the policy ID is not the order.
+      https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-policy-order-works-on-FortiGate/ta-p/207381

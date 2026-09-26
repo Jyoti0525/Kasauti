@@ -951,6 +951,30 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.12 (2026-09-26, first-match filter evaluation; named login lists):**
+  - **Ordered first-match evaluator** (`kasauti/policy/firstmatch.py`), built ahead of M2.31
+    because FortiOS local-in policies needed it: can a source no entry names get this traffic
+    through? Entries are tried in order; each is asked whether it matches *some* of the
+    traffic (a permit then lets it in) and *all* of it (only then does a deny block it); what
+    isn't read is MAYBE and turns a decision it could have pre-empted into UNKNOWN. What
+    unmatched traffic gets is a quoted vendor fact on the new SBM 0.9 `Ruleset` entity, never
+    assumed. It replaces the order-blind "any permit-any entry" check behind
+    `Reference.permits_any`.
+  - **FortiOS local-in policies read** (IPv4 and IPv6 tables, file order, no implicit deny):
+    per interface and management protocol, over IPv4 and, where offered, IPv6, into
+    `Interface.mgmt_restricted`; inference `mgmt_service.access_filter.device_filter.*`.
+    Management ports (`admin-sport` …) are read and defaulted, port ranges carry their
+    protocol (`prepend` transform).
+  - **False PASS closed:** FortiOS `ip6-allowaccess` wasn't read, so Telnet/HTTP offered only
+    over IPv6 was invisible; Cisco read an *empty* vty ACL as "permits no one", but Cisco
+    documents that an empty access list permits all traffic.
+  - **Cisco named login lists read:** vty lines take their own list; remote logins are judged
+    by what every vty line's list shares, so a TACACS+ default doesn't pass lines whose list is
+    local (`MgmtSession.login_methods`, `ref … unless`, objects expanded before lines).
+  - **Engine:** unread lines are tracked for blocks opened under a context (a FortiOS `edit`)
+    and attributed to the nearest enclosing entity; container headers aren't counted.
+    Cisco/Arista extended ACL entries read their destination for every protocol; Junos term
+    ports narrow a term.
 - **v5.1.11 (2026-09-26, central login in use; PAN-OS and FortiOS gaps):**
   - **False PASS closed on every vendor:** AAA-CENTRAL-AUTH-01 passed when a TACACS+/RADIUS/LDAP
     server was merely configured. It now asks which methods administrator logins use (SBM 0.8

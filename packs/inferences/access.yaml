@@ -65,3 +65,45 @@ inferences:
       and all(Interface: not exists(mgmt_protocols) or not mgmt_protocols contains 'https'
               or (exists(mgmt_permitted_sources) and not mgmt_permitted_sources contains 'any'))
     set: {access_filter: permitted-sources}
+
+  # --- Sources restricted by a filter guarding the device itself --------------------------------
+  # FortiOS local-in policies filter traffic addressed to the FortiGate. The resolver evaluates
+  # them first-match, per interface and management protocol, over IPv4 and (where offered)
+  # IPv6, and lists in Interface.mgmt_restricted the protocols that every unlisted source is
+  # blocked from. A service is restricted when every interface offering it is, and at least one
+  # does (a service offered nowhere is left to the other rules).
+  - id: mgmt_service.access_filter.device_filter.ssh
+    version: 1
+    description: >
+      SSH management that a filter guarding the device blocks for every unlisted
+      source, on every interface offering it, is restricted as an access filter would restrict it.
+    for_each: MgmtService where key == 'ssh'
+    when: >
+      any(Interface: exists(mgmt_restricted) and mgmt_restricted contains 'ssh')
+      and all(Interface: not exists(mgmt_protocols) or not mgmt_protocols contains 'ssh'
+              or (exists(mgmt_restricted) and mgmt_restricted contains 'ssh'))
+    set: {access_filter: device-filter}
+
+  - id: mgmt_service.access_filter.device_filter.http
+    version: 1
+    description: >
+      HTTP management that a filter guarding the device blocks for every unlisted
+      source, on every interface offering it, is restricted as an access filter would restrict it.
+    for_each: MgmtService where key == 'http'
+    when: >
+      any(Interface: exists(mgmt_restricted) and mgmt_restricted contains 'http')
+      and all(Interface: not exists(mgmt_protocols) or not mgmt_protocols contains 'http'
+              or (exists(mgmt_restricted) and mgmt_restricted contains 'http'))
+    set: {access_filter: device-filter}
+
+  - id: mgmt_service.access_filter.device_filter.https
+    version: 1
+    description: >
+      HTTPS management that a filter guarding the device blocks for every unlisted
+      source, on every interface offering it, is restricted as an access filter would restrict it.
+    for_each: MgmtService where key == 'https'
+    when: >
+      any(Interface: exists(mgmt_restricted) and mgmt_restricted contains 'https')
+      and all(Interface: not exists(mgmt_protocols) or not mgmt_protocols contains 'https'
+              or (exists(mgmt_restricted) and mgmt_restricted contains 'https'))
+    set: {access_filter: device-filter}

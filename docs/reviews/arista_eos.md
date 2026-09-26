@@ -104,3 +104,17 @@ AAA-CENTRAL-AUTH-01 now asks whether administrator logins *use* a central server
 configured. `aaa authentication login default <methods>` is read as on
 Cisco: the first method decides, and a named `aaa group server tacacs+ <name>` counts as
 `tacacs`. The hardened twin was already compliant (`group TACACS-GROUP local`).
+
+## Addendum (v5.1.12): first-match ACLs
+
+- `acl-implicit-deny` (`Ruleset.unmatched: deny`) quotes the ACL Structure section: "The
+  interface drops packets that do not match at least one rule." and "The switch processes
+  ACLs, Service ACLs, route maps, and prefix lists in order, beginning with the first rule
+  and continuing until a match is found." The Service ACL section (where `management ssh` /
+  `ip access-group` belongs) doesn't restate the first sentence; it is taken as the ACL
+  structure service ACLs share. What an ACL with no rules does isn't stated, so there is no
+  `when_empty` entry: an empty ACL on SSH management is REVIEW.
+- Extended entries for any protocol read their destination (`acl-ext-proto-*`), as for Cisco;
+  the interface ACL's `permit tcp any host … eq ssh` again counts as letting any source in.
+
+Source: [ACLs and Route Maps](https://www.arista.com/en/um-eos/eos-acls-and-route-maps).

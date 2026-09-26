@@ -1,4 +1,4 @@
-# Security Baseline Model (v0.8)
+# Security Baseline Model (v0.9)
 
 Implements PLAN §8 (requirement R-01). Source of truth: `backend/kasauti/sbm/`; JSON Schema:
 `schemas/sbm.schema.json`; OpenConfig alignment: `backend/kasauti/sbm/openconfig.yaml`.
@@ -19,7 +19,7 @@ The model enforces these combinations, so an impossible fact can't be constructe
 
 ## Entities
 
-Twenty-two entity types: the eighteen in PLAN §8.1 plus four additions it needs elsewhere:
+Twenty-four entity types: the eighteen in PLAN §8.1 plus six additions it needs elsewhere:
 
 - `LoggingPolicy` (singleton) holds the device-wide logging flags §8.1 lists beside
   `LogTarget` (timestamps, admin_logged, config_change_logged). They describe the device,
@@ -28,14 +28,25 @@ Twenty-two entity types: the eighteen in PLAN §8.1 plus four additions it needs
   the targets of the `ref` primitive and the reference resolver (§9.1, v5.1).
 - `Reference` (0.4): one statement pointing at another named thing, created by the reference
   resolver (PLAN §9.1): `source`, `attribute`, `target_kind`, `name`, `resolved`, `target`, and
-  for ACL targets `permits_any` (the chain vty line → ACL → permitted sources). It is *unknown*
-  if a permit entry's sources, or any line inside the ACL, weren't understood. Dangling
-  references are ordinary facts that rules judge (REF-DANGLING-01).
+  for ACL targets `permits_any` (the chain vty line → ACL → permitted sources): can a source
+  the ACL doesn't name get through? Answered by ordered first-match evaluation (0.9) with the
+  vendor's quoted implicit action, *unknown* where an entry that might decide wasn't read.
+  Dangling references are ordinary facts that rules judge (REF-DANGLING-01).
+- `Ruleset` (0.9, `key` = the name entries give in `FilterRule.ruleset`): what an ordered list
+  of filter entries does as a whole. `order` (`position` or `config`), `unmatched` and
+  `when_empty` (`permit`/`deny`), `applies_to` (`device`: it guards traffic addressed to the
+  device itself, like FortiOS local-in policies) and `family` (`ipv4`/`ipv6`). These are quoted
+  vendor facts in `defaults.yaml`, never assumed: Cisco access lists end in an implicit deny
+  and an empty one permits everything; FortiOS local-in policies have no implicit deny. The
+  mapper creates one for every ruleset with entries and every ACL object.
 - `AuthPolicy` (singleton, 0.8) holds `login_methods`: what administrator logins are checked
   against (`tacacs`, `radius`, `ldap`, `local`; OpenConfig `authentication-method`). A named
   server group, FortiOS user group or PAN-OS authentication profile counts as the kinds of
   server it holds, so a TACACS+ server that no login uses is not in the set, and
-  AAA-CENTRAL-AUTH-01 (derivation `aaa.central_login_in_use`) doesn't pass on it.
+  AAA-CENTRAL-AUTH-01 (derivation `aaa.central_login_in_use`) doesn't pass on it. Where vty
+  lines name their own login list (`MgmtSession.login_methods`, 0.9), it holds what every vty
+  line's list has in common, a line naming none using the device default: a TACACS+ default
+  doesn't help lines whose list is local.
 - `TimePolicy` (singleton, 0.2) holds `auth_enforced`: whether the device rejects time from
   unauthenticated sources (`ntp authenticate`; OpenConfig `enable-ntp-auth`).
   `TimeSource.authenticated` only says a key is configured for that server, which isn't
@@ -73,7 +84,7 @@ rely on (PLAN §3.1, principle 5).
 
 ## Versioning
 
-`sbm_version` is `"0.8"`. Loading a document with another version fails with a pointer to
+`sbm_version` is `"0.9"`. Loading a document with another version fails with a pointer to
 `kasauti.sbm.migrations`, which upgrades stored documents step by step (one pure function per
 version change, never edited after release). 0.1 → 0.2 adds the empty sets above; 0.2 → 0.3
 adds four optional attributes (`MgmtService.access_filter`, `Interface.description`,
@@ -90,8 +101,13 @@ and `FilterRule.applications` (PAN-OS matches by application as well as port); 0
 the `AuthPolicy` singleton, `Interface.mgmt_permitted_sources` and
 `ObjectDef.permitted_sources` (a PAN-OS interface management profile's `permitted-ip`, which
 the interfaces using it inherit) and `ObjectDef.destinations` (a FortiOS service limited to
-some destinations by `iprange`/`fqdn`, so it doesn't cover all traffic). Everything an older
-document says is kept (tested).
+some destinations by `iprange`/`fqdn`, so it doesn't cover all traffic); 0.8 → 0.9 adds the
+`Ruleset` entity, `FilterRule.interfaces`, `negated` and `narrowed` (what first-match
+evaluation needs from FortiOS local-in policies), `MgmtService.port` (a filter naming ports is
+matched against it), `Interface.mgmt_protocols_v6` (FortiOS `ip6-allowaccess`),
+`Interface.mgmt_restricted` (the management protocols a device filter blocks for every
+unlisted source) and `MgmtSession.login_methods` (a Cisco vty line's own login list).
+Everything an older document says is kept (tested).
 
 ## OpenConfig alignment
 

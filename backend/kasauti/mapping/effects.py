@@ -19,6 +19,7 @@ from kasauti.mapping.model import (
     Effect,
     MembersEffect,
     PrefixTransform,
+    PrependTransform,
     RefEffect,
     SetEffect,
     SplitTransform,
@@ -182,6 +183,8 @@ def _transform(t: Transform, value: Any) -> Any:
         return round(value * _SECONDS[t.unit])
     if isinstance(t, SplitTransform):
         return tuple(p for p in str(value).split(t.split) if p)
+    if isinstance(t, PrependTransform):
+        return f"{t.prepend}{value}"
     if isinstance(t, PrefixTransform):
         text = str(value)
         hits = [k for k in t.prefix if text.startswith(k)]

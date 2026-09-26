@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "9854289d2b53da0d7fab3339",
+  "audit_id": "2acde107bd2be7271848bef3",
   "input": {
     "file": "weak.cfg",
     "sha256": "11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
-    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
+    "kb_version": "9d547f7c3bd0ab35c0be0db8a1c9b5c1109ce85d4df2e48f2a99ed8a78a8932c",
+    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -1789,7 +1789,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.8",
+    "sbm_version": "0.9",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2127,6 +2127,24 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2200,6 +2218,18 @@
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
         },
         "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2300,6 +2330,18 @@
           "evidence": [],
           "default_source": null
         },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": true,
           "state": "vendor_default",
@@ -2378,6 +2420,18 @@
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
         },
         "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2624,6 +2678,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2666,6 +2726,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2742,6 +2808,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2808,6 +2880,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2884,6 +2962,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2926,6 +3010,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2978,6 +3068,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3025,6 +3121,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3067,6 +3169,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3166,6 +3274,12 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "login_methods": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -3258,6 +3372,12 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "login_methods": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -3345,6 +3465,12 @@
           "default_source": null
         },
         "auth_method": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "login_methods": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3457,6 +3583,41 @@
           "default_source": null
         },
         "enforced": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "EDGE-IN",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "cisco_ios_xe/defaults.yaml#acl-implicit-deny"
+        },
+        "when_empty": {
+          "value": "permit",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "cisco_ios_xe/defaults.yaml#acl-empty-permits-all"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
           "value": null,
           "state": "absent",
           "evidence": [],

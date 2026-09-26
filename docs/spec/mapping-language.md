@@ -83,6 +83,7 @@ Family conventions that make one language serve all shapes (fixed by the shape p
 | `{ref: …, target: mgmt_profile, expand: true}` | ref | the attribute takes the target's members once linked (a PAN-OS interface gets its management profile's protocols); unknown if the target is missing or unread |
 | `{ref: …, expand: true, take: permitted_sources, if_empty: [any]}` | ref | `take` picks the target attribute to copy (`members`, `expanded`, `permitted_sources`); `if_empty` is what a target listing nothing contributes (a PAN-OS profile with no permitted IPs has "no IP address restrictions"). Items the attribute got from other lines are kept; the targets' names give way to their contents |
 | `{ref: …, target: user_group, expand: true, take: expanded}` | ref | a FortiOS user group expands to the *kinds* of the servers it names (`tacacs`); a member that is no server (a local user) makes it unknown |
+| `{ref: …, target: login_list, expand: true, unless: [default]}` | ref | `unless` names slot values that aren't references (a Cisco line's `login authentication default` uses the device default, read elsewhere): the effect is skipped for them. Expansions into objects run first, so a named login list naming a server group is `tacacs` before a line takes it |
 | `{unknown: Entity.attr, why: "…"}` / `{…, from: n, unless: [default]}` | unknown | the statement decides the attribute in a way the pack doesn't read: the fact becomes unknown (REVIEW) with this line as evidence. With `from`/`unless`, the listed slot values leave the fact alone (Cisco `login authentication default` names the list the pack reads; another name makes the login methods unknown) |
 | `combine: any` on `set`/`assert` | set / assert | the statement adds to what others said instead of replacing it: a flag once true stays true, a set gains items (PAN-OS: a service on at the MGT port *or* in any profile is on, whatever the file order) |
 | `entity: {type, key}` | entity | the statement opens/names an entity |
@@ -99,8 +100,9 @@ captured by `match` or `context`.
 **Order of operations for a value:** slot text → `map` (vendor word → SBM word or value) →
 `transform`s in order (`invert`, `lower`, `upper`, `{unit: minutes}` → seconds,
 `{split: ","}`, `{prefix: {"$6$": sha512-crypt}}`: classify by the longest matching prefix, so
-a crypt hash gives its type and the hash itself is never kept) → coercion to the attribute's
-type. For `set`, a word missing from `map` makes the
+a crypt hash gives its type and the hash itself is never kept; `{prepend: "tcp/"}`: fixed text
+in front of each value, so FortiOS `tcp-portrange 443` is `tcp/443` and can't be taken for a
+UDP port) → coercion to the attribute's type. For `set`, a word missing from `map` makes the
 fact **unknown** (we saw the line but can't say what it means), unless `otherwise: <value>`
 gives the value for every unlisted word (`is_well_known`: listed strings → true, others → false).
 Anything else that can't be carried through (`invert` on a non-boolean, text for a number) is
@@ -154,5 +156,12 @@ be read, no later value makes the fact look certain.
 
 Entity evidence (the lines that *name* an entity, like `line vty 0 4`) comes from context-free
 mappings. Child lines are evidence of their own facts.
+
+**Unread lines inside an entity's block** (0.9: whether the block was opened by a context-free
+mapping, like Cisco `ip access-list`, or under a context, like a FortiOS `edit 3` in `config
+firewall local-in-policy`) are recorded against the nearest enclosing entity; a container's
+own header (`from {`, `config ipv6`) isn't, since the lines inside it carry the meaning.
+First-match evaluation treats an entry with such a line as uncertain. A line that is read and
+means nothing for security (`set uuid`) is mapped with an entity and no effect.
 
 Then version-scoped defaults fill what is still absent (see `pack-format.md`, `defaults.yaml`).

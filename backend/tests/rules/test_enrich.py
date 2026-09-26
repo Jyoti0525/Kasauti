@@ -8,6 +8,7 @@ import pytest
 
 from kasauti.mapping.engine import apply_mappings
 from kasauti.mapping.model import Mapping
+from kasauti.packs.model import DefaultEntry
 from kasauti.rules.enrich import (
     Exposure,
     Inference,
@@ -145,6 +146,8 @@ MAPPINGS = [
                 "map": {"permit": "permit", "deny": "deny"},
             },
             {"members": "FilterRule.src", "from": "src"},
+            {"assert": "FilterRule.service", "value": ["ip"]},  # a standard ACL: all of IP
+            {"assert": "FilterRule.dst", "value": ["any"]},
         ],
         negation=None,
     ),
@@ -178,9 +181,27 @@ MAPPINGS = [
 ]
 
 
-def _resolve(config: str) -> SecurityBaselineModel:
+def _default(attr: str, value: str) -> DefaultEntry:
+    return DefaultEntry.model_validate(
+        {
+            "id": attr.lower().replace(".", "-"),
+            "attr": attr,
+            "value": value,
+            "source": "vendor_doc",
+            "reference": "quoted in the vendor's ACL guide",
+        }
+    )
+
+
+QUOTED = (_default("Ruleset.unmatched", "deny"), _default("Ruleset.when_empty", "permit"))
+"""What a vendor pack quotes about its ACLs (Cisco: implicit deny; an empty list permits all)."""
+
+
+def _resolve(config: str, defaults: tuple[DefaultEntry, ...] = QUOTED) -> SecurityBaselineModel:
     tree = parse_text(config, source_file="r.cfg", family=ShapeFamily.INDENT, fallback=False)
-    return apply_mappings(tree, MAPPINGS, negation_words=("no",), os_version=None).sbm
+    return apply_mappings(
+        tree, MAPPINGS, negation_words=("no",), defaults=defaults, os_version=None
+    ).sbm
 
 
 def _ref(sbm: SecurityBaselineModel) -> Any:
@@ -203,6 +224,29 @@ def test_reference_chain_vty_to_acl_to_sources(
     assert ref.resolved.value is resolved
     assert ref.permits_any.value is permits_any
     assert ref.evidence[0].line_start == (len(acl.splitlines()) + 2)
+
+
+@pytest.mark.parametrize(
+    ("acl", "permits_any"),
+    [
+        (" 10 deny any\n 20 permit any\n", False),  # first match: the deny decides
+        (" 10 permit 10.0.0.0\n", False),  # the implicit deny at the end
+        ("", True),  # "an empty access list ... permits all traffic"
+    ],
+)
+def test_the_first_matching_entry_decides_and_the_quoted_end_applies(
+    acl: str, permits_any: bool
+) -> None:
+    ref = _ref(_resolve(f"ip access-list standard M\n{acl}line vty 0 4\n access-class M in\n"))
+    assert ref.permits_any.value is permits_any
+
+
+def test_without_a_quoted_implicit_action_nothing_is_assumed() -> None:
+    sbm = _resolve(
+        "ip access-list standard M\n 10 permit 10.0.0.0\nline vty 0 4\n access-class M in\n",
+        defaults=(),
+    )
+    assert _ref(sbm).permits_any.state is FactState.UNKNOWN
 
 
 def test_permit_entries_with_unread_sources_leave_permits_any_unknown() -> None:

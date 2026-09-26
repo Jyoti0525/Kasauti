@@ -16,6 +16,10 @@ Deviations from the §8.1 table, each needed by other parts of the plan:
   ``authentication-method``): a TACACS+ server that no login uses protects nothing (0.8).
 * ``ObjectDef`` holds named address/service objects, groups and ACLs, the targets of the
   ``ref`` primitive and the reference resolver (§9.1, v5.1).
+* ``Ruleset`` holds what an ordered list of filter entries does as a whole: its order, what
+  happens to traffic no entry matches, and whether it guards the device itself (0.9). These
+  are quoted vendor facts, never assumed: Cisco's access lists end in an implicit deny,
+  FortiOS local-in policies don't.
 """
 
 from __future__ import annotations
@@ -77,6 +81,9 @@ class MgmtService(Entity):
     """Addresses the service accepts connections from; ``any`` means anywhere (PAN-OS
     ``permitted-ip``, where an empty list means any address). Absent where an ACL
     (``access_filter``) or per-account sources restrict access instead (0.7)."""
+    port: IntFact = IntFact()
+    """The TCP port the service listens on (FortiOS ``admin-sport``), so a filter naming ports
+    can be matched against it (0.9)."""
     ciphers: SetFact = SetFact()
     macs: SetFact = SetFact()
     kex: SetFact = SetFact()
@@ -94,6 +101,10 @@ class MgmtSession(Entity):
     """Name of the ACL/object restricting access; resolved to ``ObjectDef`` by the resolver."""
     idle_timeout_s: IntFact = IntFact()
     auth_method: StrFact = StrFact()
+    login_methods: SetFact = SetFact()
+    """What logins on this line are checked against, where the line names its own method list
+    (Cisco ``login authentication VTY-LOGIN``), expanded like ``AuthPolicy.login_methods``.
+    Absent where the line uses the device default (0.9)."""
 
 
 class Interface(Entity):
@@ -111,6 +122,13 @@ class Interface(Entity):
     (a PAN-OS interface management profile's ``permitted-ip``, where an empty list means no
     restriction). Absent where the platform restricts management per service or account
     instead (0.8)."""
+    mgmt_protocols_v6: SetFact = SetFact()
+    """Management protocols the interface offers over IPv6, where the platform lists them
+    separately (FortiOS ``ip6-allowaccess``). They are in ``mgmt_protocols`` too (0.9)."""
+    mgmt_restricted: SetFact = SetFact()
+    """Management protocols that a filter guarding the device itself (FortiOS local-in
+    policies) blocks on this interface for every source outside the ones it lists, on every IP
+    version the interface offers them. Computed by the resolver's first-match evaluation (0.9)."""
     proxy_arp: BoolFact = BoolFact()
     """The interface answers ARP on behalf of other hosts (0.3)."""
     filters_in: SetFact = SetFact()
@@ -281,6 +299,40 @@ class FilterRule(Entity):
     """Applications the entry matches, on platforms that match by application as well as by
     port (PAN-OS ``application``); ``any`` means every application. Absent where entries match
     by protocol and port only (0.7)."""
+    interfaces: SetFact = SetFact()
+    """Incoming interfaces the entry applies to; ``any`` means all (FortiOS local-in ``intf``).
+    Absent where the ruleset is bound to interfaces elsewhere (an ACL applied by name) (0.9)."""
+    negated: SetFact = SetFact()
+    """Which of ``src``, ``dst``, ``service`` the entry matches the complement of (FortiOS
+    ``srcaddr-negate``) (0.9)."""
+    narrowed: BoolFact = BoolFact()
+    """The entry also matches on something the SBM doesn't model (a schedule other than
+    always, Internet-service sources), so it matches only part of the traffic its addresses
+    and services name. A narrowed deny never counts as blocking everything (0.9)."""
+
+
+class Ruleset(Entity):
+    """An ordered list of filter entries as a whole; ``key`` is the name the entries give in
+    ``FilterRule.ruleset``. The mapper creates one for every ruleset that has entries and every
+    ACL object, and quoted vendor defaults say how it behaves (0.9)."""
+
+    type: Literal["Ruleset"] = "Ruleset"
+    order: StrFact = StrFact()
+    """``position``: entries are evaluated by position number (NACL rule numbers);
+    ``config``: in the order the configuration lists them (FortiOS, where the policy ID is not
+    the order). Absent: position numbers are used where every entry has one and they agree
+    with the configuration's order; otherwise the order can't be told."""
+    unmatched: StrFact = StrFact()
+    """``permit`` | ``deny``: what happens to traffic no entry matches."""
+    when_empty: StrFact = StrFact()
+    """``permit`` | ``deny``: what the ruleset does when it has no entries at all, where that
+    differs from ``unmatched`` (Cisco: "an empty access list ... permits all traffic")."""
+    applies_to: StrFact = StrFact()
+    """``device``: the ruleset guards traffic addressed to the device itself, on the
+    interfaces its entries name (FortiOS local-in policies). Absent: it applies where it is
+    referenced (an ACL on a vty line or an interface)."""
+    family: StrFact = StrFact()
+    """``ipv4`` | ``ipv6``: the IP version a device ruleset guards."""
 
 
 class ObjectDef(Entity):
@@ -289,7 +341,7 @@ class ObjectDef(Entity):
     type: Literal["ObjectDef"] = "ObjectDef"
     kind: StrFact = StrFact()
     """address | address_group | service | service_group | acl | mgmt_profile | server_group |
-    user_group | auth_server | auth_profile"""
+    user_group | auth_server | auth_profile | login_list"""
     members: SetFact = SetFact()
     expanded: SetFact = SetFact()
     """Groups only: members after recursive expansion of nested groups (0.4). Unknown if the
@@ -381,6 +433,7 @@ AnyEntity = Annotated[
     | SnmpUser
     | CryptoProfile
     | FilterRule
+    | Ruleset
     | ObjectDef
     | Reference
     | Banner
@@ -410,6 +463,7 @@ ENTITY_TYPES: dict[str, type[Entity]] = {
         SnmpUser,
         CryptoProfile,
         FilterRule,
+        Ruleset,
         ObjectDef,
         Reference,
         Banner,

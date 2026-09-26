@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "28e2272ca4f043fc284bf098",
+  "audit_id": "e9c0e2cdc6df41bf04475a61",
   "input": {
     "file": "weak.conf",
     "sha256": "f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
-    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
+    "kb_version": "9d547f7c3bd0ab35c0be0db8a1c9b5c1109ce85d4df2e48f2a99ed8a78a8932c",
+    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -1457,7 +1457,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.8",
+    "sbm_version": "0.9",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1747,6 +1747,24 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -1808,6 +1826,18 @@
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
         },
         "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -1908,6 +1938,18 @@
           "evidence": [],
           "default_source": null
         },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": false,
           "state": "vendor_default",
@@ -1962,6 +2004,18 @@
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
         },
         "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2145,6 +2199,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2199,6 +2259,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2263,6 +2329,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2305,6 +2377,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2369,6 +2447,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2411,6 +2495,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2475,6 +2565,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2517,6 +2613,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2588,6 +2690,12 @@
           "default_source": "juniper_junos/defaults.yaml#class-never-times-out"
         },
         "auth_method": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "login_methods": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2807,6 +2915,41 @@
           "default_source": null
         },
         "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "ALLOW-ALL",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#filter-implicit-discard"
+        },
+        "when_empty": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
           "value": null,
           "state": "absent",
           "evidence": [],

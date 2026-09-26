@@ -259,29 +259,81 @@ mappings:
     provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
 
-  # `login authentication <list>` on a line: `default` is the list read above. Another named
-  # list on a vty line isn't resolved yet, so the login methods become unknown (REVIEW).
-  # Console lines may keep a local list for break-glass access.
+  # Named method lists (`aaa authentication login VTY-LOGIN group TACACS-GRP local`) are read
+  # like the default list, into an object a line can name. The first method is what logins are
+  # checked against; later ones are fallbacks. A server group counts as the kind it holds.
+
+  - id: cisco_ios_xe/login-list-group-tacacs
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "login_list:{n}"}
+    match: "aaa authentication login <STR:n> group tacacs+ [<LIST>]"
+    effect: [{assert: ObjectDef.kind, value: login_list}, {assert: ObjectDef.members, value: [tacacs]}]
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-list-group-radius
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "login_list:{n}"}
+    match: "aaa authentication login <STR:n> group radius [<LIST>]"
+    effect: [{assert: ObjectDef.kind, value: login_list}, {assert: ObjectDef.members, value: [radius]}]
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-list-group-ldap
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "login_list:{n}"}
+    match: "aaa authentication login <STR:n> group ldap [<LIST>]"
+    effect: [{assert: ObjectDef.kind, value: login_list}, {assert: ObjectDef.members, value: [ldap]}]
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-list-group-named
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "login_list:{n}"}
+    match: "aaa authentication login <STR:n> group <STR:g> [<LIST>]"
+    effect:
+      - {assert: ObjectDef.kind, value: login_list}
+      - {ref: ObjectDef.members, from: g, target: server_group, expand: true}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-list-first-method
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "login_list:{n}"}
+    match: "aaa authentication login <STR:n> <STR:m> [<LIST>]"
+    effect:
+      - {assert: ObjectDef.kind, value: login_list}
+      - {set: ObjectDef.members, template: "{m}", map: {local-case: local}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+
+  # `login authentication <list>` on a vty line: the line's logins are checked against that
+  # list (`default` is the device default, read above). Remote logins are then judged by what
+  # every vty line's list has in common (resolver). Console lines may keep a local list for
+  # break-glass access, so they don't take part.
 
   - id: cisco_ios_xe/vty-range-login-authentication
     vendor: cisco_ios_xe
     context: ["line vty <INT:first> <INT:last>"]
     entity: {type: MgmtSession, key: "vty {first}-{last}"}
-    match: "login authentication <STR:n>"
+    match: "login authentication <STR:list>"
     effect:
-      - {set: MgmtSession.auth_method, from: n}
-      - {unknown: AuthPolicy.login_methods, from: n, unless: [default], why: "a vty line names its own login method list, which is not resolved yet"}
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+      - {set: MgmtSession.auth_method, from: list}
+      - {ref: MgmtSession.login_methods, from: list, target: login_list, expand: true, unless: [default]}
+    negation: null
+    provenance: {version: 2, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
   - id: cisco_ios_xe/vty-single-login-authentication
     vendor: cisco_ios_xe
     context: ["line vty <INT:n>"]
     entity: {type: MgmtSession, key: "vty {n}"}
-    match: "login authentication <STR:n>"
+    match: "login authentication <STR:list>"
     effect:
-      - {set: MgmtSession.auth_method, from: n}
-      - {unknown: AuthPolicy.login_methods, from: n, unless: [default], why: "a vty line names its own login method list, which is not resolved yet"}
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+      - {set: MgmtSession.auth_method, from: list}
+      - {ref: MgmtSession.login_methods, from: list, target: login_list, expand: true, unless: [default]}
+    negation: null
+    provenance: {version: 2, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
   - id: cisco_ios_xe/con-login-authentication
     vendor: cisco_ios_xe

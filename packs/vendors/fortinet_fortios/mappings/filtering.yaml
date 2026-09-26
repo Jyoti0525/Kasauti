@@ -1,4 +1,5 @@
-# Interfaces (management access, role), proxy ARP, firewall policies, address and service objects.
+# Interfaces (management access, role), proxy ARP, firewall policies, local-in policies, address
+# and service objects.
 # Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
 mappings:
 - id: fortinet_fortios/interface
@@ -31,6 +32,29 @@ mappings:
   match: set allowaccess <LIST:a>
   effect:
     members: Interface.mgmt_protocols
+    from: a
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/interface-ip6-allowaccess
+  vendor: fortinet_fortios
+  context:
+  - config system interface
+  - edit <STR:i>
+  - config ipv6
+  entity:
+    type: Interface
+    key: '{i}'
+  match: set ip6-allowaccess <LIST:a>
+  effect:
+  - members: Interface.mgmt_protocols
+    from: a
+  - members: Interface.mgmt_protocols_v6
     from: a
   negation: null
   provenance:
@@ -653,9 +677,11 @@ mappings:
   effect:
     members: ObjectDef.members
     from: r
+    transform:
+    - prepend: tcp/
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -673,9 +699,11 @@ mappings:
   effect:
     members: ObjectDef.members
     from: r
+    transform:
+    - prepend: udp/
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -693,9 +721,11 @@ mappings:
   effect:
     members: ObjectDef.members
     from: r
+    transform:
+    - prepend: sctp/
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -775,6 +805,1006 @@ mappings:
   effect:
     members: ObjectDef.members
     from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: edit <INT:id>
+  effect:
+    assert: FilterRule.ruleset
+    value: local-in
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-intf
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set intf <LIST:i>
+  effect:
+    members: FilterRule.interfaces
+    from: i
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-srcaddr
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set srcaddr <LIST:a>
+  effect:
+    members: FilterRule.src
+    from: a
+    map:
+      all: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-srcaddr-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set srcaddr-negate enable
+  effect:
+    assert: FilterRule.negated
+    value:
+    - src
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-dstaddr
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set dstaddr <LIST:a>
+  effect:
+    members: FilterRule.dst
+    from: a
+    map:
+      all: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-dstaddr-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set dstaddr-negate enable
+  effect:
+    assert: FilterRule.negated
+    value:
+    - dst
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-service
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set service <LIST:s>
+  effect:
+    members: FilterRule.service
+    from: s
+    map:
+      ALL: ip
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-service-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set service-negate enable
+  effect:
+    assert: FilterRule.negated
+    value:
+    - service
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-action
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set action <STR:a>
+  effect:
+    set: FilterRule.action
+    from: a
+    map:
+      accept: permit
+      deny: deny
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-status
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set status <STR:s>
+  effect:
+    set: FilterRule.enabled
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-schedule
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set schedule <STR:s>
+  effect:
+    set: FilterRule.narrowed
+    from: s
+    map:
+      always: false
+    otherwise: true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-internet-service-src
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set internet-service-src enable
+  effect:
+    assert: FilterRule.narrowed
+    value: true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-uuid
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set uuid <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-comments
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set comments <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-virtual-patch
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set virtual-patch <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-logtraffic
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set logtraffic <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-internet-service-src-off
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set internet-service-src disable
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-internet-service-src-name
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set internet-service-src-name <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-internet-service-src-group
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set internet-service-src-group <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-internet-service-src-custom
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set internet-service-src-custom <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-internet-service-src-custom-group
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set internet-service-src-custom-group <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-internet-service-src-fortiguard
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set internet-service-src-fortiguard <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-internet-service-src-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set internet-service-src-negate <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-srcaddr-negate-off
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set srcaddr-negate disable
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-dstaddr-negate-off
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set dstaddr-negate disable
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy-service-negate-off
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in:{id}
+  match: set service-negate disable
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: edit <INT:id>
+  effect:
+    assert: FilterRule.ruleset
+    value: local-in6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-intf
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set intf <LIST:i>
+  effect:
+    members: FilterRule.interfaces
+    from: i
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-srcaddr
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set srcaddr <LIST:a>
+  effect:
+    members: FilterRule.src
+    from: a
+    map:
+      all: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-srcaddr-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set srcaddr-negate enable
+  effect:
+    assert: FilterRule.negated
+    value:
+    - src
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-dstaddr
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set dstaddr <LIST:a>
+  effect:
+    members: FilterRule.dst
+    from: a
+    map:
+      all: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-dstaddr-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set dstaddr-negate enable
+  effect:
+    assert: FilterRule.negated
+    value:
+    - dst
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-service
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set service <LIST:s>
+  effect:
+    members: FilterRule.service
+    from: s
+    map:
+      ALL: ip
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-service-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set service-negate enable
+  effect:
+    assert: FilterRule.negated
+    value:
+    - service
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-action
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set action <STR:a>
+  effect:
+    set: FilterRule.action
+    from: a
+    map:
+      accept: permit
+      deny: deny
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-status
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set status <STR:s>
+  effect:
+    set: FilterRule.enabled
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-schedule
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set schedule <STR:s>
+  effect:
+    set: FilterRule.narrowed
+    from: s
+    map:
+      always: false
+    otherwise: true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-internet-service6-src
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set internet-service6-src enable
+  effect:
+    assert: FilterRule.narrowed
+    value: true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-uuid
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set uuid <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-comments
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set comments <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-virtual-patch
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set virtual-patch <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-logtraffic
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set logtraffic <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-internet-service6-src-off
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set internet-service6-src disable
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-internet-service6-src-name
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set internet-service6-src-name <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-internet-service6-src-group
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set internet-service6-src-group <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-internet-service6-src-custom
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set internet-service6-src-custom <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-internet-service6-src-custom-group
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set internet-service6-src-custom-group <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-internet-service6-src-fortiguard
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set internet-service6-src-fortiguard <LIST>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-internet-service6-src-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set internet-service6-src-negate <STR>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-srcaddr-negate-off
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set srcaddr-negate disable
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-dstaddr-negate-off
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set dstaddr-negate disable
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/local-in-policy6-service-negate-off
+  vendor: fortinet_fortios
+  context:
+  - config firewall local-in-policy6
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: local-in6:{id}
+  match: set service-negate disable
   negation: null
   provenance:
     version: 1

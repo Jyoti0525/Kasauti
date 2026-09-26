@@ -83,3 +83,16 @@ AAA-CENTRAL-AUTH-01 now asks whether administrator logins *use* a central server
 configured. `system authentication-order` is read; its first method
 decides (`tacplus` → tacacs, `radius`, `password` → local). With no `authentication-order`,
 the rule fails, as before. The hardened twin was already compliant (`[ tacplus password ]`).
+
+## Addendum (v5.1.12): first-match filters
+
+- `filter-implicit-discard` (`Ruleset.unmatched: deny`): "The device evaluates the packet
+  against the terms in the firewall filter sequentially, beginning with the first term in the
+  filter." and "If the packet does not match any term in the firewall filter, the device
+  implicitly discards the packet." ([How Standard Firewall Filters Evaluate Packets](https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/concept/firewall-filter-stateless-evaluate-packets.html))
+- Term ports (`destination-port`, `source-port`, `port`) mark a term `narrowed`: it covers part
+  of its protocol's traffic, never all. `then { syslog; log; count X; }` is read as not
+  changing what the term matches. A term whose `then` has no terminating action (Junos then
+  accepts) has no action read, so first-match evaluation treats it as uncertain.
+- No rule reads a Junos filter's `permits_any` yet (the lo0 filter is an interface filter); the
+  hardened `PROTECT-RE` evaluates to "no unlisted source gets through", as before.

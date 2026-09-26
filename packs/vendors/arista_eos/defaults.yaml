@@ -131,3 +131,17 @@ defaults:
       on and a trusted key is given for that server ("specify to use the trusted-key for a
       specific server"); a server line without `key` has none.
       https://www.arista.com/en/um-eos/eos-system-clock-and-time-protocols
+
+  # --- Access lists as a whole (first-match evaluation, kasauti/policy/firstmatch.py) --------
+  # What an ACL with no rules does isn't stated, so there is no `when_empty` entry (REVIEW).
+  - id: acl-implicit-deny
+    attr: Ruleset.unmatched
+    value: deny
+    source: vendor_doc
+    reference: >-
+      ACLs and Route Maps, ACL Structure: "The interface drops packets that do not match at least
+      one rule." and "The switch processes ACLs, Service ACLs, route maps, and prefix lists in
+      order, beginning with the first rule and continuing until a match is found." The Service
+      ACL section doesn't restate the first sentence; it is taken as the ACL structure the
+      service ACLs share (docs/reviews/arista_eos.md).
+      https://www.arista.com/en/um-eos/eos-acls-and-route-maps

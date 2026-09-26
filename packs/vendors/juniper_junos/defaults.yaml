@@ -183,3 +183,15 @@ defaults:
       zone (zone-wide grants are recorded on the `zone:<name>` interface). Non-SRX Junos has no
       per-interface management-service list at all.
       https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/security-edit-system-service-zone-host-inbound-traffic.html
+
+  # --- Firewall filters as a whole (first-match evaluation, kasauti/policy/firstmatch.py) ----
+  - id: filter-implicit-discard
+    attr: Ruleset.unmatched
+    value: deny
+    source: vendor_doc
+    reference: >-
+      How Standard Firewall Filters Evaluate Packets: "The device evaluates the packet against
+      the terms in the firewall filter sequentially, beginning with the first term in the
+      filter." and "If the packet does not match any term in the firewall filter, the device
+      implicitly discards the packet."
+      https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/concept/firewall-filter-stateless-evaluate-packets.html

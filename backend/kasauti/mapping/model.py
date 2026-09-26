@@ -212,7 +212,20 @@ class PrefixTransform(_Strict):
     prefix: dict[str, str] = Field(min_length=1)
 
 
-Transform = Literal["invert", "lower", "upper"] | UnitTransform | SplitTransform | PrefixTransform
+class PrependTransform(_Strict):
+    """Put fixed text in front of each value: ``{prepend: "tcp/"}`` turns FortiOS's
+    ``tcp-portrange 443`` into ``tcp/443``, so a TCP port can't be mistaken for a UDP one."""
+
+    prepend: str = Field(min_length=1)
+
+
+Transform = (
+    Literal["invert", "lower", "upper"]
+    | UnitTransform
+    | SplitTransform
+    | PrefixTransform
+    | PrependTransform
+)
 
 # --- Effects ----------------------------------------------------------------------------------
 
@@ -324,6 +337,7 @@ RefTarget = Literal[
     "server_group",
     "user_group",
     "auth_profile",
+    "login_list",
     "any_object",
 ]
 ExpandFrom = Literal["members", "expanded", "permitted_sources"]
@@ -344,6 +358,9 @@ class RefEffect(_Strict):
     """With ``expand``: what a target that lists nothing contributes. Unset, it contributes
     nothing (a management profile with no services allows none); PAN-OS documents that a
     profile with no permitted IPs has "no IP address restrictions", so there it is ``[any]``."""
+    unless: tuple[str, ...] = ()
+    """Names that aren't references: the effect is skipped for them (a Cisco line's
+    ``login authentication default`` uses the device default, read elsewhere)."""
 
     @model_validator(mode="after")
     def _expand_options(self) -> Self:

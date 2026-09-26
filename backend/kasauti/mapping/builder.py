@@ -143,6 +143,21 @@ class SbmBuilder:
     def mark_unread(self, entity_type: str, ev: Evidence) -> None:
         self.unread.setdefault(entity_type, []).append(ev)
 
+    def ensure_rulesets(self) -> None:
+        """Give every ruleset that has entries, and every ACL object (even an empty one), a
+        ``Ruleset`` entity, so the vendor's quoted defaults can say how it behaves (implicit
+        deny, order). Runs before defaults are applied."""
+        names: set[str] = set()
+        for (etype, key), acc in self.entities.items():
+            if etype == "FilterRule":
+                ruleset = acc.facts.get("ruleset")
+                if ruleset is not None and ruleset.state is FactState.EXPLICIT:
+                    names.add(str(ruleset.value))
+            elif etype == "ObjectDef" and key.startswith("acl:"):
+                names.add(key.split(":", 1)[1])
+        for name in sorted(names):
+            self.entity(("Ruleset", name))
+
     def build(self) -> SecurityBaselineModel:
         device: Device | None = None
         entities: list[Entity] = []

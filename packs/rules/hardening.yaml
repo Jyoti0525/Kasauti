@@ -82,8 +82,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/fixtures/web_mgmt_restricted.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]
+      pass: [cisco_ios_xe/fixtures/web_mgmt_restricted.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml, fortinet_fortios/fixtures/local_in_restricted.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml, fortinet_fortios/fixtures/local_in_ipv6_open.conf]
 
   - id: MGMT-SSH-V2-01
     title: SSH management uses protocol version 2 only

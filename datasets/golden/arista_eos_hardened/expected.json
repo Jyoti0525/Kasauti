@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "955e653f0b99e7f6066f6095",
+  "audit_id": "6ae995ef5d429441e02cb352",
   "input": {
     "file": "hardened.cfg",
     "sha256": "d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
-    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
+    "kb_version": "9d547f7c3bd0ab35c0be0db8a1c9b5c1109ce85d4df2e48f2a99ed8a78a8932c",
+    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -735,6 +735,7 @@
       "actual": [
         "filtering.permit_all_present = false",
         "FilterRule[EDGE-IN:10].service = {tcp}",
+        "FilterRule[EDGE-IN:10].dst = {198.51.100.2}",
         "FilterRule[EDGE-IN:20].action = deny",
         "FilterRule[MGMT-ACL:10].src = {10.30.10.0/24}",
         "FilterRule[MGMT-ACL:20].action = deny"
@@ -747,6 +748,17 @@
           "line_end": 52,
           "raw": "10 permit tcp any host 198.51.100.2 eq ssh",
           "mapping_id": "arista_eos/acl-ext-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 52,
+          "line_end": 52,
+          "raw": "10 permit tcp any host 198.51.100.2 eq ssh",
+          "mapping_id": "arista_eos/acl-ext-proto-any-host",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1172,6 +1184,28 @@
       "evidence": [
         {
           "file": "hardened.cfg",
+          "line_start": 57,
+          "line_end": 57,
+          "raw": "20 deny any log",
+          "mapping_id": "arista_eos/acl-std-any",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 57,
+          "line_end": 57,
+          "raw": "20 deny any log",
+          "mapping_id": "arista_eos/acl-std-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
           "line_start": 63,
           "line_end": 63,
           "raw": "ip access-group MGMT-ACL in",
@@ -1504,7 +1538,7 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 8
+        "facts": 9
       },
       {
         "mapping": "arista_eos/acl-ext-ip-any-any@1",
@@ -1514,11 +1548,11 @@
         "facts": 2
       },
       {
-        "mapping": "arista_eos/acl-ext-src-any@1",
+        "mapping": "arista_eos/acl-ext-proto-any-host@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 2
+        "facts": 3
       },
       {
         "mapping": "arista_eos/acl-extended@1",
@@ -1539,14 +1573,14 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 2
       },
       {
         "mapping": "arista_eos/acl-std-entry@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 10
+        "facts": 11
       },
       {
         "mapping": "arista_eos/acl-std-net@1",
@@ -1658,7 +1692,7 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 8
+        "facts": 7
       },
       {
         "mapping": "arista_eos/ssh-idle-timeout@1",
@@ -1712,7 +1746,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.8",
+    "sbm_version": "0.9",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2112,7 +2146,7 @@
               "line_start": 52,
               "line_end": 52,
               "raw": "10 permit tcp any host 198.51.100.2 eq ssh",
-              "mapping_id": "arista_eos/acl-ext-src-any",
+              "mapping_id": "arista_eos/acl-ext-proto-any-host",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2122,9 +2156,23 @@
           "default_source": null
         },
         "dst": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": [
+            "198.51.100.2"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 52,
+              "line_end": 52,
+              "raw": "10 permit tcp any host 198.51.100.2 eq ssh",
+              "mapping_id": "arista_eos/acl-ext-proto-any-host",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "service": {
@@ -2190,6 +2238,24 @@
           "default_source": null
         },
         "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2349,6 +2415,24 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2500,6 +2584,24 @@
           "default_source": null
         },
         "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2659,6 +2761,24 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2732,6 +2852,18 @@
           "default_source": "arista_eos/defaults.yaml#no-interface-mgmt-protocol-list"
         },
         "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2834,6 +2966,18 @@
           "evidence": [],
           "default_source": null
         },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": false,
           "state": "vendor_default",
@@ -2912,6 +3056,18 @@
           "default_source": "arista_eos/defaults.yaml#no-interface-mgmt-protocol-list"
         },
         "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3182,6 +3338,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3224,6 +3386,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3276,6 +3444,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3318,6 +3492,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3370,6 +3550,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3412,6 +3598,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3464,6 +3656,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3511,6 +3709,12 @@
           "evidence": [],
           "default_source": null
         },
+        "port": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3553,6 +3757,12 @@
           "default_source": null
         },
         "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "port": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3648,6 +3858,12 @@
           "default_source": null
         },
         "auth_method": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "login_methods": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3751,6 +3967,12 @@
           "default_source": null
         },
         "auth_method": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "login_methods": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -4265,7 +4487,18 @@
               "line_start": 52,
               "line_end": 52,
               "raw": "10 permit tcp any host 198.51.100.2 eq ssh",
-              "mapping_id": "arista_eos/acl-ext-src-any",
+              "mapping_id": "arista_eos/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.cfg",
+              "line_start": 52,
+              "line_end": 52,
+              "raw": "10 permit tcp any host 198.51.100.2 eq ssh",
+              "mapping_id": "arista_eos/acl-ext-proto-any-host",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -4405,16 +4638,97 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 63,
-              "line_end": 63,
-              "raw": "ip access-group MGMT-ACL in",
-              "mapping_id": "arista_eos/ssh-access-group",
+              "line_start": 57,
+              "line_end": 57,
+              "raw": "20 deny any log",
+              "mapping_id": "arista_eos/acl-std-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.cfg",
+              "line_start": 57,
+              "line_end": 57,
+              "raw": "20 deny any log",
+              "mapping_id": "arista_eos/acl-std-entry",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
               ]
             }
           ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "EDGE-IN",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "arista_eos/defaults.yaml#acl-implicit-deny"
+        },
+        "when_empty": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "MGMT-ACL",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "arista_eos/defaults.yaml#acl-implicit-deny"
+        },
+        "when_empty": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -4558,6 +4872,17 @@
             "line_end": 52,
             "raw": "10 permit tcp any host 198.51.100.2 eq ssh",
             "mapping_id": "arista_eos/acl-ext-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 52,
+            "line_end": 52,
+            "raw": "10 permit tcp any host 198.51.100.2 eq ssh",
+            "mapping_id": "arista_eos/acl-ext-proto-any-host",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"

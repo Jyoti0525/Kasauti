@@ -95,8 +95,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, arista_eos/hardened.cfg]
-      fail: [cisco_ios_xe/fixtures/vty_acl_permits_any.cfg, arista_eos/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, arista_eos/hardened.cfg, cisco_ios_xe/fixtures/vty_acl_first_match.cfg]
+      fail: [cisco_ios_xe/fixtures/vty_acl_permits_any.cfg, arista_eos/weak.cfg, cisco_ios_xe/fixtures/vty_acl_empty.cfg]
 
   - id: REF-DANGLING-01
     title: Every reference points at something that exists

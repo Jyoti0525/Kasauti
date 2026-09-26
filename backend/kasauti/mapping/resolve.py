@@ -6,8 +6,10 @@ the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference`
 
 * **resolved or dangling**: does an object of the right kind with that name exist?
   (``acl`` -> ``ObjectDef[acl:<name>]``; ``any_object`` accepts any kind);
-* **ACL targets**: does any entry permit traffic from *any* source? That's the chain
-  vty -> ACL -> permitted sources, and it's *unknown* if a permit entry's sources weren't read;
+* **ACL targets**: can a source the ACL doesn't name get through? That's the chain
+  vty -> ACL -> permitted sources, answered by ordered first-match evaluation
+  (:mod:`kasauti.policy.firstmatch`) with the vendor's quoted implicit action, and *unknown*
+  where an entry that might decide wasn't read;
 * **groups**: ``ObjectDef.expanded`` holds members after recursive expansion, and is
   *unknown* if the nesting has a cycle or names an object that doesn't exist;
 * **filter entries naming objects** (a FortiOS policy's ``set srcaddr "WEB-SRV"`` or
@@ -25,6 +27,15 @@ the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference`
   A missing target, or one whose list is unknown, makes the attribute *unknown*.
 * **user groups** (FortiOS ``config user group``) expand to the *kinds* of the servers they
   name (``tacacs``), since what a login through the group is checked against is the question.
+  Expansions into objects run first, so a Cisco named login list naming a server group
+  expands to ``tacacs`` before the vty line naming the list takes it.
+* **lines with their own login list** (Cisco ``login authentication VTY-LOGIN``): remote
+  logins are checked against what every vty line's list has in common, a line naming no list
+  using the device default. ``AuthPolicy.login_methods`` becomes that shared set.
+* **filters guarding the device itself** (``Ruleset.applies_to: device``, FortiOS local-in
+  policies): for each interface and management protocol it offers, is every source the
+  filter doesn't list blocked, on IPv4 and, where offered, IPv6? The protocols for which it
+  is go into ``Interface.mgmt_restricted``.
 
 A dangling reference is a finding of its own (rule REF-DANGLING-01): on many platforms a
 filter naming a missing ACL filters nothing.
@@ -35,6 +46,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from kasauti.mapping.builder import EntityAcc, EntityRef, FactAcc, RefRecord, SbmBuilder
+from kasauti.policy.firstmatch import Decision, Probe, evaluate
 from kasauti.sbm.facts import Evidence, FactState
 
 GROUP_KINDS = {"address_group": "address", "service_group": "service", "user_group": "auth_server"}
@@ -61,6 +73,11 @@ SERVICES = _Family("service", "service_group", SERVICE_CATCH_ALL, "ip")
 FAMILIES = {"src": ADDRESSES, "dst": ADDRESSES, "service": SERVICES}
 
 
+MGMT_PORTS = {"ssh": "tcp", "telnet": "tcp", "http": "tcp", "https": "tcp"}
+"""Management protocols a device filter is evaluated for, and their transport; the port is
+``MgmtService[<protocol>].port`` (read, or a quoted default)."""
+
+
 def resolve_references(builder: SbmBuilder) -> None:
     objects = {key: acc for (etype, key), acc in builder.entities.items() if etype == "ObjectDef"}
     _expand_groups(objects)
@@ -68,6 +85,8 @@ def resolve_references(builder: SbmBuilder) -> None:
     for record in sorted(builder.refs, key=lambda r: (r.source, r.attribute, r.name)):
         _reference(builder, objects, record)
     _expand_references(builder, objects)
+    _session_login_lists(builder)
+    _device_filters(builder, objects)
 
 
 def _target_key(objects: dict[str, EntityAcc], kind: str, name: str) -> str | None:
@@ -94,8 +113,19 @@ def _reference(builder: SbmBuilder, objects: dict[str, EntityAcc], record: RefRe
         return
     ref.fact("target").set(f"ObjectDef[{target}]", ev)
     if target.startswith("acl:"):
-        unread = builder.unread_children.get(("ObjectDef", target), [])
-        _permits_any(builder, ref, target.split(":", 1)[1], ev, unread)
+        decision = evaluate(builder, objects, target.split(":", 1)[1], Probe())
+        _record_decision(ref.fact("permits_any"), decision, ev)
+
+
+def _record_decision(fact: FactAcc, decision: Decision, anchor: Evidence) -> None:
+    """The deciding entry is the evidence; where the vendor's implicit action decided, the
+    referring line is."""
+    evidence = decision.evidence or (anchor,)
+    if decision.permitted is None:
+        fact.unknown(evidence[0])
+    else:
+        fact.set(decision.permitted, evidence[0])
+    fact.evidence.extend(e for e in evidence[1:] if e not in fact.evidence)
 
 
 def _expand_references(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> None:
@@ -104,7 +134,9 @@ def _expand_references(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> No
         if record.expand:
             attr = record.attribute.split(".", 1)[1]
             groups.setdefault((record.source, attr), []).append(record)
-    for (source, attr), records in sorted(groups.items()):
+    # Objects first: a named login list takes its server group's kind before a line takes it.
+    ordered = sorted(groups.items(), key=lambda kv: (kv[0][0][0] != "ObjectDef", kv[0]))
+    for (source, attr), records in ordered:
         items: set[str] = set()
         evidence: list[Evidence] = []
         unknown: Evidence | None = None
@@ -133,36 +165,140 @@ def _expand_references(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> No
         fact.evidence.extend(evidence[1:])
 
 
-def _permits_any(
-    builder: SbmBuilder, ref: EntityAcc, acl: str, ev: Evidence, unread: list[Evidence]
-) -> None:
-    """TRUE with the permitting entry as evidence; UNKNOWN if a permit entry's sources weren't
-    read, or an entry line wasn't understood at all; FALSE only when every entry was read and
-    no permit entry has ``any`` as its source."""
-    unknown: list[Evidence] = list(unread)
-    for (etype, _), acc in sorted(builder.entities.items()):
-        if etype != "FilterRule":
-            continue
-        ruleset = acc.facts.get("ruleset")
-        if ruleset is None or ruleset.value != acl:
-            continue
-        action = acc.facts.get("action")
-        src = acc.facts.get("src")
-        if action is None or action.state is not FactState.EXPLICIT:
-            unknown.extend(acc.evidence or [])
-            continue
-        if action.value != "permit":
-            continue
-        if src is None or src.state is not FactState.EXPLICIT:
-            unknown.extend(acc.evidence or (action.evidence if action.evidence else []))
-            continue
-        if "any" in src.value:
-            ref.fact("permits_any").set(True, src.evidence[0])
-            return
-    if unknown:
-        ref.fact("permits_any").unknown(unknown[0])
+def _session_login_lists(builder: SbmBuilder) -> None:
+    """Remote logins go through vty lines. Where some name their own method list, what remote
+    logins are checked against is what every vty line's list has in common (a line naming no
+    list uses the device default): a TACACS+ default doesn't help a line whose list is local.
+    Different central servers on different lines share only ``local``; that is a FAIL to
+    explain, never a PASS to regret."""
+    vty = [
+        acc
+        for (etype, _), acc in sorted(builder.entities.items())
+        if etype == "MgmtSession" and _str(acc.facts.get("kind")) == "vty"
+    ]
+    own = [s.facts["login_methods"] for s in vty if _present(s.facts.get("login_methods"))]
+    if not own:
         return
-    ref.fact("permits_any").set(False, ev)
+    policy = builder.entity(builder.singleton("AuthPolicy")).fact("login_methods")
+    lists = list(own)
+    if any(not _present(s.facts.get("login_methods")) for s in vty):
+        lists.append(policy)  # a line with no list of its own uses the default
+    evidence = [ev for f in own for ev in f.evidence]
+    if not evidence:
+        return
+    if any(f.state is FactState.UNKNOWN for f in lists):
+        policy.unknown(evidence[0])
+    elif any(f.state is FactState.ABSENT for f in lists):
+        return  # the default list isn't set: the rule's own absent handling applies
+    else:
+        shared = frozenset.intersection(*(frozenset(f.value) for f in lists))
+        before = list(policy.evidence)
+        policy.set(shared, evidence[0])
+        policy.evidence.extend(e for e in [*evidence[1:], *before] if e not in policy.evidence)
+        policy.default_source = None
+        return
+    policy.evidence.extend(e for e in evidence[1:] if e not in policy.evidence)
+
+
+def _device_filters(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> None:
+    """``Interface.mgmt_restricted``: see the module docstring. A protocol counts only where
+    every IP version the interface offers it on is guarded, and the ruleset blocks every
+    source it doesn't list."""
+    families: dict[str | None, list[str]] = {}
+    for (etype, key), acc in sorted(builder.entities.items()):
+        if etype == "Ruleset" and _str(acc.facts.get("applies_to")) == "device":
+            families.setdefault(_str(acc.facts.get("family")), []).append(key)
+    if not families:
+        return
+    for (etype, name), iface in sorted(builder.entities.items()):
+        protocols = iface.facts.get("mgmt_protocols")
+        if etype != "Interface" or protocols is None:
+            continue
+        if protocols.state not in (FactState.EXPLICIT, FactState.VENDOR_DEFAULT):
+            continue
+        v6 = iface.facts.get("mgmt_protocols_v6")
+        verdicts = {
+            proto: _protocol_guard(builder, objects, families, interface=name, proto=proto, v6=v6)
+            for proto in sorted(set(protocols.value) & MGMT_PORTS.keys())
+        }
+        restricted = frozenset(p for p, d in verdicts.items() if d.permitted is False)
+        unknown = [ev for d in verdicts.values() if d.permitted is None for ev in d.evidence]
+        decided = [ev for d in verdicts.values() if d.permitted is False for ev in d.evidence]
+        anchor = [*protocols.evidence[:1], *decided, *unknown]
+        if not anchor:
+            continue
+        fact = iface.fact("mgmt_restricted")
+        if any(d.permitted is None for d in verdicts.values()):
+            fact.unknown(anchor[0])
+        else:
+            fact.set(restricted, anchor[0])
+        fact.evidence.extend(e for e in anchor if e not in fact.evidence)
+
+
+def _protocol_guard(
+    builder: SbmBuilder,
+    objects: dict[str, EntityAcc],
+    families: dict[str | None, list[str]],
+    *,
+    interface: str,
+    proto: str,
+    v6: FactAcc | None,
+) -> Decision:
+    """Can a source the device filters don't list reach ``proto`` on ``interface``? Over
+    IPv4, and over IPv6 unless the interface is known not to offer it there."""
+    port = _port(builder, proto)
+    if port is None:
+        return Decision(None, (), f"the port {proto} listens on isn't known")
+    probe = Probe(f"{MGMT_PORTS[proto]}/{port}", interface, to_device=True)
+    needed = ["ipv4"]
+    if v6 is None or v6.state in (FactState.ABSENT, FactState.UNKNOWN) or proto in v6.value:
+        needed.append("ipv6")
+    verdicts = [_guarded(builder, objects, families, family, probe) for family in needed]
+    permitted = [v for v in verdicts if v.permitted is True]
+    if permitted:
+        return permitted[0]
+    open_ = [v for v in verdicts if v.permitted is None]
+    if open_:
+        return open_[0]
+    return Decision(False, tuple(ev for v in verdicts for ev in v.evidence), verdicts[0].reason)
+
+
+def _guarded(
+    builder: SbmBuilder,
+    objects: dict[str, EntityAcc],
+    families: dict[str | None, list[str]],
+    family: str,
+    probe: Probe,
+) -> Decision:
+    """Blocked if any device ruleset for this IP version blocks it (traffic must pass them
+    all); permitted if none exists or none blocks it."""
+    rulesets = [*families.get(family, []), *families.get(None, [])]
+    if not rulesets:
+        return Decision(True, (), f"no filter guards the device over {family}")
+    decisions = [evaluate(builder, objects, rs, probe) for rs in rulesets]
+    blocked = [d for d in decisions if d.permitted is False]
+    if blocked:
+        return blocked[0]
+    open_ = [d for d in decisions if d.permitted is None]
+    return open_[0] if open_ else decisions[0]
+
+
+def _port(builder: SbmBuilder, proto: str) -> int | None:
+    service = builder.entities.get(("MgmtService", proto))
+    port = service.facts.get("port") if service else None
+    if port is None or port.state not in (FactState.EXPLICIT, FactState.VENDOR_DEFAULT):
+        return None
+    return int(port.value)
+
+
+def _present(fact: FactAcc | None) -> bool:
+    return fact is not None and fact.state is not FactState.ABSENT
+
+
+def _str(fact: FactAcc | None) -> str | None:
+    if fact is None or fact.state not in (FactState.EXPLICIT, FactState.VENDOR_DEFAULT):
+        return None
+    return str(fact.value)
 
 
 def _expand_groups(objects: dict[str, EntityAcc]) -> None:
