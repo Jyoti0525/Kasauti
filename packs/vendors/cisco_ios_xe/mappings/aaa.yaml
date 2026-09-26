@@ -1,0 +1,172 @@
+# AAA: local accounts and their password storage, TACACS+/RADIUS servers, lockout, password
+# policy. The secret itself is matched by an unnamed <STR> slot: it is never captured into a
+# fact, and evidence lines are masked (`secret 9 ****`).
+#
+# Cisco password types: 0 = clear text, 5 = MD5-crypt, 6 = AES (reversible), 7 = Vigenère
+# (reversible), 8 = PBKDF2-SHA-256, 9 = scrypt. A type not listed here makes hash_type
+# *unknown*, which a rule reports as REVIEW rather than guessing.
+mappings:
+  # `enable` is modelled as the local account it effectively is (privilege 15), so the
+  # password-storage rule covers it like any user.
+  - id: cisco_ios_xe/enable-secret
+    vendor: cisco_ios_xe
+    entity: {type: LocalUser, key: enable}
+    match: "enable secret <INT:type> <STR>"
+    effect:
+      - {assert: LocalUser.privilege, value: 15}
+      - {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/enable-password
+    vendor: cisco_ios_xe
+    entity: {type: LocalUser, key: enable}
+    match: "enable password <INT:type> <STR>"
+    effect:
+      - {assert: LocalUser.privilege, value: 15}
+      - {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "7": cisco-type-7}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/username-privilege-secret
+    vendor: cisco_ios_xe
+    entity: {type: LocalUser, key: "{name}"}
+    match: "username <STR:name> privilege <INT:priv> secret <INT:type> <STR>"
+    effect:
+      - {set: LocalUser.privilege, from: priv}
+      - {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/username-privilege-password
+    vendor: cisco_ios_xe
+    entity: {type: LocalUser, key: "{name}"}
+    match: "username <STR:name> privilege <INT:priv> password <INT:type> <STR>"
+    effect:
+      - {set: LocalUser.privilege, from: priv}
+      - {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "6": cisco-type-6-aes, "7": cisco-type-7}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/username-secret
+    vendor: cisco_ios_xe
+    entity: {type: LocalUser, key: "{name}"}
+    match: "username <STR:name> secret <INT:type> <STR>"
+    effect: {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/username-password
+    vendor: cisco_ios_xe
+    entity: {type: LocalUser, key: "{name}"}
+    match: "username <STR:name> password <INT:type> <STR>"
+    effect: {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "6": cisco-type-6-aes, "7": cisco-type-7}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Central authentication servers ----------------------------------------------------------
+  - id: cisco_ios_xe/tacacs-server
+    vendor: cisco_ios_xe
+    entity: {type: AuthServer, key: "tacacs:{name}"}
+    match: "tacacs server <STR:name>"
+    effect: {assert: AuthServer.kind, value: tacacs}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/tacacs-server-address
+    vendor: cisco_ios_xe
+    context: ["tacacs server <STR:name>"]
+    entity: {type: AuthServer, key: "tacacs:{name}"}
+    match: "address ipv4 <IP:host>"
+    effect: {set: AuthServer.host, from: host}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/tacacs-server-key-typed
+    vendor: cisco_ios_xe
+    context: ["tacacs server <STR:name>"]
+    entity: {type: AuthServer, key: "tacacs:{name}"}
+    match: "key <INT> <STR>"
+    effect: {assert: AuthServer.key_present, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/tacacs-server-key
+    vendor: cisco_ios_xe
+    context: ["tacacs server <STR:name>"]
+    entity: {type: AuthServer, key: "tacacs:{name}"}
+    match: "key <STR>"
+    effect: {assert: AuthServer.key_present, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/tacacs-server-host-legacy
+    vendor: cisco_ios_xe
+    entity: {type: AuthServer, key: "tacacs:{host}"}
+    match: "tacacs-server host <IP:host>"
+    effect:
+      - {assert: AuthServer.kind, value: tacacs}
+      - {set: AuthServer.host, from: host}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/tacacs-server-host-legacy-key
+    vendor: cisco_ios_xe
+    entity: {type: AuthServer, key: "tacacs:{host}"}
+    match: "tacacs-server host <IP:host> key <INT> <STR>"
+    effect:
+      - {assert: AuthServer.kind, value: tacacs}
+      - {set: AuthServer.host, from: host}
+      - {assert: AuthServer.key_present, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/radius-server
+    vendor: cisco_ios_xe
+    entity: {type: AuthServer, key: "radius:{name}"}
+    match: "radius server <STR:name>"
+    effect: {assert: AuthServer.kind, value: radius}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/radius-server-address
+    vendor: cisco_ios_xe
+    context: ["radius server <STR:name>"]
+    entity: {type: AuthServer, key: "radius:{name}"}
+    match: "address ipv4 <IP:host>"
+    effect: {set: AuthServer.host, from: host}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/radius-server-address-ports
+    vendor: cisco_ios_xe
+    context: ["radius server <STR:name>"]
+    entity: {type: AuthServer, key: "radius:{name}"}
+    match: "address ipv4 <IP:host> auth-port <INT> acct-port <INT>"
+    effect: {set: AuthServer.host, from: host}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/radius-server-key-typed
+    vendor: cisco_ios_xe
+    context: ["radius server <STR:name>"]
+    entity: {type: AuthServer, key: "radius:{name}"}
+    match: "key <INT> <STR>"
+    effect: {assert: AuthServer.key_present, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/radius-server-key
+    vendor: cisco_ios_xe
+    context: ["radius server <STR:name>"]
+    entity: {type: AuthServer, key: "radius:{name}"}
+    match: "key <STR>"
+    effect: {assert: AuthServer.key_present, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Lockout and password policy -------------------------------------------------------------
+  # login block-for <seconds> attempts <tries> within <seconds>: after <tries> failures within
+  # the window, all logins are refused for <seconds> (login quiet mode).
+  - id: cisco_ios_xe/login-block-for
+    vendor: cisco_ios_xe
+    match: "login block-for <INT:block> attempts <INT:tries> within <INT:window>"
+    effect:
+      - {set: LockoutPolicy.lockout_s, from: block}
+      - {set: LockoutPolicy.max_attempts, from: tries}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/security-passwords-min-length
+    vendor: cisco_ios_xe
+    match: "security passwords min-length <INT:n>"
+    effect: {set: PasswordPolicy.min_length, from: n}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

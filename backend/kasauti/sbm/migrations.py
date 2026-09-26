@@ -14,8 +14,18 @@ from kasauti.sbm.document import SBM_VERSION
 RawSBM = dict[str, Any]
 Step = Callable[[RawSBM], RawSBM]
 
+
+def _v01_to_v02(data: RawSBM) -> RawSBM:
+    """0.1 -> 0.2 (M1): entities gain ``evidence``; the document gains ``known_empty`` and
+    ``unread``; ``TimePolicy`` is new. All additions default to empty, so 0.1 content is kept
+    as-is. A 0.1 ``TimeSource.authenticated`` keeps its meaning (a key is configured)."""
+    data.setdefault("known_empty", {})
+    data.setdefault("unread", {})
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
-MIGRATIONS: dict[str, tuple[str, Step]] = {}
+MIGRATIONS: dict[str, tuple[str, Step]] = {"0.1": ("0.2", _v01_to_v02)}
 
 
 class MigrationError(ValueError):

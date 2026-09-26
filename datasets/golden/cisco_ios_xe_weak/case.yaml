@@ -1,0 +1,18 @@
+# E1 golden case (PLAN §21.1). The labels below are ground truth written from the planted
+# weaknesses catalogued in datasets/SOURCES.md (W1-W20), not from engine output.
+description: Cisco IOS XE 17.9 edge router with 20 planted weaknesses
+input: authored/cisco_ios_xe/weak.cfg
+input_sha256: 11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946
+vendor: null            # must be recognised by fingerprint
+frameworks: [nist_800_53r5]
+expected_statuses:
+  MGMT-TELNET-01: FAIL              # W18 vty 0-4 ssh+telnet, W19 vty 5-15 telnet only
+  MGMT-SESSION-TIMEOUT-01: FAIL     # W17 console 0 0, W18 vty 0-4 0 0, W19 vty 5-15 30 min
+  MGMT-HTTP-01: FAIL                # W8 ip http server
+  MGMT-VTY-ACL-01: FAIL             # W18, W19 no access-class
+  AAA-LOCAL-PASSWORD-HASH-01: FAIL  # W3 enable password 0, W4 username password 7
+  AAA-CENTRAL-AUTH-01: FAIL         # W5 no AAA server
+  AAA-LOCKOUT-01: FAIL              # W6 no login block-for
+  LOG-REMOTE-01: FAIL               # W12 no logging host
+  SNMP-COMMUNITY-01: FAIL           # W13 public RO, W14 private RW
+  TIME-NTP-AUTH-01: FAIL            # W15 ntp server without authentication

@@ -9,9 +9,13 @@ requires-python = ">=3.12,<3.13"
 # Every dependency's licence is verified at the source before it is added (docs/TODO.md S.03)
 # and checked again in CI by tools/check_licences.py.
 dependencies = [
-    "pydantic>=2.13,<3",      # MIT
-    "pyyaml>=6.0.3,<7",       # MIT
-    "structlog>=26.1,<27",    # MIT OR Apache-2.0
+    "pydantic>=2.13,<3",            # MIT
+    "pyyaml>=6.0.3,<7",             # MIT
+    "structlog>=26.1,<27",          # MIT OR Apache-2.0
+    "charset-normalizer>=3.5,<4",   # MIT (encoding detection; not chardet, which is LGPL)
+    "defusedxml>=0.7.1,<0.8",       # PSF-2.0 (XXE / billion-laughs safe XML parsing)
+    "google-re2>=1.1,<2",           # BSD-3-Clause (linear-time regex for untrusted input)
+    "reportlab>=5.0,<6",            # BSD-3-Clause (+ Pillow MIT-CMU) for PDF reports
 ]
 
 [project.scripts]
@@ -24,6 +28,8 @@ dev = [
     "ruff>=0.16",             # MIT
     "mypy>=2.3",              # MIT
     "types-PyYAML>=6.0.12",   # Apache-2.0
+    "types-reportlab>=5.0",   # Apache-2.0 (typeshed)
+    "types-defusedxml>=0.7",  # Apache-2.0 (typeshed)
     "pre-commit>=4.6",        # MIT
     "pip-audit>=2.10",        # Apache-2.0
     "bandit>=1.9",            # Apache-2.0
@@ -71,6 +77,10 @@ mypy_path = ["backend", "eval", "tools"]
 plugins = ["pydantic.mypy"]
 warn_unreachable = true
 files = ["backend/kasauti", "eval/harness", "tools"]
+
+[[tool.mypy.overrides]]
+module = ["re2"]            # google-re2 ships no type information; wrapped in kasauti.rules.regex
+ignore_missing_imports = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

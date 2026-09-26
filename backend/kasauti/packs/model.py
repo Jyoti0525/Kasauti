@@ -17,11 +17,12 @@ from pydantic import (
     model_validator,
 )
 
-from kasauti.mapping.model import AttrPath, Mapping, Pattern
+from kasauti.mapping.model import AttrPath, Mapping, Pattern, slot_names
 from kasauti.packs.versions import validate_range
 from kasauti.rules.derivation import Derivation
-from kasauti.rules.expr import Scalar
+from kasauti.rules.expr import Scalar, attribute_type
 from kasauti.rules.model import Domain, FixIntent, Rule
+from kasauti.sbm.entities import ENTITY_TYPES, SINGLETON_TYPES
 from kasauti.shape.model import ShapeFamily
 
 FORMAT_VERSION = 1
@@ -94,6 +95,12 @@ class IdentitySource(_Strict):
     ``hostname <STR:value>``."""
     context: tuple[Pattern, ...] = ()
 
+    @model_validator(mode="after")
+    def _captures_value(self) -> Self:
+        if "value" not in slot_names(self.pattern):
+            raise ValueError(f"identity pattern {self.pattern!r} must capture a `value` slot")
+        return self
+
 
 class IdentitySpec(_Strict):
     fields: dict[IdentityField, tuple[IdentitySource, ...]]
@@ -103,17 +110,63 @@ class IdentitySpec(_Strict):
 
 
 class DefaultEntry(_Strict):
+    """What holds when the configuration says nothing, for an OS version range.
+
+    Two forms:
+
+    * ``attr`` + ``value``: an attribute's default (``MgmtSession.idle_timeout_s = 600``).
+      With ``entity_key`` it names one entity (``MgmtService`` ``telnet``) and materialises it
+      if the config never mentions it; without, it fills that attribute on every entity of
+      the type (or on the singleton).
+    * ``none_of``: the vendor ships *no* entities of this type (no SNMP communities until
+      one is configured). Only this lets a rule treat "none seen" as "none exist".
+    """
+
     id: EntryId
-    attr: AttrPath
+    attr: AttrPath | None = None
     entity_key: str | None = None
-    """Which entity the default applies to (``telnet`` for MgmtService.enabled); None for
-    singletons or "every entity of this type"."""
-    value: Scalar | tuple[Scalar, ...]
+    value: Scalar | tuple[Scalar, ...] | None = None
+    none_of: str | None = None
     os_versions: VersionRangeText = "*"
     source: Literal["vendor_manual", "vendor_doc", "curated"]
     reference: str = Field(min_length=3)
     """Where the default is documented (manual section, doc URL). Required: defaults decide
     verdicts, so they must be traceable."""
+
+    @model_validator(mode="after")
+    def _one_form(self) -> Self:
+        if (self.attr is None) == (self.none_of is None):
+            raise ValueError("give exactly one of `attr` (with `value`) or `none_of`")
+        if self.none_of is not None:
+            if self.value is not None or self.entity_key is not None:
+                raise ValueError("`none_of` takes no `value` or `entity_key`")
+            if self.none_of not in ENTITY_TYPES or self.none_of in SINGLETON_TYPES:
+                raise ValueError(f"none_of: {self.none_of!r} is not a multi-entity type")
+            return self
+        if self.value is None:
+            raise ValueError("`attr` needs a `value`")
+        entity_type, attr = str(self.attr).split(".", 1)
+        kind = attribute_type(entity_type, attr)
+        if kind is None or attr == "key":
+            raise ValueError(f"{self.attr}: no such SBM attribute")
+        if entity_type in SINGLETON_TYPES and self.entity_key is not None:
+            raise ValueError(f"{entity_type} is a singleton; drop `entity_key`")
+        if not _value_fits(kind, self.value):
+            raise ValueError(f"{self.attr} is {kind}-valued; {self.value!r} doesn't fit")
+        return self
+
+
+def _value_fits(kind: str, value: Scalar | tuple[Scalar, ...]) -> bool:
+    match kind:
+        case "bool":
+            return isinstance(value, bool)
+        case "int":
+            return isinstance(value, int) and not isinstance(value, bool)
+        case "str":
+            return isinstance(value, str)
+        case "set":
+            return isinstance(value, tuple) and all(isinstance(v, str) for v in value)
+    return False
 
 
 class DefaultsFile(_Strict):
@@ -190,6 +243,8 @@ class FrameworkCatalog(_Strict):
     title: str
     version: str
     source_url: str
+    source_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    """SHA-256 of the official file the IDs were extracted from, so the import is verifiable."""
     licence: str
     retrieved: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
     controls: tuple[Control, ...]

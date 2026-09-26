@@ -52,6 +52,23 @@ PASS) and what the hardened twin does instead.
 | W19 | 54–57 | vty 5–15: **Telnet only**, 30-minute timeout, no access-class | `transport input none` |
 | W20 | absent | No login banner | `banner login` |
 
+## Golden cases (`datasets/golden/`, E1)
+
+Each case holds a `case.yaml` (the input path and SHA-256, and hand-labelled verdicts for every
+rule) and an `expected.json` snapshot of the full audit result, reviewed by hand whenever it
+changes (PLAN §21.1; `eval/harness/golden.py`). The labels come from the weakness catalogue
+above, never from the engine's output.
+
+| Case | Input | Labels |
+|---|---|---|
+| `cisco_ios_xe_weak` | `authored/cisco_ios_xe/weak.cfg` | 10 rules FAIL (W3–W6, W8, W12–W15, W17–W19) |
+| `cisco_ios_xe_hardened` | `authored/cisco_ios_xe/hardened.cfg` | 10 rules PASS |
+
+Weaknesses not yet covered by a rule (they arrive with the M2 rule set): W1 `service pad`, W2
+password encryption, W7 minimum password length, W9 HTTPS server without an ACL, W10 proxy ARP,
+W11 the permit-any edge ACL, W16 SSH version, W20 login banner. None of them is reported as a
+PASS today: no rule judges them yet.
+
 ## Third-party data
 
 None yet. Batfish example configs (Apache-2.0, TODO M2.33) and the NAssim manual corpus

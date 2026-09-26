@@ -25,6 +25,10 @@ word is a literal key (`key: telnet`). PLAN §9.3 writes `key: ifname` as shorth
 rejects that form with a hint, because stored literally it would merge every interface into
 one entity.
 
+**`{#}` is an ordinal** (v5.1.3): the 1-based position of this statement among those opening the
+same entity type with the same key template, in file order. Use it where the natural key is a
+secret: an SNMP community is `community-{#}`, never the community string.
+
 ## 2. Patterns
 
 Whitespace-separated tokens. A token is a literal word or a slot `<TYPE>` / `<TYPE:name>`:
@@ -42,7 +46,8 @@ Slot names are unique within a pattern. Literal words match case-sensitively.
 **Context** is a list of patterns that must match a contiguous run of the statement's block
 path **ending at its parent** (a suffix match), so a mapping can say
 `["deviceconfig", "system", "service"]` without spelling out the whole XML path. Slots
-captured in the context are available to the entity key and effects.
+captured in the context are available to the entity key and effects. **An empty context means
+top level only**: `service pad` inside an interface block doesn't match a top-level mapping.
 
 Family conventions that make one language serve all shapes (fixed by the shape parsers, M1–M2):
 
@@ -74,13 +79,19 @@ captured by `match` or `context`.
 
 **Order of operations for a value:** slot text → `map` (vendor word → SBM word or value) →
 `transform`s in order (`invert`, `lower`, `upper`, `{unit: minutes}` → seconds,
-`{split: ","}`).
+`{split: ","}`) → coercion to the attribute's type. For `set`, a word missing from `map` makes the
+fact **unknown** (we saw the line but can't say what it means), unless `otherwise: <value>`
+gives the value for every unlisted word (`is_well_known`: listed strings → true, others → false).
+Anything else that can't be carried through (`invert` on a non-boolean, text for a number) is
+unknown too. For `members`, unlisted words are kept as they are.
 
 **Negation.** `auto` (the default) means: if the statement starts with one of the pack's
 `negation_words` (`no`, `undo`, `unset`, `delete`, …) followed by text that matches this
 mapping, the effect is inverted: a boolean `assert` flips, a `members` item is removed, a `set`
 reverts to absent (so the default applies). An explicit pattern overrides `auto`; `null`
-disables negation.
+disables negation. A negated statement may drop the values (`no exec-timeout`): it matches if what
+follows the negation word equals the pattern's keywords. A negated `members` with no items
+(`unset allowaccess`) sets the attribute to the empty set.
 
 ## 4. Provenance
 
@@ -95,3 +106,32 @@ be traced back to the mapping and the person who approved it.
 compare by natural order (digit runs numerically, letter runs case-insensitively; an extension
 sorts after its prefix). One comparator covers Cisco `17.3.4a`, Junos `21.4R3-S2`, PAN-OS
 `10.2.9-h1`, FortiOS `7.2.8` and EOS `4.30.0F` without per-vendor code.
+
+## 6. How the engine applies mappings (M1)
+
+Source: `backend/kasauti/mapping/engine.py`. For each statement, in file order:
+
+1. **Match.** Every mapping in range for the device's OS version whose context and pattern match.
+   With the OS version unknown, only mappings scoped `*` apply; the others are listed in the
+   audit's assurance section.
+2. **Apply, most specific first.** Specificity is the number of literal words (pattern plus
+   context), then the pattern length. An attribute written by a more specific mapping on this
+   statement isn't overwritten by a less specific one, so `transport input none` beats
+   `transport input <LIST>`.
+3. **Near miss.** If nothing matched fully, but a mapping in context matched the statement's
+   keywords and at least the first token after them (`exec-timeout 10` against
+   `exec-timeout <INT> <INT>`), that mapping's facts become **unknown**, with this line as
+   evidence. If the entity can't be keyed, its type is marked **unread**. A keyword mismatch
+   (`logging buffered 4096` against `logging <IP>`) is not a near miss.
+4. Statements nothing matched are returned as **unmapped** (near misses included) for the
+   Training Studio.
+
+How repeated statements combine: a scalar is last-wins, and its evidence is that line.
+`members` accumulate, and negated members are removed. A negated `set` returns the fact to
+*absent*, so a default can apply. **Unknown is sticky**: once a line about an attribute couldn't
+be read, no later value makes the fact look certain.
+
+Entity evidence (the lines that *name* an entity, like `line vty 0 4`) comes from context-free
+mappings. Child lines are evidence of their own facts.
+
+Then version-scoped defaults fill what is still absent (see `pack-format.md`, `defaults.yaml`).

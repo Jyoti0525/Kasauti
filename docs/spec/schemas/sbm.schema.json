@@ -3,6 +3,14 @@
     "AuthServer": {
       "additionalProperties": false,
       "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "host": {
           "$ref": "#/$defs/Fact_str_",
           "default": {
@@ -52,6 +60,14 @@
       "additionalProperties": false,
       "description": "``key`` is the banner kind (motd, login, exec). Banner text is attacker-writable free\ntext: it is stored for display only and never fed to any AI signal (PLAN §17).",
       "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -109,6 +125,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -148,6 +172,14 @@
     "Device": {
       "additionalProperties": false,
       "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "hardware": {
           "$ref": "#/$defs/Fact_str_",
           "default": {
@@ -567,6 +599,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -669,6 +709,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "filters_in": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
@@ -744,6 +792,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -801,6 +857,14 @@
     "LocalUser": {
       "additionalProperties": false,
       "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "hash_type": {
           "$ref": "#/$defs/Fact_str_",
           "default": {
@@ -840,6 +904,14 @@
     "LockoutPolicy": {
       "additionalProperties": false,
       "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "default": "lockout-policy",
           "title": "Key",
@@ -876,6 +948,14 @@
     "LogTarget": {
       "additionalProperties": false,
       "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "host": {
           "$ref": "#/$defs/Fact_str_",
           "default": {
@@ -942,6 +1022,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "default": "logging-policy",
           "title": "Key",
@@ -987,6 +1075,14 @@
             "state": "absent",
             "value": null
           }
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
         },
         "kex": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
@@ -1055,6 +1151,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "idle_timeout_s": {
           "$ref": "#/$defs/Fact_int_",
           "default": {
@@ -1113,6 +1217,14 @@
       "additionalProperties": false,
       "description": "A named object that other statements reference; ``key`` is ``<kind>:<name>``.",
       "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -1161,6 +1273,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "default": "password-policy",
           "title": "Key",
@@ -1207,6 +1327,14 @@
       "additionalProperties": false,
       "description": "``key`` is ``<protocol>:<scope>``, e.g. ``ospf:area 0`` or ``bgp:neighbor 192.0.2.1``.",
       "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -1265,6 +1393,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "filter": {
           "$ref": "#/$defs/Fact_str_",
           "default": {
@@ -1313,6 +1449,14 @@
             "value": null
           }
         },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
         "key": {
           "minLength": 1,
           "title": "Key",
@@ -1340,6 +1484,41 @@
       "title": "SnmpUser",
       "type": "object"
     },
+    "TimePolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "auth_enforced": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "key": {
+          "default": "time-policy",
+          "title": "Key",
+          "type": "string"
+        },
+        "type": {
+          "const": "TimePolicy",
+          "default": "TimePolicy",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "title": "TimePolicy",
+      "type": "object"
+    },
     "TimeSource": {
       "additionalProperties": false,
       "properties": {
@@ -1351,6 +1530,14 @@
             "state": "absent",
             "value": null
           }
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
         },
         "host": {
           "$ref": "#/$defs/Fact_str_",
@@ -1390,6 +1577,14 @@
             "state": "absent",
             "value": null
           }
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
         },
         "key": {
           "minLength": 1,
@@ -1464,6 +1659,7 @@
             "RoutingAuth": "#/$defs/RoutingAuth",
             "SnmpCommunity": "#/$defs/SnmpCommunity",
             "SnmpUser": "#/$defs/SnmpUser",
+            "TimePolicy": "#/$defs/TimePolicy",
             "TimeSource": "#/$defs/TimeSource",
             "Tunnel": "#/$defs/Tunnel"
           },
@@ -1504,6 +1700,9 @@
             "$ref": "#/$defs/TimeSource"
           },
           {
+            "$ref": "#/$defs/TimePolicy"
+          },
+          {
             "$ref": "#/$defs/SnmpCommunity"
           },
           {
@@ -1535,10 +1734,27 @@
       "title": "Entities",
       "type": "array"
     },
+    "known_empty": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Known Empty",
+      "type": "object"
+    },
     "sbm_version": {
-      "default": "0.1",
+      "default": "0.2",
       "title": "Sbm Version",
       "type": "string"
+    },
+    "unread": {
+      "additionalProperties": {
+        "items": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "type": "array"
+      },
+      "title": "Unread",
+      "type": "object"
     }
   },
   "title": "SecurityBaselineModel",

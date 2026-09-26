@@ -1,0 +1,61 @@
+# Logging, SNMP and time rules (PLAN §12.3).
+rules:
+  - id: LOG-REMOTE-01
+    title: Logs are sent to a remote log server
+    intent: >
+      Logs kept only on the device are lost when it reboots and can be erased by whoever
+      compromises it; a remote copy survives both.
+    domain: logging
+    for_each: Device
+    assert: logging.remote_configured
+    on_absent: fail              # no remote target configured is the violation
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: logging.remote_configured, equal: true}
+    refs:
+      nist_800_53r5: [AU-4(1), AU-9(2)]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: SNMP-COMMUNITY-01
+    title: No SNMP community is well known or writable
+    intent: >
+      A guessable community string is a default password; a write community lets anyone
+      who guesses it reconfigure the device.
+    domain: snmp
+    for_each: Device
+    assert: not snmp.weak_community_present
+    on_absent: resolve_default   # "no communities" is only known from the vendor default
+    on_unknown: review
+    severity: {base: high}
+    fix_intent: {make: snmp.weak_community_present, equal: false}
+    refs:
+      nist_800_53r5: [IA-5, CM-6]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: TIME-NTP-AUTH-01
+    title: Time sources are authenticated
+    intent: >
+      Log timestamps and certificate checks depend on the clock; an unauthenticated time
+      source lets an attacker move it.
+    domain: time
+    for_each: TimeSource
+    assert: "authenticated and all(TimePolicy: auth_enforced)"
+    on_absent: resolve_default
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: authenticated, equal: true}
+    refs:
+      nist_800_53r5: [SC-45(1), IA-3(1)]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]

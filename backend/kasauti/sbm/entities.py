@@ -6,10 +6,12 @@ SBM is a small entity model rather than a flat dictionary. Every attribute is a 
 Each entity has a ``type`` discriminator and a ``key`` that is unique within its type
 (``"vty 0-4"``, ``"GigabitEthernet0/1"``, ``"telnet"``). Singletons use a fixed key.
 
-Deviations from the §8.1 table, both needed by other parts of the plan:
+Deviations from the §8.1 table, each needed by other parts of the plan:
 
 * ``LoggingPolicy`` holds the device-wide logging flags (timestamps, admin_logged,
   config_change_logged) that §8.1 lists beside ``LogTarget``; they aren't per-target.
+* ``TimePolicy`` holds device-wide NTP settings. Whether authentication is *enforced* (Cisco
+  ``ntp authenticate``, OpenConfig ``enable-ntp-auth``) is not a property of one server.
 * ``ObjectDef`` holds named address/service objects, groups and ACLs, the targets of the
   ``ref`` primitive and the reference resolver (§9.1, v5.1).
 """
@@ -20,7 +22,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from kasauti.sbm.facts import Fact, StrSet
+from kasauti.sbm.facts import Evidence, Fact, StrSet
 
 BoolFact = Fact[bool]
 IntFact = Fact[int]
@@ -32,6 +34,9 @@ class Entity(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     key: str = Field(min_length=1)
+    evidence: tuple[Evidence, ...] = ()
+    """The statements that opened or named this entity (``line vty 0 4``), so a finding about
+    it can point at where it is, even when the attribute in question was never set."""
 
     @property
     def entity_id(self) -> str:
@@ -150,6 +155,14 @@ class TimeSource(Entity):
     type: Literal["TimeSource"] = "TimeSource"
     host: StrFact = StrFact()
     authenticated: BoolFact = BoolFact()
+    """A key is configured for this server. Only effective if ``TimePolicy.auth_enforced``."""
+
+
+class TimePolicy(Entity):
+    type: Literal["TimePolicy"] = "TimePolicy"
+    key: str = "time-policy"
+    auth_enforced: BoolFact = BoolFact()
+    """The device rejects time from unauthenticated sources (``ntp authenticate``)."""
 
 
 # --- SNMP -----------------------------------------------------------------------------------
@@ -265,6 +278,7 @@ AnyEntity = Annotated[
     | LogTarget
     | LoggingPolicy
     | TimeSource
+    | TimePolicy
     | SnmpCommunity
     | SnmpUser
     | CryptoProfile
@@ -291,6 +305,7 @@ ENTITY_TYPES: dict[str, type[Entity]] = {
         LogTarget,
         LoggingPolicy,
         TimeSource,
+        TimePolicy,
         SnmpCommunity,
         SnmpUser,
         CryptoProfile,
@@ -303,7 +318,9 @@ ENTITY_TYPES: dict[str, type[Entity]] = {
     )
 }
 
-SINGLETON_TYPES = frozenset({"Device", "PasswordPolicy", "LockoutPolicy", "LoggingPolicy"})
+SINGLETON_TYPES = frozenset(
+    {"Device", "PasswordPolicy", "LockoutPolicy", "LoggingPolicy", "TimePolicy"}
+)
 
 
 def attribute_names(entity_type: str) -> tuple[str, ...]:
@@ -312,7 +329,7 @@ def attribute_names(entity_type: str) -> tuple[str, ...]:
     return tuple(
         name
         for name, field in cls.model_fields.items()
-        if name not in ("type", "key") and _is_fact(field.annotation)
+        if name not in ("type", "key", "evidence") and _is_fact(field.annotation)
     )
 
 

@@ -161,4 +161,8 @@ class Finding(_Strict):
     severity_reason: str | None = None
     """e.g. ``High (base) → Critical: telnet allowed on wan1 (untrusted)`` (§12.7)."""
     reason: str
+    actual: tuple[str, ...] = ()
+    """What the device has, fact by fact: ``MgmtSession[vty 0-4].transport = {ssh, telnet}``."""
+    defaults_used: tuple[str, ...] = ()
+    """Vendor defaults the verdict relied on (``cisco_ios_xe/defaults.yaml#exec-timeout``)."""
     evidence: tuple[Evidence, ...] = ()

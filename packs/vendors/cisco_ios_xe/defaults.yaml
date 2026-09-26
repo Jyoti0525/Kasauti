@@ -1,0 +1,60 @@
+# What IOS XE does when the running-config says nothing (PLAN §8.2, §9.4).
+#
+# Only long-standing behaviour we can point to in Cisco's documentation is listed; anything
+# less certain is left out on purpose, so the rule says REVIEW instead of guessing. (For example
+# the default `transport input` on vty lines changed across releases, so there is no entry.)
+# Every entry is scoped to IOS XE 16 and 17. The line-by-line doc cross-check is TODO C.06.
+defaults:
+  - id: exec-timeout
+    attr: MgmtSession.idle_timeout_s
+    value: 600
+    os_versions: ">=16.1"
+    source: curated
+    reference: "Cisco IOS XE command reference, line configuration: `exec-timeout` defaults to 10 minutes"
+
+  - id: no-global-telnet-service
+    attr: MgmtService.enabled
+    entity_key: telnet
+    value: false
+    os_versions: ">=16.1"
+    source: curated
+    reference: >-
+      IOS XE has no device-wide Telnet server switch; inbound Telnet is controlled per line by
+      `transport input` (Cisco IOS XE terminal services configuration guide), which the
+      MgmtSession mappings read
+
+  - id: no-interface-mgmt-protocol-list
+    attr: Interface.mgmt_protocols
+    value: []
+    os_versions: ">=16.1"
+    source: curated
+    reference: >-
+      IOS XE interfaces carry no per-interface management-protocol list; management access is
+      set per line (vty) and by ACL, not on the interface
+
+  - id: ntp-server-without-key
+    attr: TimeSource.authenticated
+    value: false
+    os_versions: ">=16.1"
+    source: curated
+    reference: "Cisco IOS XE NTP configuration guide: `ntp server` uses no key unless `key <id>` is given"
+
+  - id: ntp-authentication-off
+    attr: TimePolicy.auth_enforced
+    value: false
+    os_versions: ">=16.1"
+    source: curated
+    reference: "Cisco IOS XE NTP configuration guide: NTP authentication is disabled until `ntp authenticate` is configured"
+
+  - id: no-snmp-communities
+    none_of: SnmpCommunity
+    os_versions: ">=16.1"
+    source: curated
+    reference: "Cisco IOS XE SNMP configuration guide: no community string exists until one is configured with `snmp-server community`"
+
+  - id: username-privilege
+    attr: LocalUser.privilege
+    value: 1
+    os_versions: ">=16.1"
+    source: curated
+    reference: "Cisco IOS XE command reference, `username`: privilege level defaults to 1"

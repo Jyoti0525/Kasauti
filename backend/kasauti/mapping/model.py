@@ -136,7 +136,18 @@ class SetEffect(_Strict):
     """A slot, or a weighted sum of slots: ``{min: 60, sec: 1}`` turns Cisco
     ``exec-timeout 10 0`` into 600 seconds."""
     map: dict[str, Scalar] | None = None
+    """Vendor word -> value. A word missing from the map makes the fact ``unknown`` (we saw
+    the line but can't say what it means), unless ``otherwise`` is given."""
+    otherwise: Scalar | None = None
+    """Value for any word not in ``map`` (``is_well_known``: listed strings -> true, any other
+    string -> false)."""
     transform: tuple[Transform, ...] = ()
+
+    @model_validator(mode="after")
+    def _otherwise_needs_map(self) -> Self:
+        if self.otherwise is not None and self.map is None:
+            raise ValueError("`otherwise` only makes sense together with `map`")
+        return self
 
     @property
     def attr(self) -> str:
@@ -196,10 +207,17 @@ Effect = SetEffect | AssertEffect | MembersEffect | RefEffect
 SIGNALS = ("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "manual")
 
 
+ORDINAL = "{#}"
+"""In an entity key, the 1-based order of this statement among the statements that open
+entities with the same type and key template. Used where the natural key is a secret: an SNMP
+community is keyed ``community-{#}``, never by the community string."""
+
+
 class EntitySpec(_Strict):
     type: str
     key: str = Field(min_length=1)
-    """Literal key or a template over slots: ``"vty {first}-{last}"``, ``"{ifname}"``."""
+    """Literal key or a template over slots: ``"vty {first}-{last}"``, ``"{ifname}"``,
+    ``"community-{#}"``."""
 
     @field_validator("type")
     @classmethod
@@ -235,6 +253,8 @@ class Mapping(_Strict):
     vendor: str
     os_versions: VersionRangeText = "*"
     context: tuple[Pattern, ...] = ()
+    """Block path the statement must sit in, matched as a suffix of its path ending at its
+    parent. Empty means top level only."""
     entity: EntitySpec | None = None
     match: Pattern
     effect: Effect | tuple[Effect, ...] | None = None

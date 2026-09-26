@@ -10,56 +10,25 @@ server.
 
     raw text ─► ShapeParser ─► ConfigTree ─► Mapper ─► SBM (+ unmapped statements)
             ─► Evaluator ─► findings ─► Remediator ─► fixes ─► Reporter
+
+The concrete stages: :func:`kasauti.shape.parse.parse_text`,
+:func:`kasauti.mapping.engine.apply_mappings`, :func:`kasauti.rules.engine.evaluate_rules`,
+orchestrated for one device by :func:`kasauti.audit.audit`.
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
 from typing import Protocol
 
+from kasauti.ingest.model import Artifact
+from kasauti.mapping.engine import MappingResult
 from kasauti.packs.loader import RuleSet, VendorPack
 from kasauti.rules.model import Finding
 from kasauti.sbm.document import SecurityBaselineModel
-from kasauti.shape.model import ConfigTree, Statement
+from kasauti.shape.model import ConfigTree
 
-
-@dataclass(frozen=True)
-class Artifact:
-    """One ingested file after validation and hashing (the ingest adapter builds it)."""
-
-    name: str
-    text: str
-    sha256: str
-    kind: str
-    """``config`` or a companion kind such as ``show_version`` (§5.1)."""
-
-
-@dataclass(frozen=True)
-class MappingResult:
-    sbm: SecurityBaselineModel
-    unmapped: tuple[Statement, ...]
-    """Security-relevant statements no approved mapping understood -> Training Studio."""
-
-
-@dataclass(frozen=True)
-class Coverage:
-    """Compliance % and Coverage % are always reported together (§12.6)."""
-
-    passed: int
-    failed: int
-    applicable: int
-
-    @property
-    def compliance_pct(self) -> float | None:
-        judged = self.passed + self.failed
-        return None if judged == 0 else 100.0 * self.passed / judged
-
-    @property
-    def coverage_pct(self) -> float | None:
-        return (
-            None if self.applicable == 0 else 100.0 * (self.passed + self.failed) / self.applicable
-        )
+__all__ = ["Artifact", "Evaluator", "Mapper", "MappingResult", "ShapeParser"]
 
 
 class ShapeParser(Protocol):

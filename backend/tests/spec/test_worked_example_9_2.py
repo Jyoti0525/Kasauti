@@ -1,9 +1,8 @@
 """PLAN §9.2 as an executable spec: one property (Telnet), eight platforms, six primitives.
 
-Part 1 runs today: every mapping is valid in the frozen mapping language.
-Part 2 is the contract for the M1–M3 engine (TODO M0.19): each config snippet must yield
-exactly the expected facts. It is ``xfail(strict=True)`` until the engine exists, so the day
-it starts passing the suite fails until the marker is removed. Nothing stays silently skipped.
+Part 1: every mapping is valid in the mapping language.
+Part 2: the engine turns each config snippet, in its own shape family, into exactly the
+expected facts (written in M0 as the contract for M1, TODO M0.19, and green since M1.05).
 
 Defaults here are illustrative (they test the mechanism); real defaults are curated from
 vendor documentation with the seed packs (TODO M2.26–M2.32).
@@ -12,14 +11,22 @@ vendor documentation with the seed packs (TODO M2.26–M2.32).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import pytest
 import yaml
 
+from kasauti.mapping.engine import apply_mappings
 from kasauti.mapping.model import Mapping
+from kasauti.packs.loader import load_ruleset
 from kasauti.packs.model import DefaultEntry
+from kasauti.rules.evaluate import with_derived
 from kasauti.shape.model import ShapeFamily
+from kasauti.shape.parse import parse_text
+
+PACKS = Path(__file__).resolve().parents[3] / "packs"
+DERIVATIONS = load_ruleset(PACKS / "rules", PACKS / "derivations").derivations
 
 PROV = "provenance: {version: 1, proposed_by: 'spec:plan-9.2'}"
 
@@ -35,7 +42,7 @@ class Case:
     """(entity type, key, attribute, value, state)"""
     derived: dict[str, bool] = field(default_factory=dict)
     defaults: tuple[dict[str, Any], ...] = ()
-    os_version: str = "*"
+    os_version: str | None = None
 
 
 CASES = [
@@ -252,25 +259,30 @@ def test_the_example_covers_all_six_primitives_and_eight_platforms() -> None:
 
 
 @pytest.mark.spec
-@pytest.mark.xfail(raises=ImportError, strict=True, reason="mapping engine lands in M1.05")
 @pytest.mark.parametrize("case", CASES, ids=IDS)
 def test_engine_produces_the_expected_facts(case: Case) -> None:
-    from kasauti.mapping.engine import apply_mappings  # noqa: PLC0415
-    from kasauti.shape.parse import parse_text  # noqa: PLC0415
-
     tree = parse_text(case.config, family=case.family, source_file="spec.cfg")
-    sbm = apply_mappings(
+    assert tree.family is case.family, tree.warnings
+    result = apply_mappings(
         tree,
         _mappings(case),
         negation_words=case.negation_words,
         defaults=[DefaultEntry.model_validate(d) for d in case.defaults],
         os_version=case.os_version,
     )
+    sbm = with_derived(result.sbm, DERIVATIONS)
     for etype, key, attr, value, state in case.expect:
-        entity = next(e for e in sbm.all_entities() if e.type == etype and e.key == key)
+        entity = next((e for e in sbm.all_entities() if e.type == etype and e.key == key), None)
+        if entity is None:
+            # "absent" can also mean the entity was never mentioned at all.
+            assert (value, state) == (None, "absent"), f"{etype}[{key}] missing"
+            continue
         fact = getattr(entity, attr)
         assert fact.state == state
         got = set(fact.value) if isinstance(fact.value, frozenset) else fact.value
         assert got == value
+        if state == "explicit":
+            assert fact.evidence, "explicit facts carry their source line"
+            assert all(ev.mapping_id for ev in fact.evidence)
     for fact_id, value in case.derived.items():
         assert sbm.derived[fact_id].value is value

@@ -1,0 +1,205 @@
+# Management plane: console/vty lines (MgmtSession) and management services (MgmtService).
+# Seed mappings: proposed by the Kasauti seed, approved through repository review.
+mappings:
+  # --- Lines -----------------------------------------------------------------------------------
+  - id: cisco_ios_xe/line-con
+    vendor: cisco_ios_xe
+    entity: {type: MgmtSession, key: "con {n}"}
+    match: "line con <INT:n>"
+    effect: {assert: MgmtSession.kind, value: console}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/line-vty-range
+    vendor: cisco_ios_xe
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "line vty <INT:first> <INT:last>"
+    effect: {assert: MgmtSession.kind, value: vty}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/line-vty-single
+    vendor: cisco_ios_xe
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "line vty <INT:n>"
+    effect: {assert: MgmtSession.kind, value: vty}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # exec-timeout <minutes> [<seconds>]: 0 0 means "never time out" (0 seconds, which the
+  # session-timeout rule rejects).
+  - id: cisco_ios_xe/con-exec-timeout
+    vendor: cisco_ios_xe
+    context: ["line con <INT:n>"]
+    entity: {type: MgmtSession, key: "con {n}"}
+    match: "exec-timeout <INT:min> <INT:sec>"
+    effect: {set: MgmtSession.idle_timeout_s, from: {min: 60, sec: 1}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/con-exec-timeout-minutes
+    vendor: cisco_ios_xe
+    context: ["line con <INT:n>"]
+    entity: {type: MgmtSession, key: "con {n}"}
+    match: "exec-timeout <INT:min>"
+    effect: {set: MgmtSession.idle_timeout_s, from: {min: 60}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-range-exec-timeout
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "exec-timeout <INT:min> <INT:sec>"
+    effect: {set: MgmtSession.idle_timeout_s, from: {min: 60, sec: 1}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-range-exec-timeout-minutes
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "exec-timeout <INT:min>"
+    effect: {set: MgmtSession.idle_timeout_s, from: {min: 60}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-exec-timeout
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "exec-timeout <INT:min> <INT:sec>"
+    effect: {set: MgmtSession.idle_timeout_s, from: {min: 60, sec: 1}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-exec-timeout-minutes
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "exec-timeout <INT:min>"
+    effect: {set: MgmtSession.idle_timeout_s, from: {min: 60}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # transport input: which protocols may open a session on these lines. `all` and `none` are
+  # keywords, not protocols, so they get their own (more specific) mappings.
+  - id: cisco_ios_xe/vty-range-transport-input
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "transport input <LIST:protocols>"
+    effect: {members: MgmtSession.transport, from: protocols}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-range-transport-input-all
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "transport input all"
+    effect: {assert: MgmtSession.transport, value: [ssh, telnet, rlogin, pad, mop, lapb-ta, udptn, v120]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-range-transport-input-none
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "transport input none"
+    effect: {assert: MgmtSession.transport, value: []}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-transport-input
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "transport input <LIST:protocols>"
+    effect: {members: MgmtSession.transport, from: protocols}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-transport-input-all
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "transport input all"
+    effect: {assert: MgmtSession.transport, value: [ssh, telnet, rlogin, pad, mop, lapb-ta, udptn, v120]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-transport-input-none
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "transport input none"
+    effect: {assert: MgmtSession.transport, value: []}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # access-class <acl> in: restricts which sources may reach the line (resolved to the ACL by
+  # the reference resolver, TODO M2.23).
+  - id: cisco_ios_xe/vty-range-access-class
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "access-class <STR:acl> in"
+    effect: {ref: MgmtSession.access_filter, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-range-access-class-vrf
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "access-class <STR:acl> in vrf-also"
+    effect: {ref: MgmtSession.access_filter, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-access-class
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "access-class <STR:acl> in"
+    effect: {ref: MgmtSession.access_filter, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-access-class-vrf
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "access-class <STR:acl> in vrf-also"
+    effect: {ref: MgmtSession.access_filter, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Services --------------------------------------------------------------------------------
+  - id: cisco_ios_xe/ip-http-server
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: http}
+    match: "ip http server"
+    effect: {assert: MgmtService.enabled, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-http-secure-server
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: https}
+    match: "ip http secure-server"
+    effect: {assert: MgmtService.enabled, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-ssh-version
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: ssh}
+    match: "ip ssh version <STR:v>"
+    effect: {set: MgmtService.version, from: v}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-ssh-ciphers
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: ssh}
+    match: "ip ssh server algorithm encryption <LIST:ciphers>"
+    effect: {members: MgmtService.ciphers, from: ciphers}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-ssh-macs
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: ssh}
+    match: "ip ssh server algorithm mac <LIST:macs>"
+    effect: {members: MgmtService.macs, from: macs}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-ssh-kex
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: ssh}
+    match: "ip ssh server algorithm kex <LIST:kex>"
+    effect: {members: MgmtService.kex, from: kex}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

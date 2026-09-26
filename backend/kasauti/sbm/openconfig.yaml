@@ -22,7 +22,7 @@ openconfig:
   LogTarget.host: /system/logging/remote-servers/remote-server/config/host
   LogTarget.severity: /system/logging/remote-servers/remote-server/selectors/selector/config/severity
   TimeSource.host: /system/ntp/servers/server/config/address
-  TimeSource.authenticated: /system/ntp/config/enable-ntp-auth
+  TimePolicy.auth_enforced: /system/ntp/config/enable-ntp-auth
   Banner.text: /system/config/{login-banner|motd-banner}
   FilterRule.position: /acl/acl-sets/acl-set/acl-entries/acl-entry/config/sequence-id
   FilterRule.action: /acl/acl-sets/acl-set/acl-entries/acl-entry/actions/config/forwarding-action
@@ -57,6 +57,7 @@ x-sbm:
   - LoggingPolicy.timestamps
   - LoggingPolicy.admin_logged
   - LoggingPolicy.config_change_logged
+  - TimeSource.authenticated  # OC keys NTP auth device-wide (see TimePolicy); per-server key is ours
   - SnmpCommunity.access
   - SnmpCommunity.filter
   - SnmpCommunity.is_well_known

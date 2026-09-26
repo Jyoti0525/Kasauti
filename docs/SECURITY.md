@@ -3,9 +3,10 @@
 Kasauti holds the configuration of every network device in an organisation: topology, ACLs,
 password hashes, SNMP communities, VPN peers. It is built to pass its own audit (PLAN §17).
 
-> **Status:** draft (Milestone 0). Controls are listed with the milestone that delivers them;
-> nothing below is claimed as done until its tests exist. The final version, including the
-> OWASP ASVS Level 2 self-assessment, lands in Milestone 5 (TODO M5.21, M5.24).
+> **Status:** draft (Milestone 1). Controls are listed with the milestone that delivers them;
+> nothing below is claimed as done until its tests exist (**bold** = in place and tested). The
+> final version, including the OWASP ASVS Level 2 self-assessment, lands in Milestone 5
+> (TODO M5.21, M5.24).
 
 ## Reporting a vulnerability
 
@@ -23,10 +24,13 @@ Assets, the attacks we design against, and the controls, from PLAN §17.
 | Accounts | Password guessing, stolen sessions | Argon2id; TOTP MFA enforced at first admin login; lockout and rate limits; server-side sessions in HttpOnly/SameSite/Secure cookies; CSRF tokens; idle timeout | M5.03–M5.04 |
 | Authorisation | Viewer approves mappings; auditor edits rules | RBAC: `viewer`, `auditor`, `trainer`, `approver`, `admin`; least privilege; every action logged | M5.05 |
 | **Learning loop** | A poisoned or careless mapping silently flips verdicts to PASS | Four-eyes approval on any FAIL→PASS flip; regression gate on golden configs; cleanlab label audit; versioned knowledge base with rollback | M3.23–M3.27 |
-| Uploads | Zip bomb, zip-slip, XXE, billion laughs, giant or binary files | Size/entry/depth limits; path normalisation; `defusedxml`; binary sniffing; parsing in sandboxed worker processes with CPU, memory and time limits | M2.07, M5.02 |
-| Patterns | ReDoS from admin- or pack-supplied regular expressions | RE2 (linear time) for every untrusted pattern | M3.03, M5.06 |
+| Uploads | Zip bomb, zip-slip, XXE, billion laughs, giant or binary files | **Size limit checked before reading, binary sniffing, `defusedxml` SAX with DTDs forbidden, YAML aliases refused (M1)**; archive entry/depth limits and path normalisation; parsing in sandboxed worker processes with CPU, memory and time limits | M1, M2.07, M5.02 |
+| Secrets in outputs | Passwords, keys and SNMP communities copied into evidence, pattern keys, JSON or PDF | **Kind-preserving masking (`password 7 ****`) of every displayed line and pattern key; secrets never become entity keys (`community-{#}`); a test scans every audit output for the planted secrets (M1)** | M1, M2.08 |
+| Reports | A crafted config line (`<a href=…>`, `<font>`) injects markup into the PDF or breaks it | **All config-derived text is escaped before ReportLab; tested with a crafted line (M1)** | M1 |
+| Patterns | ReDoS from admin- or pack-supplied regular expressions | **RE2 (linear time) for the rule `matches` operator and fingerprint regexes (M1)**; for every other untrusted pattern, with a lint | M1, M3.03, M5.06 |
 | Templates | Server-side template injection in remediation recipes | Jinja2 `SandboxedEnvironment` with whitelisted filters | M5.07 |
-| Packs | Poisoned or code-carrying content imports | Data-only packs (the loader refuses any non-data file; **in place since M0**), schema validation (**M0**), Ed25519 signatures, quarantine for unsigned packs | M0, M5.08 |
+| Packs | Poisoned or code-carrying content imports | Data-only packs (the loader refuses any non-data file; **in place since M0**), schema validation (**M0**), **YAML aliases refused (M1)**, Ed25519 signatures, quarantine for unsigned packs | M0, M1, M5.08 |
+| Verdicts | A misread, missing or unapproved fact reported as PASS | **Four-valued evaluation; unread lines become *unknown*, never *absent*; vendor defaults only where a rule opts in; unapproved mappings give REVIEW; zero-false-PASS gate in CI (M1)** | M1 |
 | Models | Swapped or malicious weights | safetensors only; SHA-256-pinned manifest checked at start-up | M3.13, M5.09 |
 | Optional LLM | Prompt injection through config text (descriptions and banners are attacker-writable) | Free text stripped, delimited input, schema-constrained output; the LLM is one optional voter and never decides a verdict; bound to 127.0.0.1 | X.02 |
 | Reports and history | Forgery, silent deletion | PAdES signatures (optionally an Indian Class-3 DSC via PKCS#11); Merkle transparency log with signed checkpoints, inclusion and consistency proofs; offline verifier | M5.12–M5.17 |

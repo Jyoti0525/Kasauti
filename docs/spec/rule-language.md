@@ -63,7 +63,8 @@ Types are checked statically: `< <= > >=` need ints; `in` needs a scalar and a l
 
 ## 3. Evaluation semantics: four values, never a silent PASS
 
-Evaluation (implemented in M1) works over four values: **TRUE, FALSE, ABSENT, UNKNOWN**.
+Evaluation (`backend/kasauti/rules/evaluate.py`, M1) works over four values: **TRUE, FALSE,
+ABSENT, UNKNOWN**.
 
 - A fact in state `explicit` or `vendor_default` gives its value; `absent` gives ABSENT;
   `unknown` gives UNKNOWN.
@@ -76,10 +77,32 @@ Evaluation (implemented in M1) works over four values: **TRUE, FALSE, ABSENT, UN
   off". Otherwise "we understood nothing" would read as "nothing is wrong", the classic false
   PASS (PLAN §1.2, test 2). Over a non-empty set, `any` is TRUE if one member is TRUE, FALSE if
   all are FALSE, and otherwise the missing value as above (same for `all`/`none`).
-- The rule's verdict for an entity: TRUE → PASS; FALSE → FAIL; ABSENT → `on_absent`;
-  UNKNOWN → `on_unknown`. `resolve_default` re-evaluates with the vendor pack's version-scoped
-  defaults filled in (which materialise the missing entities in state `vendor_default`); if
-  it's still ABSENT, the result is REVIEW.
+- **Closed-world types.** If the vendor pack says a type is empty by default
+  (`none_of: SnmpCommunity`) and nothing of that type was seen, a quantifier over it is
+  vacuous: `any` FALSE, `all`/`none` TRUE, `count` 0. This applies only in the defaults view
+  (below), and the result names the default it relied on.
+- **Unread statements.** If some statements about a type couldn't be read (`unread`), a
+  quantifier over it can't conclude "all" or "none": such a result becomes UNKNOWN. A found
+  witness still counts (`any` TRUE; `all`/`none` FALSE), because one bad entity is enough.
+- `exists(x)` is TRUE for a known value, FALSE for an absent one and UNKNOWN for an unknown
+  one. Write `not exists(...)` with care: it passes on absence.
+- `matches` runs the pattern with RE2 (linear time); an invalid pattern is a load error.
+- Singletons (`LockoutPolicy`, …) always have exactly one member. If the config never
+  mentioned it, it is there with every fact absent, so "no lockout configured" is judged, not
+  skipped.
+- Every value carries its **witnesses**: the facts and lines that decided it (for an `any`
+  that is TRUE, only the members that made it true). Findings show these lines.
+
+**Two views of vendor defaults.** A rule with `on_absent: resolve_default` is evaluated with
+`vendor_default` facts as known values. Every other rule sees them as ABSENT, so a default
+never silently decides a rule whose author asked for review.
+
+**The verdict for an entity:** TRUE → PASS; FALSE → FAIL; ABSENT → `on_absent`
+(`resolve_default` has already had its chance, so it gives REVIEW); UNKNOWN → `on_unknown`.
+If a PASS or FAIL rests on evidence from a mapping with no approvers, it becomes REVIEW
+(PLAN §12.6). A rule whose device role isn't in `applies_to` is N/A. A rule with nothing in
+scope gives one N/A finding, unless statements about that type were unread; then it gives
+`on_unknown`, because an unread vty line mustn't turn "every vty times out" into N/A.
 
 ## 4. Derivations
 

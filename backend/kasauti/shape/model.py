@@ -54,3 +54,5 @@ class ConfigTree(BaseModel):
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     family: ShapeFamily
     statements: tuple[Statement, ...]
+    warnings: tuple[str, ...] = ()
+    """Why the tree isn't what was expected, e.g. a flat fallback after a syntax error."""

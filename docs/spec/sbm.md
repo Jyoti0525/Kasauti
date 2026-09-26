@@ -1,4 +1,4 @@
-# Security Baseline Model (v0.1)
+# Security Baseline Model (v0.2)
 
 Implements PLAN §8 (requirement R-01). Source of truth: `backend/kasauti/sbm/`; JSON Schema:
 `schemas/sbm.schema.json`; OpenConfig alignment: `backend/kasauti/sbm/openconfig.yaml`.
@@ -19,15 +19,23 @@ The model enforces these combinations, so an impossible fact can't be constructe
 
 ## Entities
 
-Twenty entity types: the eighteen in PLAN §8.1 plus two additions it needs elsewhere:
+Twenty-one entity types: the eighteen in PLAN §8.1 plus three additions it needs elsewhere:
 
 - `LoggingPolicy` (singleton) holds the device-wide logging flags §8.1 lists beside
   `LogTarget` (timestamps, admin_logged, config_change_logged). They describe the device,
   not a target.
 - `ObjectDef` (`key` = `<kind>:<name>`) holds named ACLs, address/service objects and groups:
   the targets of the `ref` primitive and the reference resolver (§9.1, v5.1).
+- `TimePolicy` (singleton, 0.2) holds `auth_enforced`: whether the device rejects time from
+  unauthenticated sources (`ntp authenticate`; OpenConfig `enable-ntp-auth`).
+  `TimeSource.authenticated` only says a key is configured for that server, which isn't
+  enforcement on its own.
 
-Singletons: `Device`, `PasswordPolicy`, `LockoutPolicy`, `LoggingPolicy`. Every entity has a
+Every entity also has `evidence` (0.2): the statements that opened or named it
+(`line vty 0 4`), so a finding can point at the entity even when the attribute in question was
+never set.
+
+Singletons: `Device`, `PasswordPolicy`, `LockoutPolicy`, `LoggingPolicy`, `TimePolicy`. Every entity has a
 `key` unique within its type; findings name entities as `Type[key]`, e.g. `MgmtSession[vty 0-4]`.
 Secrets are never keys: an SNMP community is `community-1`, with `is_well_known` recorded
 before masking.
@@ -37,6 +45,15 @@ Other refinements to the §8.1 table: `CryptoProfile.lifetimes` → `lifetime_s`
 `LockoutPolicy` got concrete attributes (min length, complexity, reversible-encryption block,
 max age; attempts, lockout duration).
 
+## Document-level sets (0.2)
+
+- `known_empty`: entity type → the vendor default saying none exist
+  (`SnmpCommunity` → `cisco_ios_xe/defaults.yaml#no-snmp-communities`). Without an entry,
+  "no entities of this type" means "nothing seen", never "none exist".
+- `unread`: entity type → the lines that looked like that type but couldn't be read. Rules
+  can't claim "all" or "none" over such a type.
+- `derived`: the derived facts, evaluated in the defaults view, with their evidence.
+
 ## Determinism
 
 Entities are sorted by `(type, key)` and set values serialised sorted, so the same input
@@ -45,9 +62,10 @@ rely on (PLAN §3.1, principle 5).
 
 ## Versioning
 
-`sbm_version` is `"0.1"`. Loading a document with another version fails with a pointer to
+`sbm_version` is `"0.2"`. Loading a document with another version fails with a pointer to
 `kasauti.sbm.migrations`, which upgrades stored documents step by step (one pure function per
-version change, never edited after release).
+version change, never edited after release). 0.1 → 0.2 adds the empty sets above; everything a
+0.1 document says is kept (tested).
 
 ## OpenConfig alignment
 

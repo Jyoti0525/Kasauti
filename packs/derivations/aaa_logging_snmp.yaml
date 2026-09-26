@@ -1,0 +1,23 @@
+# Device-level meanings for AAA, logging and SNMP (PLAN §8.3).
+
+derivations:
+  - id: aaa.central_server_configured
+    version: 1
+    type: bool
+    description: At least one TACACS+/RADIUS/LDAP server with an address is configured.
+    expr: "any(AuthServer: exists(host))"
+
+  - id: logging.remote_configured
+    version: 1
+    type: bool
+    description: At least one remote log target (syslog host) is configured.
+    expr: "any(LogTarget: exists(host))"
+
+  - id: snmp.weak_community_present
+    version: 1
+    type: bool
+    description: >
+      An SNMP community is a well-known string (public, private, …) or grants write access.
+      With no communities at all this is false only if the vendor pack says none exist by
+      default (`none_of: SnmpCommunity`); otherwise it is absent and the rule decides.
+    expr: "any(SnmpCommunity: is_well_known or access == 'rw')"

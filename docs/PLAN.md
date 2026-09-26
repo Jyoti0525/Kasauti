@@ -235,7 +235,7 @@ Read-only collection via NAPALM (core drivers: EOS, IOS, IOS-XR, NX-OS, Junos; c
 ### 6.2 Statements and pattern keys
 Every leaf becomes a **Statement** `{path: [parent blocks…], tokens, text, line_start, line_end, family}`. For example: `path = ["line vty 0 4"], text = "transport input ssh telnet"`.
 
-A **pattern key** abstracts variables (`<INT> <IP> <IFNAME> <STR> <LIST>`) using **Drain3** template mining (MIT). 48 interface blocks collapse into one pattern, so the admin teaches a pattern once, not 48 times.
+A **pattern key** abstracts variables by type (`<INT> <IP> <IFNAME> <STR>`) while keywords stay literal, so `interface GigabitEthernet1/0/7` becomes `interface <IFNAME>`. 48 interface blocks collapse into one pattern, so the admin teaches a pattern once, not 48 times. (v5.1.3: this replaces Drain3 template mining, whose similarity merge joined different commands.)
 
 ---
 
@@ -369,7 +369,7 @@ So suggestions come from **independent signals that fail differently**, fused an
 ### 10.2 The signals
 | # | Signal | What it contributes | Technology | Research basis | Tier |
 |---|---|---|---|---|---|
-| S1 | **Structure** | Block context, negation form, pattern key, value types | Shape parsers + Drain3 | Drain; Selfstarter/Diffy templates | Core |
+| S1 | **Structure** | Block context, negation form, pattern key, value types | Shape parsers + typed pattern keys | Drain; Selfstarter/Diffy templates | Core |
 | S2 | **Approved knowledge base** | Exact, human-approved mappings (the only signal that feeds verdicts) | Mapping language (§9) | — | Core |
 | S3 | **Vendor-manual grounding** | For unseen vendors: which documented command this line is, what it does, its `undo` form and its default | Manual ingester (§10.4); seed corpus from **NAssim** (MIT: 12,406 Huawei NE40E + Nokia 7750 SR command entries) | **NAssim, ACM SIGCOMM '22**: device models from manuals, 9.1× faster onboarding | Core ★ |
 | S4 | **Security lexicon** | Cross-vendor synonyms (`telnet`/`stelnet`/`admin-telnet`, `logging`/`info-center`/`syslog`, `snmp-server`/`snmp-agent`), aligned to OpenConfig names | Curated YAML + rapidfuzz | OpenConfig | Core |
@@ -675,11 +675,11 @@ Evidence first (every number clickable down to a config line); two numbers, neve
 | Persistence | SQLAlchemy 2 + Alembic; SQLite (default) / PostgreSQL | MIT; public domain; PostgreSQL licence |
 | PG driver | psycopg 3 | LGPL-3.0 (unmodified library use) |
 | Workers | multiprocessing pool + DB job table (no broker) | PSF |
-| Template mining | Drain3 | MIT |
+| Pattern keys | in-house, keyword-literal (Drain3 dropped in v5.1.3) | Apache-2.0 (ours) |
 | Remediation | hier_config; Aerleon (ACL rendering) | MIT; Apache-2.0 |
 | Show-output parsing | TextFSM, ntc-templates, TTP | Apache-2.0, Apache-2.0, MIT |
 | Live collection (stretch) | NAPALM, Netmiko (Paramiko underneath) | Apache-2.0, MIT (Paramiko LGPL-2.1, unmodified) |
-| XML / YAML | defusedxml, lxml, PyYAML (safe_load) | PSF, BSD-3, MIT |
+| XML / YAML | defusedxml (SAX, DTDs forbidden), PyYAML (safe loader, aliases refused) | PSF, MIT |
 | Safe regex | google-re2 | BSD-3 |
 | Templates | Jinja2 (sandboxed) | BSD-3 |
 | PDF + signing | ReportLab, matplotlib, **pyHanko** | BSD, PSF-style, MIT |
@@ -951,6 +951,20 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.3 (2026-09-26, M1 build evidence):** the walking skeleton works end to end; refinements it forced (details in `docs/spec/`):
+  - **Pattern keys without Drain3.** Drain3 has had no release since 2022, pulls jsonpickle into the runtime, and its similarity merge joins `ip ssh version 2` with `ip ssh time-out 60`. Keys now abstract values by type and keep keywords literal: deterministic, order-independent, still 48 interfaces → 1 pattern (§6.2).
+  - **SBM 0.2**, with the first real migration (TODO M2.25). Entities record the lines that named them. `TimePolicy` holds device-wide NTP authentication enforcement (OpenConfig `enable-ntp-auth`), because a key on one server isn't enforcement. The document gains `known_empty` and `unread`.
+  - **Closed-world defaults.** `none_of: <EntityType>` in `defaults.yaml` says a vendor ships none of a type (no SNMP communities until one is configured). It is the only way "none seen" can become "none exist". Statements about a type that couldn't be read block any "all/none" conclusion about it.
+  - **Near misses.** A line whose keywords match a mapping but whose values don't makes those facts *unknown* (REVIEW), never absent, so a default can't paper over a misread line.
+  - **Mapping language:** `otherwise` for value maps; `{#}` ordinal keys, so a secret (an SNMP community) is never an entity key; an empty `context` means top level only.
+  - **Two views of defaults.** Vendor defaults decide a rule only when it says `on_absent: resolve_default`; everywhere else a defaulted fact reads as absent. A PASS or FAIL that rests on an unapproved mapping becomes REVIEW (§12.6).
+  - **All seven shape families were built in M1**, not M2, because the §9.2 worked example spans them. XML uses defusedxml's SAX parser for line numbers, so lxml isn't needed.
+  - **NIST SP 800-53 r5** comes from the official OSCAL release 5.2.0 at a pinned commit: IDs and titles only, with the source SHA-256 recorded.
+  - **Security issues found and fixed in M1:**
+    - Pattern keys were built from unmasked text, so a short secret could reach a report. They are now built from masked text.
+    - Config text is escaped before ReportLab sees it. A crafted line would otherwise crash the report or plant a link.
+    - Pack YAML refuses aliases (billion laughs).
+  - **Approval of seed mappings.** Seed-pack mappings are approved through repository review (`approved_by: [maintainer]`). Mappings a trainer teaches go through Studio four-eyes approval (M3.24).
 - **v5.1.2 (2026-09-26, M0 build evidence):** refinements found while freezing the specs (details in `docs/spec/`):
   - The SBM gains `LoggingPolicy`, for the device-wide logging flags §8.1 put beside `LogTarget`, and `ObjectDef`, the targets of `ref`. `CryptoProfile` gets `dh_groups` (a set) and `lifetime_s`.
   - Derivations live in `packs/derivations/` (content is data), an addition to the §4.4 layout.

@@ -9,9 +9,31 @@ A *kasauti* is the touchstone used to test whether gold is pure. Kasauti tests w
 device's configuration meets CIS, NIST SP 800-53, DISA STIG and ISO/IEC 27001, for any vendor,
 including ones it has never seen.
 
-> **Status: Milestone 0 (foundations).** The schemas, languages and pack format are in place;
-> the first end-to-end audit arrives with Milestone 1. Progress is tracked task by task in
+> **Status: Milestone 1 (walking skeleton) complete.** A Cisco IOS XE configuration goes end to
+> end: parse → mappings → Security Baseline Model → 10 rules → JSON + PDF report. Parsers for all
+> seven shape families are in place. Progress is tracked task by task in
 > [docs/TODO.md](docs/TODO.md).
+
+## Try it
+
+```bash
+uv sync
+uv run kasauti audit datasets/authored/cisco_ios_xe/weak.cfg --framework nist --out reports
+```
+
+```
+EDGE-R1  (cisco_ios_xe@1, chosen by fingerprint)
+  NIST SP 800-53 Rev. 5: compliance 0.0%, coverage 100.0% (0 pass, 10 fail, 0 review, 0 n/a)
+  FAIL   high     MGMT-TELNET-01: Clear-text Telnet management is not reachable
+  ...
+  wrote reports/weak.kasauti.json
+  wrote reports/weak.kasauti.pdf
+```
+
+Every finding names the exact configuration lines (secrets masked), the NIST controls it
+supports, and any vendor default it relied on. A missing or unreadable fact is never counted
+as a pass: it becomes REVIEW, and the report says so. `datasets/authored/cisco_ios_xe/hardened.cfg`
+is the same router with every weakness fixed.
 
 ## What it does (target design)
 
@@ -36,6 +58,8 @@ uv run pytest               # tests
 uv run ruff check . && uv run ruff format --check .
 uv run mypy                 # strict type checking
 uv run kasauti packs validate packs    # schema-check every content pack
+uv run python tools/lint_content.py    # rule quality gate (runs every rule's fixtures) + crosswalk lint
+cd eval && uv run python -m harness golden   # golden regression + zero-false-PASS gate
 uv run pre-commit install   # run the same checks before every commit
 ```
 

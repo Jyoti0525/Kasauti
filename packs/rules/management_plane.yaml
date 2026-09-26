@@ -1,0 +1,75 @@
+# Management-plane rules (PLAN §12.3). Vendor-neutral: they read SBM facts, never config text.
+# NIST SP 800-53 r5 anchors are checked against the imported official catalog (crosswalk lint).
+rules:
+  - id: MGMT-TELNET-01
+    title: Clear-text Telnet management is not reachable
+    intent: Credentials must never cross the network in clear text.
+    domain: management_plane
+    for_each: Device
+    assert: not management.telnet_reachable
+    on_absent: resolve_default          # vendor + version default, else REVIEW
+    on_unknown: review
+    severity: {base: high}
+    exposure: [telnet_on_untrusted_interface]   # raises to critical (PLAN §12.7, M2)
+    fix_intent: {make: management.telnet_reachable, equal: false}
+    refs:
+      nist_800_53r5: [CM-7, AC-17(2), SC-8]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: MGMT-SESSION-TIMEOUT-01
+    title: Idle management sessions time out within 10 minutes
+    intent: An unattended session must not stay open for anyone who walks up to it.
+    domain: management_plane
+    for_each: MgmtSession where kind in [console, vty, web]
+    assert: idle_timeout_s > 0 and idle_timeout_s <= 600
+    on_absent: resolve_default
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: idle_timeout_s, equal: 600}
+    refs:
+      nist_800_53r5: [AC-12, SC-10]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: MGMT-HTTP-01
+    title: Unencrypted HTTP management is disabled
+    intent: Web management must not expose credentials and sessions over plain HTTP.
+    domain: management_plane
+    for_each: Device
+    assert: not management.http_enabled
+    on_absent: resolve_default
+    on_unknown: review
+    severity: {base: high}
+    fix_intent: {make: management.http_enabled, equal: false}
+    refs:
+      nist_800_53r5: [CM-7, SC-8, AC-17(2)]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: MGMT-VTY-ACL-01
+    title: Remote management lines accept only permitted sources
+    intent: Management access must be limited to known management networks.
+    domain: management_plane
+    for_each: MgmtSession where kind == 'vty'
+    assert: exists(access_filter)
+    on_absent: review
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: access_filter, equal: MGMT-ACL}   # the recipe asks for the site's ACL
+    refs:
+      nist_800_53r5: [AC-3, AC-17]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]

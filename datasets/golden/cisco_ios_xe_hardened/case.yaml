@@ -1,0 +1,18 @@
+# E1 golden case (PLAN §21.1). Ground truth from datasets/SOURCES.md: the hardened twin fixes
+# every catalogued weakness, so every rule in scope passes.
+description: Cisco IOS XE 17.9 hardened edge router (twin of the weak case)
+input: authored/cisco_ios_xe/hardened.cfg
+input_sha256: 0ee90b960fd38b4fe91fe4650d7247d1e7c4ce1439c6fc27cb9ede549766f812
+vendor: null
+frameworks: [nist_800_53r5]
+expected_statuses:
+  MGMT-TELNET-01: PASS              # vty 0-4 ssh only, vty 5-15 none
+  MGMT-SESSION-TIMEOUT-01: PASS     # console 5 min, vty 10 min
+  MGMT-HTTP-01: PASS                # no ip http server
+  MGMT-VTY-ACL-01: PASS             # access-class MGMT-ACL on both vty ranges
+  AAA-LOCAL-PASSWORD-HASH-01: PASS  # enable secret 9, username secret 9
+  AAA-CENTRAL-AUTH-01: PASS         # tacacs server TAC1 10.10.10.40
+  AAA-LOCKOUT-01: PASS              # login block-for 120 attempts 3 within 60
+  LOG-REMOTE-01: PASS               # logging host 10.10.10.50 over TCP
+  SNMP-COMMUNITY-01: PASS           # SNMPv3 only, no community
+  TIME-NTP-AUTH-01: PASS            # ntp authenticate + server key 1

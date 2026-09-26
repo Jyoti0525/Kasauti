@@ -48,3 +48,8 @@ datasets/nassim/
 .vscode/
 *.log
 sbom*.json
+
+# Audit outputs: even masked, a real device's report must never be committed by accident.
+*.kasauti.json
+*.kasauti.pdf
+/reports/

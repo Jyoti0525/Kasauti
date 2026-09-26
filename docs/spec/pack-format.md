@@ -24,8 +24,8 @@ packs/
 ## Rules for every pack
 
 - **Data only.** The loader refuses any file that isn't `.yaml .yml .json .md .txt .html .sig`,
-  so a pack can never carry code or pickles. YAML is read with `safe_load`; files are capped
-  at 5 MB.
+  so a pack can never carry code or pickles. YAML is read with a SafeLoader that also
+  refuses anchors and aliases (billion laughs); files are capped at 5 MB.
 - **Schema-validated, with every problem reported at once** (file, field, message), not only
   the first.
 - **Cross-file checks:** mapping ids start with the pack id; no duplicate mapping, default,
@@ -48,6 +48,41 @@ defaults:
 
 A default decides verdicts when a config is silent, so `reference` is mandatory and every
 fact resolved from it carries `default_source: <pack>/defaults.yaml#<id>`.
+
+The second form is a **closed-world default**: the vendor ships *none* of a type.
+
+```yaml
+  - id: no-snmp-communities
+    none_of: SnmpCommunity
+    os_versions: ">=16.1"
+    source: curated
+    reference: "…: no community string exists until one is configured"
+```
+
+Rules (checked when the pack loads and when the defaults are applied):
+
+- The value must fit the attribute's type (a bool for `enabled`, an int for `idle_timeout_s`,
+  a list for a set).
+- `entity_key` names one entity and creates it if the config never mentions it. Without it,
+  the default fills the attribute on every existing entity of the type (or the singleton).
+- A default only fills an **absent** fact: never an explicit one, never an unknown one.
+- If the device's OS version is unknown, only defaults scoped `*` apply.
+- If two entries for the same target apply with different values, neither is used and the
+  audit reports the conflict; the fact stays absent and the rule says REVIEW.
+
+## Identity and catalogs
+
+- An `identity.yaml` pattern must capture a slot named `value` (`hostname <STR:value>`).
+- A framework `catalog.json` may record `source_sha256`, the hash of the official file its IDs
+  were extracted from. `tools/import_oscal.py` writes it for NIST SP 800-53 r5.
+
+## Who approves seed mappings
+
+Mappings shipped in a seed pack are approved through repository review: pull request, CI
+gates and, from M5, the pack signature. They carry `approved_by: [maintainer]`. Mappings a
+trainer teaches in the Studio carry the approvers' identities (four-eyes for verdict-flipping
+changes, M3.24). A mapping with no approvers can still be read, but any verdict resting on it
+is REVIEW.
 
 ## Why `derivations/` was added
 

@@ -1,0 +1,59 @@
+# AAA rules (PLAN §12.3).
+rules:
+  - id: AAA-LOCAL-PASSWORD-HASH-01
+    title: Local passwords are stored with a strong one-way hash
+    intent: >
+      A stolen configuration must not reveal passwords. Clear text and reversible encodings
+      (Cisco type 0, 6 and 7) can be read back; MD5-crypt is too fast to resist cracking.
+    domain: aaa
+    for_each: LocalUser
+    assert: hash_type in [scrypt, pbkdf2-sha256, sha512-crypt, sha256-crypt, bcrypt, yescrypt]
+    on_absent: review
+    on_unknown: review
+    severity: {base: high}
+    fix_intent: {make: hash_type, equal: scrypt}
+    refs:
+      nist_800_53r5: [IA-5(1)]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: AAA-CENTRAL-AUTH-01
+    title: Administrators authenticate against a central AAA server
+    intent: >
+      Central authentication gives one place to revoke access and an audit trail per person;
+      shared local accounts give neither.
+    domain: aaa
+    for_each: Device
+    assert: aaa.central_server_configured
+    on_absent: fail              # no AAA server configured *is* the violation
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: aaa.central_server_configured, equal: true}
+    refs:
+      nist_800_53r5: [AC-2(1), IA-2]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: AAA-LOCKOUT-01
+    title: Repeated failed logins are blocked
+    intent: Password guessing must be slowed down after a handful of failures.
+    domain: aaa
+    for_each: LockoutPolicy
+    assert: max_attempts > 0 and max_attempts <= 5
+    on_absent: fail              # no lockout configured is the violation
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: max_attempts, equal: 3}
+    refs:
+      nist_800_53r5: [AC-7]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]

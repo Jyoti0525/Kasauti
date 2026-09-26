@@ -60,10 +60,11 @@ Every item below is installed or used by a task in this file. Re-verify each lic
 | Schema | Pydantic v2 | MIT | M0.13 |
 | Database | SQLAlchemy 2 + Alembic; SQLite (WAL, default) / PostgreSQL via psycopg 3 | MIT; public domain; PostgreSQL; LGPL-3.0 (unmodified) | M2.02 |
 | Workers | multiprocessing pool + DB job table (no broker, no Redis) | PSF | M2.03, M5.02 |
-| Template mining | Drain3 | MIT | M1.03 |
+| Pattern keys | in-house, keyword-literal (Drain3 dropped, PLAN v5.1.3) | ours | M1.03 |
+| Encoding detection | charset-normalizer | MIT | M1.01 |
 | Show-output parsing | TextFSM, ntc-templates, TTP | Apache-2.0, Apache-2.0, MIT | M2.19 |
-| XML / YAML | defusedxml, lxml, PyYAML (`safe_load`) | PSF, BSD-3, MIT | M2.07, M2.14, M2.15 |
-| Safe regex | google-re2 | BSD-3 | M3.03, M5.06 |
+| XML / YAML | defusedxml (SAX), PyYAML (safe loader, aliases refused) | PSF, MIT | M2.07, M2.14, M2.15 |
+| Safe regex | google-re2 (in use since M1 for `matches` and fingerprints) | BSD-3 | M1.10, M3.03, M5.06 |
 | Templates | Jinja2 (SandboxedEnvironment) | BSD-3 | M4.02, M5.07 |
 | Remediation | hier_config; Aerleon | MIT; Apache-2.0 | M4.07, M4.12 |
 | PDF + charts + signing | ReportLab, matplotlib, pyHanko | BSD, PSF-style, MIT | M1.13, M2.74, M5.12 |
@@ -184,25 +185,25 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
 
 **Exit criteria (§25):** one Cisco config → tree → mappings → SBM → 10 rules → unsigned PDF, end to end. **Fallback:** simplify the entity model before adding breadth.
 
-- [ ] **M1.01** Minimal ingest: read the file, SHA-256, encoding detection, binary sniffing. Use **charset-normalizer** (MIT, verified on PyPI 2026-09-26), not chardet, which is LGPL. *(§5.2)* `@parse`
-- [ ] **M1.02** Indent-family parser → Universal Config Tree. Statement = `{path, tokens, text, line_start, line_end, family}`, with `!`/`#` separators. *(§6.1, §6.2)* `@parse`
-- [ ] **M1.03** Drain3 pattern keys that abstract `<INT> <IP> <IFNAME> <STR> <LIST>`. Test: 48 interface blocks collapse into one pattern. *(§6.2)* `@parse`
-- [ ] **M1.04** Cisco identity from the config (hostname, version). *(§7 source 3)* `@parse`
-- [ ] **M1.05** Mapping compiler and matcher: all six primitives and all transforms. Unit tests: `exec-timeout 10 0` → 600 s; FortiOS `admintimeout 5` (minutes) → 300 s; `enable/disable` → true/false value map; boolean inversion `disable-telnet yes` → telnet false. *(§9.1)* `@lead`
-- [ ] **M1.06** Fact emission with evidence (file, lines, raw, `mapping_id@version`, approved_by). *(§8.2, §3.1 principle 1)* `@lead`
-- [ ] **M1.07** Defaults resolver with `os_versions` ranges, producing the `vendor_default` state. *(§8.2, §9.4)* `@lead`
-- [ ] **M1.08** Derivation engine, starting with `telnet_reachable`. *(§8.3)* `@lead`
-- [ ] **M1.09** Seed Cisco IOS-XE mappings that cover the first 10 rules. *(§20.4)* `@content`
-- [ ] **M1.10** Rule engine: `for_each` / `where` / `assert`, `on_absent`, `on_unknown` → PASS / FAIL / REVIEW / N/A, giving per-entity findings with exact lines. *(§12.1, §12.6, §3.1 principle 2)* `@lead`
-- [ ] **M1.11** First 10 rules, including `MGMT-TELNET-01` and `MGMT-SESSION-TIMEOUT-01`, each with Cisco pass and fail fixtures. Write `MGMT-TELNET-01` exactly as in §12.1 (NIST CM-7, AC-17(2), SC-8; exposure `telnet_on_untrusted_interface`; `fix_intent`). NIST refs only for now. *(§12.1, §12.2, R-02)* `@content`
-- [ ] **M1.12** Compute Compliance % and Coverage % together, always. *(§12.6)* `@lead`
-- [ ] **M1.13** Unsigned ReportLab PDF: cover/device profile, summary, and findings with evidence lines. *(§15.1 partial, R-07)* `@sec`
-- [ ] **M1.14** CLI: `kasauti audit router.cfg --framework nist`. *(§4.2)* `@lead`
-- [ ] **M1.15** Determinism test: two runs → byte-identical JSON. *(§3.1 principle 5, S.10)* `@lead`
-- [ ] **M1.16** First E1 golden snapshot, with the golden-regression CI job live. *(§21.1, §23)* `@ml`
-- [ ] **M1.17** Zero-false-PASS gate: CI fails on any false PASS in E1 (E3 is added in M4.23). *(§21.3, §28)* `@ml`
+- [x] **M1.01** Minimal ingest: read the file, SHA-256, encoding detection, binary sniffing. Use **charset-normalizer** (MIT, verified on PyPI 2026-09-26), not chardet, which is LGPL. *(§5.2)* `@parse` Done: `kasauti/ingest/read.py`. 20 MB limit checked before reading, BOM-aware decoding, charset-normalizer fallback, binary sniffing. Tested.
+- [x] **M1.02** Indent-family parser → Universal Config Tree. Statement = `{path, tokens, text, line_start, line_end, family}`, with `!`/`#` separators. *(§6.1, §6.2)* `@parse` Done: `kasauti/shape/indent.py`. Headers are statements too; Cisco delimited banners are one multi-line statement, so banner text is never read as config.
+- [x] **M1.03** Drain3 pattern keys that abstract `<INT> <IP> <IFNAME> <STR> <LIST>`. Test: 48 interface blocks collapse into one pattern. *(§6.2)* `@parse` Done without Drain3 (PLAN v5.1.3): `kasauti/shape/patterns.py`, keyword-literal typed keys built from masked text. Tests: 48 interfaces → `interface <IFNAME>`; `ip ssh version` and `ip ssh time-out` stay apart.
+- [x] **M1.04** Cisco identity from the config (hostname, version). *(§7 source 3)* `@parse` Done: `kasauti/identity/{detect,resolve}.py`. Fingerprint from `detect.yaml` (ties are never guessed); hostname and version from `identity.yaml`, each with its source line.
+- [x] **M1.05** Mapping compiler and matcher: all six primitives and all transforms. Unit tests: `exec-timeout 10 0` → 600 s; FortiOS `admintimeout 5` (minutes) → 300 s; `enable/disable` → true/false value map; boolean inversion `disable-telnet yes` → telnet false. *(§9.1)* `@lead` Done: `kasauti/mapping/{match,effects,engine}.py`. All six primitives + `ref`, value maps with `otherwise`, `invert`, units, weighted sums, split, specificity, auto and explicit negation, near misses → *unknown*. The four named unit tests are in `backend/tests/mapping/test_engine.py`; the §9.2 spec (10 cases, 7 families) is green.
+- [x] **M1.06** Fact emission with evidence (file, lines, raw, `mapping_id@version`, approved_by). *(§8.2, §3.1 principle 1)* `@lead` Done: every fact carries file, lines, masked raw text, `mapping_id@version` and approvers; entities carry the lines that named them.
+- [x] **M1.07** Defaults resolver with `os_versions` ranges, producing the `vendor_default` state. *(§8.2, §9.4)* `@lead` Done: `kasauti/mapping/defaults.py`. Version-scoped; unknown version → only `*` defaults; conflicting entries are ignored and reported; `none_of` for closed-world types.
+- [x] **M1.08** Derivation engine, starting with `telnet_reachable`. *(§8.3)* `@lead` Done: `kasauti/rules/evaluate.py`. Four-valued Kleene evaluation with witnesses; `telnet_reachable` plus four more derivations in `packs/derivations/`.
+- [x] **M1.09** Seed Cisco IOS-XE mappings that cover the first 10 rules. *(§20.4)* `@content` Done: `packs/vendors/cisco_ios_xe/` with 62 mappings in 4 files, 7 curated defaults (each with a reference), fingerprint and identity sources.
+- [x] **M1.10** Rule engine: `for_each` / `where` / `assert`, `on_absent`, `on_unknown` → PASS / FAIL / REVIEW / N/A, giving per-entity findings with exact lines. *(§12.1, §12.6, §3.1 principle 2)* `@lead` Done: `kasauti/rules/engine.py`. Per-entity findings with exact lines, expected vs actual; the defaults view only for `resolve_default`; unapproved mappings → REVIEW; nothing in scope → N/A unless statements were unread.
+- [x] **M1.11** First 10 rules, including `MGMT-TELNET-01` and `MGMT-SESSION-TIMEOUT-01`, each with Cisco pass and fail fixtures. Write `MGMT-TELNET-01` exactly as in §12.1 (NIST CM-7, AC-17(2), SC-8; exposure `telnet_on_untrusted_interface`; `fix_intent`). NIST refs only for now. *(§12.1, §12.2, R-02)* `@content` Done: 10 rules in `packs/rules/` covering W3–W6, W8, W12–W15, W17–W19, each with a pass and a fail fixture that the content gate now *executes*. NIST refs checked against the official catalog (imported early: M2.50).
+- [x] **M1.12** Compute Compliance % and Coverage % together, always. *(§12.6)* `@lead` Done: `kasauti/rules/scoring.py`. Both numbers per framework, plus the NIST control roll-up.
+- [x] **M1.13** Unsigned ReportLab PDF: cover/device profile, summary, and findings with evidence lines. *(§15.1 partial, R-07)* `@sec` Done: `kasauti/report/pdf.py`. All seven §15.1 sections at M1 depth, config text escaped, byte-reproducible, and marked unsigned on the cover.
+- [x] **M1.14** CLI: `kasauti audit router.cfg --framework nist`. *(§4.2)* `@lead` Done: `kasauti audit router.cfg --framework nist [--vendor] [--out] [--date] [--no-pdf]`. Exit 1 with a readable message on bad input.
+- [x] **M1.15** Determinism test: two runs → byte-identical JSON. *(§3.1 principle 5, S.10)* `@lead` Done: `test_two_runs_are_byte_identical_json_and_pdf`. `audit()` is pure; the report date is passed in.
+- [x] **M1.16** First E1 golden snapshot, with the golden-regression CI job live. *(§21.1, §23)* `@ml` Done: `datasets/golden/cisco_ios_xe_{weak,hardened}/`, with hand labels from the W1–W20 catalogue and reviewed snapshots; `python -m harness golden [--update]`; the CI golden job runs `pytest -m golden`.
+- [x] **M1.17** Zero-false-PASS gate: CI fails on any false PASS in E1 (E3 is added in M4.23). *(§21.3, §28)* `@ml` Done: `test_zero_false_pass` per golden case; the false-PASS rate is 0/10 on the weak case.
 
-- [ ] **M1.G · Gate:** end-to-end run works from the CLI, and `main` is demo-able from here on.
+- [x] **M1.G · Gate:** end-to-end run works from the CLI, and `main` is demo-able from here on. Passed 2026-09-26: weak.cfg → 10/10 FAIL (0% compliance, 100% coverage), hardened.cfg → 10/10 PASS, with every local CI gate green.
 
 ---
 
@@ -226,29 +227,29 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
   - encoding detection and binary sniffing
 
   *(§5.2)* `@parse`
-- [ ] **M2.08** Kind-preserving secret masking (`password 7 ****`, `secret 9 ****`, `snmp community ****(RO)`), so reversible-password rules still work. *(§5.2)* `@parse`
+- [~] **M2.08** Kind-preserving secret masking (`password 7 ****`, `secret 9 ****`, `snmp community ****(RO)`), so reversible-password rules still work. *(§5.2)* `@parse` First cut done in M1 (`kasauti/ingest/mask.py`, vendor-generic, with tests); evidence, pattern keys and reports only ever show masked text. Per-vendor review pending.
 - [ ] **M2.09** Acceptance test: 100 mixed files including a zip all get ingested; malformed files are reported and nothing crashes. *(R-04 AC)* `@parse`
 
 ### 2C · Shape families (§6.1)
-- [ ] **M2.10** Brace family: Junos, VyOS, PAN-OS CLI. `@parse`
-- [ ] **M2.11** Set-path family: `set` forms of Junos/VyOS/PAN-OS, Check Point Gaia, Extreme EXOS. `@parse`
-- [ ] **M2.12** Block-edit family: FortiOS `config / edit / set / next / end`. `@parse`
-- [ ] **M2.13** Path-command family: MikroTik `/ip service` + `set … key=value`. `@parse`
-- [ ] **M2.14** XML family: PAN-OS XML, pfSense/OPNsense, Sophos (defusedxml + lxml). `@parse`
-- [ ] **M2.15** JSON/YAML family: SONiC `config_db.json`, AWS/Azure/GCP exports, Meraki API, Cumulus NVUE (PyYAML `safe_load` only). `@parse`
-- [ ] **M2.16** Flat fallback: one statement per line. `@parse`
-- [ ] **M2.17** Family detection by scoring: indent regularity, brace balance, `config/edit/next/end` markers, XML/JSON validity, leading `set` or `/`. Tested on every corpus. *(§6.1)* `@parse`
+- [x] **M2.10** Brace family: Junos, VyOS, PAN-OS CLI. `@parse` Done early (M1, needed by the §9.2 spec): `kasauti/shape/brace.py`, with comments, `inactive:` (ignored, as the device does) and `protect:`.
+- [x] **M2.11** Set-path family: `set` forms of Junos/VyOS/PAN-OS, Check Point Gaia, Extreme EXOS. `@parse` Done early (M1): `parse_set_path`; only `set` is dropped, so `delete`/`deactivate` act as negation words.
+- [x] **M2.12** Block-edit family: FortiOS `config / edit / set / next / end`. `@parse` Done early (M1): `parse_block_edit`, including multi-line quoted values.
+- [x] **M2.13** Path-command family: MikroTik `/ip service` + `set … key=value`. `@parse` Done early (M1): `parse_path_command`; both export styles and `\` continuations; `key=value` → `key=` `value`.
+- [x] **M2.14** XML family: PAN-OS XML, pfSense/OPNsense, Sophos (defusedxml + lxml). `@parse` Done early (M1) with defusedxml's SAX parser (DTDs and entities forbidden) for line numbers; lxml isn't needed.
+- [x] **M2.15** JSON/YAML family: SONiC `config_db.json`, AWS/Azure/GCP exports, Meraki API, Cumulus NVUE (PyYAML `safe_load` only). `@parse` Done early (M1): composed with SafeLoader, aliases refused, named list items rendered as `key <name>`.
+- [x] **M2.16** Flat fallback: one statement per line. `@parse` Done early (M1): the flat fallback, used automatically when a family's parser rejects the text, with the reason kept as a warning.
+- [~] **M2.17** Family detection by scoring: indent regularity, brace balance, `config/edit/next/end` markers, XML/JSON validity, leading `set` or `/`. Tested on every corpus. *(§6.1)* `@parse` Scoring detector done early (M1) and tested on every current corpus and six family samples; re-test as corpora grow.
 
 ### 2D · Identity (§7, R-07a)
-- [ ] **M2.18** Vendor/OS fingerprinting from `detect.yaml`. *(§7, §4.4)* `@parse`
-- [ ] **M2.19** Identity resolver, in priority order:
+- [~] **M2.18** Vendor/OS fingerprinting from `detect.yaml`. *(§7, §4.4)* `@parse` Engine done early (M1) for all five signature kinds; only the Cisco pack exists yet.
+- [~] **M2.19** Identity resolver, in priority order: Source 3 (config) done early (M1) with a source per field; companion outputs and manual entry pending.
   1. live facts (stretch, X.04)
   2. companion show outputs via TextFSM / ntc-templates / TTP, else the mapping language
   3. config headers: FortiGate `#config-version`, Junos `version`, PAN-OS XML `version` attributes, Cisco `version`/`hostname`, SONiC `DEVICE_METADATA`
   4. manual entry
 
   The source is recorded for each field. *(§7)* `@parse`
-- [ ] **M2.20** A missing field is stated explicitly, never left blank: "Serial: not present in supplied artefacts; upload `show inventory` to populate". *(R-07a AC)* `@parse`
+- [x] **M2.20** A missing field is stated explicitly, never left blank: "Serial: not present in supplied artefacts; upload `show inventory` to populate". *(R-07a AC)* `@parse` Done early (M1): missing fields are stated with what to upload, e.g. "Serial: not present in supplied artefacts; upload `show inventory` or `show version` to populate".
 - [ ] **M2.21** UI for manual identity entry. *(§7 source 4)* `@ui`
 - [ ] **M2.22** Role inference (router / switch / firewall / cloud filter / white-box), which drives rule applicability and report sections. *(§7)* `@parse`
 
@@ -261,8 +262,8 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
   - test cases from the plan's own examples: Cisco `access-class MGMT-ACL in` on a vty line; FortiOS `set srcaddr "LAN_GRP"`; PAN-OS `<source><member>web-servers</member>`; AWS security groups referenced by other groups; Huawei `user-interface … acl 2001`
 
   *(§9.1, v5.1)* `@lead`
-- [ ] **M2.24** Version-scoping test: two OS versions of one vendor resolve mappings and defaults differently. *(§9.4, R-08)* `@lead`
-- [ ] **M2.25** Run one real SBM migration (v0 → v1). *(§8.4)* `@lead`
+- [x] **M2.24** Version-scoping test: two OS versions of one vendor resolve mappings and defaults differently. *(§9.4, R-08)* `@lead` Done early (M1): `test_two_os_versions_resolve_mappings_and_defaults_differently`.
+- [x] **M2.25** Run one real SBM migration (v0 → v1). *(§8.4)* `@lead` Done early (M1): SBM 0.1 → 0.2 (entity evidence, `TimePolicy`, `known_empty`, `unread`), with a test that a stored 0.1 document loads unchanged.
 
 ### 2F · Seed vendor packs (§20.4)
 Each pack has `pack.yaml`, `detect.yaml`, `identity.yaml`, version-scoped `defaults.yaml`, `mappings/`, `verify.yaml`, authored hardened and weak configs, and a pass and fail fixture for every applicable rule. `@content` with `@parse`
@@ -301,7 +302,7 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
   *(§12.7, R-07b)* `@lead`
 
 ### 2H · Crosswalk hub (§12.4, R-06)
-- [ ] **M2.50** `tools/import_oscal`: NIST SP 800-53 r5 OSCAL catalog → `frameworks/nist_800_53r5/catalog.json`. *(§20.1)* `@content`
+- [x] **M2.50** `tools/import_oscal`: NIST SP 800-53 r5 OSCAL catalog → `frameworks/nist_800_53r5/catalog.json`. *(§20.1)* `@content` Done early (M1): `tools/import_oscal.py`; official OSCAL 5.2.0 at a pinned commit, 1,014 active controls, IDs and titles only, with the source SHA-256 recorded.
 - [ ] **M2.51** `tools/import_stig`: XCCDF for each seed vendor's STIG → titles, severity, check/fix text, CCIs. *(§20.1)* `@content`
 - [ ] **M2.52** `tools/import_cci`: the DISA CCI list, translated from Rev4 to Rev5 through NIST's mapping, with gaps flagged. *(§12.4)* `@content`
 - [ ] **M2.53** `tools/import_olir`: NIST OLIR #155 → derived ISO/IEC 27001:2022 refs, then human review. *(§12.4)* `@content`

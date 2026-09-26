@@ -1,0 +1,60 @@
+# Logging: remote syslog targets (LogTarget) and device-wide logging flags (LoggingPolicy).
+mappings:
+  - id: cisco_ios_xe/logging-host
+    vendor: cisco_ios_xe
+    entity: {type: LogTarget, key: "{host}"}
+    match: "logging host <IP:host>"
+    effect:
+      - {set: LogTarget.host, from: host}
+      - {assert: LogTarget.transport, value: udp}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/logging-host-vrf
+    vendor: cisco_ios_xe
+    entity: {type: LogTarget, key: "{host}"}
+    match: "logging host <IP:host> vrf <STR>"
+    effect:
+      - {set: LogTarget.host, from: host}
+      - {assert: LogTarget.transport, value: udp}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/logging-host-transport
+    vendor: cisco_ios_xe
+    entity: {type: LogTarget, key: "{host}"}
+    match: "logging host <IP:host> transport <STR:proto> port <INT>"
+    effect:
+      - {set: LogTarget.host, from: host}
+      - {set: LogTarget.transport, from: proto, map: {udp: udp, tcp: tcp}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/logging-host-transport-default-port
+    vendor: cisco_ios_xe
+    entity: {type: LogTarget, key: "{host}"}
+    match: "logging host <IP:host> transport <STR:proto>"
+    effect:
+      - {set: LogTarget.host, from: host}
+      - {set: LogTarget.transport, from: proto, map: {udp: udp, tcp: tcp}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/logging-legacy
+    vendor: cisco_ios_xe
+    entity: {type: LogTarget, key: "{host}"}
+    match: "logging <IP:host>"
+    effect:
+      - {set: LogTarget.host, from: host}
+      - {assert: LogTarget.transport, value: udp}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/service-timestamps-log
+    vendor: cisco_ios_xe
+    match: "service timestamps log <LIST>"
+    effect: {assert: LoggingPolicy.timestamps, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # archive / log config / logging enable: every configuration change is logged.
+  - id: cisco_ios_xe/archive-log-config
+    vendor: cisco_ios_xe
+    context: ["archive", "log config"]
+    match: "logging enable"
+    effect: {assert: LoggingPolicy.config_change_logged, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

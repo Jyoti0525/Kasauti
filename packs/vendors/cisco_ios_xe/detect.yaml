@@ -1,0 +1,12 @@
+# Fingerprint for IOS XE running-configs (PLAN §7). Weights add up once per signature; the pack
+# is chosen only at >= min_score and with no tie. The threshold is set so that NX-OS and EOS
+# configs, which share some of these lines, stay below it until their own packs land (M2).
+min_score: 0.7
+signatures:
+  - {id: version-line, kind: regex, pattern: '^version \d+\.\d+', weight: 0.2}
+  - {id: boot-marker, kind: line_prefix, pattern: "boot-start-marker", weight: 0.3}
+  - {id: line-vty, kind: regex, pattern: '^line vty \d+', weight: 0.2}
+  - {id: bang-separator, kind: regex, pattern: '^!$', weight: 0.1}
+  - {id: ios-interface, kind: regex, pattern: '^interface (GigabitEthernet|TenGigabitEthernet|FastEthernet|Loopback|Vlan)\d', weight: 0.2}
+  - {id: service-timestamps, kind: line_prefix, pattern: "service timestamps", weight: 0.1}
+  - {id: ip-global, kind: regex, pattern: '^(no )?ip (http|cef|domain|ssh)', weight: 0.1}

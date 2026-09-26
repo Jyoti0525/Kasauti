@@ -92,13 +92,27 @@ class _Collector:
         return None
 
 
+class _NoAliasLoader(yaml.SafeLoader):
+    """SafeLoader that refuses anchors/aliases: a few nested aliases can expand into gigabytes
+    (billion laughs). Packs are data written by people; they never need them."""
+
+    def compose_node(self, parent: Any, index: Any) -> Any:
+        if self.check_event(yaml.AliasEvent):
+            mark = self.peek_event().start_mark  # type: ignore[no-untyped-call]
+            raise yaml.composer.ComposerError(
+                None, None, "YAML aliases are not allowed in packs", mark
+            )
+        return super().compose_node(parent, index)
+
+
 def _read(path: Path) -> Any:
     if path.stat().st_size > MAX_FILE_BYTES:
         raise ValueError(f"larger than {MAX_FILE_BYTES} bytes")
     text = path.read_text(encoding="utf-8")
     if path.suffix == ".json":
         return json.loads(text)
-    return yaml.safe_load(text) or {}
+    # _NoAliasLoader is a SafeLoader subclass: no object construction, and no aliases either.
+    return yaml.load(text, Loader=_NoAliasLoader) or {}  # noqa: S506  # nosec B506
 
 
 def _data_only(root: Path) -> list[str]:

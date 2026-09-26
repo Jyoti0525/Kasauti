@@ -350,6 +350,24 @@
           "default": null,
           "title": "Map"
         },
+        "otherwise": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Otherwise"
+        },
         "set": {
           "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
           "title": "Set",

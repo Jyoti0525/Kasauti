@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 import kasauti.sbm
 from kasauti.sbm import ENTITY_TYPES, SecurityBaselineModel, attribute_names
+from kasauti.sbm.document import SBM_VERSION
 from kasauti.sbm.entities import Interface, LoggingPolicy, MgmtService, MgmtSession
 from kasauti.sbm.facts import Evidence, Fact
 from kasauti.sbm.migrations import MigrationError, migrate
@@ -33,7 +34,7 @@ PLAN_8_1 = {
     "L2Port",
     "Tunnel",
 }
-ADDITIONS = {"LoggingPolicy", "ObjectDef"}
+ADDITIONS = {"LoggingPolicy", "ObjectDef", "TimePolicy"}
 
 
 def test_every_plan_entity_exists() -> None:
@@ -134,9 +135,35 @@ def test_migration_chain() -> None:
         "0.0": ("0.05", lambda d: {"renamed": d.pop("old", None), **d}),
         "0.05": ("0.1", lambda d: d),
     }
-    out = migrate({"sbm_version": "0.0", "old": 1}, registry=registry)
+    out = migrate({"sbm_version": "0.0", "old": 1}, target="0.1", registry=registry)
     assert out == {"sbm_version": "0.1", "renamed": 1}
     with pytest.raises(MigrationError, match="no migration"):
         migrate({"sbm_version": "9.9"}, registry=registry)
     with pytest.raises(MigrationError, match="loop"):
         migrate({"sbm_version": "a"}, target="z", registry={"a": ("b", dict), "b": ("a", dict)})
+
+
+def test_real_migration_0_1_to_0_2_keeps_content() -> None:
+    """TODO M2.25: a stored 0.1 document loads as the current version with nothing lost."""
+    v01 = {
+        "sbm_version": "0.1",
+        "device": {"type": "Device", "key": "device"},
+        "entities": [
+            {
+                "type": "TimeSource",
+                "key": "10.0.0.1",
+                "authenticated": {
+                    "value": True,
+                    "state": "explicit",
+                    "evidence": [{"file": "r.cfg", "line_start": 3, "line_end": 3, "raw": "x"}],
+                },
+            }
+        ],
+        "derived": {},
+    }
+    sbm = SecurityBaselineModel.model_validate(migrate(v01))
+    assert sbm.sbm_version == SBM_VERSION
+    (ts,) = sbm.entities
+    assert ts.authenticated.value is True  # type: ignore[union-attr]
+    assert sbm.known_empty == {}
+    assert sbm.unread == {}

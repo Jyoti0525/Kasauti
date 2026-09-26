@@ -12,3 +12,9 @@ derivations:
       any(MgmtService where key == 'telnet': enabled)
       or any(MgmtSession where kind == 'vty': transport contains 'telnet')
       or any(Interface: mgmt_protocols contains 'telnet')
+
+  - id: management.http_enabled
+    version: 1
+    type: bool
+    description: The unencrypted HTTP management server is enabled.
+    expr: "any(MgmtService where key == 'http': enabled)"

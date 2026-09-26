@@ -2,8 +2,11 @@
 
 Rule quality gate. Beyond what the schema already enforces, every rule must *explicitly*
 state its ``on_absent`` and ``on_unknown`` semantics and its ``fix_intent``, and must ship at
-least one passing and one failing fixture that exists on disk.
-(Per-seed-vendor fixture completeness is added in M2.46 once seed packs exist.)
+least one passing and one failing fixture that exists on disk. Each fixture is then audited:
+a ``pass`` fixture must make the rule PASS and a ``fail`` fixture must make it FAIL, so a
+fixture can't silently stop testing what it claims to. The fixture's first path component is
+the vendor pack (``cisco_ios_xe/weak.cfg``).
+(Per-seed-vendor fixture completeness is added in M2.46 once more seed packs exist.)
 
 Crosswalk lint. No rule may cite a control ID that isn't in an imported official catalog;
 every crosswalk entry must name an existing rule and existing controls.
@@ -20,6 +23,8 @@ from typing import Any
 
 import yaml
 
+from kasauti.audit import AuditError, audit, load_kb
+from kasauti.ingest.read import IngestError, read_file
 from kasauti.packs.loader import FrameworkPack, PackError, load_framework_pack, load_ruleset
 
 NIST = "nist_800_53r5"
@@ -47,6 +52,34 @@ def rule_quality(packs: Path, fixtures: Path) -> list[str]:
                     for f in files
                     if not (fixtures / f).is_file()
                 ]
+    return problems
+
+
+def fixture_verdicts(packs: Path, fixtures: Path) -> list[str]:
+    """Audit every fixture once and check each rule's verdict on it."""
+    try:
+        kb = load_kb(packs)
+    except PackError as err:
+        return [f"knowledge base: {p}" for p in err.problems]
+    statuses: dict[str, dict[str, str]] = {}
+    problems: list[str] = []
+    for rule in kb.ruleset.rules:
+        for want, files in (("PASS", rule.fixtures.pass_), ("FAIL", rule.fixtures.fail)):
+            for rel in files:
+                path = fixtures / rel
+                if not path.is_file():
+                    continue  # reported by rule_quality
+                if rel not in statuses:
+                    try:
+                        result = audit(read_file(path), kb, vendor=rel.split("/", 1)[0])
+                    except (IngestError, AuditError) as err:
+                        problems.append(f"fixture {rel}: {err}")
+                        statuses[rel] = {}
+                        continue
+                    statuses[rel] = {r.rule_id: r.status.value for r in result.rules}
+                got = statuses[rel].get(rule.id)
+                if got is not None and got != want:
+                    problems.append(f"{rule.id}: {want.lower()} fixture {rel} gives {got}")
     return problems
 
 
@@ -101,7 +134,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--packs", type=Path, default=Path("packs"))
     parser.add_argument("--fixtures", type=Path, default=Path("datasets/authored"))
     args = parser.parse_args(argv)
-    problems = rule_quality(args.packs, args.fixtures) + crosswalk_lint(args.packs)
+    problems = (
+        rule_quality(args.packs, args.fixtures)
+        + crosswalk_lint(args.packs)
+        + fixture_verdicts(args.packs, args.fixtures)
+    )
     for p in problems:
         print(f"FAIL {p}")
     print("content gates: " + ("FAILED" if problems else "passed"))

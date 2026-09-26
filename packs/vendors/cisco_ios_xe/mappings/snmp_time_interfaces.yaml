@@ -1,0 +1,106 @@
+# SNMP communities, NTP, and interfaces.
+mappings:
+  # --- SNMP ------------------------------------------------------------------------------------
+  # A community string is a secret: the entity is keyed by order (community-1, -2, …), the
+  # string is only compared against well-known values in memory, and evidence is masked.
+  - id: cisco_ios_xe/snmp-community
+    vendor: cisco_ios_xe
+    entity: {type: SnmpCommunity, key: "community-{#}"}
+    match: "snmp-server community <STR:c> <STR:access>"
+    effect:
+      - {set: SnmpCommunity.access, from: access, map: {RO: ro, RW: rw}}
+      - set: SnmpCommunity.is_well_known
+        from: c
+        map: {public: true, private: true, cisco: true, community: true, admin: true, default: true,
+              secret: true, manager: true, monitor: true, snmp: true, snmpd: true, read: true,
+              write: true, all: true, security: true, test: true, password: true}
+        otherwise: false
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/snmp-community-acl
+    vendor: cisco_ios_xe
+    entity: {type: SnmpCommunity, key: "community-{#}"}
+    match: "snmp-server community <STR:c> <STR:access> <STR:acl>"
+    effect:
+      - {set: SnmpCommunity.access, from: access, map: {RO: ro, RW: rw}}
+      - {ref: SnmpCommunity.filter, from: acl, target: acl}
+      - set: SnmpCommunity.is_well_known
+        from: c
+        map: {public: true, private: true, cisco: true, community: true, admin: true, default: true,
+              secret: true, manager: true, monitor: true, snmp: true, snmpd: true, read: true,
+              write: true, all: true, security: true, test: true, password: true}
+        otherwise: false
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- NTP -------------------------------------------------------------------------------------
+  - id: cisco_ios_xe/ntp-server
+    vendor: cisco_ios_xe
+    entity: {type: TimeSource, key: "{host}"}
+    match: "ntp server <IP:host>"
+    effect: {set: TimeSource.host, from: host}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ntp-server-prefer
+    vendor: cisco_ios_xe
+    entity: {type: TimeSource, key: "{host}"}
+    match: "ntp server <IP:host> prefer"
+    effect: {set: TimeSource.host, from: host}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ntp-server-key
+    vendor: cisco_ios_xe
+    entity: {type: TimeSource, key: "{host}"}
+    match: "ntp server <IP:host> key <INT>"
+    effect:
+      - {set: TimeSource.host, from: host}
+      - {assert: TimeSource.authenticated, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ntp-server-key-prefer
+    vendor: cisco_ios_xe
+    entity: {type: TimeSource, key: "{host}"}
+    match: "ntp server <IP:host> key <INT> prefer"
+    effect:
+      - {set: TimeSource.host, from: host}
+      - {assert: TimeSource.authenticated, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ntp-authenticate
+    vendor: cisco_ios_xe
+    match: "ntp authenticate"
+    effect: {assert: TimePolicy.auth_enforced, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Interfaces ------------------------------------------------------------------------------
+  - id: cisco_ios_xe/interface
+    vendor: cisco_ios_xe
+    entity: {type: Interface, key: "{name}"}
+    match: "interface <IFNAME:name>"
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/interface-shutdown
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: Interface, key: "{name}"}
+    match: "shutdown"
+    effect: {assert: Interface.admin_up, value: false}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/interface-access-group-in
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: Interface, key: "{name}"}
+    match: "ip access-group <STR:acl> in"
+    effect: {ref: Interface.filters_in, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/interface-access-group-out
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: Interface, key: "{name}"}
+    match: "ip access-group <STR:acl> out"
+    effect: {ref: Interface.filters_out, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
