@@ -951,6 +951,11 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.13 (2026-09-26, M2.01 web API shell):** `kasauti serve` runs FastAPI on 127.0.0.1
+  only. Serving to the LAN is refused, not merely off by default, until accounts, MFA and TLS
+  exist (M5): §17's "localhost by default" tightened, because an unauthenticated API would
+  hand configurations to anyone on the network. A Host allow-list stops DNS rebinding; security
+  headers on every response; Swagger UI off (it loads from a CDN; §17 air gap).
 - **v5.1.12 (2026-09-26, first-match filter evaluation; named login lists):**
   - **Ordered first-match evaluator** (`kasauti/policy/firstmatch.py`), built ahead of M2.31
     because FortiOS local-in policies needed it: can a source no entry names get this traffic

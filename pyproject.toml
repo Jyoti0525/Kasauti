@@ -16,6 +16,9 @@ dependencies = [
     "defusedxml>=0.7.1,<0.8",       # PSF-2.0 (XXE / billion-laughs safe XML parsing)
     "google-re2>=1.1,<2",           # BSD-3-Clause (linear-time regex for untrusted input)
     "reportlab>=5.0,<6",            # BSD-3-Clause (+ Pillow MIT-CMU) for PDF reports
+    "fastapi>=0.141,<1",            # MIT (+ starlette BSD-3, anyio MIT, annotated-doc MIT)
+    "uvicorn>=0.54,<1",             # BSD-3-Clause (+ click BSD-3, h11 MIT); plain, no [standard]
+    "python-multipart>=0.0.32,<0.1", # Apache-2.0 (form and file uploads)
 ]
 
 [project.scripts]
@@ -34,6 +37,8 @@ dev = [
     "pip-audit>=2.10",        # Apache-2.0
     "bandit>=1.9",            # Apache-2.0
     "cyclonedx-bom>=7.4",     # Apache-2.0
+    # BSD-3-Clause (FastAPI test client; certifi MPL-2.0, dev only)
+    "httpx2>=2.13,<3",        # BSD-3-Clause (the ASGI test client; truststore MIT)
 ]
 
 [build-system]

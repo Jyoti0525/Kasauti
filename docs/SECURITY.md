@@ -36,7 +36,7 @@ Assets, the attacks we design against, and the controls, from PLAN §17.
 | Reports and history | Forgery, silent deletion | PAdES signatures (optionally an Indian Class-3 DSC via PKCS#11); Merkle transparency log with signed checkpoints, inclusion and consistency proofs; offline verifier | M5.12–M5.17 |
 | Live collection | Credential theft, man-in-the-middle | Read-only device accounts; SSH host-key verification; credentials held in memory only | X.04 |
 | Supply chain | Compromised or badly licensed dependency | Hash-locked `uv.lock`; licence gate (**M0**); pip-audit, bandit, gitleaks, trivy; CycloneDX SBOM (**M0 in CI**) | M0.06–M0.07 |
-| Network exposure | Tool reachable from the LAN | Binds to localhost by default; TLS, CSP, HSTS and other security headers when exposed | M2.01, M5.10 |
+| Network exposure | Tool reachable from the LAN; a web page reaching the localhost API through DNS rebinding | `kasauti serve` binds 127.0.0.1 and refuses any other address until accounts, MFA and TLS exist (M5); requests must name `127.0.0.1` or `localhost` as their host (others get 400); every response carries CSP `default-src 'none'`, `nosniff`, `DENY` framing, `no-referrer`, `no-store`; no server banner; no CDN-loaded API docs. HSTS arrives with TLS | M2.01 (done), M5.10 |
 | Logs | Secrets leaking into logs | Structured logging with a redaction processor for secret-looking fields (**M0**) | M0.04 |
 | Air-gapped sites | No internet at the deployment site | Offline installer, bundled models, signed offline updates for packs and catalogs | M5.11 |
 

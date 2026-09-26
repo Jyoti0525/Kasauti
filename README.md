@@ -32,6 +32,12 @@ EDGE-R1  (cisco_ios_xe@1, chosen by fingerprint)
   wrote reports/weak.kasauti.pdf
 ```
 
+The web API runs on this machine only (the upload screens arrive with M2.04 and M2.75):
+
+```bash
+uv run kasauti serve            # http://127.0.0.1:8000/api/health
+```
+
 Every finding names the exact configuration lines (secrets masked), the NIST controls it
 supports, and any vendor default it relied on. A missing or unreadable fact is never counted
 as a pass: it becomes REVIEW, and the report says so. `datasets/authored/cisco_ios_xe/hardened.cfg`

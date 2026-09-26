@@ -1,6 +1,7 @@
 """``kasauti`` command-line interface (PLAN §4.2).
 
-Commands that work today: ``audit`` (M1) and ``packs validate`` (M0). ``kasauti verify`` arrives
+Commands that work today: ``audit`` (M1), ``packs validate`` (M0) and ``serve`` (M2.01, the web
+API on the loopback interface). ``kasauti verify`` arrives
 with the transparency log in M5; it is not stubbed, because a command that pretends to work is
 worse than one that doesn't exist yet.
 
@@ -23,6 +24,7 @@ from kasauti.packs.loader import PackError, load_framework_pack, load_ruleset, l
 from kasauti.rules.model import Status
 
 FRAMEWORK_ALIASES = {"nist": "nist_800_53r5", "nist_800_53r5": "nist_800_53r5"}
+LOOPBACK_NAMES = ("127.0.0.1", "localhost")
 
 
 def _validate_packs(root: Path) -> int:
@@ -94,6 +96,46 @@ def _audit(args: argparse.Namespace) -> int:
     return 0
 
 
+def _serve(args: argparse.Namespace) -> int:
+    """Run the web API on the loopback interface. Any other address is refused until accounts,
+    MFA and TLS exist (TODO M5.B, PLAN §17): the API would hand configurations to the LAN."""
+    if args.host not in LOOPBACK_NAMES:
+        print(
+            f"kasauti: serve listens on the loopback interface only (127.0.0.1), not {args.host}. "
+            "Serving to the network needs accounts, MFA and TLS, which arrive in M5.",
+            file=sys.stderr,
+        )
+        return 2
+    from kasauti.api.app import Settings, create_app  # noqa: PLC0415 - web stack only here
+
+    try:
+        app = create_app(Settings(packs=args.packs))
+    except PackError as err:
+        print("kasauti: the knowledge base is invalid:", file=sys.stderr)
+        for problem in err.problems:
+            print(f"  - {problem}", file=sys.stderr)
+        return 1
+    import uvicorn  # noqa: PLC0415
+
+    print(f"kasauti {__version__}: http://127.0.0.1:{args.port}/api/health (loopback only)")
+    uvicorn.run(
+        app,
+        host="127.0.0.1",  # never a name: `localhost` may also resolve to other addresses
+        port=args.port,
+        server_header=False,
+        proxy_headers=False,
+        log_level="info",
+    )
+    return 0
+
+
+def _port(text: str) -> int:
+    port = int(text)
+    if not 1 <= port <= 65535:
+        raise argparse.ArgumentTypeError(f"{port} is not a TCP port")
+    return port
+
+
 def _report_date(given: str | None) -> str:
     """``--date``, else ``SOURCE_DATE_EPOCH`` (reproducible builds), else today."""
     if given:
@@ -148,6 +190,11 @@ def build_parser() -> argparse.ArgumentParser:
     aud.add_argument("--date", help="report date YYYY-MM-DD (default: today)")
     aud.add_argument("--no-pdf", action="store_true", help="write the JSON result only")
 
+    srv = sub.add_parser("serve", help="run the web API on this machine (loopback only)")
+    srv.add_argument("--host", default="127.0.0.1", help="127.0.0.1 or localhost (the default)")
+    srv.add_argument("--port", type=_port, default=8000, help="TCP port (default: 8000)")
+    srv.add_argument("--packs", type=Path, default=Path("packs"), help="knowledge base root")
+
     packs = sub.add_parser("packs", help="work with content packs")
     packs_sub = packs.add_subparsers(dest="packs_command", required=True)
     validate = packs_sub.add_parser("validate", help="schema-check every pack under a directory")
@@ -163,6 +210,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "audit":
         args.framework = args.framework or ["nist"]
         return _audit(args)
+    if args.command == "serve":
+        return _serve(args)
     if args.command == "packs" and args.packs_command == "validate":
         return _validate_packs(args.root)
     return 2  # pragma: no cover - argparse enforces the choices above
