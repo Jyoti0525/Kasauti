@@ -1,10 +1,11 @@
 # Individual gitleaks findings reviewed and confirmed not to be secrets. Each line is one
 # finding's fingerprint (commit:file:rule:line), so it covers that occurrence only; the rule
-# still applies everywhere else. Add a line only after reading the flagged text.
+# still applies everywhere else. Add a line only after reading the flagged text, and describe
+# it here in words rather than quoting it (quoted, it would be flagged again in this file).
 
-# "pattern_key": "privacy-aes128": the name of a Junos SNMPv3 privacy protocol keyword in an
-# unrecognised-line summary, not a key (the key itself is masked as "****" two entries above).
+# Junos golden expected.json: the pattern key is the name of the SNMPv3 AES-128 privacy
+# keyword in an unrecognised-line summary, not a key; the key itself is masked.
 3133bfd4dff0eb9613c38c3e8de4c9b053ed07da:datasets/golden/juniper_junos_hardened/expected.json:generic-api-key:1482
 
-# key="GigabitEthernet0/1": an interface name used as an SBM entity key in a test.
+# SBM entity test: the entity key is a Cisco gigabit interface name.
 524c9427e8addf99af7dca1cc5ca93f143c66547:backend/tests/sbm/test_entities_and_document.py:generic-api-key:101

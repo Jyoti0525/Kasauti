@@ -6,3 +6,6 @@ useDefault = true
 [allowlist]
 description = "Documented placeholder secrets in the authored corpus and test fixtures"
 regexes = ['''PLACEHOLDER''']
+# The list of reviewed findings holds fingerprints and descriptions, never secret values; an
+# early version of it quoted the flagged text.
+paths = ['''^\.gitleaksignore$''']
