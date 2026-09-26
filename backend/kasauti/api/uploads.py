@@ -28,7 +28,8 @@ import datetime as dt
 import hashlib
 import uuid
 from collections.abc import AsyncIterator, Callable
-from typing import Annotated, Any, BinaryIO
+from io import RawIOBase
+from typing import Annotated, Any
 from urllib.parse import unquote
 
 from fastapi import APIRouter, HTTPException, Request, Response
@@ -256,7 +257,7 @@ async def _receive(
     declared = request.headers.get("content-length", "")
     if declared.isdigit() and int(declared) > limit:
         return Received(body.id, body.name, int(declared), None, _too_large(limit))
-    sink: BinaryIO = await run_in_threadpool(store.staging.create, upload_id, body.id)
+    sink: RawIOBase = await run_in_threadpool(store.staging.create, upload_id, body.id)
     try:
         size, digest = await _copy(request.stream(), sink, limit)
     except _TooLargeError:
@@ -279,7 +280,7 @@ def _too_large(limit: int) -> str:
     return f"over the {limit // (1024 * 1024)} MiB limit"
 
 
-async def _copy(chunks: AsyncIterator[bytes], sink: BinaryIO, limit: int) -> tuple[int, str]:
+async def _copy(chunks: AsyncIterator[bytes], sink: RawIOBase, limit: int) -> tuple[int, str]:
     digest = hashlib.sha256()
     size = 0
     pending: list[bytes] = []

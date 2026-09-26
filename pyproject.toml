@@ -21,6 +21,7 @@ dependencies = [
     "python-multipart>=0.0.32,<0.1", # Apache-2.0 (form and file uploads)
     "sqlalchemy>=2.1.1,<2.2",       # MIT (+ typing-extensions PSF-2.0); sync API, no greenlet
     "alembic>=1.20,<2",             # MIT (+ Mako MIT, MarkupSafe BSD-3); schema migrations
+    "cryptography>=50.0.1,<51",     # Apache-2.0 OR BSD-3-Clause (+ cffi MIT-0, pycparser BSD-3)
 ]
 
 [project.scripts]

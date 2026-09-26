@@ -132,6 +132,25 @@ def test_the_compressed_size_is_what_is_limited(
     assert (state, result) == (JobState.SUCCEEDED, {"x": "a" * 400 * 1024})
 
 
+def test_secrets_reach_the_worker_but_never_the_database(
+    queue: JobQueue, handlers: dict[str, str], engine: Engine
+) -> None:
+    key = b"\x00sealing key\xff"
+    pool = WorkerPool(queue, handlers, workers=1, poll_s=0.05, secrets={"test": key})
+    try:
+        job_id, state, _, result = _run(queue, pool, "secret")
+    finally:
+        pool._drain(grace_s=0)
+    assert (state, result) == (JobState.SUCCEEDED, {"seen": True})
+    with engine.connect() as conn:
+        row = conn.execute(select(jobs).where(jobs.c.id == job_id)).one()
+    assert all(b"sealing key" not in str(v).encode() for v in row)
+    # A pool with no secrets hands none.
+    _, _, _, result = _run(queue, pool_without := WorkerPool(queue, handlers, workers=1), "secret")
+    pool_without._drain(grace_s=0)
+    assert result == {"seen": False}
+
+
 def test_a_job_that_needs_too_much_memory_fails_saying_so(
     queue: JobQueue, handlers: dict[str, str]
 ) -> None:

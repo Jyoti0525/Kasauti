@@ -61,8 +61,10 @@ from kasauti.api.jobs import router as jobs_router
 from kasauti.api.uploads import router as uploads_router
 from kasauti.audit import KnowledgeBase, load_kb
 from kasauti.db import create_engine, current_revision, ensure_current
+from kasauti.ingest.sealed import new_key
 from kasauti.ingest.staging import Staging
 from kasauti.ingest.store import UploadStore
+from kasauti.ingest.worker import STAGING_KEY_NAME
 from kasauti.jobs import JobQueue, WorkerPool
 from kasauti.jobs.kinds import HANDLERS
 from kasauti.jobs.limits import DEFAULT_MEMORY_MIB
@@ -126,20 +128,7 @@ def create_app(settings: Settings) -> FastAPI:
     engine = create_engine(settings.database)
     try:
         ensure_current(engine)
-        queue = JobQueue(engine, settings.handlers)
-        staging = Staging(settings.staging)
-        staging.prepare()
-        store = UploadStore(engine, staging)
-        pool = (
-            WorkerPool(
-                queue,
-                settings.handlers,
-                workers=settings.workers,
-                memory_mib=settings.worker_memory_mib,
-            )
-            if settings.workers
-            else None
-        )
+        queue, store, pool, worker_secrets = _jobs_and_uploads(settings, engine)
     except BaseException:
         engine.dispose()
         raise
@@ -173,6 +162,7 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.engine = engine
     app.state.jobs = queue
     app.state.pool = pool
+    app.state.worker_secrets = worker_secrets
     app.state.uploads = store
     app.state.packs = settings.packs
     # Starlette runs the middleware added last first: the headers wrap the host check, which
@@ -230,6 +220,31 @@ def cross_site(headers: Headers) -> str | None:
     if headers.get(REQUEST_HEADER.lower()) != "1":
         return f"requests that change something need the header {REQUEST_HEADER}: 1"
     return None
+
+
+def _jobs_and_uploads(
+    settings: Settings, engine: Engine
+) -> tuple[JobQueue, UploadStore, WorkerPool | None, dict[str, bytes]]:
+    """The job queue, the upload store and the worker pool. Staged uploads are sealed under a
+    key made here and kept in memory only (TODO M5.01, first part); workers get it from the
+    pool when they start, never through the database."""
+    queue = JobQueue(engine, settings.handlers)
+    staging_key = new_key()
+    staging = Staging(settings.staging, staging_key)
+    staging.prepare()
+    worker_secrets = {STAGING_KEY_NAME: staging_key}
+    pool = (
+        WorkerPool(
+            queue,
+            settings.handlers,
+            workers=settings.workers,
+            memory_mib=settings.worker_memory_mib,
+            secrets=worker_secrets,
+        )
+        if settings.workers
+        else None
+    )
+    return queue, UploadStore(engine, staging), pool, worker_secrets
 
 
 async def _housekeep(store: UploadStore) -> None:

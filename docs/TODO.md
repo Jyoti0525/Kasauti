@@ -68,7 +68,7 @@ Every item below is installed or used by a task in this file. Re-verify each lic
 | Templates | Jinja2 (SandboxedEnvironment) | BSD-3 | M4.02, M5.07 |
 | Remediation | hier_config; Aerleon | MIT; Apache-2.0 | M4.07, M4.12 |
 | PDF + charts + signing | ReportLab, matplotlib, pyHanko | BSD, PSF-style, MIT | M1.13, M2.74, M5.12 |
-| Crypto | cryptography (AES-256-GCM, Ed25519) | Apache-2.0 / BSD-3 | M5.01, M5.08, M5.14 |
+| Crypto | cryptography (AES-256-GCM, Ed25519); 50.0.1 in use since v5.1.19 | Apache-2.0 OR BSD-3 (+ cffi MIT-0, pycparser BSD-3) | M5.01, M5.08, M5.14 |
 | Auth | argon2-cffi, pyotp | MIT, MIT | M5.03 |
 | Logging | structlog | MIT / Apache-2.0 | M0.04 |
 | Live collection (stretch) | NAPALM, Netmiko (Paramiko) | Apache-2.0, MIT (LGPL-2.1 unmodified) | X.04 |
@@ -530,14 +530,14 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
 **Exit criteria (§25):** vault encryption, MFA/RBAC, sandboxed workers, RE2 and sandboxed templates, signed packs, PAdES signing, transparency log + verifier CLI, security test suite. **Fallback:** transparency log with inclusion proofs only (no consistency proofs).
 
 ### 5A · Data protection
-- [ ] **M5.01** Evidence vault:
+- [~] **M5.01** Evidence vault:
   - originals immutable and content-addressed by SHA-256
   - AES-256-GCM with envelope keys (the `cryptography` library), the key coming from the OS keystore or a passphrase
   - only `admin` decrypts originals; everyone else sees the masked view
   - a retention policy
   - replaces M2.04's plain staging directory: an upload is encrypted into the vault as it streams in, and the audit worker decrypts it in memory
 
-  *(§5.2, §17)* `@sec`
+  *(§5.2, §17)* `@sec` **First part done early (v5.1.19):** staged uploads are sealed as they stream in and decrypted in memory by the worker (`kasauti/ingest/sealed.py`): AES-256-GCM in 64 KiB segments with STREAM nonces (reorder, drop and cut-off detected), each file bound to its upload and file ids, seekable so `zipfile` reads archives in place. The key is made at server start and kept in memory only; workers get it over the pipe that starts them (`WorkerPool(secrets=…)`, `worker_secret()`), and the payload names only its id, so a restart or another server's job fails with a clear message and the file is deleted. Tests: 18 on the format (every size across segment edges, any changed byte, truncation on a boundary, reordering, wrong key or name, zips), the pool (secrets reach the worker, never the job row), the worker (restart, tamper) and the upload flow (files waiting for audit hold no planted secret or host name). Remaining: a key from the OS keystore or a passphrase (so a restart doesn't lose uploads), content-addressed originals kept for review, admin-only decryption, retention.
 - [~] **M5.02** Sandboxed parse workers with CPU, memory and time limits per file (Windows job objects or POSIX rlimits). *(§4.2, §5.2, §17)* `@sec` Memory and time done early (v5.1.17): each worker caps its own memory, and the time limit grows with the file. Remaining: CPU limits, and confinement a worker can't lift itself (a restricted token or separate account, no network, only its own staged file).
 
 ### 5B · Accounts and access

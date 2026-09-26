@@ -258,7 +258,9 @@ def test_taking_a_file_back_out_and_discarding(client: TestClient, var: Path) ->
 
 
 def _run_jobs(client: TestClient) -> None:
-    WorkerPool(client.app.state.jobs, HANDLERS, workers=2).run_until_idle(timeout_s=120)  # type: ignore[attr-defined]
+    state = client.app.state  # type: ignore[attr-defined]
+    pool = WorkerPool(state.jobs, HANDLERS, workers=2, secrets=state.worker_secrets)
+    pool.run_until_idle(timeout_s=120)
 
 
 def test_upload_to_audit_results_with_no_secret_left_behind(client: TestClient, var: Path) -> None:
@@ -266,6 +268,14 @@ def test_upload_to_audit_results_with_no_secret_left_behind(client: TestClient, 
     upload_id = _new(client, label="core")
     _send(client, upload_id, "weak.cfg", WEAK.read_bytes())
     _send(client, upload_id, "more.zip", _zip({"pa/weak.xml": PANOS.read_bytes()}))
+    # Waiting for their audit, the files are on disk sealed: no planted secret, not even the
+    # host name, can be read from them (or recovered once they're deleted).
+    waiting = [p for p in (var / "staging").rglob("*") if p.is_file()]
+    assert len(waiting) == 2
+    for path in waiting:
+        assert not SECRETS.search(path.read_bytes())
+        assert b"EDGE-R1" not in path.read_bytes()
+        assert b"PA-BRANCH" not in path.read_bytes()
     started = client.post(f"/api/uploads/{upload_id}/start", headers=GUARD)
     assert started.status_code == 202
     assert {f["job_state"] for f in started.json()["files"]} == {"queued"}

@@ -74,7 +74,8 @@ curl -s --compressed localhost:8000/api/jobs/<job>/result -o result.json
 
 Send a folder file by file (named by its path), or as one `.zip`. Every file you send is listed,
 and the ones that can't be audited say why. An uploaded configuration stays on disk only until its
-audit reads it (the encrypted vault arrives with M5.01).
+audit reads it, and only encrypted, under a key the server keeps in memory; restarting the server
+makes uploads not yet audited unreadable, so start them before a restart.
 
 Audit history is kept in a SQLite file under `./var` (set `KASAUTI_DATA_DIR` to move it);
 `kasauti serve` creates and upgrades it. For a shared PostgreSQL server instead:

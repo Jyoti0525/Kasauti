@@ -13,6 +13,7 @@ from sqlalchemy import Engine, select, update
 
 from kasauti.ingest import store as store_module
 from kasauti.ingest.read import MAX_BYTES
+from kasauti.ingest.sealed import new_key
 from kasauti.ingest.staging import Staging
 from kasauti.ingest.store import (
     AUDIT_KIND,
@@ -35,7 +36,7 @@ PACKS = Path(__file__).resolve().parents[3] / "packs"
 
 @pytest.fixture
 def store(any_engine: Engine, tmp_path: Path) -> UploadStore:
-    staging = Staging(tmp_path / "staging")
+    staging = Staging(tmp_path / "staging", new_key())
     staging.prepare()
     return UploadStore(any_engine, staging)
 

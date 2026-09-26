@@ -31,7 +31,8 @@ import uuid
 import zipfile
 import zlib
 from dataclasses import dataclass
-from pathlib import Path, PurePosixPath
+from pathlib import PurePosixPath
+from typing import BinaryIO
 
 from kasauti.ingest.read import MAX_BYTES, looks_like_text
 from kasauti.ingest.staging import Staging
@@ -121,32 +122,34 @@ def inspect(staging: Staging, upload_id: str, body: Received) -> list[Received]:
     entries (and the archive itself deleted); anything else is accepted or refused on its first
     bytes. Refused files are deleted; accepted ones stay as ``.part`` until their rows are
     committed."""
-    part = staging.part(upload_id, body.id)
     if is_archive(body.name):
         try:
-            return _expand(staging, upload_id, part, body.name)
+            with staging.open(upload_id, body.id, part=True) as archive:
+                return _expand(staging, upload_id, archive, body)
         finally:
-            part.unlink(missing_ok=True)
-    reason = _content_refusal(part, body.size)
+            staging.remove(upload_id, body.id)
+    reason = _content_refusal(staging, upload_id, body.id, body.size)
     if reason is None:
         return [body]
-    part.unlink(missing_ok=True)
+    staging.remove(upload_id, body.id)
     return [Received(body.id, body.name, body.size, body.sha256, reason)]
 
 
-def _content_refusal(path: Path, size: int) -> str | None:
+def _content_refusal(staging: Staging, upload_id: str, file_id: str, size: int) -> str | None:
     if size == 0:
         return "the file is empty"
-    with path.open("rb") as handle:
+    with staging.open(upload_id, file_id, part=True) as handle:
         head = handle.read(SNIFF_BYTES)
     if not looks_like_text(head):
         return "looks like a binary file, not a text configuration"
     return None
 
 
-def _expand(staging: Staging, upload_id: str, archive: Path, name: str) -> list[Received]:
+def _expand(staging: Staging, upload_id: str, archive: BinaryIO, body: Received) -> list[Received]:
+    name = body.name
+
     def refused(reason: str) -> list[Received]:
-        return [Received(new_id(), name, archive.stat().st_size, None, reason)]
+        return [Received(new_id(), name, body.size, None, reason)]
 
     try:
         zf = zipfile.ZipFile(archive)
@@ -237,7 +240,7 @@ def _extract(
             # CRC or length mismatch, overlapping entries, truncated data, unknown method.
             reason = "damaged or unreadable in the archive"
     if reason is None:
-        reason = _content_refusal(staging.part(upload_id, file_id), size)
+        reason = _content_refusal(staging, upload_id, file_id, size)
     if reason is not None:
         staging.remove(upload_id, file_id)
         return Received(file_id, name, size, None, reason)

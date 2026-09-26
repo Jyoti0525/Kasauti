@@ -63,6 +63,22 @@ _TARGET = re.compile(r"[A-Za-z_][\w.]*:[A-Za-z_]\w*")
 _CONTEXT = multiprocessing.get_context("spawn")
 _MESSAGE_LIMIT = 64 * 1024
 """Bytes of a message that isn't a result (why the job failed)."""
+_SECRETS: dict[str, bytes] = {}
+"""In a worker process: what the pool handed it at start (see :func:`worker_secret`)."""
+
+
+def worker_secret(name: str) -> bytes | None:
+    """A secret the pool handed this worker process when it started, such as the key staged
+    uploads are sealed with. Secrets travel over the pipe that starts the process: never
+    through the database, never in a payload, so a job row can't reveal them."""
+    return _SECRETS.get(name)
+
+
+def set_worker_secrets(secrets: Mapping[str, bytes]) -> None:
+    """Hand this process its secrets: done by the pool in each worker; tests running a handler
+    in their own process do it themselves."""
+    _SECRETS.clear()
+    _SECRETS.update(secrets)
 
 
 class JobError(Exception):
@@ -88,10 +104,13 @@ def resolve(target: str) -> Handler:
     return handler  # type: ignore[no-any-return]
 
 
-def _child(conn: Connection, target: str, payload: str, memory_mib: int) -> None:
+def _child(
+    conn: Connection, target: str, payload: str, memory_mib: int, secrets: Mapping[str, bytes]
+) -> None:
     """A worker process's whole life: cap its memory, run one job, send one message, exit."""
     # Ctrl+C in a console reaches every process in it; stopping jobs is the pool's decision.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+    set_worker_secrets(secrets)
     try:
         limit_memory(memory_mib)
         result: object = resolve(target)(json.loads(payload))  # a handler may break its type
@@ -149,6 +168,7 @@ class WorkerPool:
         lease: dt.timedelta = dt.timedelta(seconds=60),
         grace_s: float = 10.0,
         memory_mib: int = DEFAULT_MEMORY_MIB,
+        secrets: Mapping[str, bytes] | None = None,
     ) -> None:
         if set(handlers) != set(queue.kinds):
             raise ValueError("the pool's handlers and the queue's kinds differ")
@@ -162,6 +182,7 @@ class WorkerPool:
         if memory_mib < MIN_MEMORY_MIB:
             raise ValueError(f"a worker needs at least {MIN_MEMORY_MIB} MiB")
         self.memory_mib = memory_mib
+        self._secrets = dict(secrets or {})
         self.poll_s = poll_s
         self.heartbeat_s = heartbeat_s
         self.lease = lease
@@ -267,7 +288,7 @@ class WorkerPool:
         receive, send = _CONTEXT.Pipe(duplex=False)
         process = _CONTEXT.Process(
             target=_child,
-            args=(send, self.handlers[claim.kind], claim.payload, self.memory_mib),
+            args=(send, self.handlers[claim.kind], claim.payload, self.memory_mib, self._secrets),
             name=f"kasauti-job-{claim.id[:8]}",
             daemon=True,
         )

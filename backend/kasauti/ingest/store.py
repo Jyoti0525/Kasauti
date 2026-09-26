@@ -264,6 +264,7 @@ class UploadStore:
                     "frameworks": json.loads(head.frameworks),
                     "vendor": head.vendor,
                     "staging": str(self.staging.root.resolve()),
+                    "staging_key": self.staging.key_id,
                     "packs": str(packs.resolve()),
                 }
                 job_id = queue.enqueue(

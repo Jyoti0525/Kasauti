@@ -211,6 +211,11 @@ Each pack is **data only** (schema-validated YAML/JSON; no code, no pickle) and 
 - **Until the vault exists (M2.04 → M5.01):** an uploaded original waits in an owner-only
   staging directory under a random id only until its audit job's worker reads it, and is
   deleted on that read, before parsing. The database never holds it; results hold masked text.
+  Since v5.1.19 it is also sealed as it arrives (AES-256-GCM in 64 KiB segments, the STREAM
+  construction, each file bound to its ids) under a key made at server start and kept in
+  memory only; workers get the key over the pipe that starts them, never through the database,
+  and decrypt in memory. What a deleted staged file leaves on the disk is ciphertext. A restart
+  makes files staged before it unreadable, and their jobs say so.
 - **Evidence vault:** originals stored immutable, content-addressed by SHA-256, encrypted with AES-256-GCM under envelope keys. Only the `admin` role can decrypt originals. Everyone else sees the masked view.
 - **Masking that keeps auditability:** the secret value is hidden but its *kind* is kept (`password 7 ****`, `secret 9 ****`, `snmp community ****(RO)`), so rules like "no reversible password types" still work.
 - Every ingested artefact's hash is appended to the transparency log (§16).
@@ -687,7 +692,7 @@ Evidence first (every number clickable down to a config line); two numbers, neve
 | Safe regex | google-re2 | BSD-3 |
 | Templates | Jinja2 (sandboxed) | BSD-3 |
 | PDF + signing | ReportLab, matplotlib, **pyHanko** | BSD, PSF-style, MIT |
-| Crypto | cryptography (AES-GCM, Ed25519) | Apache-2.0 / BSD-3 |
+| Crypto | cryptography (AES-GCM, Ed25519); in use since v5.1.19 (staging) | Apache-2.0 OR BSD-3 (+ cffi MIT-0, pycparser BSD-3) |
 | Auth | argon2-cffi, pyotp | MIT, MIT |
 | Logging | structlog | MIT / Apache-2.0 |
 
@@ -964,6 +969,19 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.19 (2026-09-27, sealed staging):** Closes the open staging risk from v5.1.16:
+  a deleted staged configuration could be recovered from the disk. Brought forward from
+  M5.01: an upload is sealed as it streams in (AES-256-GCM in 64 KiB segments with the STREAM
+  nonce construction, so segments can't be reordered, dropped or cut off; every tag covers the
+  file's upload and file ids, so one file can't be passed off as another), under a key made
+  at server start and held in memory only. Worker processes get the key from the pool over
+  the pipe that starts them (a general, database-free channel for worker secrets); the job
+  payload names only the key's id, so a worker holding another key fails the job with a clear
+  message and deletes the file. `zipfile` reads a sealed archive through a seekable reader
+  that decrypts only the segments it touches. New dependency: `cryptography` 50.0.1 (Apache-2.0
+  OR BSD-3-Clause; cffi MIT-0, pycparser BSD-3-Clause), checked on PyPI. The rest of M5.01
+  (a key from the OS keystore or a passphrase, content-addressed originals kept for review,
+  admin-only decryption, retention) is unchanged.
 - **v5.1.18 (2026-09-27, M2.05 companion files):** Serials and hardware (R-07a) come from the
   device's command outputs: `show version`, `show inventory`, `get system status`, `show
   system info`, `show chassis hardware` (and `display version` / `display esn` for a pack that

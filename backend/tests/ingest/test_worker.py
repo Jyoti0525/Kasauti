@@ -4,6 +4,7 @@ real worker processes."""
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -11,10 +12,12 @@ import pytest
 
 from kasauti.audit import audit, load_kb
 from kasauti.ingest.read import MAX_BYTES, decode
+from kasauti.ingest.sealed import new_key
 from kasauti.ingest.staging import Staging
 from kasauti.ingest.upload import new_id
-from kasauti.ingest.worker import audit_file
+from kasauti.ingest.worker import STAGING_KEY_NAME, audit_file
 from kasauti.jobs import JobError
+from kasauti.jobs.pool import set_worker_secrets
 from kasauti.jobs.results import encode_result
 from kasauti.jobs.table import RESULT_LIMIT
 
@@ -23,8 +26,19 @@ PACKS = REPO / "packs"
 WEAK = REPO / "datasets" / "authored" / "cisco_ios_xe" / "weak.cfg"
 
 
+KEY = new_key()
+
+
+@pytest.fixture(autouse=True)
+def _worker_secrets() -> Iterator[None]:
+    """What the pool hands a worker process when it starts."""
+    set_worker_secrets({STAGING_KEY_NAME: KEY})
+    yield
+    set_worker_secrets({})
+
+
 def _payload(tmp_path: Path, data: bytes | None, **extra: Any) -> dict[str, Any]:
-    staging = Staging(tmp_path / "staging")
+    staging = Staging(tmp_path / "staging", KEY)
     upload_id, file_id = new_id(), new_id()
     if data is not None:
         with staging.create(upload_id, file_id) as sink:
@@ -37,9 +51,31 @@ def _payload(tmp_path: Path, data: bytes | None, **extra: Any) -> dict[str, Any]
         "frameworks": ["nist_800_53r5"],
         "vendor": None,
         "staging": str(staging.root),
+        "staging_key": staging.key_id,
         "packs": str(PACKS),
         **extra,
     }
+
+
+def test_a_file_sealed_before_a_restart_says_so_and_is_deleted(tmp_path: Path) -> None:
+    payload = _payload(tmp_path, WEAK.read_bytes())
+    staged = Path(payload["staging"]) / payload["upload"] / payload["file"]
+    assert staged.exists()
+    set_worker_secrets({STAGING_KEY_NAME: new_key()})  # the server restarted: a new key
+    with pytest.raises(JobError, match="the server restarted since it was uploaded"):
+        audit_file(payload)
+    assert not staged.exists()
+
+
+def test_a_tampered_file_is_refused_not_audited(tmp_path: Path) -> None:
+    payload = _payload(tmp_path, WEAK.read_bytes())
+    staged = Path(payload["staging"]) / payload["upload"] / payload["file"]
+    data = bytearray(staged.read_bytes())
+    data[100] ^= 0x01
+    staged.write_bytes(bytes(data))
+    with pytest.raises(JobError, match="can't be opened any more"):
+        audit_file(payload)
+    assert not staged.exists()
 
 
 def test_the_result_is_the_audit_the_command_line_gives(tmp_path: Path) -> None:

@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from kasauti.ingest import upload
+from kasauti.ingest.sealed import new_key
 from kasauti.ingest.staging import Staging, read_once
 from kasauti.ingest.upload import Received, display_name, inspect, new_id, type_refusal
 
@@ -64,11 +65,19 @@ def test_types_are_the_plans_list(name: str, refused: str | None) -> None:
     assert reason is None if refused is None else reason is not None and refused in reason
 
 
+KEY = new_key()
+
+
 @pytest.fixture
 def staging(tmp_path: Path) -> Staging:
-    stage = Staging(tmp_path / "staging")
+    stage = Staging(tmp_path / "staging", KEY)
     stage.prepare()
     return stage
+
+
+def _plain(staging: Staging, file_id: str) -> bytes:
+    with staging.open(UPLOAD, file_id, part=True) as handle:
+        return handle.read()
 
 
 UPLOAD = "00000000-0000-4000-8000-00000000000a"
@@ -97,7 +106,7 @@ def test_a_file_is_checked_on_its_first_bytes(
     (got,) = inspect(staging, UPLOAD, body)
     if refused is None:
         assert got == body
-        assert staging.part(UPLOAD, body.id).read_bytes() == data
+        assert _plain(staging, body.id) == data
     else:
         assert got.reason is not None
         assert refused in got.reason
@@ -232,10 +241,11 @@ def test_staged_files_are_owner_only_and_read_once(staging: Staging) -> None:
     if os.name == "posix":
         assert path.stat().st_mode & 0o777 == 0o600
         assert (staging.root / UPLOAD).stat().st_mode & 0o777 == 0o700
-    assert read_once(staging.root, UPLOAD, body.id, 1024) == CONFIG
+    assert CONFIG not in path.read_bytes(), "staged files are sealed"
+    assert read_once(staging.root, KEY, UPLOAD, body.id, 1024) == CONFIG
     assert not path.exists()
     with pytest.raises(FileNotFoundError):
-        read_once(staging.root, UPLOAD, body.id, 1024)
+        read_once(staging.root, KEY, UPLOAD, body.id, 1024)
 
 
 def test_staging_names_are_ids_only(staging: Staging) -> None:

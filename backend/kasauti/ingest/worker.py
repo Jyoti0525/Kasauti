@@ -1,7 +1,8 @@
 """The audit job: one uploaded file, audited in a worker process (TODO M2.04).
 
-Runs in a fresh process (:mod:`kasauti.jobs.pool`). It reads the staged file and deletes it
-before parsing anything, then decodes, audits and returns the result: the same
+Runs in a fresh process (:mod:`kasauti.jobs.pool`). It reads the staged file, which is sealed
+(:mod:`kasauti.ingest.sealed`), deletes it, and only then decrypts it in memory and parses it.
+It decodes, audits and returns the result: the same
 :class:`~kasauti.audit.AuditResult` ``kasauti audit`` writes, in which every configuration line
 is masked. The knowledge base is loaded from the pack files each time, so an audit always names
 the exact packs it used.
@@ -19,8 +20,15 @@ from kasauti.audit import AuditError, KnowledgeBase, audit, load_kb
 from kasauti.identity.companion import COMMANDS, classify
 from kasauti.ingest.model import Artifact
 from kasauti.ingest.read import MAX_BYTES, IngestError, decode
-from kasauti.ingest.staging import is_id, read_once
-from kasauti.jobs.pool import JobError
+from kasauti.ingest.staging import SealError, delete_staged, is_id, key_id, read_once
+from kasauti.jobs.pool import JobError, worker_secret
+
+STAGING_KEY_NAME = "staging"
+"""The worker secret (:func:`kasauti.jobs.pool.worker_secret`) staged uploads are sealed with."""
+_UNREADABLE = (
+    "the uploaded file can't be opened any more: the server restarted since it was uploaded "
+    "(its key is kept in memory only); upload it again"
+)
 
 
 def audit_file(payload: dict[str, Any]) -> dict[str, Any]:
@@ -28,10 +36,18 @@ def audit_file(payload: dict[str, Any]) -> dict[str, Any]:
     if not (is_id(upload_id) and is_id(file_id)):
         raise JobError("the job doesn't name an uploaded file")
     name = str(payload["name"])
+    key = worker_secret(STAGING_KEY_NAME)
+    if key is None or key_id(key) != payload.get("staging_key"):
+        # Sealed under a key this process doesn't hold: the server restarted since the upload
+        # (keys live in memory only), or another server process queued it.
+        delete_staged(Path(payload["staging"]), upload_id, file_id)
+        raise JobError(f"{name}: {_UNREADABLE}")
     try:
-        data = read_once(Path(payload["staging"]), upload_id, file_id, MAX_BYTES)
+        data = read_once(Path(payload["staging"]), key, upload_id, file_id, MAX_BYTES)
     except FileNotFoundError:
         raise JobError(f"{name}: the uploaded file is no longer here; upload it again") from None
+    except SealError:
+        raise JobError(f"{name}: {_UNREADABLE}") from None
     try:
         artifact = decode(data, name)
         del data

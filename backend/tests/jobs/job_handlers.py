@@ -8,6 +8,7 @@ import time
 from typing import Any
 
 from kasauti.jobs import JobError
+from kasauti.jobs.pool import worker_secret
 
 LEAKED_LINE = "enable secret 5 $1$PLACEHOLDER$leaked"
 
@@ -19,6 +20,7 @@ HANDLERS = {
     "sleep": "job_handlers:sleep",
     "huge": "job_handlers:huge",
     "hog": "job_handlers:hog",
+    "secret": "job_handlers:secret",
     "not_json": "job_handlers:not_json",
     "not_object": "job_handlers:not_object",
 }
@@ -51,6 +53,11 @@ def huge(payload: dict[str, Any]) -> dict[str, Any]:
     repeated, which it shrinks a thousandfold."""
     n = payload["n"]
     return {"x": "a" * 2 * n if payload.get("plain") else os.urandom(n).hex()}
+
+
+def secret(_payload: dict[str, Any]) -> dict[str, Any]:
+    """Whether the pool handed this process the test secret."""
+    return {"seen": worker_secret("test") == b"\x00sealing key\xff"}
 
 
 def hog(payload: dict[str, Any]) -> dict[str, Any]:
