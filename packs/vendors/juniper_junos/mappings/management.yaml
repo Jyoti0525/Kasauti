@@ -1,0 +1,313 @@
+# Management plane: services, SSH, login classes (sessions), banners.
+# Seed mappings: reviewed in docs/reviews/juniper_junos.md.
+mappings:
+- id: juniper_junos/service-telnet
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  entity:
+    type: MgmtService
+    key: telnet
+  match: telnet
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/service-finger
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  entity:
+    type: MgmtService
+    key: finger
+  match: finger
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/service-ssh
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  entity:
+    type: MgmtService
+    key: ssh
+  match: ssh
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/service-ftp
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  entity:
+    type: MgmtService
+    key: ftp
+  match: ftp
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/web-management-http
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  - web-management
+  entity:
+    type: MgmtService
+    key: http
+  match: http
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/web-management-https
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  - web-management
+  entity:
+    type: MgmtService
+    key: https
+  match: https
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/ssh-v2
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  - ssh
+  entity:
+    type: MgmtService
+    key: ssh
+  match: protocol-version v2
+  effect:
+    assert: MgmtService.version
+    value: '2'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/ssh-v1
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  - ssh
+  entity:
+    type: MgmtService
+    key: ssh
+  match: protocol-version v1
+  effect:
+    assert: MgmtService.version
+    value: '1'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/ssh-v1-v2
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  - ssh
+  entity:
+    type: MgmtService
+    key: ssh
+  match: protocol-version [ v1 v2 ]
+  effect:
+    assert: MgmtService.version
+    value: '1.99'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/ssh-v2-list
+  vendor: juniper_junos
+  context:
+  - system
+  - services
+  - ssh
+  entity:
+    type: MgmtService
+    key: ssh
+  match: protocol-version [ v2 ]
+  effect:
+    assert: MgmtService.version
+    value: '2'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/login-class
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  entity:
+    type: MgmtSession
+    key: class:{c}
+  match: class <STR:c>
+  effect:
+    assert: MgmtSession.kind
+    value: cli
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/login-class-idle-timeout
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  - class <STR:c>
+  entity:
+    type: MgmtSession
+    key: class:{c}
+  match: idle-timeout <INT:m>
+  effect:
+    set: MgmtSession.idle_timeout_s
+    from: m
+    transform:
+    - unit: minutes
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/user-class
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  - user <STR:u>
+  entity:
+    type: MgmtSession
+    key: class:{c}
+  match: class <STR:c>
+  effect:
+    assert: MgmtSession.kind
+    value: cli
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/login-message
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  entity:
+    type: Banner
+    key: login
+  match: message <STR>
+  effect:
+    assert: Banner.present
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/login-announcement
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  entity:
+    type: Banner
+    key: motd
+  match: announcement <STR>
+  effect:
+    assert: Banner.present
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

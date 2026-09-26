@@ -17,8 +17,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: AAA-CENTRAL-AUTH-01
     title: Administrators authenticate against a central AAA server
@@ -37,8 +37,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: AAA-LOCKOUT-01
     title: Repeated failed logins are blocked
@@ -55,5 +55,5 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]

@@ -80,9 +80,10 @@ def test_crafted_markup_in_a_config_cannot_break_or_inject_into_the_pdf(kb: Know
 
 
 def test_unknown_vendor_is_an_error_not_a_guess(kb: KnowledgeBase) -> None:
-    junos = REPO / "datasets" / "authored" / "juniper_junos" / "hardened.conf"
+    # MikroTik is deliberately never a seed vendor: it is the unseen-vendor demo (§20.4).
+    mikrotik = b"# by RouterOS 7.12\n/ip service\nset telnet disabled=yes\n"
     with pytest.raises(AuditError, match="can't tell which vendor"):
-        audit(read_file(junos), kb)
+        audit(decode(mikrotik, "routeros.rsc"), kb)
     with pytest.raises(AuditError, match="no vendor pack"):
         audit(read_file(WEAK), kb, vendor="nokia_sros")
 
@@ -160,3 +161,25 @@ def test_broken_password_types_fail_rather_than_review(kb: KnowledgeBase) -> Non
     text = "version 17.9\nenable secret 4 Xabc\nusername a privilege 15 secret 5 $1$x$y\n"
     result = audit(decode(text.encode(), "types.cfg"), kb, vendor="cisco_ios_xe")
     assert {r.rule_id: r.status for r in result.rules}["AAA-LOCAL-PASSWORD-HASH-01"] is Status.FAIL
+
+
+def test_zone_wide_telnet_on_junos_is_seen(kb: KnowledgeBase) -> None:
+    """Host-inbound services granted to a whole zone must count, not read as "not reachable"."""
+    text = (
+        "version 23.4R1.9;\nsystem { host-name X; services { ssh; } }\nsecurity { zones { "
+        "security-zone untrust { host-inbound-traffic { system-services { telnet; } } "
+        "interfaces { ge-0/0/0.0; } } } }\n"
+    )
+    result = audit(decode(text.encode(), "zone.conf"), kb, vendor="juniper_junos")
+    assert {r.rule_id: r.status for r in result.rules}["MGMT-TELNET-01"] is Status.FAIL
+
+
+def test_junos_predefined_classes_never_time_out(kb: KnowledgeBase) -> None:
+    text = (
+        "version 23.4R1.9;\nsystem { login { user a { class super-user; authentication "
+        '{ encrypted-password "$6$x$y"; } } } }\n'
+    )
+    result = audit(decode(text.encode(), "cls.conf"), kb, vendor="juniper_junos")
+    timeout = next(f for f in result.findings if f.rule_id == "MGMT-SESSION-TIMEOUT-01")
+    assert timeout.status is Status.FAIL
+    assert timeout.defaults_used == ("juniper_junos/defaults.yaml#class-never-times-out",)

@@ -1,0 +1,674 @@
+# Interfaces (modelled at the logical unit, where Junos applies addresses, filters
+# and zones), security zones, firewall filters and SRX security policies.
+# Seed mappings: reviewed in docs/reviews/juniper_junos.md.
+mappings:
+- id: juniper_junos/interface-unit
+  vendor: juniper_junos
+  context:
+  - interfaces
+  - <IFNAME:i>
+  entity:
+    type: Interface
+    key: '{i}.{u}'
+  match: unit <INT:u>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/unit-description
+  vendor: juniper_junos
+  context:
+  - interfaces
+  - <IFNAME:i>
+  - unit <INT:u>
+  entity:
+    type: Interface
+    key: '{i}.{u}'
+  match: description <STR:d>
+  effect:
+    set: Interface.description
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/unit-disable
+  vendor: juniper_junos
+  context:
+  - interfaces
+  - <IFNAME:i>
+  - unit <INT:u>
+  entity:
+    type: Interface
+    key: '{i}.{u}'
+  match: disable
+  effect:
+    assert: Interface.admin_up
+    value: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/unit-proxy-arp
+  vendor: juniper_junos
+  context:
+  - interfaces
+  - <IFNAME:i>
+  - unit <INT:u>
+  - family inet
+  entity:
+    type: Interface
+    key: '{i}.{u}'
+  match: proxy-arp [<STR>]
+  effect:
+    assert: Interface.proxy_arp
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/unit-filter-input
+  vendor: juniper_junos
+  context:
+  - interfaces
+  - <IFNAME:i>
+  - unit <INT:u>
+  - family inet
+  - filter
+  entity:
+    type: Interface
+    key: '{i}.{u}'
+  match: input <STR:f>
+  effect:
+    ref: Interface.filters_in
+    from: f
+    target: acl
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/unit-filter-output
+  vendor: juniper_junos
+  context:
+  - interfaces
+  - <IFNAME:i>
+  - unit <INT:u>
+  - family inet
+  - filter
+  entity:
+    type: Interface
+    key: '{i}.{u}'
+  match: output <STR:f>
+  effect:
+    ref: Interface.filters_out
+    from: f
+    target: acl
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/zone-interface
+  vendor: juniper_junos
+  context:
+  - security
+  - zones
+  - security-zone <STR:z>
+  - interfaces
+  entity:
+    type: Interface
+    key: '{i}'
+  match: <STR:i>
+  effect:
+    set: Interface.zone
+    from: z
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/zone-host-inbound-service
+  vendor: juniper_junos
+  context:
+  - security
+  - zones
+  - security-zone <STR:z>
+  - interfaces
+  - <STR:i>
+  - host-inbound-traffic
+  - system-services
+  entity:
+    type: Interface
+    key: '{i}'
+  match: <STR:svc> [except]
+  effect:
+    members: Interface.mgmt_protocols
+    from: svc
+    map:
+      ping: icmp
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/zone-host-inbound-any
+  vendor: juniper_junos
+  context:
+  - security
+  - zones
+  - security-zone <STR:z>
+  - interfaces
+  - <STR:i>
+  - host-inbound-traffic
+  - system-services
+  entity:
+    type: Interface
+    key: '{i}'
+  match: any-service
+  effect:
+    assert: Interface.mgmt_protocols
+    value:
+    - ssh
+    - telnet
+    - http
+    - https
+    - snmp
+    - ftp
+    - icmp
+    - netconf
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/zone-wide-host-inbound-service
+  vendor: juniper_junos
+  context:
+  - security
+  - zones
+  - security-zone <STR:z>
+  - host-inbound-traffic
+  - system-services
+  entity:
+    type: Interface
+    key: zone:{z}
+  match: <STR:svc> [except]
+  effect:
+  - members: Interface.mgmt_protocols
+    from: svc
+    map:
+      ping: icmp
+  - set: Interface.zone
+    from: z
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/zone-wide-host-inbound-any
+  vendor: juniper_junos
+  context:
+  - security
+  - zones
+  - security-zone <STR:z>
+  - host-inbound-traffic
+  - system-services
+  entity:
+    type: Interface
+    key: zone:{z}
+  match: any-service
+  effect:
+  - assert: Interface.mgmt_protocols
+    value:
+    - ssh
+    - telnet
+    - http
+    - https
+    - snmp
+    - ftp
+    - icmp
+    - netconf
+  - set: Interface.zone
+    from: z
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/filter-inet
+  vendor: juniper_junos
+  context:
+  - firewall
+  - family inet
+  entity:
+    type: ObjectDef
+    key: acl:{f}
+  match: filter <STR:f>
+  effect:
+    assert: ObjectDef.kind
+    value: acl
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/filter
+  vendor: juniper_junos
+  context:
+  - firewall
+  entity:
+    type: ObjectDef
+    key: acl:{f}
+  match: filter <STR:f>
+  effect:
+    assert: ObjectDef.kind
+    value: acl
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/filter-term
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: term <STR:t>
+  effect:
+    set: FilterRule.ruleset
+    from: f
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-source-address
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - from
+  - source-address
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: <IP:a> [except]
+  effect:
+    members: FilterRule.src
+    from: a
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-destination-address
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - from
+  - destination-address
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: <IP:a> [except]
+  effect:
+    members: FilterRule.dst
+    from: a
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-protocol
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - from
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: protocol <STR:p>
+  effect:
+    members: FilterRule.service
+    from: p
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-accept
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: then accept
+  effect:
+    assert: FilterRule.action
+    value: permit
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-block-accept
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - then
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: accept
+  effect:
+    assert: FilterRule.action
+    value: permit
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-discard
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: then discard
+  effect:
+    assert: FilterRule.action
+    value: deny
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-block-discard
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - then
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: discard
+  effect:
+    assert: FilterRule.action
+    value: deny
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-reject
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: then reject
+  effect:
+    assert: FilterRule.action
+    value: deny
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/term-then-block-reject
+  vendor: juniper_junos
+  context:
+  - filter <STR:f>
+  - term <STR:t>
+  - then
+  entity:
+    type: FilterRule
+    key: '{f}:{t}'
+  match: reject
+  effect:
+    assert: FilterRule.action
+    value: deny
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/policy
+  vendor: juniper_junos
+  context:
+  - security
+  - policies
+  - from-zone <STR:a> to-zone <STR:b>
+  entity:
+    type: FilterRule
+    key: '{a}->{b}:{p}'
+  match: policy <STR:p>
+  effect:
+  - set: FilterRule.zone_from
+    from: a
+  - set: FilterRule.zone_to
+    from: b
+  - assert: FilterRule.ruleset
+    value: security-policies
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/policy-source-address
+  vendor: juniper_junos
+  context:
+  - from-zone <STR:a> to-zone <STR:b>
+  - policy <STR:p>
+  - match
+  entity:
+    type: FilterRule
+    key: '{a}->{b}:{p}'
+  match: source-address <STR:x>
+  effect:
+    members: FilterRule.src
+    from: x
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/policy-destination-address
+  vendor: juniper_junos
+  context:
+  - from-zone <STR:a> to-zone <STR:b>
+  - policy <STR:p>
+  - match
+  entity:
+    type: FilterRule
+    key: '{a}->{b}:{p}'
+  match: destination-address <STR:x>
+  effect:
+    members: FilterRule.dst
+    from: x
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/policy-application
+  vendor: juniper_junos
+  context:
+  - from-zone <STR:a> to-zone <STR:b>
+  - policy <STR:p>
+  - match
+  entity:
+    type: FilterRule
+    key: '{a}->{b}:{p}'
+  match: application <STR:x>
+  effect:
+    members: FilterRule.service
+    from: x
+    map:
+      any: ip
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/policy-then-permit
+  vendor: juniper_junos
+  context:
+  - from-zone <STR:a> to-zone <STR:b>
+  - policy <STR:p>
+  - then
+  entity:
+    type: FilterRule
+    key: '{a}->{b}:{p}'
+  match: permit
+  effect:
+    assert: FilterRule.action
+    value: permit
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/policy-then-deny
+  vendor: juniper_junos
+  context:
+  - from-zone <STR:a> to-zone <STR:b>
+  - policy <STR:p>
+  - then
+  entity:
+    type: FilterRule
+    key: '{a}->{b}:{p}'
+  match: deny
+  effect:
+    assert: FilterRule.action
+    value: deny
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/policy-then-reject
+  vendor: juniper_junos
+  context:
+  - from-zone <STR:a> to-zone <STR:b>
+  - policy <STR:p>
+  - then
+  entity:
+    type: FilterRule
+    key: '{a}->{b}:{p}'
+  match: reject
+  effect:
+    assert: FilterRule.action
+    value: deny
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

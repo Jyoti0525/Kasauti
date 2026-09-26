@@ -204,7 +204,15 @@ class SplitTransform(_Strict):
     split: str = Field(min_length=1)
 
 
-Transform = Literal["invert", "lower", "upper"] | UnitTransform | SplitTransform
+class PrefixTransform(_Strict):
+    """Classify a value by how it starts: ``{prefix: {"$6$": sha512-crypt}}`` reads the hash
+    type of a crypt string without keeping the hash. The longest matching prefix wins; no
+    match makes the fact unknown."""
+
+    prefix: dict[str, str] = Field(min_length=1)
+
+
+Transform = Literal["invert", "lower", "upper"] | UnitTransform | SplitTransform | PrefixTransform
 
 # --- Effects ----------------------------------------------------------------------------------
 
@@ -319,6 +327,11 @@ ORDINAL = "{#}"
 """In an entity key, the 1-based order of this statement among the statements that open
 entities with the same type and key template. Used where the natural key is a secret: an SNMP
 community is keyed ``community-{#}``, never by the community string."""
+
+BLOCK_LINE = "{@}"
+"""In an entity key, the line of the block the entity lives in: the statement's own line for a
+context-free mapping, the innermost context block's line otherwise. A header and its child
+lines get the same key without naming a secret (Junos ``community public { … }``)."""
 
 
 class EntitySpec(_Strict):

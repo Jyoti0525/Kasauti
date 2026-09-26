@@ -1,0 +1,256 @@
+# AAA: local users and password storage, TACACS+/RADIUS servers, lockout, password policy.
+# Seed mappings: reviewed in docs/reviews/juniper_junos.md.
+mappings:
+- id: juniper_junos/user
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: user <STR:u>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/user-password
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  - user <STR:u>
+  - authentication
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: encrypted-password <STR:h>
+  effect:
+    set: LocalUser.hash_type
+    from: h
+    transform:
+    - prefix:
+        $6$: sha512-crypt
+        $5$: sha256-crypt
+        $1$: md5-crypt
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/root-password
+  vendor: juniper_junos
+  context:
+  - system
+  - root-authentication
+  entity:
+    type: LocalUser
+    key: root
+  match: encrypted-password <STR:h>
+  effect:
+  - assert: LocalUser.privilege
+    value: 15
+  - set: LocalUser.hash_type
+    from: h
+    transform:
+    - prefix:
+        $6$: sha512-crypt
+        $5$: sha256-crypt
+        $1$: md5-crypt
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/retry-tries
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  - retry-options
+  match: tries-before-disconnect <INT:n>
+  effect:
+    set: LockoutPolicy.max_attempts
+    from: n
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/retry-lockout-period
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  - retry-options
+  match: lockout-period <INT:m>
+  effect:
+    set: LockoutPolicy.lockout_s
+    from: m
+    transform:
+    - unit: minutes
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/password-minimum-length
+  vendor: juniper_junos
+  context:
+  - system
+  - login
+  - password
+  match: minimum-length <INT:n>
+  effect:
+    set: PasswordPolicy.min_length
+    from: n
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/tacplus-server
+  vendor: juniper_junos
+  context:
+  - system
+  - tacplus-server
+  entity:
+    type: AuthServer
+    key: tacacs:{h}
+  match: <IP:h> [secret <STR>]
+  effect:
+  - assert: AuthServer.kind
+    value: tacacs
+  - set: AuthServer.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/tacplus-server-inline-secret
+  vendor: juniper_junos
+  context:
+  - system
+  - tacplus-server
+  entity:
+    type: AuthServer
+    key: tacacs:{h}
+  match: <IP:h> secret <STR>
+  effect:
+    assert: AuthServer.key_present
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/tacplus-server-secret
+  vendor: juniper_junos
+  context:
+  - system
+  - tacplus-server
+  - <IP:h>
+  entity:
+    type: AuthServer
+    key: tacacs:{h}
+  match: secret <STR>
+  effect:
+    assert: AuthServer.key_present
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/radius-server
+  vendor: juniper_junos
+  context:
+  - system
+  - radius-server
+  entity:
+    type: AuthServer
+    key: radius:{h}
+  match: <IP:h> [secret <STR>]
+  effect:
+  - assert: AuthServer.kind
+    value: radius
+  - set: AuthServer.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/radius-server-inline-secret
+  vendor: juniper_junos
+  context:
+  - system
+  - radius-server
+  entity:
+    type: AuthServer
+    key: radius:{h}
+  match: <IP:h> secret <STR>
+  effect:
+    assert: AuthServer.key_present
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/radius-server-secret
+  vendor: juniper_junos
+  context:
+  - system
+  - radius-server
+  - <IP:h>
+  entity:
+    type: AuthServer
+    key: radius:{h}
+  match: secret <STR>
+  effect:
+    assert: AuthServer.key_present
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

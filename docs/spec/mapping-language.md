@@ -25,6 +25,11 @@ word is a literal key (`key: telnet`). PLAN §9.3 writes `key: ifname` as shorth
 rejects that form with a hint, because stored literally it would merge every interface into
 one entity.
 
+**`{@}` is the block line** (M2): the line of the block the entity lives in (the statement's own
+line for a context-free mapping, the innermost context block's line otherwise). A header and
+its child lines get the same key without naming a secret: Junos `community public { … }` is
+`community-{@}` on both.
+
 **`{#}` is an ordinal** (v5.1.3): the 1-based position of this statement among those opening the
 same entity type with the same key template, in file order. Use it where the natural key is a
 secret: an SNMP community is `community-{#}`, never the community string.
@@ -86,7 +91,9 @@ captured by `match` or `context`.
 
 **Order of operations for a value:** slot text → `map` (vendor word → SBM word or value) →
 `transform`s in order (`invert`, `lower`, `upper`, `{unit: minutes}` → seconds,
-`{split: ","}`) → coercion to the attribute's type. For `set`, a word missing from `map` makes the
+`{split: ","}`, `{prefix: {"$6$": sha512-crypt}}`: classify by the longest matching prefix, so
+a crypt hash gives its type and the hash itself is never kept) → coercion to the attribute's
+type. For `set`, a word missing from `map` makes the
 fact **unknown** (we saw the line but can't say what it means), unless `otherwise: <value>`
 gives the value for every unlisted word (`is_well_known`: listed strings → true, others → false).
 Anything else that can't be carried through (`invert` on a non-boolean, text for a number) is

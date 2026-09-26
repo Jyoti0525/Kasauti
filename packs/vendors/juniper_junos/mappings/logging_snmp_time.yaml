@@ -1,0 +1,216 @@
+# Syslog targets and command logging, SNMP communities, NTP.
+# Seed mappings: reviewed in docs/reviews/juniper_junos.md.
+mappings:
+- id: juniper_junos/syslog-host
+  vendor: juniper_junos
+  context:
+  - system
+  - syslog
+  entity:
+    type: LogTarget
+    key: '{h}'
+  match: host <STR:h>
+  effect:
+    set: LogTarget.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/syslog-host-interactive-commands
+  vendor: juniper_junos
+  context:
+  - system
+  - syslog
+  - host <STR:h>
+  match: interactive-commands <STR>
+  effect:
+    assert: LoggingPolicy.config_change_logged
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/syslog-host-change-log
+  vendor: juniper_junos
+  context:
+  - system
+  - syslog
+  - host <STR:h>
+  match: change-log <STR>
+  effect:
+    assert: LoggingPolicy.config_change_logged
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/syslog-file-interactive-commands
+  vendor: juniper_junos
+  context:
+  - system
+  - syslog
+  - file <STR:h>
+  match: interactive-commands <STR>
+  effect:
+    assert: LoggingPolicy.config_change_logged
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/syslog-file-change-log
+  vendor: juniper_junos
+  context:
+  - system
+  - syslog
+  - file <STR:h>
+  match: change-log <STR>
+  effect:
+    assert: LoggingPolicy.config_change_logged
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/snmp-community
+  vendor: juniper_junos
+  context:
+  - snmp
+  entity:
+    type: SnmpCommunity
+    key: community-{@}
+  match: community <STR:c>
+  effect:
+    set: SnmpCommunity.is_well_known
+    from: c
+    map:
+      public: true
+      private: true
+      cisco: true
+      community: true
+      admin: true
+      default: true
+      secret: true
+      manager: true
+      monitor: true
+      snmp: true
+      snmpd: true
+      read: true
+      write: true
+      all: true
+      security: true
+      test: true
+      password: true
+      juniper: true
+    otherwise: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/snmp-community-authorization
+  vendor: juniper_junos
+  context:
+  - snmp
+  - community <STR:c>
+  entity:
+    type: SnmpCommunity
+    key: community-{@}
+  match: authorization <STR:a>
+  effect:
+    set: SnmpCommunity.access
+    from: a
+    map:
+      read-only: ro
+      read-write: rw
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/ntp-server
+  vendor: juniper_junos
+  context:
+  - system
+  - ntp
+  entity:
+    type: TimeSource
+    key: '{h}'
+  match: server <IP:h> [prefer] [version <INT>]
+  effect:
+    set: TimeSource.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/ntp-server-key
+  vendor: juniper_junos
+  context:
+  - system
+  - ntp
+  entity:
+    type: TimeSource
+    key: '{h}'
+  match: server <IP:h> key <INT> [prefer] [version <INT>]
+  effect:
+  - set: TimeSource.host
+    from: h
+  - assert: TimeSource.authenticated
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/ntp-trusted-key
+  vendor: juniper_junos
+  context:
+  - system
+  - ntp
+  match: trusted-key <LIST>
+  effect:
+    assert: TimePolicy.auth_enforced
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

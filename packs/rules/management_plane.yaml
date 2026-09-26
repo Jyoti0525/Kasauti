@@ -17,14 +17,14 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: MGMT-SESSION-TIMEOUT-01
     title: Idle management sessions time out within 10 minutes
     intent: An unattended session must not stay open for anyone who walks up to it.
     domain: management_plane
-    for_each: MgmtSession where kind in [console, vty, web]
+    for_each: MgmtSession where kind in [console, vty, web, cli]
     assert: idle_timeout_s > 0 and idle_timeout_s <= 600
     on_absent: resolve_default
     on_unknown: review
@@ -35,8 +35,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: MGMT-HTTP-01
     title: Unencrypted HTTP management is disabled
@@ -54,8 +54,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: MGMT-VTY-ACL-01
     title: Remote management lines accept only permitted sources
@@ -115,5 +115,5 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/fixtures/vty_acl_dangling.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/fixtures/vty_acl_dangling.cfg, juniper_junos/weak.conf]

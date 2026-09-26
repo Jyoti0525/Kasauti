@@ -1,0 +1,16 @@
+format_version: 1
+id: juniper_junos
+name: Juniper Junos OS
+vendor: Juniper
+os_family: Junos OS
+shape_family: brace
+pack_version: 1
+negation_words: []     # brace form has no negation: deactivated (inactive:) config is dropped by the parser
+comment_markers: ["#", "/*"]
+time_unit: minutes
+default_role: router
+description: >
+  Seed pack (PLAN §20.4, TODO M2.28) for Junos OS hierarchical (curly-brace) configurations:
+  MX/EX/QFX routers and switches and SRX firewalls. Interfaces are modelled at the logical unit
+  (`ge-0/0/0.0`), where Junos applies addresses, filters and security zones. Reviewed
+  against Juniper's documentation: docs/reviews/juniper_junos.md.

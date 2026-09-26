@@ -20,7 +20,8 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 | `cisco_ios_xe/fixtures/web_mgmt_restricted.cfg` | Cisco IOS-XE 17.9, HTTPS management behind an ACL (pass fixture for MGMT-WEB-ACL-01) | 16 | `b7a21e0d5106bdd3c0e5eb6d6eff77a1d41f0ed3b3719a5ad3530de5d3bc257d` | commands cross-checked against Cisco docs (C.06) |
 | `cisco_ios_xe/fixtures/vty_acl_permits_any.cfg` | Cisco IOS-XE 17.9, vty lines behind an ACL that permits any source (fail fixture for MGMT-VTY-ACL-02) | 16 | `aebeb3dd78ca32ab8971c7d8263e994d678d9811a625a00d212bbd752b08b2ba` | commands cross-checked against Cisco docs (C.06) |
 | `cisco_ios_xe/fixtures/vty_acl_dangling.cfg` | Cisco IOS-XE 17.9, vty lines naming an ACL that doesn't exist (fail fixture for REF-DANGLING-01, MGMT-VTY-ACL-02) | 12 | `be369df0c87e40094137d0abaa4f0a106313089b524a71b6ea0605e593488b1e` | commands cross-checked against Cisco docs (C.06) |
-| `juniper_junos/hardened.conf` | Junos OS 23.4, branch SRX | 158 | `fd6dbf78b9086b337fdf5b3f9e31e4e5b1c469a5ad7d52a738b82fcc3aaa1fda` | written; doc cross-check pending (C.06) |
+| `juniper_junos/hardened.conf` | Junos OS 23.4, branch SRX | 162 | `b6a504c35d9066a1b0da376dc94e82b7878c9f502fee8b7c0f159f08cdcc7cc9` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
+| `juniper_junos/weak.conf` | Junos OS 23.4, weak twin | 90 | `f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
 
 References used: Cisco IOS XE 17 configuration guides (security, SSH, AAA, SNMP, NTP, system
 management); Juniper Junos OS user guides (system basics, login classes, SSH, syslog, NTP,
@@ -55,6 +56,28 @@ PASS) and what the hardened twin does instead.
 | W19 | 54–57 | vty 5–15: **Telnet only**, 30-minute timeout, no access-class | `transport input none` |
 | W20 | absent | No login banner | `banner login` |
 
+### Planted weaknesses in `juniper_junos/weak.conf`
+
+| # | Weakness | Hardened twin |
+|---|---|---|
+| J1 | `system services telnet` | not configured |
+| J2 | `web-management http` on the WAN unit, unrestricted | not configured |
+| J3 | `system services finger` | not configured |
+| J4 | `netadmin` in `super-user`: predefined classes never time out | class `NETADMIN` with `idle-timeout 10` |
+| J5 | root password `$1$` (MD5-crypt) | `$6$` (SHA-512) |
+| J6 | no TACACS+/RADIUS server | `tacplus-server` |
+| J7 | no `retry-options` (no lockout) | `tries-before-disconnect 3`, `lockout-period 10` |
+| J8 | `minimum-length 6` | `minimum-length 15` |
+| J9 | SNMP `community public` with `authorization read-write` | SNMPv3 USM only |
+| J10 | `ntp server` without `key`, no `trusted-key` | `key 1` + `trusted-key 1` |
+| J11 | no syslog `host` | `host 10.20.10.50` |
+| J12 | no `interactive-commands`/`change-log` logging (`any notice` may still include commits: REVIEW) | `interactive-commands any` to host and file |
+| J13 | no login `message` | `message "Authorised access only…"` |
+| J14 | lo0 input filter `PROTECT-RE` doesn't exist | filter defined |
+| J15 | filter `ALLOW-ALL`, term with no `from` and `then accept` | explicit terms ending in discard |
+| J16 | WAN unit in no security zone and without an input filter | `ge-0/0/0.0` in zone `untrust` |
+| J17 | `proxy-arp unrestricted` on the WAN unit | not configured |
+
 ## Golden cases (`datasets/golden/`, E1)
 
 Each case holds a `case.yaml` (the input path and SHA-256, and hand-labelled verdicts for every
@@ -66,8 +89,10 @@ above, never from the engine's output.
 |---|---|---|
 | `cisco_ios_xe_weak` | `authored/cisco_ios_xe/weak.cfg` | 21 rules FAIL, covering every weakness W1–W20; REF-DANGLING-01 and MGMT-VTY-ACL-02 N/A (no references) |
 | `cisco_ios_xe_hardened` | `authored/cisco_ios_xe/hardened.cfg` | 22 rules PASS; MGMT-WEB-ACL-01 N/A (no web server runs) |
+| `juniper_junos_weak` | `authored/juniper_junos/weak.conf` | 17 rules FAIL (J1–J17), LOG-CONFIG-CHANGE-01 REVIEW, 3 PASS by documented Junos defaults, 2 N/A (no vty lines) |
+| `juniper_junos_hardened` | `authored/juniper_junos/hardened.conf` | 20 rules PASS, 3 N/A (no vty lines, no web management) |
 
-History: on 2026-09-26 the hardened twin changed to `security passwords min-length 15` (NIST SP
+History: on 2026-09-26 the Junos hardened config gained a login class with `idle-timeout 10` and `minimum-length 15`, and the Cisco hardened twin changed to `security passwords min-length 15` (NIST SP
 800-63B-4's minimum for single-factor passwords) and `no ip proxy-arp` on GigabitEthernet3, so
 that it is hardened under the full rule set.
 

@@ -240,6 +240,9 @@
               },
               {
                 "$ref": "#/$defs/SplitTransform"
+              },
+              {
+                "$ref": "#/$defs/PrefixTransform"
               }
             ]
           },
@@ -251,6 +254,25 @@
         "members"
       ],
       "title": "MembersEffect",
+      "type": "object"
+    },
+    "PrefixTransform": {
+      "additionalProperties": false,
+      "description": "Classify a value by how it starts: ``{prefix: {\"$6$\": sha512-crypt}}`` reads the hash\ntype of a crypt string without keeping the hash. The longest matching prefix wins; no\nmatch makes the fact unknown.",
+      "properties": {
+        "prefix": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "minProperties": 1,
+          "title": "Prefix",
+          "type": "object"
+        }
+      },
+      "required": [
+        "prefix"
+      ],
+      "title": "PrefixTransform",
       "type": "object"
     },
     "Provenance": {
@@ -425,6 +447,9 @@
               },
               {
                 "$ref": "#/$defs/SplitTransform"
+              },
+              {
+                "$ref": "#/$defs/PrefixTransform"
               }
             ]
           },

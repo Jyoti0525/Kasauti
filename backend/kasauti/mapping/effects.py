@@ -16,6 +16,7 @@ from kasauti.mapping.model import (
     AssertEffect,
     Effect,
     MembersEffect,
+    PrefixTransform,
     RefEffect,
     SetEffect,
     SplitTransform,
@@ -173,6 +174,12 @@ def _transform(t: Transform, value: Any) -> Any:
         return round(value * _SECONDS[t.unit])
     if isinstance(t, SplitTransform):
         return tuple(p for p in str(value).split(t.split) if p)
+    if isinstance(t, PrefixTransform):
+        text = str(value)
+        hits = [k for k in t.prefix if text.startswith(k)]
+        if not hits:
+            raise _UnreadableError("value doesn't start with a known prefix")
+        return t.prefix[max(hits, key=len)]
     raise AssertionError(f"unhandled transform {t!r}")  # pragma: no cover
 
 

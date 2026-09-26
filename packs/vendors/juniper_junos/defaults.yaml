@@ -1,0 +1,185 @@
+# What Junos OS does when the configuration says nothing (PLAN §8.2, §9.4).
+# Each vendor default quotes Juniper's documentation (checked 2026-09-26; record in
+# docs/reviews/juniper_junos.md). Model defaults are marked `curated` and say so.
+defaults:
+  - id: services-off
+    attr: MgmtService.enabled
+    entity_key: telnet
+    value: false
+    source: vendor_doc
+    reference: >-
+      Junos OS, Enable Remote Access Services: remote access services such as Telnet "are all
+      disabled by default"; they are enabled by configuring them under [edit system services].
+      https://www.juniper.net/documentation/us/en/software/junos/junos-getting-started/topics/task/remote-access.html
+
+  - id: http-off
+    attr: MgmtService.enabled
+    entity_key: http
+    value: false
+    source: vendor_doc
+    reference: >-
+      Same page: remote access services are disabled until configured under [edit system services].
+      https://www.juniper.net/documentation/us/en/software/junos/junos-getting-started/topics/task/remote-access.html
+
+  - id: finger-off
+    attr: MgmtService.enabled
+    entity_key: finger
+    value: false
+    source: vendor_doc
+    reference: >-
+      Same page: remote access services are disabled until configured under [edit system services].
+      https://www.juniper.net/documentation/us/en/software/junos/junos-getting-started/topics/task/remote-access.html
+
+  - id: no-pad-bootp-small-servers-pad
+    attr: MgmtService.enabled
+    entity_key: pad
+    value: false
+    source: curated
+    reference: "Model default: Junos OS has no X.25 PAD service."
+
+  - id: no-bootp-server
+    attr: MgmtService.enabled
+    entity_key: bootp
+    value: false
+    source: curated
+    reference: "Model default: Junos OS has no BOOTP server unless DHCP/BOOTP services are configured, which the mappings would read."
+
+  - id: no-tcp-small-servers
+    attr: MgmtService.enabled
+    entity_key: tcp-small-servers
+    value: false
+    source: curated
+    reference: "Model default: Junos OS has no TCP small servers (echo, discard, chargen)."
+
+  - id: no-udp-small-servers
+    attr: MgmtService.enabled
+    entity_key: udp-small-servers
+    value: false
+    source: curated
+    reference: "Model default: Junos OS has no UDP small servers (echo, discard, chargen)."
+
+  - id: ssh-v2
+    attr: MgmtService.version
+    entity_key: ssh
+    value: "2"
+    os_versions: ">=11.4"
+    source: vendor_doc
+    reference: >-
+      protocol-version (System Services): "v2—SSH protocol version 2 is the default, introduced in
+      Junos OS Release 11.4."
+      https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/protocol-version-edit-system.html
+
+  - id: class-never-times-out
+    attr: MgmtSession.idle_timeout_s
+    value: 0
+    source: vendor_doc
+    reference: >-
+      idle-timeout (System): if you omit the statement, "a user is never forced off the system
+      after extended idle times"; the predefined classes (super-user, operator, read-only,
+      unauthorized) can't have an idle timeout at all.
+      https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/idle-timeout-edit-system-login.html
+
+  - id: passwords-always-hashed
+    attr: PasswordPolicy.cleartext_passwords_encrypted
+    value: true
+    source: vendor_doc
+    reference: >-
+      Junos OS, Root Password: a password entered as plain text is encrypted as soon as it is
+      configured; "When a user views the configuration, the user sees only the encrypted string".
+      https://www.juniper.net/documentation/en_US/junos/topics/example/authentication-root-password-plain-text-configuring.html
+
+  - id: no-snmp-communities
+    none_of: SnmpCommunity
+    source: vendor_doc
+    reference: >-
+      SNMP Communities: if you omit the community statement, all SNMP requests are denied; no
+      community exists until one is configured.
+      https://www.juniper.net/documentation/us/en/software/junos/network-mgmt/topics/topic-map/snmp-communities.html
+
+  - id: community-read-only
+    attr: SnmpCommunity.access
+    value: ro
+    source: vendor_doc
+    reference: >-
+      community (SNMP): the default authorization is read-only.
+      https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/community-edit-snmp.html
+
+  - id: ntp-server-without-key
+    attr: TimeSource.authenticated
+    value: false
+    source: vendor_doc
+    reference: >-
+      NTP Authentication Keys: a server is authenticated only when the `key` option is given
+      and the key is listed in `trusted-key`.
+      https://www.juniper.net/documentation/us/en/software/junos/time-mgmt/topics/concept/ntp-authentication-keys.html
+
+  - id: ntp-authentication-off
+    attr: TimePolicy.auth_enforced
+    value: false
+    source: vendor_doc
+    reference: >-
+      NTP Authentication Keys: "Only time servers that transmit network time packets containing
+      one of the specified key numbers are eligible to be synchronized" applies once
+      `trusted-key` is configured; without it, time isn't restricted to authenticated servers.
+      https://www.juniper.net/documentation/us/en/software/junos/time-mgmt/topics/concept/ntp-authentication-keys.html
+
+  - id: syslog-date-timestamps
+    attr: LoggingPolicy.timestamps
+    value: true
+    source: vendor_doc
+    reference: >-
+      time-format (System Logging): by default the timestamp "specifies the month, date, hour,
+      minute, and second when the message was logged" (e.g. Aug 21 12:36:30).
+      https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/time-format-edit-system.html
+
+  - id: proxy-arp-off
+    attr: Interface.proxy_arp
+    value: false
+    source: vendor_doc
+    reference: >-
+      proxy-arp (Interfaces): proxy ARP is not enabled by default; the device answers ARP only
+      for addresses local to the incoming interface.
+      https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/proxy-arp-edit-interfaces.html
+
+  - id: term-matches-every-source
+    attr: FilterRule.src
+    value: [any]
+    source: vendor_doc
+    reference: >-
+      Configuring Firewall Filters: "If you omit the from statement, all packets are considered
+      to match"; a term without source-address matches every source.
+      https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/task/firewall-filter-qfx-series-cli.html
+
+  - id: term-matches-every-destination
+    attr: FilterRule.dst
+    value: [any]
+    source: vendor_doc
+    reference: >-
+      Same page: a term without destination-address matches every destination.
+      https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/task/firewall-filter-qfx-series-cli.html
+
+  - id: term-matches-every-protocol
+    attr: FilterRule.service
+    value: [ip]
+    source: vendor_doc
+    reference: >-
+      Same page: a term without a protocol match matches every IP protocol.
+      https://www.juniper.net/documentation/us/en/software/junos/routing-policy/topics/task/firewall-filter-qfx-series-cli.html
+
+  - id: no-filter-rules
+    none_of: FilterRule
+    source: curated
+    reference: >-
+      Model default: Junos ships no user firewall filters or security policies in the
+      configuration it reports, so none there means none exist.
+
+  - id: no-host-inbound-services
+    attr: Interface.mgmt_protocols
+    value: []
+    source: vendor_doc
+    reference: >-
+      system-services (Security Zones Host Inbound Traffic): "By default, a security zone has all
+      system services disabled"; an interface admits only the services listed for it or for its
+      zone (zone-wide grants are recorded on the `zone:<name>` interface). Non-SRX Junos has no
+      per-interface management-service list at all.
+      https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/security-edit-system-service-zone-host-inbound-traffic.html

@@ -1,0 +1,31 @@
+# E1 golden case (PLAN §21.1). Labels are ground truth from the weakness catalogue in
+# datasets/SOURCES.md, not engine output.
+description: Junos OS 23.4 branch SRX with 17 planted weaknesses (J1-J17)
+input: authored/juniper_junos/weak.conf
+input_sha256: f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37
+vendor: null
+frameworks: [nist_800_53r5]
+expected_statuses:
+  AAA-CENTRAL-AUTH-01: FAIL     # J6 no TACACS+/RADIUS server
+  AAA-LOCAL-PASSWORD-HASH-01: FAIL     # J5 root password $1$ (MD5-crypt)
+  AAA-LOCKOUT-01: FAIL     # J7 no retry-options
+  AAA-PASSWORD-ENCRYPTION-01: PASS     # Junos always stores passwords hashed (vendor default)
+  AAA-PASSWORD-MIN-LENGTH-01: FAIL     # J8 minimum-length 6
+  FILTER-PERMIT-ANY-01: FAIL     # J15 filter ALLOW-ALL term ANY: no from, then accept
+  FILTER-UNTRUSTED-INGRESS-01: FAIL     # J16 WAN unit in no zone and without an input filter
+  LOG-CONFIG-CHANGE-01: REVIEW   # J12 no interactive-commands/change-log; `any notice` may still catch commits, so undecidable
+  LOG-REMOTE-01: FAIL     # J11 no syslog host
+  LOG-TIMESTAMPS-01: PASS     # Junos syslog stamps date and time by default
+  MGMT-BANNER-01: FAIL     # J13 no login message
+  MGMT-HTTP-01: FAIL     # J2 web-management http
+  MGMT-SESSION-TIMEOUT-01: FAIL     # J4 netadmin in super-user: predefined classes never time out
+  MGMT-SSH-V2-01: PASS     # SSH v2 is the default since 11.4; v1 can't be configured on SRX 19.3+
+  MGMT-TELNET-01: FAIL     # J1 system services telnet
+  MGMT-VTY-ACL-01: N/A      # Junos has no vty lines
+  MGMT-VTY-ACL-02: N/A      # Junos has no vty lines
+  MGMT-WEB-ACL-01: FAIL     # J2 web-management http reachable, nothing restricts it
+  REF-DANGLING-01: FAIL     # J14 lo0 input filter PROTECT-RE doesn't exist
+  SNMP-COMMUNITY-01: FAIL     # J9 community public, read-write
+  SVC-LEGACY-01: FAIL     # J3 system services finger
+  SVC-PROXY-ARP-01: FAIL     # J17 proxy-arp unrestricted on the WAN unit
+  TIME-NTP-AUTH-01: FAIL     # J10 ntp server without key, no trusted-key

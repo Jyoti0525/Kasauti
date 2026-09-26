@@ -18,8 +18,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: AAA-PASSWORD-ENCRYPTION-01
     title: No password is stored in the configuration in clear text
@@ -39,7 +39,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: AAA-PASSWORD-MIN-LENGTH-01
@@ -59,8 +59,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: MGMT-WEB-ACL-01
     title: Web management accepts only permitted sources
@@ -70,7 +70,7 @@ rules:
     domain: management_plane
     for_each: MgmtService where key in [http, https] and enabled
     assert: exists(access_filter)
-    on_absent: review
+    on_absent: resolve_default   # a documented "web management is off" default takes it out of scope
     on_unknown: review
     severity: {base: medium}
     exposure: [mgmt_reachable_from_untrusted]
@@ -81,7 +81,7 @@ rules:
       iso_27001_2022: derived
     fixtures:
       pass: [cisco_ios_xe/fixtures/web_mgmt_restricted.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: MGMT-SSH-V2-01
     title: SSH management uses protocol version 2 only
@@ -99,7 +99,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: MGMT-BANNER-01
@@ -119,8 +119,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: SVC-PROXY-ARP-01
     title: Interfaces do not answer ARP for other hosts
@@ -139,8 +139,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: FILTER-PERMIT-ANY-01
     title: No filter entry permits all traffic from anywhere to anywhere
@@ -160,19 +160,21 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: FILTER-UNTRUSTED-INGRESS-01
     title: Untrusted interfaces filter inbound traffic
     intent: >
       An interface facing the internet or another untrusted network must apply an inbound
-      filter, so only expected traffic reaches the device and what is behind it.
+      filter, so only expected traffic reaches the device and what is behind it. On a
+      zone-based firewall, membership of a security zone does this: traffic between zones is
+      denied unless a policy permits it.
     domain: filtering
     applies_to: [router, firewall]
     # Untrusted: set by the admin, or inferred from zone or description (packs/inferences).
     for_each: Interface where exists(role) and role == 'untrusted'
-    assert: exists(filters_in)
+    assert: exists(filters_in) or exists(zone)
     on_absent: review
     on_unknown: review
     severity: {base: high}
@@ -183,8 +185,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: LOG-TIMESTAMPS-01
     title: Log messages carry the date and time
@@ -203,7 +205,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: LOG-CONFIG-CHANGE-01
@@ -223,5 +225,5 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg]

@@ -1,0 +1,14 @@
+# Where identity fields appear in Junos output (PLAN §7). The configuration carries the host
+# name and the release; model and serial come from `show version` / `show chassis hardware`.
+fields:
+  hostname:
+    - {source: config, context: ["system"], pattern: "host-name <STR:value>"}
+  os_version:
+    - {source: config, pattern: "version <STR:value>"}
+    - {source: show_version, pattern: "Junos: <STR:value>"}
+  model:
+    - {source: show_version, pattern: "Model: <STR:value>"}
+  serial:
+    - {source: show_chassis_hardware, pattern: "Chassis <STR:value> <LIST>"}
+  hardware:
+    - {source: show_chassis_hardware, pattern: "Chassis <STR> <LIST:value>"}

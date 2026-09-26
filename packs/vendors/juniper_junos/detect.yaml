@@ -1,0 +1,9 @@
+# Fingerprint for Junos curly-brace configurations (PLAN §7).
+min_score: 0.7
+signatures:
+  - {id: version-statement, kind: regex, pattern: '^version \d+\.\d+[RXDSI]', weight: 0.3}
+  - {id: system-block, kind: line_prefix, pattern: "system {", weight: 0.2}
+  - {id: host-name, kind: regex, pattern: '^\s+host-name \S+;', weight: 0.2}
+  - {id: junos-interface, kind: regex, pattern: '^\s+(ge|xe|et|ae|fe|xle|mge)-\d+/\d+/\d+ \{', weight: 0.2}
+  - {id: root-authentication, kind: contains, pattern: "root-authentication {", weight: 0.2}
+  - {id: security-zones, kind: contains, pattern: "security-zone ", weight: 0.1}

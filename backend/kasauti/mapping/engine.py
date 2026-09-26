@@ -28,7 +28,7 @@ from kasauti.mapping import effects as fx
 from kasauti.mapping.builder import EntityRef, FactAcc, RefRecord, SbmBuilder
 from kasauti.mapping.defaults import apply_defaults
 from kasauti.mapping.match import Captures, Compiled, tokenize_path
-from kasauti.mapping.model import ORDINAL, Mapping, RefEffect, Word
+from kasauti.mapping.model import BLOCK_LINE, ORDINAL, Mapping, RefEffect, Word
 from kasauti.mapping.resolve import resolve_references
 from kasauti.packs.model import DefaultEntry
 from kasauti.packs.versions import Version, VersionRange
@@ -126,7 +126,11 @@ class _Engine:
         self.mapped = 0
         self.near_miss = 0
         self.unmapped: list[Statement] = []
+        self._line = 0
+        self._stmt_line = 0
         self._ordinals: dict[tuple[str, str], int] = defaultdict(int)
+        self._header_lines: dict[tuple[str, ...], int] = {}
+        """Block path -> line of its header (headers precede their children in every family)."""
         # Index by first keyword so each statement is only tried against plausible mappings.
         self._by_word: dict[str, list[Compiled]] = defaultdict(list)
         self._slot_first: list[Compiled] = []
@@ -140,6 +144,10 @@ class _Engine:
     def run(self, device: Device | None) -> None:
         self.builder = SbmBuilder(device)
         for stmt in self.tree.statements:
+            self._header_lines.setdefault((*stmt.path, stmt.text), stmt.line_start)
+            self._line = (
+                self._header_lines.get(stmt.path, stmt.line_start) if stmt.path else stmt.line_start
+            )
             path = tokenize_path(stmt.path)
             hits = self._hits(stmt, path)
             if hits:
@@ -218,6 +226,7 @@ class _Engine:
         )
 
     def _apply(self, stmt: Statement, hits: list[_Hit]) -> None:
+        self._stmt_line = stmt.line_start
         written: set[tuple[EntityRef, str]] = set()
         opened: set[EntityRef] = set()
         keys: dict[tuple[str, str], str] = {}
@@ -271,7 +280,9 @@ class _Engine:
         if any(s not in caps for s in slots):
             return None
         values = {s: _text(caps[s]) for s in slots}
-        parts = [part.format(**values) if slots else part for part in m.entity.key.split(ORDINAL)]
+        line = str(self._line if m.context else self._stmt_line)
+        template = m.entity.key.replace(BLOCK_LINE, line)
+        parts = [part.format(**values) if slots else part for part in template.split(ORDINAL)]
         if len(parts) == 1:
             return parts[0]
         memo = (m.entity.type, m.entity.key)
@@ -309,6 +320,7 @@ class _Engine:
     def _mark_unknown(
         self, stmt: Statement, m: Mapping, caps: Captures, keys: dict[tuple[str, str], str]
     ) -> None:
+        self._stmt_line = stmt.line_start
         ev = self._evidence(stmt, m)
         target: EntityRef | None = None
         if m.entity is not None:

@@ -951,6 +951,17 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.6 (2026-09-26, second seed vendor: Junos):**
+  - **Juniper Junos pack** (67 mappings, defaults quoted from Juniper's documentation), a weak
+    twin with 17 catalogued weaknesses, golden cases, and fixtures across two vendors on every
+    applicable rule.
+  - **Language additions:** a `prefix` transform (hash type from a crypt string) and a `{@}` key
+    token (the line of the entity's block).
+  - **Rules generalised by the second vendor:**
+    - sessions of kind `cli` (Junos login classes) are covered by the timeout rule;
+    - zone membership satisfies untrusted-ingress filtering on zone-based firewalls.
+  - **A false-PASS path found and closed:** host-inbound services granted to a whole SRX zone
+    were ignored.
 - **v5.1.5 (2026-09-26, M2 engine completion):**
   - **Inferences and exposures are pack data**, in the same expression language, not hidden
     code (`packs/inferences/`, `packs/exposures/`):

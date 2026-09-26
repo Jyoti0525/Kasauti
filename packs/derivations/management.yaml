@@ -3,14 +3,16 @@
 
 derivations:
   - id: management.telnet_reachable
-    version: 1
+    version: 2
     type: bool
     description: >
       Clear-text Telnet can reach the management plane through any path: a Telnet service,
-      a vty range that accepts Telnet, or an interface that allows Telnet management.
+      a vty range that accepts Telnet, or an interface that allows Telnet management. Every
+      session is judged (not just vty ones), so a platform without vty lines (Junos login
+      classes) gives a definite "no" for that path instead of "nothing seen".
     expr: >
       any(MgmtService where key == 'telnet': enabled)
-      or any(MgmtSession where kind == 'vty': transport contains 'telnet')
+      or any(MgmtSession: kind == 'vty' and transport contains 'telnet')
       or any(Interface: mgmt_protocols contains 'telnet')
 
   - id: management.http_enabled

@@ -1,0 +1,2959 @@
+{
+  "format_version": 1,
+  "audit_id": "8ce5cd0987f9abe1235c0f8b",
+  "input": {
+    "file": "weak.conf",
+    "sha256": "f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37",
+    "encoding": "utf-8",
+    "shape_family": "brace",
+    "parse_warnings": []
+  },
+  "detection": {
+    "pack_id": "juniper_junos",
+    "pack_version": 1,
+    "chosen_by": "fingerprint",
+    "score": 1.2,
+    "min_score": 0.7,
+    "signatures": [
+      "version-statement",
+      "system-block",
+      "host-name",
+      "junos-interface",
+      "root-authentication",
+      "security-zones"
+    ]
+  },
+  "identity": {
+    "hostname": {
+      "value": "BR-SRX1",
+      "source": "config line 5"
+    },
+    "vendor": {
+      "value": "Juniper",
+      "source": "fingerprint (6 signatures)"
+    },
+    "os_version": {
+      "value": "23.4R1.9",
+      "source": "config line 3"
+    },
+    "model": {
+      "value": null,
+      "source": "Model: not present in supplied artefacts; upload `show version` to populate"
+    },
+    "serial": {
+      "value": null,
+      "source": "Serial: not present in supplied artefacts; upload `show chassis hardware` to populate"
+    },
+    "hardware": {
+      "value": null,
+      "source": "Hardware: not present in supplied artefacts; upload `show chassis hardware` to populate"
+    }
+  },
+  "kb": {
+    "kasauti_version": "0.1.0",
+    "kb_version": "9e8e012bd789fe12b8824657acb5db5a4809e862bcf915e3b24f5c6b5177bd29",
+    "ruleset_version": "125ab06baa7916e16bfcffbaa201a930cd0181f819d94f1fb59d546fa8c77387",
+    "vendor_pack": "juniper_junos@1",
+    "frameworks": {
+      "nist_800_53r5": "5.2.0"
+    }
+  },
+  "frameworks": [
+    "nist_800_53r5"
+  ],
+  "scores": [
+    {
+      "framework": "nist_800_53r5",
+      "title": "NIST SP 800-53 Rev. 5",
+      "passed": 3,
+      "failed": 17,
+      "review": 1,
+      "not_applicable": 2,
+      "compliance_pct": 15.0,
+      "coverage_pct": 95.2
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "AAA-CENTRAL-AUTH-01",
+      "title": "Administrators authenticate against a central AAA server",
+      "domain": "aaa",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-2(1)",
+        "IA-2"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+      "title": "Local passwords are stored with a strong one-way hash",
+      "domain": "aaa",
+      "status": "FAIL",
+      "severity": "high",
+      "nist_800_53r5": [
+        "IA-5(1)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-LOCKOUT-01",
+      "title": "Repeated failed logins are blocked",
+      "domain": "aaa",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
+      "title": "No password is stored in the configuration in clear text",
+      "domain": "aaa",
+      "status": "PASS",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "IA-5(1)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+      "title": "Passwords must be at least 15 characters",
+      "domain": "aaa",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "IA-5(1)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "FILTER-PERMIT-ANY-01",
+      "title": "No filter entry permits all traffic from anywhere to anywhere",
+      "domain": "filtering",
+      "status": "FAIL",
+      "severity": "high",
+      "nist_800_53r5": [
+        "SC-7(5)",
+        "AC-4"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+      "title": "Untrusted interfaces filter inbound traffic",
+      "domain": "filtering",
+      "status": "FAIL",
+      "severity": "high",
+      "nist_800_53r5": [
+        "SC-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "LOG-CONFIG-CHANGE-01",
+      "title": "Configuration changes are logged",
+      "domain": "logging",
+      "status": "REVIEW",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AU-2",
+        "AU-12",
+        "CM-3"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "LOG-REMOTE-01",
+      "title": "Logs are sent to a remote log server",
+      "domain": "logging",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AU-4(1)",
+        "AU-9(2)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "LOG-TIMESTAMPS-01",
+      "title": "Log messages carry the date and time",
+      "domain": "logging",
+      "status": "PASS",
+      "severity": "low",
+      "nist_800_53r5": [
+        "AU-3",
+        "AU-8"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-BANNER-01",
+      "title": "A login banner warns against unauthorised use",
+      "domain": "management_plane",
+      "status": "FAIL",
+      "severity": "low",
+      "nist_800_53r5": [
+        "AC-8"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-HTTP-01",
+      "title": "Unencrypted HTTP management is disabled",
+      "domain": "management_plane",
+      "status": "FAIL",
+      "severity": "high",
+      "nist_800_53r5": [
+        "CM-7",
+        "SC-8",
+        "AC-17(2)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-SESSION-TIMEOUT-01",
+      "title": "Idle management sessions time out within 10 minutes",
+      "domain": "management_plane",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-12",
+        "SC-10"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-SSH-V2-01",
+      "title": "SSH management uses protocol version 2 only",
+      "domain": "management_plane",
+      "status": "PASS",
+      "severity": "high",
+      "nist_800_53r5": [
+        "AC-17(2)",
+        "SC-8",
+        "SC-13"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-TELNET-01",
+      "title": "Clear-text Telnet management is not reachable",
+      "domain": "management_plane",
+      "status": "FAIL",
+      "severity": "high",
+      "nist_800_53r5": [
+        "CM-7",
+        "AC-17(2)",
+        "SC-8"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-01",
+      "title": "Remote management lines accept only permitted sources",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "title": "The ACL guarding remote management exists and doesn't permit everyone",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-WEB-ACL-01",
+      "title": "Web management accepts only permitted sources",
+      "domain": "management_plane",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "title": "Every reference points at something that exists",
+      "domain": "filtering",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "CM-6",
+        "AC-3"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "SNMP-COMMUNITY-01",
+      "title": "No SNMP community is well known or writable",
+      "domain": "snmp",
+      "status": "FAIL",
+      "severity": "high",
+      "nist_800_53r5": [
+        "IA-5",
+        "CM-6"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "SVC-LEGACY-01",
+      "title": "Legacy network services are disabled",
+      "domain": "services",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "CM-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "title": "Interfaces do not answer ARP for other hosts",
+      "domain": "services",
+      "status": "FAIL",
+      "severity": "low",
+      "nist_800_53r5": [
+        "CM-7",
+        "SC-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "TIME-NTP-AUTH-01",
+      "title": "Time sources are authenticated",
+      "domain": "time",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "SC-45(1)",
+        "IA-3(1)"
+      ],
+      "hardening_best_practice": false
+    }
+  ],
+  "controls": [
+    {
+      "control": "AC-2(1)",
+      "title": "Automated System Account Management",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ]
+    },
+    {
+      "control": "AC-3",
+      "title": "Access Enforcement",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01",
+        "REF-DANGLING-01"
+      ]
+    },
+    {
+      "control": "AC-4",
+      "title": "Information Flow Enforcement",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01"
+      ]
+    },
+    {
+      "control": "AC-7",
+      "title": "Unsuccessful Logon Attempts",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCKOUT-01"
+      ]
+    },
+    {
+      "control": "AC-8",
+      "title": "System Use Notification",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-BANNER-01"
+      ]
+    },
+    {
+      "control": "AC-12",
+      "title": "Session Termination",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-SESSION-TIMEOUT-01"
+      ]
+    },
+    {
+      "control": "AC-17",
+      "title": "Remote Access",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01"
+      ]
+    },
+    {
+      "control": "AC-17(2)",
+      "title": "Protection of Confidentiality and Integrity Using Encryption",
+      "status": "partially satisfied",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01"
+      ]
+    },
+    {
+      "control": "AU-2",
+      "title": "Event Logging",
+      "status": "undetermined",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ]
+    },
+    {
+      "control": "AU-3",
+      "title": "Content of Audit Records",
+      "status": "satisfied",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ]
+    },
+    {
+      "control": "AU-4(1)",
+      "title": "Transfer to Alternate Storage",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-REMOTE-01"
+      ]
+    },
+    {
+      "control": "AU-8",
+      "title": "Time Stamps",
+      "status": "satisfied",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ]
+    },
+    {
+      "control": "AU-9(2)",
+      "title": "Store on Separate Physical Systems or Components",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-REMOTE-01"
+      ]
+    },
+    {
+      "control": "AU-12",
+      "title": "Audit Record Generation",
+      "status": "undetermined",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ]
+    },
+    {
+      "control": "CM-3",
+      "title": "Configuration Change Control",
+      "status": "undetermined",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ]
+    },
+    {
+      "control": "CM-6",
+      "title": "Configuration Settings",
+      "status": "not satisfied",
+      "rules": [
+        "REF-DANGLING-01",
+        "SNMP-COMMUNITY-01"
+      ]
+    },
+    {
+      "control": "CM-7",
+      "title": "Least Functionality",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-TELNET-01",
+        "SVC-LEGACY-01",
+        "SVC-PROXY-ARP-01"
+      ]
+    },
+    {
+      "control": "IA-2",
+      "title": "Identification and Authentication (Organizational Users)",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ]
+    },
+    {
+      "control": "IA-3(1)",
+      "title": "Cryptographic Bidirectional Authentication",
+      "status": "not satisfied",
+      "rules": [
+        "TIME-NTP-AUTH-01"
+      ]
+    },
+    {
+      "control": "IA-5",
+      "title": "Authenticator Management",
+      "status": "not satisfied",
+      "rules": [
+        "SNMP-COMMUNITY-01"
+      ]
+    },
+    {
+      "control": "IA-5(1)",
+      "title": "Password-based Authentication",
+      "status": "partially satisfied",
+      "rules": [
+        "AAA-LOCAL-PASSWORD-HASH-01",
+        "AAA-PASSWORD-ENCRYPTION-01",
+        "AAA-PASSWORD-MIN-LENGTH-01"
+      ]
+    },
+    {
+      "control": "SC-7",
+      "title": "Boundary Protection",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-UNTRUSTED-INGRESS-01",
+        "SVC-PROXY-ARP-01"
+      ]
+    },
+    {
+      "control": "SC-7(5)",
+      "title": "Deny by Default — Allow by Exception",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01"
+      ]
+    },
+    {
+      "control": "SC-8",
+      "title": "Transmission Confidentiality and Integrity",
+      "status": "partially satisfied",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01"
+      ]
+    },
+    {
+      "control": "SC-10",
+      "title": "Network Disconnect",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-SESSION-TIMEOUT-01"
+      ]
+    },
+    {
+      "control": "SC-13",
+      "title": "Cryptographic Protection",
+      "status": "satisfied",
+      "rules": [
+        "MGMT-SSH-V2-01"
+      ]
+    },
+    {
+      "control": "SC-45(1)",
+      "title": "Synchronization with Authoritative Time Source",
+      "status": "not satisfied",
+      "rules": [
+        "TIME-NTP-AUTH-01"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "rule_id": "AAA-CENTRAL-AUTH-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Administrators authenticate against a central AAA server: fails for the device; the rule treats absence as a violation (missing: any AuthServer).",
+      "actual": [
+        "any AuthServer: missing"
+      ],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+      "entity_id": "LocalUser[netadmin]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Local passwords are stored with a strong one-way hash: holds for LocalUser[netadmin].",
+      "actual": [
+        "LocalUser[netadmin].hash_type = sha512-crypt"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 16,
+          "line_end": 16,
+          "raw": "encrypted-password \"****\"",
+          "mapping_id": "juniper_junos/user-password",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+      "entity_id": "LocalUser[root]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "Local passwords are stored with a strong one-way hash: is violated for LocalUser[root].",
+      "actual": [
+        "LocalUser[root].hash_type = md5-crypt"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 7,
+          "line_end": 7,
+          "raw": "encrypted-password \"****\"",
+          "mapping_id": "juniper_junos/root-password",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "AAA-LOCKOUT-01",
+      "entity_id": "LockoutPolicy[lockout-policy]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Repeated failed logins are blocked: fails for LockoutPolicy[lockout-policy]; the rule treats absence as a violation (missing: LockoutPolicy[lockout-policy].max_attempts).",
+      "actual": [
+        "LockoutPolicy[lockout-policy].max_attempts: missing"
+      ],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
+      "entity_id": "PasswordPolicy[password-policy]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "No password is stored in the configuration in clear text: holds for PasswordPolicy[password-policy] (using the vendor default for this OS version).",
+      "actual": [
+        "PasswordPolicy[password-policy].cleartext_passwords_encrypted = true (vendor default)"
+      ],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#passwords-always-hashed"
+      ],
+      "evidence": []
+    },
+    {
+      "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+      "entity_id": "PasswordPolicy[password-policy]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Passwords must be at least 15 characters: is violated for PasswordPolicy[password-policy].",
+      "actual": [
+        "PasswordPolicy[password-policy].min_length = 6"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 11,
+          "line_end": 11,
+          "raw": "minimum-length 6",
+          "mapping_id": "juniper_junos/password-minimum-length",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "FILTER-PERMIT-ANY-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "No filter entry permits all traffic from anywhere to anywhere: is violated for the device (using the vendor default for this OS version).",
+      "actual": [
+        "filtering.permit_all_present = true",
+        "FilterRule[ALLOW-ALL:ANY].action = permit",
+        "FilterRule[ALLOW-ALL:ANY].service = {ip} (vendor default)",
+        "FilterRule[ALLOW-ALL:ANY].src = {any} (vendor default)",
+        "FilterRule[ALLOW-ALL:ANY].dst = {any} (vendor default)"
+      ],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#term-matches-every-destination",
+        "juniper_junos/defaults.yaml#term-matches-every-protocol",
+        "juniper_junos/defaults.yaml#term-matches-every-source"
+      ],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 77,
+          "line_end": 77,
+          "raw": "then accept",
+          "mapping_id": "juniper_junos/term-then-accept",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+      "entity_id": "Interface[ge-0/0/0.0]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "Untrusted interfaces filter inbound traffic: is violated for Interface[ge-0/0/0.0].",
+      "actual": [
+        "Interface[ge-0/0/0.0].role = untrusted",
+        "Interface[ge-0/0/0.0].filters_in: missing",
+        "Interface[ge-0/0/0.0].zone: missing"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 42,
+          "line_end": 42,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "LOG-CONFIG-CHANGE-01",
+      "entity_id": "LoggingPolicy[logging-policy]",
+      "status": "REVIEW",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Cannot judge the rule for LoggingPolicy[logging-policy] (missing: LoggingPolicy[logging-policy].config_change_logged). No vendor default is known for this OS version.",
+      "actual": [
+        "LoggingPolicy[logging-policy].config_change_logged: missing"
+      ],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "LOG-REMOTE-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Logs are sent to a remote log server: fails for the device; the rule treats absence as a violation (missing: any LogTarget).",
+      "actual": [
+        "any LogTarget: missing"
+      ],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "LOG-TIMESTAMPS-01",
+      "entity_id": "LoggingPolicy[logging-policy]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Log messages carry the date and time: holds for LoggingPolicy[logging-policy] (using the vendor default for this OS version).",
+      "actual": [
+        "LoggingPolicy[logging-policy].timestamps = true (vendor default)"
+      ],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#syslog-date-timestamps"
+      ],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-BANNER-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "low",
+      "severity_reason": "Low (base)",
+      "reason": "A login banner warns against unauthorised use: fails for the device; the rule treats absence as a violation (missing: any Banner).",
+      "actual": [
+        "any Banner: missing"
+      ],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-HTTP-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "reason": "Unencrypted HTTP management is disabled: is violated for the device.",
+      "actual": [
+        "management.http_enabled = true",
+        "MgmtService[http].enabled = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "http",
+          "mapping_id": "juniper_junos/web-management-http",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 42,
+          "line_end": 42,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "MGMT-SESSION-TIMEOUT-01",
+      "entity_id": "MgmtSession[class:super-user]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Idle management sessions time out within 10 minutes: is violated for MgmtSession[class:super-user] (using the vendor default for this OS version).",
+      "actual": [
+        "MgmtSession[class:super-user].kind = cli",
+        "MgmtSession[class:super-user].idle_timeout_s = 0 (vendor default)"
+      ],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#class-never-times-out"
+      ],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 14,
+          "line_end": 14,
+          "raw": "class super-user",
+          "mapping_id": "juniper_junos/user-class",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "MGMT-SSH-V2-01",
+      "entity_id": "Device[device]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "SSH management uses protocol version 2 only: holds for the device (using the vendor default for this OS version).",
+      "actual": [
+        "management.ssh_v1_negotiable = false",
+        "MgmtService[ssh].version = 2 (vendor default)"
+      ],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#ssh-v2"
+      ],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-TELNET-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: telnet is reachable and an untrusted interface lets it through (no inbound filter, or telnet allowed on it)",
+      "reason": "Clear-text Telnet management is not reachable: is violated for the device.",
+      "actual": [
+        "management.telnet_reachable = true",
+        "MgmtService[telnet].enabled = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "telnet",
+          "mapping_id": "juniper_junos/service-telnet",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 42,
+          "line_end": 42,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: nothing matches `MgmtSession where kind == 'vty'` on this device.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: nothing matches `Reference where attribute == 'MgmtSession.access_filter'` on this device.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-WEB-ACL-01",
+      "entity_id": "MgmtService[http]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "reason": "Web management accepts only permitted sources: is violated for MgmtService[http].",
+      "actual": [
+        "MgmtService[http].enabled = true",
+        "MgmtService[http].access_filter: missing"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "http",
+          "mapping_id": "juniper_junos/web-management-http",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 42,
+          "line_end": 42,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[lo0.0].filters_in -> PROTECT-RE]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Every reference points at something that exists: is violated for Reference[Interface[lo0.0].filters_in -> PROTECT-RE].",
+      "actual": [
+        "Reference[Interface[lo0.0].filters_in -> PROTECT-RE].resolved = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 61,
+          "line_end": 61,
+          "raw": "input PROTECT-RE",
+          "mapping_id": "juniper_junos/unit-filter-input",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "SNMP-COMMUNITY-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "reason": "No SNMP community is well known or writable: is violated for the device.",
+      "actual": [
+        "snmp.weak_community_present = true",
+        "SnmpCommunity[community-68].is_well_known = true",
+        "SnmpCommunity[community-69].access = rw"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 42,
+          "line_end": 42,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 69,
+          "line_end": 69,
+          "raw": "community ****",
+          "mapping_id": "juniper_junos/snmp-community",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 70,
+          "line_end": 70,
+          "raw": "authorization read-write",
+          "mapping_id": "juniper_junos/snmp-community-authorization",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "SVC-LEGACY-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Legacy network services are disabled: is violated for the device.",
+      "actual": [
+        "services.legacy_enabled = true",
+        "MgmtService[finger].enabled = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 23,
+          "line_end": 23,
+          "raw": "finger",
+          "mapping_id": "juniper_junos/service-finger",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Interface[ge-0/0/0.0]",
+      "status": "FAIL",
+      "severity": "low",
+      "severity_reason": "Low (base)",
+      "reason": "Interfaces do not answer ARP for other hosts: is violated for Interface[ge-0/0/0.0].",
+      "actual": [
+        "Interface[ge-0/0/0.0].proxy_arp = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 44,
+          "line_end": 44,
+          "raw": "proxy-arp unrestricted",
+          "mapping_id": "juniper_junos/unit-proxy-arp",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Interface[ge-0/0/1.0]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ge-0/0/1.0] (using the vendor default for this OS version).",
+      "actual": [
+        "Interface[ge-0/0/1.0].proxy_arp = false (vendor default)"
+      ],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#proxy-arp-off"
+      ],
+      "evidence": []
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Interface[lo0.0]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[lo0.0] (using the vendor default for this OS version).",
+      "actual": [
+        "Interface[lo0.0].proxy_arp = false (vendor default)"
+      ],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#proxy-arp-off"
+      ],
+      "evidence": []
+    },
+    {
+      "rule_id": "TIME-NTP-AUTH-01",
+      "entity_id": "TimeSource[10.20.10.70]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Time sources are authenticated: is violated for TimeSource[10.20.10.70] (using the vendor default for this OS version).",
+      "actual": [
+        "TimeSource[10.20.10.70].authenticated = false (vendor default)",
+        "TimePolicy[time-policy].auth_enforced = false (vendor default)"
+      ],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#ntp-authentication-off",
+        "juniper_junos/defaults.yaml#ntp-server-without-key"
+      ],
+      "evidence": []
+    }
+  ],
+  "assurance": {
+    "statements": 55,
+    "understood": 25,
+    "unmapped": 30,
+    "near_miss": 0,
+    "understood_pct": 45.5,
+    "unmapped_patterns": [
+      {
+        "pattern_key": "family inet",
+        "count": 4,
+        "first_line": 43,
+        "example": "family inet"
+      },
+      {
+        "pattern_key": "<IFNAME>",
+        "count": 3,
+        "first_line": 40,
+        "example": "ge-0/0/0"
+      },
+      {
+        "pattern_key": "address <IP>",
+        "count": 3,
+        "first_line": 45,
+        "example": "address 198.51.100.2/30"
+      },
+      {
+        "pattern_key": "interfaces",
+        "count": 2,
+        "first_line": 39,
+        "example": "interfaces"
+      },
+      {
+        "pattern_key": "system",
+        "count": 1,
+        "first_line": 4,
+        "example": "system"
+      },
+      {
+        "pattern_key": "root-authentication",
+        "count": 1,
+        "first_line": 6,
+        "example": "root-authentication"
+      },
+      {
+        "pattern_key": "login",
+        "count": 1,
+        "first_line": 9,
+        "example": "login"
+      },
+      {
+        "pattern_key": "password",
+        "count": 1,
+        "first_line": 10,
+        "example": "password"
+      },
+      {
+        "pattern_key": "authentication",
+        "count": 1,
+        "first_line": 15,
+        "example": "authentication"
+      },
+      {
+        "pattern_key": "services",
+        "count": 1,
+        "first_line": 20,
+        "example": "services"
+      },
+      {
+        "pattern_key": "web-management",
+        "count": 1,
+        "first_line": 24,
+        "example": "web-management"
+      },
+      {
+        "pattern_key": "interface <IFNAME>",
+        "count": 1,
+        "first_line": 26,
+        "example": "interface ge-0/0/0.0"
+      },
+      {
+        "pattern_key": "syslog",
+        "count": 1,
+        "first_line": 30,
+        "example": "syslog"
+      },
+      {
+        "pattern_key": "file messages",
+        "count": 1,
+        "first_line": 31,
+        "example": "file messages"
+      },
+      {
+        "pattern_key": "any notice",
+        "count": 1,
+        "first_line": 32,
+        "example": "any notice"
+      },
+      {
+        "pattern_key": "ntp",
+        "count": 1,
+        "first_line": 35,
+        "example": "ntp"
+      },
+      {
+        "pattern_key": "filter",
+        "count": 1,
+        "first_line": 60,
+        "example": "filter"
+      },
+      {
+        "pattern_key": "snmp",
+        "count": 1,
+        "first_line": 68,
+        "example": "snmp"
+      },
+      {
+        "pattern_key": "firewall",
+        "count": 1,
+        "first_line": 73,
+        "example": "firewall"
+      },
+      {
+        "pattern_key": "security",
+        "count": 1,
+        "first_line": 82,
+        "example": "security"
+      },
+      {
+        "pattern_key": "zones",
+        "count": 1,
+        "first_line": 83,
+        "example": "zones"
+      },
+      {
+        "pattern_key": "security-zone trust",
+        "count": 1,
+        "first_line": 84,
+        "example": "security-zone trust"
+      }
+    ],
+    "review_findings": 1,
+    "mappings_used": [
+      {
+        "mapping": "inference/interface.role.untrusted_by_description@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/filter-inet@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/filter-term@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/ntp-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/password-minimum-length@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/root-password@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "juniper_junos/service-finger@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/service-ssh@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/service-telnet@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/snmp-community-authorization@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/snmp-community@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/term-then-accept@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/unit-description@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "juniper_junos/unit-filter-input@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 6
+      },
+      {
+        "mapping": "juniper_junos/unit-proxy-arp@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/user-class@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/user-password@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/web-management-http@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/zone-interface@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      }
+    ],
+    "defaults_used": [
+      "juniper_junos/defaults.yaml#class-never-times-out",
+      "juniper_junos/defaults.yaml#ntp-authentication-off",
+      "juniper_junos/defaults.yaml#ntp-server-without-key",
+      "juniper_junos/defaults.yaml#passwords-always-hashed",
+      "juniper_junos/defaults.yaml#proxy-arp-off",
+      "juniper_junos/defaults.yaml#ssh-v2",
+      "juniper_junos/defaults.yaml#syslog-date-timestamps",
+      "juniper_junos/defaults.yaml#term-matches-every-destination",
+      "juniper_junos/defaults.yaml#term-matches-every-protocol",
+      "juniper_junos/defaults.yaml#term-matches-every-source"
+    ],
+    "mappings_skipped_for_version": []
+  },
+  "sbm": {
+    "sbm_version": "0.4",
+    "device": {
+      "key": "device",
+      "evidence": [],
+      "type": "Device",
+      "hostname": {
+        "value": "BR-SRX1",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 5,
+            "line_end": 5,
+            "raw": "host-name BR-SRX1",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
+        "default_source": null
+      },
+      "vendor": {
+        "value": "Juniper",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 3,
+            "line_end": 3,
+            "raw": "version 23.4R1.9;",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 4,
+            "line_end": 4,
+            "raw": "system {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 5,
+            "line_end": 5,
+            "raw": "host-name BR-SRX1;",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 6,
+            "line_end": 6,
+            "raw": "root-authentication {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 40,
+            "line_end": 40,
+            "raw": "ge-0/0/0 {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 84,
+            "line_end": 84,
+            "raw": "security-zone trust {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
+        "default_source": null
+      },
+      "os_family": {
+        "value": "Junos OS",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 3,
+            "line_end": 3,
+            "raw": "version 23.4R1.9;",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 4,
+            "line_end": 4,
+            "raw": "system {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 5,
+            "line_end": 5,
+            "raw": "host-name BR-SRX1;",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 6,
+            "line_end": 6,
+            "raw": "root-authentication {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 40,
+            "line_end": 40,
+            "raw": "ge-0/0/0 {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 84,
+            "line_end": 84,
+            "raw": "security-zone trust {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
+        "default_source": null
+      },
+      "os_version": {
+        "value": "23.4R1.9",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 3,
+            "line_end": 3,
+            "raw": "version 23.4R1.9",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
+        "default_source": null
+      },
+      "model": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "serial": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "hardware": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "role": {
+        "value": "router",
+        "state": "vendor_default",
+        "evidence": [],
+        "default_source": "juniper_junos/pack.yaml#default_role"
+      }
+    },
+    "entities": [
+      {
+        "key": "ALLOW-ALL:ANY",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "ALLOW-ALL",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 76,
+              "line_end": 76,
+              "raw": "term ANY",
+              "mapping_id": "juniper_junos/filter-term",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#term-matches-every-source"
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination"
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#term-matches-every-protocol"
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 77,
+              "line_end": 77,
+              "raw": "then accept",
+              "mapping_id": "juniper_junos/term-then-accept",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "ge-0/0/0.0",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
+          "value": "WAN uplink",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 42,
+              "line_end": 42,
+              "raw": "description \"WAN uplink\"",
+              "mapping_id": "juniper_junos/unit-description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "role": {
+          "value": "untrusted",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 42,
+              "line_end": 42,
+              "raw": "description \"WAN uplink\"",
+              "mapping_id": "inference/interface.role.untrusted_by_description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "admin_up": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols": {
+          "value": [],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
+        },
+        "proxy_arp": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 44,
+              "line_end": 44,
+              "raw": "proxy-arp unrestricted",
+              "mapping_id": "juniper_junos/unit-proxy-arp",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "filters_in": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "ge-0/0/1.0",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
+          "value": "LAN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 51,
+              "line_end": 51,
+              "raw": "description \"LAN\"",
+              "mapping_id": "juniper_junos/unit-description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
+          "value": "trust",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 86,
+              "line_end": 86,
+              "raw": "ge-0/0/1.0",
+              "mapping_id": "juniper_junos/zone-interface",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "role": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "admin_up": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols": {
+          "value": [],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#proxy-arp-off"
+        },
+        "filters_in": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "lo0.0",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "role": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "admin_up": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols": {
+          "value": [],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#proxy-arp-off"
+        },
+        "filters_in": {
+          "value": [
+            "PROTECT-RE"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 61,
+              "line_end": 61,
+              "raw": "input PROTECT-RE",
+              "mapping_id": "juniper_junos/unit-filter-input",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "netadmin",
+        "evidence": [],
+        "type": "LocalUser",
+        "privilege": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "hash_type": {
+          "value": "sha512-crypt",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 16,
+              "line_end": 16,
+              "raw": "encrypted-password \"****\"",
+              "mapping_id": "juniper_junos/user-password",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "root",
+        "evidence": [],
+        "type": "LocalUser",
+        "privilege": {
+          "value": 15,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "encrypted-password \"****\"",
+              "mapping_id": "juniper_junos/root-password",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "hash_type": {
+          "value": "md5-crypt",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "encrypted-password \"****\"",
+              "mapping_id": "juniper_junos/root-password",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "logging-policy",
+        "evidence": [],
+        "type": "LoggingPolicy",
+        "timestamps": {
+          "value": true,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#syslog-date-timestamps"
+        },
+        "admin_logged": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "config_change_logged": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "bootp",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#no-bootp-server"
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "finger",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 23,
+              "line_end": 23,
+              "raw": "finger",
+              "mapping_id": "juniper_junos/service-finger",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "http",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 25,
+              "line_end": 25,
+              "raw": "http",
+              "mapping_id": "juniper_junos/web-management-http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "pad",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad"
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "ssh",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 21,
+              "line_end": 21,
+              "raw": "ssh",
+              "mapping_id": "juniper_junos/service-ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": "2",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#ssh-v2"
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "tcp-small-servers",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#no-tcp-small-servers"
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "telnet",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "telnet",
+              "mapping_id": "juniper_junos/service-telnet",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "udp-small-servers",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#no-udp-small-servers"
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "class:super-user",
+        "evidence": [],
+        "type": "MgmtSession",
+        "kind": {
+          "value": "cli",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 14,
+              "line_end": 14,
+              "raw": "class super-user",
+              "mapping_id": "juniper_junos/user-class",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "range": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "transport": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "idle_timeout_s": {
+          "value": 0,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#class-never-times-out"
+        },
+        "auth_method": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "acl:ALLOW-ALL",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 75,
+              "line_end": 75,
+              "raw": "filter ALLOW-ALL",
+              "mapping_id": "juniper_junos/filter-inet",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "password-policy",
+        "evidence": [],
+        "type": "PasswordPolicy",
+        "min_length": {
+          "value": 6,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 11,
+              "line_end": 11,
+              "raw": "minimum-length 6",
+              "mapping_id": "juniper_junos/password-minimum-length",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "complexity_required": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "reversible_encryption_blocked": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "cleartext_passwords_encrypted": {
+          "value": true,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#passwords-always-hashed"
+        },
+        "max_age_days": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[lo0.0].filters_in -> PROTECT-RE",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 61,
+            "line_end": 61,
+            "raw": "input PROTECT-RE",
+            "mapping_id": "juniper_junos/unit-filter-input",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[lo0.0]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 61,
+              "line_end": 61,
+              "raw": "input PROTECT-RE",
+              "mapping_id": "juniper_junos/unit-filter-input",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.filters_in",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 61,
+              "line_end": 61,
+              "raw": "input PROTECT-RE",
+              "mapping_id": "juniper_junos/unit-filter-input",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 61,
+              "line_end": 61,
+              "raw": "input PROTECT-RE",
+              "mapping_id": "juniper_junos/unit-filter-input",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "PROTECT-RE",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 61,
+              "line_end": 61,
+              "raw": "input PROTECT-RE",
+              "mapping_id": "juniper_junos/unit-filter-input",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 61,
+              "line_end": 61,
+              "raw": "input PROTECT-RE",
+              "mapping_id": "juniper_junos/unit-filter-input",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "community-68",
+        "evidence": [],
+        "type": "SnmpCommunity",
+        "access": {
+          "value": "ro",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#community-read-only"
+        },
+        "filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "is_well_known": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 69,
+              "line_end": 69,
+              "raw": "community ****",
+              "mapping_id": "juniper_junos/snmp-community",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "community-69",
+        "evidence": [],
+        "type": "SnmpCommunity",
+        "access": {
+          "value": "rw",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 70,
+              "line_end": 70,
+              "raw": "authorization read-write",
+              "mapping_id": "juniper_junos/snmp-community-authorization",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "is_well_known": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "time-policy",
+        "evidence": [],
+        "type": "TimePolicy",
+        "auth_enforced": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#ntp-authentication-off"
+        }
+      },
+      {
+        "key": "10.20.10.70",
+        "evidence": [],
+        "type": "TimeSource",
+        "host": {
+          "value": "10.20.10.70",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 36,
+              "line_end": 36,
+              "raw": "server 10.20.10.70",
+              "mapping_id": "juniper_junos/ntp-server",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "authenticated": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#ntp-server-without-key"
+        }
+      }
+    ],
+    "derived": {
+      "aaa.central_server_configured": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "filtering.permit_all_present": {
+        "value": true,
+        "state": "vendor_default",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 77,
+            "line_end": 77,
+            "raw": "then accept",
+            "mapping_id": "juniper_junos/term-then-accept",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination, juniper_junos/defaults.yaml#term-matches-every-protocol, juniper_junos/defaults.yaml#term-matches-every-source"
+      },
+      "logging.remote_configured": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "management.http_enabled": {
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 25,
+            "line_end": 25,
+            "raw": "http",
+            "mapping_id": "juniper_junos/web-management-http",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "management.login_banner_present": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "management.ssh_reachable": {
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 21,
+            "line_end": 21,
+            "raw": "ssh",
+            "mapping_id": "juniper_junos/service-ssh",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "management.ssh_v1_negotiable": {
+        "value": false,
+        "state": "vendor_default",
+        "evidence": [],
+        "default_source": "juniper_junos/defaults.yaml#ssh-v2"
+      },
+      "management.telnet_reachable": {
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 22,
+            "line_end": 22,
+            "raw": "telnet",
+            "mapping_id": "juniper_junos/service-telnet",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "services.legacy_enabled": {
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 23,
+            "line_end": 23,
+            "raw": "finger",
+            "mapping_id": "juniper_junos/service-finger",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "snmp.weak_community_present": {
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 69,
+            "line_end": 69,
+            "raw": "community ****",
+            "mapping_id": "juniper_junos/snmp-community",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 70,
+            "line_end": 70,
+            "raw": "authorization read-write",
+            "mapping_id": "juniper_junos/snmp-community-authorization",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      }
+    },
+    "known_empty": {},
+    "unread": {}
+  },
+  "warnings": []
+}
