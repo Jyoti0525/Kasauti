@@ -39,8 +39,8 @@ def _migrated(data_dir: Path) -> URL:
 
 @pytest.fixture(scope="module")
 def client(tmp_path_factory: pytest.TempPathFactory) -> Iterator[TestClient]:
-    url = _migrated(tmp_path_factory.mktemp("var"))
-    app = create_app(Settings(packs=PACKS, database=url))
+    var = tmp_path_factory.mktemp("var")
+    app = create_app(Settings(packs=PACKS, database=_migrated(var), staging=var / "staging"))
     yield TestClient(app, base_url="http://127.0.0.1:8000")
     app.state.engine.dispose()
 
@@ -71,7 +71,11 @@ def test_the_app_refuses_to_start_on_a_database_without_the_current_schema(
     tmp_path: Path,
 ) -> None:
     with pytest.raises(SchemaError, match="kasauti db upgrade"):
-        create_app(Settings(packs=PACKS, database=database_url(tmp_path, environ={})))
+        create_app(
+            Settings(
+                packs=PACKS, database=database_url(tmp_path, environ={}), staging=tmp_path / "s"
+            )
+        )
 
 
 @pytest.mark.parametrize("path", ["/api/health", "/no-such-route"])
@@ -164,7 +168,9 @@ JOB_HANDLERS = {"echo": "job_handlers:echo"}
 @pytest.fixture
 def job_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
     monkeypatch.syspath_prepend(str(REPO / "backend" / "tests" / "jobs"))
-    settings = Settings(packs=PACKS, database=_migrated(tmp_path), handlers=JOB_HANDLERS)
+    settings = Settings(
+        packs=PACKS, database=_migrated(tmp_path), staging=tmp_path / "s", handlers=JOB_HANDLERS
+    )
     app = create_app(settings)
     yield app
     app.state.engine.dispose()
@@ -207,7 +213,13 @@ def test_the_server_runs_jobs_in_the_background_while_it_is_up(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.syspath_prepend(str(REPO / "backend" / "tests" / "jobs"))
-    settings = Settings(packs=PACKS, database=_migrated(tmp_path), handlers=JOB_HANDLERS, workers=1)
+    settings = Settings(
+        packs=PACKS,
+        database=_migrated(tmp_path),
+        staging=tmp_path / "s",
+        handlers=JOB_HANDLERS,
+        workers=1,
+    )
     app = create_app(settings)
     with TestClient(app, base_url="http://127.0.0.1:8000") as client:  # runs the lifespan
         assert app.state.pool is not None

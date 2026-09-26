@@ -120,7 +120,14 @@ def _serve(args: argparse.Namespace) -> int:
         url = _database(args.data_dir)
         if url.drivername.startswith("sqlite"):
             _migrate(url)  # one user, one file: keep it current. PostgreSQL is the DBA's call.
-        app = create_app(Settings(packs=args.packs, database=url, workers=args.workers))
+        app = create_app(
+            Settings(
+                packs=args.packs,
+                database=url,
+                staging=args.data_dir / "staging",
+                workers=args.workers,
+            )
+        )
     except PackError as err:
         print("kasauti: the knowledge base is invalid:", file=sys.stderr)
         for problem in err.problems:

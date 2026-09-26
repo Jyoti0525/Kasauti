@@ -26,8 +26,10 @@ from kasauti.db.types import UtcDateTime
 
 PAYLOAD_LIMIT = 64 * 1024
 """Bytes of JSON: enough for references and options, too small for a configuration."""
-RESULT_LIMIT = 8 * 1024 * 1024
-"""Bytes of JSON a job may return."""
+RESULT_LIMIT = 32 * 1024 * 1024
+"""Bytes of JSON a job may return. An audit's result is about 550 bytes per configuration line
+(a 6,100-line Cisco configuration gave 3.3 MB, measured 2026-09-27), so this holds about 60,000
+lines; the limit bounds what a worker can make the server hold, not what an audit may be."""
 ERROR_LIMIT = 500
 """Characters of the error shown for a failed job."""
 

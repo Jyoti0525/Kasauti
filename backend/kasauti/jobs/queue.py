@@ -24,7 +24,7 @@ from collections.abc import Collection
 from dataclasses import dataclass
 from typing import Any
 
-from sqlalchemy import Engine, RowMapping, and_, func, insert, select, update
+from sqlalchemy import Connection, Engine, RowMapping, and_, func, insert, select, update
 
 from kasauti.jobs.table import (
     ERROR_LIMIT,
@@ -98,8 +98,10 @@ class JobQueue:
         timeout_s: int = DEFAULT_TIMEOUT_S,
         max_attempts: int = DEFAULT_MAX_ATTEMPTS,
         now: dt.datetime | None = None,
+        conn: Connection | None = None,
     ) -> str:
-        """Queue a job; its id."""
+        """Queue a job; its id. With ``conn``, inside that transaction, so a job and the record
+        that refers to it are committed (or rolled back) together."""
         if kind not in self.kinds:
             raise JobInputError(f"unknown job kind {kind!r}")
         if not isinstance(payload, dict):
@@ -116,20 +118,22 @@ class JobQueue:
         if timeout_s < 1 or max_attempts < 1:
             raise JobInputError("timeout_s and max_attempts must be at least 1")
         job_id = str(uuid.uuid4())
-        with self.engine.begin() as conn:
-            conn.execute(
-                insert(jobs).values(
-                    id=job_id,
-                    kind=kind,
-                    state=JobState.QUEUED,
-                    payload=text,
-                    attempts=0,
-                    max_attempts=max_attempts,
-                    timeout_s=timeout_s,
-                    cancel_requested=False,
-                    created_at=now or utcnow(),
-                )
-            )
+        row = insert(jobs).values(
+            id=job_id,
+            kind=kind,
+            state=JobState.QUEUED,
+            payload=text,
+            attempts=0,
+            max_attempts=max_attempts,
+            timeout_s=timeout_s,
+            cancel_requested=False,
+            created_at=now or utcnow(),
+        )
+        if conn is not None:
+            conn.execute(row)
+        else:
+            with self.engine.begin() as own:
+                own.execute(row)
         return job_id
 
     def get(self, job_id: str) -> Job | None:

@@ -105,7 +105,7 @@ def test_a_hung_job_is_stopped_at_its_time_limit(queue: JobQueue, pool: WorkerPo
 @pytest.mark.parametrize(
     ("kind", "error"),
     [
-        ("huge", "the result is over 8388608 bytes"),
+        ("huge", "the result is over 33554432 bytes"),
         ("not_json", "the job failed with an internal error (TypeError)"),
         ("not_object", "the job returned something other than an object"),
     ],

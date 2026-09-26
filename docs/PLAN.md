@@ -208,6 +208,9 @@ Each pack is **data only** (schema-validated YAML/JSON; no code, no pickle) and 
 ### 5.2 Handling
 - Limits on size, archive entries and nesting depth; path normalisation (zip-slip); `defusedxml` (XXE, billion laughs); encoding detection; binary sniffing.
 - **Sandboxed parsing:** each file is parsed in a worker process with CPU/memory/time limits.
+- **Until the vault exists (M2.04 → M5.01):** an uploaded original waits in an owner-only
+  staging directory under a random id only until its audit job's worker reads it, and is
+  deleted on that read, before parsing. The database never holds it; results hold masked text.
 - **Evidence vault:** originals stored immutable, content-addressed by SHA-256, encrypted with AES-256-GCM under envelope keys. Only the `admin` role can decrypt originals. Everyone else sees the masked view.
 - **Masking that keeps auditability:** the secret value is hidden but its *kind* is kept (`password 7 ****`, `secret 9 ****`, `snmp community ****(RO)`), so rules like "no reversible password types" still work.
 - Every ingested artefact's hash is appended to the transparency log (§16).
@@ -952,6 +955,16 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.16 (2026-09-27, M2.04 uploads):** Upload API: an upload is opened, filled one file per
+  request (raw bytes, name in `X-File-Name`; a folder is its files, a `.zip` is expanded entry
+  by entry), then started as one audit job per accepted file. Every refused file keeps a row
+  with its reason (R-04). Names are display labels only; files are staged under random ids, so
+  zip-slip has nothing to act on. §5.2 gains the interim rule until the vault (M5.01): an
+  original waits on disk only until its audit's worker reads it, and is deleted on that read;
+  housekeeping deletes anything no queued job needs. Every state-changing request needs the
+  `X-Kasauti-Request` header and a same-origin `Sec-Fetch-Site`/`Origin` (cross-site request
+  forgery), ahead of M5's sessions. The job result limit rises from 8 to 32 MiB after
+  measuring audit results (about 550 bytes per configuration line). Migration 0003.
 - **v5.1.15 (2026-09-27, M2.03 jobs):** §4.3 gains the `jobs` module. The queue is a database
   table (migration 0002); pools claim with `FOR UPDATE SKIP LOCKED` on PostgreSQL and
   `BEGIN IMMEDIATE` on SQLite, hold jobs on a renewed lease, and recover a lost pool's jobs.

@@ -219,14 +219,20 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
   - **Recovery:** a pool renews a lease on its jobs; when a pool dies, its jobs go back to the queue (or fail after `max_attempts`).
   - **Isolation:** one spawned process per job, with a wall-clock limit. A crash or timeout fails only that job, and it isn't retried. Workers never touch the database and answer in size-limited JSON, never pickle.
   - **Registry:** kinds map to functions only through the code's registry (`kasauti/jobs/kinds.py`, empty until M2.04).
-  - **Limits:** payloads are capped at 64 KiB (references, not configurations); results at 8 MiB. Errors other than a handler's `JobError` are recorded by type only.
+  - **Limits:** payloads are capped at 64 KiB (references, not configurations); results at 32 MiB (raised from 8 MiB in M2.04, after measuring real audit results). Errors other than a handler's `JobError` are recorded by type only.
   - **Server:** `kasauti serve --workers N` (default 2, or 1 below 4 CPUs) runs the pool; at shutdown, running jobs go back to the queue without losing an attempt. `GET /api/jobs/{id}` takes UUIDs only.
   - **Tests:** 31 on SQLite, and the queue's 16 again on PostgreSQL (in CI, and locally on a throwaway 17.x server). They cover four pools racing for 40 jobs, crash, hang, cancel, takeover, a lost pool, oversized and non-JSON results, and a pickle that would create a file if loaded.
 
 ### 2B · Ingestion (§5, R-04)
-- [ ] **M2.04** Upload API: single file, bulk, `.zip` and folder. Accepted types: `.txt .cfg .conf .log .xml .json .yaml`. *(§5.1)* `@parse` Carried over from M2.03:
-  - The first routes that change state need cross-site request protection. Any web page can make a browser POST to 127.0.0.1 even when it can't read the answer, so check `Origin` and require a non-simple request.
-  - With the first real job kind, run a job end to end through the installed `kasauti serve` entry point, so `spawn` is proven under the console-script launcher and not only under pytest.
+- [x] **M2.04** Upload API: single file, bulk, `.zip` and folder. Accepted types: `.txt .cfg .conf .log .xml .json .yaml`. *(§5.1)* `@parse` Done: `kasauti/api/uploads.py`, `kasauti/ingest/{upload,staging,store,worker}.py`, migration `0003_uploads`; no new dependency.
+  - **Flow:** `POST /api/uploads` (label, frameworks, optional vendor) → one `POST /api/uploads/{id}/files` per file (raw `application/octet-stream` body, name percent-encoded in `X-File-Name`; a folder is its files, named by their paths) → `POST …/start` queues one `audit_file` job per accepted file → `GET /api/uploads/{id}` and `GET /api/jobs/{id}` for results. Files can be taken back out, and an open upload discarded. `.yml` is accepted as the other spelling of `.yaml`.
+  - **Every file is reported (R-04):** refused files keep a row with a user-safe reason (wrong type, empty, binary, over the limit, duplicate content, damaged zip entry, archive inside an archive, encrypted or symlink entry); the request still succeeds. HTTP errors are for wrong requests only.
+  - **Names are labels, never paths:** `..`, drive letters, control and bidi-override characters removed. Files are staged under random UUIDs, so zip-slip has nothing to act on. Zip entries are streamed and cut off at what is really decompressed, not what headers claim (20 MiB a file, 100 MiB a zip body, 1,000 entries, 512 MiB expanded); an entry that lies about its size fails its checksum and is refused. Per upload: 1,000 accepted files, 1 GiB.
+  - **Configs on disk only until read (until the vault, M5.01):** owner-only staging directory; the worker deletes the file as soon as it has read it, before parsing; a housekeeping task (start-up, then every minute) deletes whatever no queued or running job needs, and expires uploads left open for an hour. Test: an upload of `weak.cfg` run through real worker processes leaves none of its planted secrets in the database, its WAL or staging.
+  - **Cross-site request forgery:** every POST/PUT/PATCH/DELETE needs `X-Kasauti-Request: 1` (a custom header needs a CORS preflight, which is never granted), a same-origin `Sec-Fetch-Site`, and a matching `Origin` when one is sent. Sessions and CSRF tokens join in M5.03–M5.04.
+  - **Carried over from M2.03, done:** a job ran end to end through the installed `kasauti serve` console script (a Windows `.exe` launcher), so `spawn` works there too; it is now a test. The job result limit rose from 8 to 32 MiB: a 6,100-line config gives a 3.3 MB result.
+  - **Tests:** 36 intake, 11 store (also on PostgreSQL 17 locally, and in the CI `postgresql` job), 7 worker, 26 API. The audit result of an uploaded file equals `kasauti audit`'s, byte for byte.
+  - **Measured:** about 1.1 s per file per worker (spawn 0.1 s, imports 0.35 s, knowledge-base load 0.5 s, audit); 100 files ≈ 110 s on 2 workers, inside §22's 3-minute budget. M2.09 measures it properly.
 - [ ] **M2.05** Companion files: `show version`, `show inventory`, `get system status`, `show system info`, `show chassis hardware`, `display version`, `display esn`. *(§5.1, §7)* `@parse`
 - [ ] **M2.06** Group files into devices by hostname and filename stem, with a manual correction UI. *(§5.1)* `@parse` `@ui`
 - [ ] **M2.07** Input limits:
@@ -235,9 +241,9 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
   - defusedxml (XXE, billion laughs)
   - encoding detection and binary sniffing
 
-  *(§5.2)* `@parse`
+  *(§5.2)* `@parse` M2.04 already enforces the size, entry and expansion limits, refuses nested archives and makes zip-slip impossible (random staging names); M2.07 reviews them against a hostile-input fuzz corpus (§22: 0 crashes, 0 hangs), checks XML and YAML limits in the parsers, and decides whether nested archives should be opened one level deep.
 - [~] **M2.08** Kind-preserving secret masking (`password 7 ****`, `secret 9 ****`, `snmp community ****(RO)`), so reversible-password rules still work. *(§5.2)* `@parse` First cut done in M1 (`kasauti/ingest/mask.py`, vendor-generic, with tests); evidence, pattern keys and reports only ever show masked text. Per-vendor review pending.
-- [ ] **M2.09** Acceptance test: 100 mixed files including a zip all get ingested; malformed files are reported and nothing crashes. *(R-04 AC)* `@parse`
+- [ ] **M2.09** Acceptance test: 100 mixed files including a zip all get ingested; malformed files are reported and nothing crashes. *(R-04 AC)* `@parse` Measure against §22's 3-minute budget; if the per-job knowledge-base load (0.5 s) matters, audit several files per job.
 
 ### 2C · Shape families (§6.1)
 - [x] **M2.10** Brace family: Junos, VyOS, PAN-OS CLI. `@parse` Done early (M1, needed by the §9.2 spec): `kasauti/shape/brace.py`, with comments, `inactive:` (ignored, as the device does) and `protect:`.
@@ -517,6 +523,7 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
   - AES-256-GCM with envelope keys (the `cryptography` library), the key coming from the OS keystore or a passphrase
   - only `admin` decrypts originals; everyone else sees the masked view
   - a retention policy
+  - replaces M2.04's plain staging directory: an upload is encrypted into the vault as it streams in, and the audit worker decrypts it in memory
 
   *(§5.2, §17)* `@sec`
 - [ ] **M5.02** Sandboxed parse workers with CPU, memory and time limits per file (Windows job objects or POSIX rlimits). *(§4.2, §5.2, §17)* `@sec`

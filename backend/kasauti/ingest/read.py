@@ -69,6 +69,12 @@ def read_file(path: Path, *, kind: str = "config") -> Artifact:
     return decode(path.read_bytes(), path.name, kind=kind)
 
 
+def looks_like_text(head: bytes) -> bool:
+    """For a file's first bytes (at least one): marked as Unicode, or not binary. Cheap enough to
+    run on every upload before any worker decodes the file."""
+    return any(head.startswith(bom) for bom, _ in _BOMS) or not looks_binary(head)
+
+
 def looks_binary(data: bytes) -> bool:
     head = data[:_SNIFF_BYTES]
     if b"\x00" in head:

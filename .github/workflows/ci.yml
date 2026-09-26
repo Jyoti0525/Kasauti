@@ -65,10 +65,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --extra postgresql
-      - name: Migrations and the job queue on PostgreSQL
+      - name: Migrations, the job queue and uploads on PostgreSQL
         env:
           KASAUTI_TEST_POSTGRES_URL: postgresql://kasauti@127.0.0.1:5432/kasauti_test
-        run: uv run pytest backend/tests/db backend/tests/jobs -p no:cacheprovider -rs
+        run: >
+          uv run pytest backend/tests/db backend/tests/jobs backend/tests/ingest/test_store.py
+          -p no:cacheprovider -rs
 
   content-gates:
     name: content gates

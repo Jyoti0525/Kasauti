@@ -4,6 +4,7 @@ this module; a table left out of it would show up there as one to drop."""
 
 from __future__ import annotations
 
+import kasauti.ingest.table  # registers `uploads`, `upload_files`
 import kasauti.jobs.table  # noqa: F401 - registers `jobs`
 from kasauti.db.schema import Base
 

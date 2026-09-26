@@ -358,7 +358,8 @@ def _choose_pack(
     if chosen is None:
         top = ", ".join(f"{d.pack_id}={d.score}" for d in detections[:3]) or "no packs installed"
         raise AuditError(
-            f"{artifact.name}: can't tell which vendor this is ({top}); pass --vendor explicitly"
+            f"{artifact.name}: can't tell which vendor this is ({top}); name the vendor "
+            "explicitly (--vendor on the command line, or the upload's vendor)"
         )
     return kb.vendor_packs[chosen.pack_id], chosen, "fingerprint", warnings
 
