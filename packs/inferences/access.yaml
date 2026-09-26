@@ -1,0 +1,21 @@
+# Access restrictions a configuration implies but doesn't state as a filter (PLAN §12.7).
+# Inferences only fill absent facts; an ACL the admin named always wins.
+# Vendor-neutral: they read SBM facts, so every vendor pack benefits.
+
+inferences:
+  # --- Sources restricted per account --------------------------------------------------------
+  # FortiOS restricts administrator logins per account (trusted hosts), not per service: an
+  # account with no trusted host accepts logins from anywhere, over every management protocol
+  # the interface allows. Only when *every* account is restricted do the device's management
+  # services refuse other sources, as an access filter would. Platforms without per-account
+  # sources (Cisco, Junos, EOS) have no `permitted_sources`, so this never fires there.
+  - id: mgmt_service.access_filter.per_account_sources
+    version: 1
+    description: >
+      Where every administrator account may log in only from listed sources, IPv4 and IPv6,
+      the management services accept logins only from those sources.
+    for_each: MgmtService where key in [ssh, http, https]
+    when: >
+      all(LocalUser: exists(permitted_sources) and not permitted_sources contains 'any'
+          and (not exists(permitted_sources_v6) or not permitted_sources_v6 contains 'any'))
+    set: {access_filter: per-account-sources}

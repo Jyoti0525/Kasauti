@@ -146,6 +146,10 @@ def _verdict(
     context: tuple[Observation, ...] = (),
     question: str | None = None,
 ) -> Finding:
+    # The scope held. A switch it found absent (`not exists(enabled)`: nothing says this
+    # source is unused) is the ordinary case on most platforms and would only clutter the
+    # finding; absences the verdict itself rests on come from `val.why` and are kept.
+    context = tuple(o for o in context if o.state is not FactState.ABSENT)
     why = merge(context, val.why)
     if isinstance(val, Known):
         status = Status.PASS if val.value is True else Status.FAIL

@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "d0fb3ae0476105ef436e0fca",
+  "audit_id": "c7a4764ffdab775fc7b20229",
   "input": {
     "file": "hardened.conf",
-    "sha256": "6ab405110f0e768066ef309d4fd810808720c08d54373c2643e61bf11e44e9d4",
+    "sha256": "632bf2b38d66d4175395ee2a478f9e4f84c22fe27e0c2c95abcf07eb7871ff23",
     "encoding": "utf-8",
     "shape_family": "block_edit",
     "parse_warnings": []
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "1fd75bc794e2381882ec3541668503c60c1d6c2f2e605938aa1e66a2b5063695",
-    "ruleset_version": "0b1b575471bcfafc79f7234f2ec09b05f43bb67415d4a43697d0e464fdc94f28",
+    "kb_version": "6e9188739236a6c400956af638e0002508c00846d7500eb6eee57a67c957fdca",
+    "ruleset_version": "c0136460e71b069fa79978e1fc0c33bc0585614cb0771413bc2f54bc81b6f0ea",
     "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -65,10 +65,10 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 19,
+      "passed": 20,
       "failed": 0,
       "review": 0,
-      "not_applicable": 4,
+      "not_applicable": 3,
       "compliance_pct": 100.0,
       "coverage_pct": 100.0
     }
@@ -280,7 +280,7 @@
       "rule_id": "MGMT-WEB-ACL-01",
       "title": "Web management accepts only permitted sources",
       "domain": "management_plane",
-      "status": "N/A",
+      "status": "PASS",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-3",
@@ -360,7 +360,7 @@
     {
       "control": "AC-3",
       "title": "Access Enforcement",
-      "status": "not applicable",
+      "status": "satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -403,7 +403,7 @@
     {
       "control": "AC-17",
       "title": "Remote Access",
-      "status": "not applicable",
+      "status": "satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -598,8 +598,8 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 55,
-          "line_end": 55,
+          "line_start": 56,
+          "line_end": 56,
           "raw": "set server \"10.30.10.40\"",
           "mapping_id": "fortinet_fortios/tacacs-server",
           "mapping_version": 1,
@@ -623,8 +623,8 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 50,
-          "line_end": 50,
+          "line_start": 51,
+          "line_end": 51,
           "raw": "set password ENC ****",
           "mapping_id": "fortinet_fortios/admin-password",
           "mapping_version": 1,
@@ -730,8 +730,8 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 93,
-          "line_end": 93,
+          "line_start": 109,
+          "line_end": 109,
           "raw": "set srcaddr \"LAN-NET\"",
           "mapping_id": "fortinet_fortios/policy-srcaddr",
           "mapping_version": 1,
@@ -741,8 +741,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 96,
-          "line_end": 96,
+          "line_start": 112,
+          "line_end": 112,
           "raw": "set service \"HTTPS\" \"DNS\"",
           "mapping_id": "fortinet_fortios/policy-service",
           "mapping_version": 1,
@@ -820,8 +820,8 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 60,
-          "line_end": 60,
+          "line_start": 61,
+          "line_end": 61,
           "raw": "set status enable",
           "mapping_id": "fortinet_fortios/syslogd-status",
           "mapping_version": 1,
@@ -831,8 +831,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 61,
-          "line_end": 61,
+          "line_start": 62,
+          "line_end": 62,
           "raw": "set server \"10.30.10.50\"",
           "mapping_id": "fortinet_fortios/syslogd-server",
           "mapping_version": 1,
@@ -1039,14 +1039,42 @@
     },
     {
       "rule_id": "MGMT-WEB-ACL-01",
-      "entity_id": "Device[device]",
-      "status": "N/A",
+      "entity_id": "MgmtService[https]",
+      "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Not applicable: nothing matches `MgmtService where key in [http, https] and enabled` on this device.",
-      "actual": [],
-      "defaults_used": [],
-      "evidence": []
+      "reason": "Web management accepts only permitted sources: holds for MgmtService[https] (using the vendor default for this OS version).",
+      "actual": [
+        "MgmtService[https].enabled = true (vendor default)",
+        "MgmtService[https].access_filter = per-account-sources"
+      ],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#https-available"
+      ],
+      "evidence": [
+        {
+          "file": "hardened.conf",
+          "line_start": 49,
+          "line_end": 49,
+          "raw": "set trusthost1 10.30.10.0 255.255.255.0",
+          "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.conf",
+          "line_start": 50,
+          "line_end": 50,
+          "raw": "set ip6-trusthost1 fd00:30:10::/64",
+          "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "REF-DANGLING-01",
@@ -1152,6 +1180,7 @@
       "severity_reason": null,
       "reason": "Time sources are authenticated: holds for TimeSource[ntp-1].",
       "actual": [
+        "TimePolicy[time-policy].sync_enabled = true",
         "TimeSource[ntp-1].authenticated = true",
         "TimePolicy[time-policy].auth_enforced = true"
       ],
@@ -1159,8 +1188,19 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 70,
-          "line_end": 70,
+          "line_start": 66,
+          "line_end": 66,
+          "raw": "set ntpsync enable",
+          "mapping_id": "fortinet_fortios/ntp-sync",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.conf",
+          "line_start": 71,
+          "line_end": 71,
           "raw": "set authentication enable",
           "mapping_id": "fortinet_fortios/ntpserver-authentication-enforced",
           "mapping_version": 1,
@@ -1170,8 +1210,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 70,
-          "line_end": 70,
+          "line_start": 71,
+          "line_end": 71,
           "raw": "set authentication enable",
           "mapping_id": "fortinet_fortios/ntpserver-authentication",
           "mapping_version": 1,
@@ -1183,11 +1223,11 @@
     }
   ],
   "assurance": {
-    "statements": 85,
-    "understood": 50,
+    "statements": 97,
+    "understood": 62,
     "unmapped": 36,
     "near_miss": 0,
-    "understood_pct": 58.8,
+    "understood_pct": 63.9,
     "unmapped_patterns": [
       {
         "pattern_key": "set vdom <STR>",
@@ -1202,27 +1242,27 @@
         "example": "set ip 198.51.100.2 255.255.255.252"
       },
       {
+        "pattern_key": "set category <STR>",
+        "count": 3,
+        "first_line": 90,
+        "example": "set category \"General\""
+      },
+      {
         "pattern_key": "set type physical",
         "count": 2,
         "first_line": 24,
         "example": "set type physical"
       },
       {
-        "pattern_key": "edit <STR>",
-        "count": 2,
-        "first_line": 46,
-        "example": "edit \"netadmin\""
-      },
-      {
         "pattern_key": "set key ENC ****",
         "count": 2,
-        "first_line": 56,
+        "first_line": 57,
         "example": "set key ENC ****"
       },
       {
         "pattern_key": "set schedule <STR>",
         "count": 2,
-        "first_line": 95,
+        "first_line": 111,
         "example": "set schedule \"always\""
       },
       {
@@ -1274,81 +1314,75 @@
         "example": "set accprofile \"super_admin\""
       },
       {
-        "pattern_key": "set trusthost1 <IP> <IP>",
-        "count": 1,
-        "first_line": 49,
-        "example": "set trusthost1 10.30.10.0 255.255.255.0"
-      },
-      {
         "pattern_key": "config user tacacs+",
         "count": 1,
-        "first_line": 53,
+        "first_line": 54,
         "example": "config user tacacs+"
+      },
+      {
+        "pattern_key": "edit <STR>",
+        "count": 1,
+        "first_line": 55,
+        "example": "edit \"TACACS-1\""
       },
       {
         "pattern_key": "config log syslogd setting",
         "count": 1,
-        "first_line": 59,
+        "first_line": 60,
         "example": "config log syslogd setting"
       },
       {
         "pattern_key": "config system ntp",
         "count": 1,
-        "first_line": 64,
-        "example": "config system ntp"
-      },
-      {
-        "pattern_key": "set ntpsync enable",
-        "count": 1,
         "first_line": 65,
-        "example": "set ntpsync enable"
-      },
-      {
-        "pattern_key": "set type custom",
-        "count": 1,
-        "first_line": 66,
-        "example": "set type custom"
+        "example": "config system ntp"
       },
       {
         "pattern_key": "config ntpserver",
         "count": 1,
-        "first_line": 67,
+        "first_line": 68,
         "example": "config ntpserver"
       },
       {
         "pattern_key": "edit <INT>",
         "count": 1,
-        "first_line": 68,
+        "first_line": 69,
         "example": "edit 1"
       },
       {
         "pattern_key": "set key-type SHA256",
         "count": 1,
-        "first_line": 71,
+        "first_line": 72,
         "example": "set key-type SHA256"
       },
       {
         "pattern_key": "set key-id <INT>",
         "count": 1,
-        "first_line": 73,
+        "first_line": 74,
         "example": "set key-id 1"
       },
       {
         "pattern_key": "config firewall address",
         "count": 1,
-        "first_line": 77,
+        "first_line": 78,
         "example": "config firewall address"
+      },
+      {
+        "pattern_key": "config firewall service custom",
+        "count": 1,
+        "first_line": 88,
+        "example": "config firewall service custom"
       },
       {
         "pattern_key": "config firewall policy",
         "count": 1,
-        "first_line": 87,
+        "first_line": 103,
         "example": "config firewall policy"
       },
       {
         "pattern_key": "set nat enable",
         "count": 1,
-        "first_line": 98,
+        "first_line": 114,
         "example": "set nat enable"
       }
     ],
@@ -1369,6 +1403,13 @@
         "facts": 3
       },
       {
+        "mapping": "fortinet_fortios/admin-ip6-trusthost1@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
         "mapping": "fortinet_fortios/admin-password@1",
         "approved_by": [
           "maintainer"
@@ -1377,6 +1418,13 @@
       },
       {
         "mapping": "fortinet_fortios/admin-telnet-disable@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/admin-trusthost1@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1433,6 +1481,20 @@
       },
       {
         "mapping": "fortinet_fortios/lockout-threshold@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/ntp-sync@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/ntp-type@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1544,6 +1606,34 @@
         "facts": 1
       },
       {
+        "mapping": "fortinet_fortios/service-protocol-ip@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/service-tcp-portrange@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "fortinet_fortios/service-udp-portrange@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/service@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
         "mapping": "fortinet_fortios/syslogd-mode@1",
         "approved_by": [
           "maintainer"
@@ -1577,11 +1667,19 @@
           "maintainer"
         ],
         "facts": 4
+      },
+      {
+        "mapping": "inference/mgmt_service.access_filter.per_account_sources@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 6
       }
     ],
     "defaults_used": [
       "fortinet_fortios/defaults.yaml#config-changes-logged",
       "fortinet_fortios/defaults.yaml#http-redirected-to-https",
+      "fortinet_fortios/defaults.yaml#https-available",
       "fortinet_fortios/defaults.yaml#logs-timestamped",
       "fortinet_fortios/defaults.yaml#no-legacy-bootp",
       "fortinet_fortios/defaults.yaml#no-legacy-finger",
@@ -1597,7 +1695,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.5",
+    "sbm_version": "0.6",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1669,8 +1767,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 87,
-            "line_end": 87,
+            "line_start": 103,
+            "line_end": 103,
             "raw": "config firewall policy",
             "mapping_id": null,
             "mapping_version": null,
@@ -1730,8 +1828,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 87,
-            "line_end": 87,
+            "line_start": 103,
+            "line_end": 103,
             "raw": "config firewall policy",
             "mapping_id": null,
             "mapping_version": null,
@@ -1790,8 +1888,8 @@
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 90,
-            "line_end": 90,
+            "line_start": 106,
+            "line_end": 106,
             "raw": "set srcintf \"internal\"",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -1801,8 +1899,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 91,
-            "line_end": 91,
+            "line_start": 107,
+            "line_end": 107,
             "raw": "set dstintf \"wan1\"",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -1812,8 +1910,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 102,
-            "line_end": 102,
+            "line_start": 118,
+            "line_end": 118,
             "raw": "set srcintf \"wan1\"",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -1823,8 +1921,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 103,
-            "line_end": 103,
+            "line_start": 119,
+            "line_end": 119,
             "raw": "set dstintf \"internal\"",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -1847,8 +1945,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 55,
-              "line_end": 55,
+              "line_start": 56,
+              "line_end": 56,
               "raw": "set server \"10.30.10.40\"",
               "mapping_id": "fortinet_fortios/tacacs-server",
               "mapping_version": 1,
@@ -1865,8 +1963,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 55,
-              "line_end": 55,
+              "line_start": 56,
+              "line_end": 56,
               "raw": "set server \"10.30.10.40\"",
               "mapping_id": "fortinet_fortios/tacacs-server",
               "mapping_version": 1,
@@ -1923,8 +2021,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
+              "line_start": 104,
+              "line_end": 104,
               "raw": "edit 1",
               "mapping_id": "fortinet_fortios/policy",
               "mapping_version": 1,
@@ -1941,8 +2039,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
+              "line_start": 104,
+              "line_end": 104,
               "raw": "edit 1",
               "mapping_id": "fortinet_fortios/policy",
               "mapping_version": 1,
@@ -1959,8 +2057,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 89,
-              "line_end": 89,
+              "line_start": 105,
+              "line_end": 105,
               "raw": "set name \"LAN-to-internet\"",
               "mapping_id": "fortinet_fortios/policy-name",
               "mapping_version": 1,
@@ -1979,8 +2077,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 93,
-              "line_end": 93,
+              "line_start": 109,
+              "line_end": 109,
               "raw": "set srcaddr \"LAN-NET\"",
               "mapping_id": "fortinet_fortios/policy-srcaddr",
               "mapping_version": 1,
@@ -1999,8 +2097,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 94,
-              "line_end": 94,
+              "line_start": 110,
+              "line_end": 110,
               "raw": "set dstaddr \"all\"",
               "mapping_id": "fortinet_fortios/policy-dstaddr",
               "mapping_version": 1,
@@ -2020,8 +2118,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 96,
-              "line_end": 96,
+              "line_start": 112,
+              "line_end": 112,
               "raw": "set service \"HTTPS\" \"DNS\"",
               "mapping_id": "fortinet_fortios/policy-service",
               "mapping_version": 1,
@@ -2038,8 +2136,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 92,
-              "line_end": 92,
+              "line_start": 108,
+              "line_end": 108,
               "raw": "set action accept",
               "mapping_id": "fortinet_fortios/policy-action",
               "mapping_version": 1,
@@ -2056,8 +2154,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 97,
-              "line_end": 97,
+              "line_start": 113,
+              "line_end": 113,
               "raw": "set logtraffic all",
               "mapping_id": "fortinet_fortios/policy-logtraffic",
               "mapping_version": 1,
@@ -2080,8 +2178,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 90,
-              "line_end": 90,
+              "line_start": 106,
+              "line_end": 106,
               "raw": "set srcintf \"internal\"",
               "mapping_id": "fortinet_fortios/policy-srcintf",
               "mapping_version": 1,
@@ -2098,8 +2196,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 91,
-              "line_end": 91,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "set dstintf \"wan1\"",
               "mapping_id": "fortinet_fortios/policy-dstintf",
               "mapping_version": 1,
@@ -2121,8 +2219,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 100,
-              "line_end": 100,
+              "line_start": 116,
+              "line_end": 116,
               "raw": "edit 2",
               "mapping_id": "fortinet_fortios/policy",
               "mapping_version": 1,
@@ -2139,8 +2237,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 100,
-              "line_end": 100,
+              "line_start": 116,
+              "line_end": 116,
               "raw": "edit 2",
               "mapping_id": "fortinet_fortios/policy",
               "mapping_version": 1,
@@ -2157,8 +2255,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 101,
-              "line_end": 101,
+              "line_start": 117,
+              "line_end": 117,
               "raw": "set name \"deny-and-log\"",
               "mapping_id": "fortinet_fortios/policy-name",
               "mapping_version": 1,
@@ -2177,8 +2275,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 104,
-              "line_end": 104,
+              "line_start": 120,
+              "line_end": 120,
               "raw": "set srcaddr \"all\"",
               "mapping_id": "fortinet_fortios/policy-srcaddr",
               "mapping_version": 1,
@@ -2197,8 +2295,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 105,
-              "line_end": 105,
+              "line_start": 121,
+              "line_end": 121,
               "raw": "set dstaddr \"all\"",
               "mapping_id": "fortinet_fortios/policy-dstaddr",
               "mapping_version": 1,
@@ -2217,8 +2315,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 107,
-              "line_end": 107,
+              "line_start": 123,
+              "line_end": 123,
               "raw": "set service \"ALL\"",
               "mapping_id": "fortinet_fortios/policy-service",
               "mapping_version": 1,
@@ -2241,8 +2339,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 108,
-              "line_end": 108,
+              "line_start": 124,
+              "line_end": 124,
               "raw": "set logtraffic all",
               "mapping_id": "fortinet_fortios/policy-logtraffic",
               "mapping_version": 1,
@@ -2265,8 +2363,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 102,
-              "line_end": 102,
+              "line_start": 118,
+              "line_end": 118,
               "raw": "set srcintf \"wan1\"",
               "mapping_id": "fortinet_fortios/policy-srcintf",
               "mapping_version": 1,
@@ -2283,8 +2381,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 103,
-              "line_end": 103,
+              "line_start": 119,
+              "line_end": 119,
               "raw": "set dstintf \"internal\"",
               "mapping_id": "fortinet_fortios/policy-dstintf",
               "mapping_version": 1,
@@ -2623,10 +2721,50 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 50,
-              "line_end": 50,
+              "line_start": 51,
+              "line_end": 51,
               "raw": "set password ENC ****",
               "mapping_id": "fortinet_fortios/admin-password",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": [
+            "10.30.10.0/255.255.255.0"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 49,
+              "line_end": 49,
+              "raw": "set trusthost1 10.30.10.0 255.255.255.0",
+              "mapping_id": "fortinet_fortios/admin-trusthost1",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permitted_sources_v6": {
+          "value": [
+            "fd00:30:10::/64"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 50,
+              "line_end": 50,
+              "raw": "set ip6-trusthost1 fd00:30:10::/64",
+              "mapping_id": "fortinet_fortios/admin-ip6-trusthost1",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2687,8 +2825,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 61,
-              "line_end": 61,
+              "line_start": 62,
+              "line_end": 62,
               "raw": "set server \"10.30.10.50\"",
               "mapping_id": "fortinet_fortios/syslogd-server",
               "mapping_version": 1,
@@ -2705,8 +2843,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 62,
-              "line_end": 62,
+              "line_start": 63,
+              "line_end": 63,
               "raw": "set mode reliable",
               "mapping_id": "fortinet_fortios/syslogd-mode",
               "mapping_version": 1,
@@ -2729,8 +2867,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 60,
-              "line_end": 60,
+              "line_start": 61,
+              "line_end": 61,
               "raw": "set status enable",
               "mapping_id": "fortinet_fortios/syslogd-status",
               "mapping_version": 1,
@@ -2864,9 +3002,96 @@
           "default_source": null
         },
         "access_filter": {
+          "value": "per-account-sources",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 49,
+              "line_end": 49,
+              "raw": "set trusthost1 10.30.10.0 255.255.255.0",
+              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.conf",
+              "line_start": 50,
+              "line_end": 50,
+              "raw": "set ip6-trusthost1 fd00:30:10::/64",
+              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "ciphers": {
           "value": null,
           "state": "absent",
           "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "https",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": true,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#https-available"
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": "per-account-sources",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 49,
+              "line_end": 49,
+              "raw": "set trusthost1 10.30.10.0 255.255.255.0",
+              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.conf",
+              "line_start": 50,
+              "line_end": 50,
+              "raw": "set ip6-trusthost1 fd00:30:10::/64",
+              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "ciphers": {
@@ -2946,9 +3171,32 @@
           "default_source": "fortinet_fortios/defaults.yaml#ssh-v1-off"
         },
         "access_filter": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "per-account-sources",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 49,
+              "line_end": 49,
+              "raw": "set trusthost1 10.30.10.0 255.255.255.0",
+              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.conf",
+              "line_start": 50,
+              "line_end": 50,
+              "raw": "set ip6-trusthost1 fd00:30:10::/64",
+              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "ciphers": {
@@ -3180,8 +3428,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 80,
-              "line_end": 80,
+              "line_start": 81,
+              "line_end": 81,
               "raw": "edit \"LAN-NET\"",
               "mapping_id": "fortinet_fortios/address",
               "mapping_version": 1,
@@ -3200,8 +3448,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 81,
-              "line_end": 81,
+              "line_start": 82,
+              "line_end": 82,
               "raw": "set subnet 10.20.0.0 255.255.255.0",
               "mapping_id": "fortinet_fortios/address-subnet",
               "mapping_version": 1,
@@ -3229,8 +3477,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 83,
-              "line_end": 83,
+              "line_start": 84,
+              "line_end": 84,
               "raw": "edit \"WEB-SRV\"",
               "mapping_id": "fortinet_fortios/address",
               "mapping_version": 1,
@@ -3249,8 +3497,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 84,
-              "line_end": 84,
+              "line_start": 85,
+              "line_end": 85,
               "raw": "set subnet 10.20.0.10 255.255.255.255",
               "mapping_id": "fortinet_fortios/address-subnet",
               "mapping_version": 1,
@@ -3278,8 +3526,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 78,
-              "line_end": 78,
+              "line_start": 79,
+              "line_end": 79,
               "raw": "edit \"all\"",
               "mapping_id": "fortinet_fortios/address",
               "mapping_version": 1,
@@ -3294,6 +3542,164 @@
           "value": null,
           "state": "absent",
           "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "service:ALL",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "service",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 89,
+              "line_end": 89,
+              "raw": "edit \"ALL\"",
+              "mapping_id": "fortinet_fortios/service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "set protocol IP",
+              "mapping_id": "fortinet_fortios/service-protocol-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "service:DNS",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "service",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 93,
+              "line_end": 93,
+              "raw": "edit \"DNS\"",
+              "mapping_id": "fortinet_fortios/service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "53"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 95,
+              "line_end": 95,
+              "raw": "set tcp-portrange 53",
+              "mapping_id": "fortinet_fortios/service-tcp-portrange",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.conf",
+              "line_start": 96,
+              "line_end": 96,
+              "raw": "set udp-portrange 53",
+              "mapping_id": "fortinet_fortios/service-udp-portrange",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "service:HTTPS",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "service",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "edit \"HTTPS\"",
+              "mapping_id": "fortinet_fortios/service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "443"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 100,
+              "line_end": 100,
+              "raw": "set tcp-portrange 443",
+              "mapping_id": "fortinet_fortios/service-tcp-portrange",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "expanded": {
@@ -3378,10 +3784,63 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 70,
-              "line_end": 70,
+              "line_start": 71,
+              "line_end": 71,
               "raw": "set authentication enable",
               "mapping_id": "fortinet_fortios/ntpserver-authentication-enforced",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "sync_enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 66,
+              "line_end": 66,
+              "raw": "set ntpsync enable",
+              "mapping_id": "fortinet_fortios/ntp-sync",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "fortiguard",
+        "evidence": [],
+        "type": "TimeSource",
+        "host": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "authenticated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 67,
+              "line_end": 67,
+              "raw": "set type custom",
+              "mapping_id": "fortinet_fortios/ntp-type",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3401,8 +3860,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 69,
-              "line_end": 69,
+              "line_start": 70,
+              "line_end": 70,
               "raw": "set server \"10.30.10.70\"",
               "mapping_id": "fortinet_fortios/ntpserver-server",
               "mapping_version": 1,
@@ -3419,8 +3878,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 70,
-              "line_end": 70,
+              "line_start": 71,
+              "line_end": 71,
               "raw": "set authentication enable",
               "mapping_id": "fortinet_fortios/ntpserver-authentication",
               "mapping_version": 1,
@@ -3429,6 +3888,12 @@
               ]
             }
           ],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       }
@@ -3440,8 +3905,8 @@
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 55,
-            "line_end": 55,
+            "line_start": 56,
+            "line_end": 56,
             "raw": "set server \"10.30.10.40\"",
             "mapping_id": "fortinet_fortios/tacacs-server",
             "mapping_version": 1,
@@ -3458,8 +3923,8 @@
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 93,
-            "line_end": 93,
+            "line_start": 109,
+            "line_end": 109,
             "raw": "set srcaddr \"LAN-NET\"",
             "mapping_id": "fortinet_fortios/policy-srcaddr",
             "mapping_version": 1,
@@ -3469,8 +3934,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 96,
-            "line_end": 96,
+            "line_start": 112,
+            "line_end": 112,
             "raw": "set service \"HTTPS\" \"DNS\"",
             "mapping_id": "fortinet_fortios/policy-service",
             "mapping_version": 1,
@@ -3487,8 +3952,8 @@
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 60,
-            "line_end": 60,
+            "line_start": 61,
+            "line_end": 61,
             "raw": "set status enable",
             "mapping_id": "fortinet_fortios/syslogd-status",
             "mapping_version": 1,
@@ -3498,8 +3963,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 61,
-            "line_end": 61,
+            "line_start": 62,
+            "line_end": 62,
             "raw": "set server \"10.30.10.50\"",
             "mapping_id": "fortinet_fortios/syslogd-server",
             "mapping_version": 1,

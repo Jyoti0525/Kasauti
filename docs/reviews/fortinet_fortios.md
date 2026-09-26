@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Pack | `packs/vendors/fortinet_fortios` (pack_version 1), 63 mappings |
+| Pack | `packs/vendors/fortinet_fortios` (pack_version 1), 96 mappings |
 | Date | 2026-09-26 |
 | Reviewer | Claude, delegated by the maintainer (as for the other seed packs) |
 | Tasks | TODO M2.29 (seed pack), C.06 (authored configs vs vendor docs), S.01 |
@@ -24,16 +24,20 @@ reference, rendered in a browser, because the pages load their tables with JavaS
 | `lockout-after-3`, `lockout-60-seconds` | 3 tries, 60 s | `admin-lockout-threshold` default 3; `admin-lockout-duration` default 60 | same |
 | `password-policy-off`, `password-minimum-8` | off, 8 | `status` default disable; `minimum-length` default 8 (range 8–128) | [config system password-policy](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/127236326/config-system-password-policy) |
 | `passwords-stored-encoded` | true | administrator passwords shown as `ENC SH2…` (SHA-256) or `ENC PB2…` (PBKDF2, from 7.4.8) | [Enhanced administrator password security](https://docs.fortinet.com/document/fortigate/7.4.8/administration-guide/548023/enhanced-administrator-password-security-new) |
+| `admin-trusted-hosts-any-ipv4`, `-ipv6` | anywhere | `trusthost1-10`: "Default allows access from any IPv4 address" (0.0.0.0 0.0.0.0); `ip6-trusthost1-10`: "Default allows access from any IPv6 address" (::/0), a separate list | [config system admin](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/390485493/config-system-admin) |
 | `no-interface-mgmt-access` | none | `allowaccess`: "Permitted types of management access to this interface." No default | [config system interface](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/317104469/config-system-interface) |
 | `syslog-off`, `syslog-udp` | off, UDP | `status`: "Enable/disable remote syslog logging." Default disable; `mode` default udp | [config log syslogd setting](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/141516630/config-log-syslogd-setting) |
 | `config-changes-logged` | true | `event` and `system` event logging default enable; a change is event 44546/44547 "Attribute configured" with `user`, `cfgpath`, `cfgattr` | [config log eventfilter](https://docs.fortinet.com/document/fortigate/7.4.2/cli-reference/437620/config-log-eventfilter), [44547](https://docs.fortinet.com/document/fortigate/7.4.4/fortios-log-message-reference/44547/44547-logid-event-config-objattr) |
 | `logs-timestamped` | true | every log message has `date`, `time`, `eventtime`, `tz` fields | [44547](https://docs.fortinet.com/document/fortigate/7.4.4/fortios-log-message-reference/44547/44547-logid-event-config-objattr) |
 | `snmp-read-only` | ro | "The FortiGate SNMP implementation is read-only" | [SNMP](https://docs.fortinet.com/document/fortigate/7.4.3/administration-guide/62595/snmp) |
-| `ntp-server-unauthenticated`, `ntp-authentication-off` | off | `authentication`: "Enable/disable authentication." Default disable (global and per server) | [config system ntp](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/105110478/config-system-ntp) |
+| `ntp-server-unauthenticated`, `ntp-authentication-off` | off | `authentication`: "Enable/disable authentication." Default disable (global and per server). The per-server default is not applied to FortiGuard's servers (`except_keys`) | [config system ntp](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/105110478/config-system-ntp) |
+| `ntp-sync-off` | off | `ntpsync`: "Enable/disable setting the FortiGate system time by synchronizing with an NTP Server." Default disable | same |
+| `ntp-fortiguard-servers` | FortiGuard in use | `type`: "Use the FortiGuard NTP server or any other available NTP Server." Default fortiguard | same |
 | `policy-action-deny` | deny | `action`: "Policy action (accept/deny/ipsec)." Default deny | [config firewall policy](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/333889629/config-firewall-policy) |
 
 **Model defaults** (`curated`, each says what it models): one administrator session kind for
-GUI and CLI; Telnet reachable only through `allowaccess` (the `admin-telnet` switch, default
+GUI and CLI; HTTPS administration, like SSH, always offered (who may reach it is then judged
+by trusted hosts); Telnet reachable only through `allowaccess` (the `admin-telnet` switch, default
 enable, only permits the service); SSH offered wherever `allowaccess` lists it; no PAD,
 finger, BOOTP or small servers; proxy ARP only for `config system proxy-arp` entries; every
 AAA server, SNMP community and firewall policy appears in the configuration.
@@ -55,6 +59,24 @@ AAA server, SNMP community and firewall policy appears in the configuration.
   object or group that covers every address counts as `any`. A policy naming an object whose
   extent wasn't read (a dynamic address) is REVIEW. A range starting at 0.0.0.0 is treated as
   covering everything, because a false FAIL is safer than a false PASS.
+- **Trusted hosts are per account** (SBM 0.6 `LocalUser.permitted_sources` and
+  `permitted_sources_v6`). Every `config system admin` entry is an account, with or without a
+  password line, so a remote wildcard admin isn't skipped. The vendor-neutral inference
+  `mgmt_service.access_filter.per_account_sources` marks SSH, HTTP and HTTPS as restricted only
+  when *every* account lists sources for both IPv4 and IPv6: one open account, or IPv6 left at
+  its `::/0` default, keeps MGMT-WEB-ACL-01 at FAIL. Cisco, Junos and EOS have no per-account
+  sources, so the inference never fires there (tested).
+- **FortiGuard is a time source** (`TimeSource[fortiguard]`, SBM 0.6 `enabled`), in use unless
+  `set type custom`, and only when `set ntpsync enable` (`TimePolicy.sync_enabled`). With the
+  global `authentication` at its documented default (disable) the rule FAILs: no key is in
+  play. With it enabled the verdict is REVIEW: Fortinet configures NTP keys only for custom
+  servers ([NTP authentication](https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/336196/cryptographic-hash-function-authentication-support))
+  and doesn't say whether the global key covers FortiGuard's servers.
+- **Service objects are seen through** like address objects. `set protocol IP` covers every IP
+  protocol; `set protocol-number N` narrows it (GRE is 47). Fortinet's page gives 0 as the
+  default without saying it means "all"; we treat 0 as all, which can only turn a PASS into a
+  FAIL. Port ranges, ICMP and service groups are read; a service whose extent wasn't read
+  (only a category, a web-proxy protocol) is REVIEW.
 - **Password hashes** are classified by the prefix after `ENC`: `PB2` → pbkdf2-sha256 (passes),
   `SH2` → sha256 (fails AAA-LOCAL-PASSWORD-HASH-01: a fast hash is not a password KDF).
 - **HTTP administration** counts as clear-text only when `admin-https-redirect` is disabled.
@@ -71,7 +93,9 @@ Checked against the CLI reference pages above: `config system global` (`admintim
 `config log syslogd setting` (`status`, `server`, `mode reliable`), `config log eventfilter`
 (`system`), `config system snmp community` (`name`), `config system ntp` (`ntpsync`, `type
 custom`, `ntpserver` … `authentication`, `key-type SHA256`, `key`, `key-id`),
-`config firewall address` (`subnet`), `config firewall policy` (`name`, `srcintf`, `dstintf`,
+`config firewall address` (`subnet`), `config firewall service custom` (`category`, `protocol`,
+`protocol-number`, `tcp-portrange`, `udp-portrange`), `config system admin` (`ip6-trusthost1`),
+`config firewall policy` (`name`, `srcintf`, `dstintf`,
 `action`, `srcaddr`, `dstaddr`, `schedule`, `service`, `logtraffic`, `nat`).
 
 ## 4. Changes made while building and reviewing this pack
@@ -82,19 +106,27 @@ custom`, `ntpserver` … `authentication`, `key-type SHA256`, `key`, `key-id`),
 | A syslog server or password minimum set while the feature is off | would have counted as configured: a false PASS | SBM 0.5 on/off facts; derivation `logging.remote_configured` v2; min-length rule updated |
 | A catch-all address object behind a name | `dstaddr "ANY-NET"` (0.0.0.0/0) wasn't a permit-any: a false PASS | the resolver widens named address objects and groups; unread extents give REVIEW |
 | The widening skipped objects whose only line was their header | a dynamic address still gave PASS (caught by the new test) | the deciding evidence falls back to any line about the object |
+| Administrator trusted hosts weren't read | HTTPS administration had no access fact; MGMT-WEB-ACL-01 judged clear-text HTTP only | per-account sources (SBM 0.6) and a vendor-neutral inference; HTTPS is judged, and the hardened unit PASSes on its trusted hosts |
+| FortiGuard NTP (the default `type`) had no server entry | TIME-NTP-AUTH-01 was N/A for it | `TimeSource[fortiguard]` with its on switches; FAIL with authentication off, REVIEW with it on; `except_keys` keeps the per-server default off it |
+| Custom service objects weren't expanded | `set service "ANY-PROTO"` (protocol IP) wasn't a permit-all: a false PASS | the resolver widens services like addresses; `set` with a template narrows a set (`protocol-number`) |
 | "Management reachable from untrusted" meant "no inbound ACL" | on zone-based platforms (FortiOS, Junos) the explanation was wrong: zones don't guard the device's own services | the exposure now asks for no filter *and* no zone, or management protocols granted on the interface; only the wording of existing findings changed |
 
-## 5. Known gaps (not judged yet, never passed)
+## 5. Known limits (none gives a false PASS)
 
-- **Administrator trusted hosts** (`trusthost1…10`) and local-in policies restrict where
-  administrators may log in from. They aren't mapped yet, so HTTPS/SSH administration has no
-  access-filter fact. MGMT-WEB-ACL-01 judges clear-text HTTP only.
-- **FortiGuard NTP** (`set type fortiguard`, the default) has no server entries, so
-  TIME-NTP-AUTH-01 is N/A for it. Custom servers are judged.
-- **Custom service objects** that cover every protocol aren't expanded. `service "ALL"` is.
+The three gaps of the first review (trusted hosts, FortiGuard NTP, custom service objects) are
+closed (section 4). What remains is judged conservatively:
+
+- **Local-in policies** (`config firewall local-in-policy`) can also restrict administrator
+  access. They aren't read, so a unit relying on them instead of trusted hosts gets FAIL on
+  MGMT-WEB-ACL-01, with the reason shown; an auditor can overrule it.
+- **Service objects narrowed by destination** (`set iprange`, `set fqdn` inside a service) are
+  judged by protocol alone, so at worst a FAIL.
+- **FortiGuard NTP with global authentication enabled** is REVIEW until Fortinet documents
+  whether that key covers FortiGuard's servers.
 
 ## 6. Result
 
 Golden cases `fortinet_fortios_weak` (F1–F16) and `fortinet_fortios_hardened` are
 hand-labelled from the weakness catalogue in `datasets/SOURCES.md`. All 16 planted weaknesses
-are caught. False-PASS rate across all eight golden cases: 0/91.
+are caught; the hardened unit passes 20 rules (3 N/A: no vty lines, no references). False-PASS
+rate across all eight golden cases: 0/90.

@@ -48,7 +48,12 @@ rules:
       Log timestamps and certificate checks depend on the clock; an unauthenticated time
       source lets an attacker move it.
     domain: time
-    for_each: TimeSource
+    # Only sources the clock is actually set from: FortiOS keeps FortiGuard's servers as an
+    # implicit source (unused with `set type custom`) and can switch synchronisation off.
+    # Where neither switch exists (absent), every listed server is in use.
+    for_each: >
+      TimeSource where (not exists(enabled) or enabled)
+      and all(TimePolicy: not exists(sync_enabled) or sync_enabled)
     assert: "authenticated and all(TimePolicy: auth_enforced)"
     on_absent: resolve_default
     on_unknown: review

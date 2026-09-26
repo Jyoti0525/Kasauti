@@ -23,7 +23,7 @@ expected_statuses:
   MGMT-TELNET-01: FAIL     # F5 telnet in wan1 allowaccess
   MGMT-VTY-ACL-01: N/A      # FortiOS has no vty lines
   MGMT-VTY-ACL-02: N/A      # FortiOS has no vty lines
-  MGMT-WEB-ACL-01: FAIL     # F3 clear-text HTTP administration with no access restriction
+  MGMT-WEB-ACL-01: FAIL     # F3 HTTP and HTTPS administration: admin has no trusted hosts
   REF-DANGLING-01: N/A      # no statement names an ACL or object by reference
   SNMP-COMMUNITY-01: FAIL     # F12 SNMP community public
   SVC-LEGACY-01: PASS     # FortiOS has no PAD, finger, BOOTP or small servers (model default)

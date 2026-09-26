@@ -2,8 +2,9 @@
 # print only non-default settings, so these carry much of the weight. Vendor defaults quote the
 # "Default" column of Fortinet's FortiOS 7.4 CLI reference, read 2026-09-26
 # (docs/reviews/fortinet_fortios.md).
-# Not stated in the pages checked, so no entry (the rule says REVIEW): none so far; the gaps
-# this pack can't judge yet are listed in the review record.
+# Not stated in the pages checked, so no entry (the rule says REVIEW): whether FortiGuard's NTP
+# servers are authenticated (see ntp-server-unauthenticated). What the pack doesn't read yet is
+# listed in the review record.
 defaults:
   # --- management plane ----------------------------------------------------------------------
   - id: admin-session-kind
@@ -54,6 +55,16 @@ defaults:
     reference: >-
       Model default: FortiOS has no global SSH switch; SSH administration is offered on every
       interface whose `allowaccess` lists ssh. Assumed on, so the SSH version is always judged.
+
+  - id: https-available
+    attr: MgmtService.enabled
+    entity_key: https
+    value: true
+    source: curated
+    reference: >-
+      Model default: like SSH, the HTTPS administration server has no global switch; it is
+      offered on every interface whose `allowaccess` lists https. Assumed on, so who may reach
+      it (trusted hosts) is always judged.
 
   - id: ssh-v1-off
     attr: MgmtService.version
@@ -173,6 +184,26 @@ defaults:
       shown encoded (`set password ENC SH2…` or `ENC PB2…`), never in clear text.
       https://docs.fortinet.com/document/fortigate/7.4.8/administration-guide/548023/enhanced-administrator-password-security-new
 
+  - id: admin-trusted-hosts-any-ipv4
+    attr: LocalUser.permitted_sources
+    value: [any]
+    source: vendor_doc
+    reference: >-
+      config system admin, trusthost1-10: "Any IPv4 address or subnet address and netmask from
+      which the administrator can connect to the FortiGate unit. Default allows access from any
+      IPv4 address." Default 0.0.0.0 0.0.0.0.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/390485493/config-system-admin
+
+  - id: admin-trusted-hosts-any-ipv6
+    attr: LocalUser.permitted_sources_v6
+    value: [any]
+    source: vendor_doc
+    reference: >-
+      config system admin, ip6-trusthost1-10: "Any IPv6 address from which the administrator can
+      connect to the FortiGate unit. Default allows access from any IPv6 address." Default ::/0,
+      kept apart from the IPv4 list, so restricting only IPv4 leaves IPv6 open.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/390485493/config-system-admin
+
   - id: no-auth-servers
     none_of: AuthServer
     source: curated
@@ -235,14 +266,37 @@ defaults:
       have read-only access.
       https://docs.fortinet.com/document/fortigate/7.4.3/administration-guide/62595/snmp
 
+  - id: ntp-sync-off
+    attr: TimePolicy.sync_enabled
+    value: false
+    source: vendor_doc
+    reference: >-
+      config system ntp, ntpsync: "Enable/disable setting the FortiGate system time by
+      synchronizing with an NTP Server." Default disable.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/105110478/config-system-ntp
+
+  - id: ntp-fortiguard-servers
+    attr: TimeSource.enabled
+    entity_key: fortiguard
+    value: true
+    source: vendor_doc
+    reference: >-
+      config system ntp, type: "Use the FortiGuard NTP server or any other available NTP
+      Server." Default fortiguard; `set type custom` switches to the `ntpserver` list.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/105110478/config-system-ntp
+
   - id: ntp-server-unauthenticated
     attr: TimeSource.authenticated
+    except_keys: [fortiguard]
     value: false
     source: vendor_doc
     reference: >-
       config system ntp, ntpserver, authentication: "Enable/disable authentication." Default
-      disable.
+      disable. Not applied to the FortiGuard servers: Fortinet's NTP authentication pages
+      configure keys only for `type custom` servers and say nothing about FortiGuard's, so
+      whether they are authenticated is not stated (TimePolicy.auth_enforced still applies).
       https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/105110478/config-system-ntp
+      https://docs.fortinet.com/document/fortigate/7.4.0/administration-guide/336196/cryptographic-hash-function-authentication-support
 
   - id: ntp-authentication-off
     attr: TimePolicy.auth_enforced

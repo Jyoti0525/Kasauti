@@ -1,6 +1,463 @@
-# AAA: administrator password hashes, TACACS+/RADIUS/LDAP servers, lockout, password policy.
+# AAA: administrator accounts, trusted hosts and password hashes, TACACS+/RADIUS/LDAP servers,
+# lockout, password policy.
 # Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
 mappings:
+- id: fortinet_fortios/admin
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: edit <STR:u>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost1
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost1 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost2
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost2 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost3
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost3 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost4
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost4 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost5
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost5 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost6
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost6 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost7
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost7 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost8
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost8 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost9
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost9 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-trusthost10
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set trusthost10 <IP:a> <IP:k>
+  effect:
+    members: LocalUser.permitted_sources
+    template: '{a}/{k}'
+    map:
+      0.0.0.0/0.0.0.0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost1
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost1 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost2
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost2 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost3
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost3 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost4
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost4 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost5
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost5 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost6
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost6 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost7
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost7 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost8
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost8 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost9
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost9 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ip6-trusthost10
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set ip6-trusthost10 <STR:p>
+  effect:
+    members: LocalUser.permitted_sources_v6
+    from: p
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
 - id: fortinet_fortios/admin-password
   vendor: fortinet_fortios
   context:

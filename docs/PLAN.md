@@ -951,6 +951,18 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.9 (2026-09-26, FortiOS gaps closed):**
+  - **Administrator trusted hosts** are read per account (SBM 0.6 `LocalUser.permitted_sources`,
+    `permitted_sources_v6`); a vendor-neutral inference treats management services as
+    source-restricted only when every account is, for IPv4 and IPv6. HTTPS administration on
+    FortiOS is now judged.
+  - **FortiGuard NTP** is a time source of its own (`TimeSource.enabled`, `TimePolicy.sync_enabled`):
+    FAIL with authentication at its documented default, REVIEW where Fortinet's docs are silent.
+    Defaults gain `except_keys`; rules no longer list absent scope switches as findings.
+  - **Service objects seen through** like addresses (resolver families); `set` with a template
+    can narrow a set (`protocol-number 47` makes an all-IP service GRE only).
+  - FortiOS pack: 96 mappings, 22 quoted defaults. Remaining limits give FAIL or REVIEW, never
+    PASS (local-in policies, service destinations).
 - **v5.1.8 (2026-09-26, fourth seed vendor: FortiOS):**
   - **FortiOS pack** (63 mappings; 18 defaults read from the "Default" column of Fortinet's CLI
     reference), a weak twin with 16 catalogued weaknesses (all caught), golden cases, fixtures

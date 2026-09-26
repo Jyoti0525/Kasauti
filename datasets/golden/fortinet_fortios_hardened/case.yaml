@@ -2,7 +2,7 @@
 # datasets/SOURCES.md, not engine output.
 description: FortiOS 7.4.8 hardened edge FortiGate (twin of the weak case)
 input: authored/fortinet_fortios/hardened.conf
-input_sha256: 6ab405110f0e768066ef309d4fd810808720c08d54373c2643e61bf11e44e9d4
+input_sha256: 632bf2b38d66d4175395ee2a478f9e4f84c22fe27e0c2c95abcf07eb7871ff23
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:
@@ -23,7 +23,7 @@ expected_statuses:
   MGMT-TELNET-01: PASS
   MGMT-VTY-ACL-01: N/A      # FortiOS has no vty lines
   MGMT-VTY-ACL-02: N/A      # FortiOS has no vty lines
-  MGMT-WEB-ACL-01: N/A      # HTTP administration is redirected to HTTPS
+  MGMT-WEB-ACL-01: PASS     # HTTPS administration only from trusted hosts (IPv4 and IPv6)
   REF-DANGLING-01: N/A      # no statement names an ACL or object by reference
   SNMP-COMMUNITY-01: PASS
   SVC-LEGACY-01: PASS

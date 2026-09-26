@@ -126,6 +126,17 @@ def test_on_no_default_needs_resolve_default() -> None:
         rule(on_absent="review", on_no_default="fail")
 
 
+def test_an_absent_switch_in_the_scope_does_not_clutter_the_finding() -> None:
+    """`not exists(range)` holding is the ordinary case; only what decided the verdict shows."""
+    model = SecurityBaselineModel(entities=(vty("vty 0-4", Fact.explicit(0, APPROVED)),))
+    (f,) = findings(model, rule(for_each="MgmtSession where kind == 'vty' and not exists(range)"))
+    assert f.status is Status.FAIL
+    assert f.actual == (
+        "MgmtSession[vty 0-4].kind = vty",
+        "MgmtSession[vty 0-4].idle_timeout_s = 0",
+    )
+
+
 def test_unknown_facts_follow_on_unknown() -> None:
     model = SecurityBaselineModel(entities=(vty("vty 0-4", Fact.unknown(APPROVED)),))
     (f,) = findings(model, rule(on_unknown="fail"))

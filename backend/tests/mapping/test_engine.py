@@ -448,6 +448,36 @@ def test_defaults_never_overwrite_explicit_or_unknown_facts() -> None:
     assert entity(r, "MgmtSession", "vty 5-15").idle_timeout_s.state is FactState.UNKNOWN  # type: ignore[attr-defined]
 
 
+def test_a_default_for_every_entity_can_leave_named_ones_out() -> None:
+    """FortiOS: the per-server NTP default doesn't describe the implicit FortiGuard source."""
+    server = m(
+        id="v/ntp",
+        entity={"type": "TimeSource", "key": "{h}"},
+        match="ntp server <STR:h>",
+        effect={"set": "TimeSource.host", "from": "h"},
+        negation=None,
+    )
+    default = [
+        {
+            "id": "unkeyed",
+            "attr": "TimeSource.authenticated",
+            "except_keys": ["fortiguard"],
+            "value": False,
+            "source": "curated",
+            "reference": "doc",
+        }
+    ]
+    r = run("ntp server 10.0.0.1\nntp server fortiguard\n", [server], defaults=default)
+    assert entity(r, "TimeSource", "10.0.0.1").authenticated.value is False  # type: ignore[attr-defined]
+    assert entity(r, "TimeSource", "fortiguard").authenticated.state is FactState.ABSENT  # type: ignore[attr-defined]
+    with pytest.raises(ValueError, match="every entity"):
+        DefaultEntry.model_validate({**default[0], "entity_key": "x"})
+    with pytest.raises(ValueError, match="singleton"):
+        DefaultEntry.model_validate(
+            {**default[0], "attr": "TimePolicy.auth_enforced", "except_keys": ["x"]}
+        )
+
+
 def test_default_values_must_fit_the_attribute_type() -> None:
     with pytest.raises(ValueError, match="doesn't fit"):
         DefaultEntry.model_validate(
@@ -508,6 +538,67 @@ def test_templates_join_several_slots_into_one_value() -> None:
     )
     r = run("ip access-list extended E\n 10 permit ip 10.0.0.0 0.0.0.255 any\n", [net])
     assert entity(r, "FilterRule", "E:10").src.value == {"10.0.0.0 0.0.0.255"}  # type: ignore[attr-defined]
+
+
+USER = ["user <STR:u>"]
+
+
+def test_a_template_map_renames_only_the_values_it_lists() -> None:
+    trusted = m(
+        id="v/trusthost",
+        context=USER,
+        entity={"type": "LocalUser", "key": "{u}"},
+        match="trusthost <IP:a> <IP:k>",
+        effect={
+            "members": "LocalUser.permitted_sources",
+            "template": "{a}/{k}",
+            "map": {"0.0.0.0/0.0.0.0": "any"},
+        },
+        negation=None,
+    )
+    r = run("user a\n trusthost 0.0.0.0 0.0.0.0\n trusthost 10.0.0.0 255.0.0.0\n", [trusted])
+    sources = entity(r, "LocalUser", "a").permitted_sources  # type: ignore[attr-defined]
+    assert sources.value == {"any", "10.0.0.0/255.0.0.0"}
+
+
+def test_set_with_a_template_replaces_a_set_with_one_item() -> None:
+    """FortiOS: `set protocol IP` covers every protocol until `set protocol-number 47`."""
+    service = ["service <STR:n>"]
+    ip = m(
+        id="v/ip",
+        context=service,
+        entity={"type": "ObjectDef", "key": "service:{n}"},
+        match="protocol ip",
+        effect={"assert": "ObjectDef.members", "value": ["ip"]},
+        negation=None,
+    )
+    number = m(
+        id="v/number",
+        context=service,
+        entity={"type": "ObjectDef", "key": "service:{n}"},
+        match="protocol-number <INT:p>",
+        effect={
+            "set": "ObjectDef.members",
+            "template": "ip-proto-{p}",
+            "map": {"ip-proto-0": "ip"},
+        },
+        negation=None,
+    )
+    r = run(
+        "service GRE\n protocol ip\n protocol-number 47\n"
+        "service ANY\n protocol ip\n protocol-number 0\n",
+        [ip, number],
+    )
+    assert entity(r, "ObjectDef", "service:GRE").members.value == {"ip-proto-47"}  # type: ignore[attr-defined]
+    assert entity(r, "ObjectDef", "service:ANY").members.value == {"ip"}  # type: ignore[attr-defined]
+    with pytest.raises(ValueError, match="use `members`"):
+        m(
+            id="v/x",
+            context=service,
+            entity={"type": "ObjectDef", "key": "service:{n}"},
+            match="protocol-number <INT:p>",
+            effect={"set": "ObjectDef.members", "from": "p"},
+        )
 
 
 @pytest.mark.parametrize(

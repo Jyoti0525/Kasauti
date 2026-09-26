@@ -278,6 +278,87 @@ def test_fortios_catch_all_inside_an_address_group_is_found(kb: KnowledgeBase) -
     assert _fortios(kb, body)["FILTER-PERMIT-ANY-01"] is Status.FAIL
 
 
+SERVICE_POLICY = (
+    "config firewall service custom\n"
+    '    edit "SVC"\n{svc}    next\nend\n'
+    "config firewall service group\n"
+    '    edit "GRP"\n        set member "SVC"\n    next\nend\n'
+    'config firewall policy\n    edit 1\n        set srcintf "wan1"\n'
+    '        set dstintf "internal"\n        set action accept\n'
+    '        set srcaddr "all"\n        set dstaddr "all"\n        set service "{name}"\n'
+    "    next\nend\n"
+)
+
+
+@pytest.mark.parametrize(
+    ("svc", "name", "expected"),
+    [
+        # Every IP protocol behind a custom name is still a permit-all, alone or in a group.
+        ("        set protocol IP\n", "SVC", Status.FAIL),
+        ("        set protocol IP\n", "GRP", Status.FAIL),
+        ("        set protocol IP\n        set protocol-number 0\n", "SVC", Status.FAIL),
+        # A protocol number narrows it (GRE), as do port ranges.
+        ("        set protocol IP\n        set protocol-number 47\n", "SVC", Status.PASS),
+        ("        set tcp-portrange 443\n", "GRP", Status.PASS),
+        # A service whose extent wasn't read: REVIEW, never an assumed PASS.
+        ('        set category "General"\n', "SVC", Status.REVIEW),
+    ],
+)
+def test_fortios_policies_see_through_service_objects(
+    kb: KnowledgeBase, svc: str, name: str, expected: Status
+) -> None:
+    body = SERVICE_POLICY.format(svc=svc, name=name)
+    assert _fortios(kb, body)["FILTER-PERMIT-ANY-01"] is expected
+
+
+ADMINS = 'config system admin\n    edit "a"\n{a}    next\n    edit "b"\n{b}    next\nend\n'
+V4 = "        set trusthost1 10.30.10.0 255.255.255.0\n"
+V6 = "        set ip6-trusthost1 fd00:30:10::/64\n"
+
+
+@pytest.mark.parametrize(
+    ("b", "expected"),
+    [
+        (V4 + V6, Status.PASS),
+        # Restricting only IPv4 leaves IPv6 open from anywhere (ip6-trusthost defaults to ::/0).
+        (V4, Status.FAIL),
+        # An account without trusted hosts (a password-less wildcard admin, say) opens it all.
+        ("        set remote-auth enable\n        set wildcard enable\n", Status.FAIL),
+        ("        set trusthost1 0.0.0.0 0.0.0.0\n" + V6, Status.FAIL),
+    ],
+)
+def test_fortios_web_management_is_restricted_only_if_every_admin_is(
+    kb: KnowledgeBase, b: str, expected: Status
+) -> None:
+    assert _fortios(kb, ADMINS.format(a=V4 + V6, b=b))["MGMT-WEB-ACL-01"] is expected
+
+
+def test_trusted_host_inference_never_fires_on_platforms_without_them(kb: KnowledgeBase) -> None:
+    config = b"version 17.9\nhostname R1\nusername a privilege 15 secret 9 $9$x\nip http server\n"
+    cisco = audit(decode(config, "r.cfg"), kb, vendor="cisco_ios_xe")
+    assert {r.rule_id: r.status for r in cisco.rules}["MGMT-WEB-ACL-01"] is Status.FAIL
+
+
+@pytest.mark.parametrize(
+    ("ntp", "expected"),
+    [
+        # No `ntpsync enable` (the default is disable): the clock isn't set from NTP at all.
+        ("config system ntp\n    set type custom\nend\n", Status.NOT_APPLICABLE),
+        # FortiGuard's servers with NTP authentication left at its default (disable).
+        ("config system ntp\n    set ntpsync enable\nend\n", Status.FAIL),
+        # Authentication on, but Fortinet doesn't say whether it covers FortiGuard's servers.
+        (
+            "config system ntp\n    set ntpsync enable\n    set authentication enable\nend\n",
+            Status.REVIEW,
+        ),
+    ],
+)
+def test_fortios_fortiguard_time_source_is_judged(
+    kb: KnowledgeBase, ntp: str, expected: Status
+) -> None:
+    assert _fortios(kb, ntp)["TIME-NTP-AUTH-01"] is expected
+
+
 @pytest.mark.parametrize(
     ("block", "rule", "expected"),
     [

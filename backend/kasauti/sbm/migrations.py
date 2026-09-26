@@ -44,12 +44,20 @@ def _v04_to_v05(data: RawSBM) -> RawSBM:
     return data
 
 
+def _v05_to_v06(data: RawSBM) -> RawSBM:
+    """0.5 -> 0.6 (M2, FortiOS gaps): new optional attributes ``LocalUser.permitted_sources``,
+    ``LocalUser.permitted_sources_v6``, ``TimeSource.enabled`` and ``TimePolicy.sync_enabled``.
+    Absent in older documents, which read no per-account sources and no sync switch."""
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
 MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.1": ("0.2", _v01_to_v02),
     "0.2": ("0.3", _v02_to_v03),
     "0.3": ("0.4", _v03_to_v04),
     "0.4": ("0.5", _v04_to_v05),
+    "0.5": ("0.6", _v05_to_v06),
 }
 
 

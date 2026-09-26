@@ -1,4 +1,4 @@
-# Remote syslog, event logging, SNMP communities, NTP.
+# Remote syslog, event logging, SNMP communities, NTP (sync switch, FortiGuard or custom servers).
 # Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
 mappings:
 - id: fortinet_fortios/syslogd-status
@@ -439,6 +439,47 @@ mappings:
     map:
       enable: true
       disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/ntp-sync
+  vendor: fortinet_fortios
+  context:
+  - config system ntp
+  match: set ntpsync <STR:s>
+  effect:
+    set: TimePolicy.sync_enabled
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/ntp-type
+  vendor: fortinet_fortios
+  context:
+  - config system ntp
+  entity:
+    type: TimeSource
+    key: fortiguard
+  match: set type <STR:t>
+  effect:
+    set: TimeSource.enabled
+    from: t
+    map:
+      fortiguard: true
+      custom: false
   negation: null
   provenance:
     version: 1

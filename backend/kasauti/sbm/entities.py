@@ -114,6 +114,13 @@ class LocalUser(Entity):
     privilege: IntFact = IntFact()
     hash_type: StrFact = StrFact()
     """Kind of stored secret (e.g. cisco-type-7, cisco-type-9, sha512); never the secret."""
+    permitted_sources: SetFact = SetFact()
+    """Addresses this account may log in from; ``any`` means anywhere (FortiOS ``trusthost1``
+    to ``trusthost10``). Absent where the platform restricts sources per line or service
+    instead (Cisco ``access-class``), not per account (0.6)."""
+    permitted_sources_v6: SetFact = SetFact()
+    """The IPv6 sources, on platforms that keep them apart (FortiOS ``ip6-trusthost1`` to
+    ``ip6-trusthost10``, each defaulting to ``::/0``) (0.6)."""
 
 
 class AuthServer(Entity):
@@ -178,6 +185,10 @@ class TimeSource(Entity):
     host: StrFact = StrFact()
     authenticated: BoolFact = BoolFact()
     """A key is configured for this server. Only effective if ``TimePolicy.auth_enforced``."""
+    enabled: BoolFact = BoolFact()
+    """The device takes time from this source, on platforms where a known source can be unused
+    (FortiOS uses FortiGuard's servers unless ``set type custom``). Absent where listing a
+    server is what uses it (0.6)."""
 
 
 class TimePolicy(Entity):
@@ -185,6 +196,10 @@ class TimePolicy(Entity):
     key: str = "time-policy"
     auth_enforced: BoolFact = BoolFact()
     """The device rejects time from unauthenticated sources (``ntp authenticate``)."""
+    sync_enabled: BoolFact = BoolFact()
+    """The device sets its clock from its time sources at all (FortiOS ``set ntpsync enable``,
+    OpenConfig ``ntp/config/enabled``). Absent where configuring a server is what turns
+    synchronisation on (0.6)."""
 
 
 # --- SNMP -----------------------------------------------------------------------------------

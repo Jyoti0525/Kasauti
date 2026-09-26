@@ -1,4 +1,4 @@
-# Interfaces (management access, role), proxy ARP, firewall policies, address objects.
+# Interfaces (management access, role), proxy ARP, firewall policies, address and service objects.
 # Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
 mappings:
 - id: fortinet_fortios/interface
@@ -525,6 +525,209 @@ mappings:
   entity:
     type: ObjectDef
     key: address_group:{n}
+  match: set member <LIST:m>
+  effect:
+    members: ObjectDef.members
+    from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: service
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-protocol-ip
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set protocol IP
+  effect:
+    assert: ObjectDef.members
+    value:
+    - ip
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-protocol-number
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set protocol-number <INT:p>
+  effect:
+    set: ObjectDef.members
+    template: ip-proto-{p}
+    map:
+      ip-proto-0: ip
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-protocol-icmp
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set protocol ICMP
+  effect:
+    assert: ObjectDef.members
+    value:
+    - icmp
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-protocol-icmp6
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set protocol ICMP6
+  effect:
+    assert: ObjectDef.members
+    value:
+    - icmp6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-tcp-portrange
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set tcp-portrange <LIST:r>
+  effect:
+    members: ObjectDef.members
+    from: r
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-udp-portrange
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set udp-portrange <LIST:r>
+  effect:
+    members: ObjectDef.members
+    from: r
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-sctp-portrange
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set sctp-portrange <LIST:r>
+  effect:
+    members: ObjectDef.members
+    from: r
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-group
+  vendor: fortinet_fortios
+  context:
+  - config firewall service group
+  entity:
+    type: ObjectDef
+    key: service_group:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: service_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-group-member
+  vendor: fortinet_fortios
+  context:
+  - config firewall service group
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service_group:{n}
   match: set member <LIST:m>
   effect:
     members: ObjectDef.members

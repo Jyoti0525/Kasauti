@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "8248378b4d23d4137664f6e5",
+  "audit_id": "c34b4544e69b082e1d9aaf5b",
   "input": {
     "file": "hardened.cfg",
     "sha256": "d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "1fd75bc794e2381882ec3541668503c60c1d6c2f2e605938aa1e66a2b5063695",
-    "ruleset_version": "0b1b575471bcfafc79f7234f2ec09b05f43bb67415d4a43697d0e464fdc94f28",
+    "kb_version": "6e9188739236a6c400956af638e0002508c00846d7500eb6eee57a67c957fdca",
+    "ruleset_version": "c0136460e71b069fa79978e1fc0c33bc0585614cb0771413bc2f54bc81b6f0ea",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -1660,7 +1660,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.5",
+    "sbm_version": "0.6",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2857,6 +2857,18 @@
             }
           ],
           "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -4015,6 +4027,12 @@
             }
           ],
           "default_source": null
+        },
+        "sync_enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -4067,6 +4085,12 @@
               ]
             }
           ],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       }

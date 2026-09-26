@@ -68,6 +68,6 @@ def _attribute(builder: SbmBuilder, entry: DefaultEntry, source: str) -> None:
     elif entry.entity_key is not None:
         refs = [(entity_type, entry.entity_key)]
     else:
-        refs = builder.of_type(entity_type)
+        refs = [r for r in builder.of_type(entity_type) if r[1] not in entry.except_keys]
     for ref in refs:
         builder.entity(ref).fact(attr).default(value, source)

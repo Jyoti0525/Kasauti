@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "73d849256250213d01bbadd9",
+  "audit_id": "b04365cae1d8a916d723b562",
   "input": {
     "file": "weak.conf",
     "sha256": "3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "1fd75bc794e2381882ec3541668503c60c1d6c2f2e605938aa1e66a2b5063695",
-    "ruleset_version": "0b1b575471bcfafc79f7234f2ec09b05f43bb67415d4a43697d0e464fdc94f28",
+    "kb_version": "6e9188739236a6c400956af638e0002508c00846d7500eb6eee57a67c957fdca",
+    "ruleset_version": "c0136460e71b069fa79978e1fc0c33bc0585614cb0771413bc2f54bc81b6f0ea",
     "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -1119,6 +1119,45 @@
       ]
     },
     {
+      "rule_id": "MGMT-WEB-ACL-01",
+      "entity_id": "MgmtService[https]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
+      "reason": "Web management accepts only permitted sources: is violated for MgmtService[https] (using the vendor default for this OS version).",
+      "actual": [
+        "MgmtService[https].enabled = true (vendor default)",
+        "MgmtService[https].access_filter: missing"
+      ],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#https-available"
+      ],
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 18,
+          "line_end": 18,
+          "raw": "set allowaccess ping https ssh http telnet",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 20,
+          "line_end": 20,
+          "raw": "set role wan",
+          "mapping_id": "fortinet_fortios/interface-role-wan",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
       "rule_id": "REF-DANGLING-01",
       "entity_id": "Device[device]",
       "status": "N/A",
@@ -1249,6 +1288,7 @@
       "severity_reason": "Medium (base)",
       "reason": "Time sources are authenticated: is violated for TimeSource[ntp-1] (using the vendor default for this OS version).",
       "actual": [
+        "TimePolicy[time-policy].sync_enabled = true",
         "TimeSource[ntp-1].authenticated = false (vendor default)",
         "TimePolicy[time-policy].auth_enforced = false (vendor default)"
       ],
@@ -1256,15 +1296,27 @@
         "fortinet_fortios/defaults.yaml#ntp-authentication-off",
         "fortinet_fortios/defaults.yaml#ntp-server-unauthenticated"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 56,
+          "line_end": 56,
+          "raw": "set ntpsync enable",
+          "mapping_id": "fortinet_fortios/ntp-sync",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     }
   ],
   "assurance": {
     "statements": 58,
-    "understood": 30,
-    "unmapped": 29,
+    "understood": 33,
+    "unmapped": 26,
     "near_miss": 0,
-    "understood_pct": 51.7,
+    "understood_pct": 56.9,
     "unmapped_patterns": [
       {
         "pattern_key": "set vdom <STR>",
@@ -1339,12 +1391,6 @@
         "example": "config system admin"
       },
       {
-        "pattern_key": "edit <STR>",
-        "count": 1,
-        "first_line": 38,
-        "example": "edit \"admin\""
-      },
-      {
         "pattern_key": "set accprofile <STR>",
         "count": 1,
         "first_line": 39,
@@ -1373,18 +1419,6 @@
         "count": 1,
         "first_line": 55,
         "example": "config system ntp"
-      },
-      {
-        "pattern_key": "set ntpsync enable",
-        "count": 1,
-        "first_line": 56,
-        "example": "set ntpsync enable"
-      },
-      {
-        "pattern_key": "set type custom",
-        "count": 1,
-        "first_line": 57,
-        "example": "set type custom"
       },
       {
         "pattern_key": "config ntpserver",
@@ -1505,6 +1539,20 @@
         "facts": 1
       },
       {
+        "mapping": "fortinet_fortios/ntp-sync@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/ntp-type@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
         "mapping": "fortinet_fortios/ntpserver-server@1",
         "approved_by": [
           "maintainer"
@@ -1597,6 +1645,7 @@
       }
     ],
     "defaults_used": [
+      "fortinet_fortios/defaults.yaml#https-available",
       "fortinet_fortios/defaults.yaml#logs-timestamped",
       "fortinet_fortios/defaults.yaml#no-auth-servers",
       "fortinet_fortios/defaults.yaml#no-legacy-bootp",
@@ -1617,7 +1666,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.5",
+    "sbm_version": "0.6",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2288,6 +2337,22 @@
             }
           ],
           "default_source": null
+        },
+        "permitted_sources": {
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#admin-trusted-hosts-any-ipv4"
+        },
+        "permitted_sources_v6": {
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#admin-trusted-hosts-any-ipv6"
         }
       },
       {
@@ -2498,6 +2563,47 @@
             }
           ],
           "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "https",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": true,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#https-available"
         },
         "version": {
           "value": null,
@@ -2981,6 +3087,59 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "fortinet_fortios/defaults.yaml#ntp-authentication-off"
+        },
+        "sync_enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 56,
+              "line_end": 56,
+              "raw": "set ntpsync enable",
+              "mapping_id": "fortinet_fortios/ntp-sync",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "fortiguard",
+        "evidence": [],
+        "type": "TimeSource",
+        "host": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "authenticated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 57,
+              "line_end": 57,
+              "raw": "set type custom",
+              "mapping_id": "fortinet_fortios/ntp-type",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -3010,6 +3169,12 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "fortinet_fortios/defaults.yaml#ntp-server-unauthenticated"
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       }
     ],

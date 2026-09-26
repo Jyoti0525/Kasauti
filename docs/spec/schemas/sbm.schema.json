@@ -897,6 +897,24 @@
           "title": "Key",
           "type": "string"
         },
+        "permitted_sources": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "permitted_sources_v6": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "privilege": {
           "$ref": "#/$defs/Fact_int_",
           "default": {
@@ -1665,6 +1683,15 @@
           "title": "Key",
           "type": "string"
         },
+        "sync_enabled": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "type": {
           "const": "TimePolicy",
           "default": "TimePolicy",
@@ -1679,6 +1706,15 @@
       "additionalProperties": false,
       "properties": {
         "authenticated": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "enabled": {
           "$ref": "#/$defs/Fact_bool_",
           "default": {
             "default_source": null,
@@ -1902,7 +1938,7 @@
       "type": "object"
     },
     "sbm_version": {
-      "default": "0.5",
+      "default": "0.6",
       "title": "Sbm Version",
       "type": "string"
     },

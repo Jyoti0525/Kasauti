@@ -76,7 +76,7 @@ Family conventions that make one language serve all shapes (fixed by the shape p
 |---|---|---|
 | `{set: Entity.attr, from: slot, map?, transform?}` | set | slot value becomes the attribute |
 | `{set: Entity.attr, from: {min: 60, sec: 1}}` | set | weighted sum of INT slots (unit normalisation: `exec-timeout 10 0` → 600) |
-| `{set: …, template: "{a} {b}"}` / `{members: …, template: …}` | set / members | one value built from several slots, e.g. an ACL address and wildcard as `"10.0.0.0 0.0.0.255"` |
+| `{set: …, template: "{a} {b}"}` / `{members: …, template: …, map?}` | set / members | one value built from several slots, e.g. an ACL address and wildcard as `"10.0.0.0 0.0.0.255"`; a `members` map applies to the rendered item (`0.0.0.0/0.0.0.0` → `any`) |
 | `{assert: Entity.attr, value: v}` | assert | the statement's presence means attr = v |
 | `{members: Entity.attr, from: slot, map?}` | members | each LIST item joins a set attribute |
 | `{ref: Entity.attr, from: slot, target: acl}` | ref | the attribute names another entity; the resolver links it (M2.23) |
@@ -86,7 +86,9 @@ Family conventions that make one language serve all shapes (fixed by the shape p
 
 An effect's attribute must belong to the mapping's `entity` type, or to a singleton
 (`Device`, `PasswordPolicy`, `LockoutPolicy`, `LoggingPolicy`). `members` needs a set attribute,
-`set` a scalar one, a weighted sum an int one. Every slot an effect or key uses must be
+`set` a scalar one (or, with a `template`, a set one: the set becomes exactly that item, as
+FortiOS `set protocol-number 47` narrows a service from every IP protocol to GRE), a weighted
+sum an int one. Every slot an effect or key uses must be
 captured by `match` or `context`.
 
 **Order of operations for a value:** slot text → `map` (vendor word → SBM word or value) →

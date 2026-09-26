@@ -279,7 +279,8 @@ class MembersEffect(_Strict):
     template: str | None = None
     """Instead of ``from``: one item built from several slots (``"{net} {wildcard}"``)."""
     map: dict[str, str] | None = None
-    """Vendor word -> SBM vocabulary (``ping -> icmp``). Unmapped words are kept as-is."""
+    """Vendor word -> SBM vocabulary (``ping -> icmp``). Unmapped words are kept as-is. With a
+    ``template``, it applies to the rendered item (``0.0.0.0/0.0.0.0 -> any``)."""
     transform: tuple[Transform, ...] = ()
 
     @model_validator(mode="after")
@@ -423,8 +424,11 @@ class Mapping(_Strict):
             raise ValueError(f"{eff.attr}: effects on {entity_type} need an `entity:` of that type")
         if isinstance(eff, MembersEffect) and kind != "set":
             raise ValueError(f"{eff.attr}: `members` needs a set-valued attribute")
-        if isinstance(eff, SetEffect) and kind == "set":
-            raise ValueError(f"{eff.attr}: use `members` for set-valued attributes")
+        if isinstance(eff, SetEffect) and kind == "set" and eff.template is None:
+            raise ValueError(
+                f"{eff.attr}: use `members` for set-valued attributes (or `set` with a "
+                "`template`, which replaces the set with that one item)"
+            )
         if isinstance(eff, SetEffect) and isinstance(eff.from_, dict) and kind != "int":
             raise ValueError(f"{eff.attr}: a weighted sum needs an int attribute")
         if isinstance(eff, RefEffect) and kind not in ("str", "set"):

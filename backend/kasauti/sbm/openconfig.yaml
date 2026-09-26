@@ -25,6 +25,7 @@ openconfig:
   LogTarget.severity: /system/logging/remote-servers/remote-server/selectors/selector/config/severity
   TimeSource.host: /system/ntp/servers/server/config/address
   TimePolicy.auth_enforced: /system/ntp/config/enable-ntp-auth
+  TimePolicy.sync_enabled: /system/ntp/config/enabled
   Banner.text: /system/config/{login-banner|motd-banner}
   FilterRule.position: /acl/acl-sets/acl-set/acl-entries/acl-entry/config/sequence-id
   FilterRule.action: /acl/acl-sets/acl-set/acl-entries/acl-entry/actions/config/forwarding-action
@@ -58,6 +59,9 @@ x-sbm:
   - PasswordPolicy.cleartext_passwords_encrypted
   - PasswordPolicy.enforced  # OC has no password-policy switch
   - LogTarget.enabled  # OC remote-servers have no enable leaf
+  - LocalUser.permitted_sources  # OC users have no per-account source list
+  - LocalUser.permitted_sources_v6  # likewise
+  - TimeSource.enabled  # OC lists only servers in use; FortiGuard's implicit source is ours
   - LockoutPolicy.max_attempts
   - LockoutPolicy.lockout_s
   - LoggingPolicy.timestamps

@@ -66,7 +66,9 @@ Rules (checked when the pack loads and when the defaults are applied):
 - The value must fit the attribute's type (a bool for `enabled`, an int for `idle_timeout_s`,
   a list for a set).
 - `entity_key` names one entity and creates it if the config never mentions it. Without it,
-  the default fills the attribute on every existing entity of the type (or the singleton).
+  the default fills the attribute on every existing entity of the type (or the singleton),
+  except the keys listed in `except_keys` (FortiOS: the per-server NTP default doesn't
+  describe the implicit FortiGuard source, whose authentication Fortinet doesn't document).
 - A default only fills an **absent** fact: never an explicit one, never an unknown one.
 - If the device's OS version is unknown, only defaults scoped `*` apply.
 - If two entries for the same target apply with different values, neither is used and the

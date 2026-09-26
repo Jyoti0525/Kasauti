@@ -1,9 +1,11 @@
 """What one effect does to one fact, given the captured slots (PLAN §9.1).
 
 Order of operations for a value: slot text -> ``map`` -> ``transform``s in order -> coercion to
-the attribute's type. Anything that can't be carried through (a word missing from the map,
-``invert`` on a non-boolean, text where a number is needed) yields ``Unknown``: we saw the
-line and can't say what it means, which a rule reports as REVIEW rather than guessing.
+the attribute's type. Anything that can't be carried through (a slot's word missing from the
+map, ``invert`` on a non-boolean, text where a number is needed) yields ``Unknown``: we saw the
+line and can't say what it means, which a rule reports as REVIEW rather than guessing. A value
+rendered from a ``template`` is built by the mapping itself, so the map only renames the values
+it lists (``ip-proto-0 -> ip``) and keeps the rest.
 """
 
 from __future__ import annotations
@@ -101,7 +103,9 @@ def _set_value(effect: SetEffect, caps: Captures) -> Any:
         value = total
     else:
         value = _slot(caps, str(effect.from_))
-    if effect.map is not None:
+    if effect.map is not None and effect.template is not None:
+        value = effect.map.get(str(value), value)  # a rendered value: unmapped ones are kept
+    elif effect.map is not None:
         word = (
             str(caps.get(f"_raw:{effect.from_}", value))
             if isinstance(effect.from_, str)
@@ -120,7 +124,8 @@ def _set_value(effect: SetEffect, caps: Captures) -> Any:
 
 def _members(effect: MembersEffect, caps: Captures, *, negated: bool) -> Outcome:
     if effect.template is not None:
-        rendered = frozenset({_render(effect.template, caps)})
+        text = _render(effect.template, caps)
+        rendered = frozenset({str(effect.map.get(text, text)) if effect.map else text})
         return RemoveItems(rendered) if negated else AddItems(rendered)
     if effect.from_ not in caps:
         if negated:
@@ -205,4 +210,6 @@ def _coerce(value: Any, kind: Type) -> Any:
         case "set":
             if isinstance(value, tuple | frozenset):
                 return frozenset(str(v) for v in value)
+            if isinstance(value, str | int) and not isinstance(value, bool):
+                return frozenset({str(value)})  # `set` + template: the set is exactly this item
     raise _UnreadableError(f"{value!r} does not fit a {kind} attribute")

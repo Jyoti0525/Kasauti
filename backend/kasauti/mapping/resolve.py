@@ -10,11 +10,12 @@ the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference`
   vty -> ACL -> permitted sources, and it's *unknown* if a permit entry's sources weren't read;
 * **groups**: ``ObjectDef.expanded`` holds members after recursive expansion, and is
   *unknown* if the nesting has a cycle or names an object that doesn't exist;
-* **filter entries naming address objects** (a FortiOS policy's ``set srcaddr "WEB-SRV"``):
-  if the object or group covers every address, ``any`` is added to the entry's ``src``/``dst``
-  (with the object's line as evidence), so a catch-all hidden behind a name is still a
-  permit-any. If the object's extent wasn't read, the entry's addresses become *unknown*:
-  REVIEW, never an assumed-harmless PASS.
+* **filter entries naming objects** (a FortiOS policy's ``set srcaddr "WEB-SRV"`` or
+  ``set service "WEB-PORTS"``): if the address object or group covers every address, ``any``
+  is added to the entry's ``src``/``dst``; if the service object or group covers every
+  protocol, ``ip`` is added to its ``service``. The object's line is the evidence, so a
+  catch-all hidden behind a name is still a permit-any. If the object's extent wasn't read,
+  the entry's fact becomes *unknown*: REVIEW, never an assumed-harmless PASS.
 
 A dangling reference is a finding of its own (rule REF-DANGLING-01): on many platforms a
 filter naming a missing ACL filters nothing.
@@ -22,17 +23,37 @@ filter naming a missing ACL filters nothing.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from kasauti.mapping.builder import EntityAcc, FactAcc, RefRecord, SbmBuilder
 from kasauti.sbm.facts import Evidence, FactState
 
 GROUP_KINDS = {"address_group": "address", "service_group": "service"}
 CATCH_ALL = frozenset({"any", "all", "0.0.0.0/0", "0.0.0.0/0.0.0.0", "::/0"})
+SERVICE_CATCH_ALL = frozenset({"ip", "any"})
+"""A service object's members name what it covers; ``ip`` is every IP protocol."""
+
+
+@dataclass(frozen=True, slots=True)
+class _Family:
+    """How a filter entry attribute names objects: which kinds, and what covers everything."""
+
+    kind: str
+    group: str
+    catch_all: frozenset[str]
+    widened: str
+    """The value added to the entry when a named object covers everything."""
+
+
+ADDRESSES = _Family("address", "address_group", CATCH_ALL, "any")
+SERVICES = _Family("service", "service_group", SERVICE_CATCH_ALL, "ip")
+FAMILIES = {"src": ADDRESSES, "dst": ADDRESSES, "service": SERVICES}
 
 
 def resolve_references(builder: SbmBuilder) -> None:
     objects = {key: acc for (etype, key), acc in builder.entities.items() if etype == "ObjectDef"}
     _expand_groups(objects)
-    _widen_named_addresses(builder, objects)
+    _widen_named_objects(builder, objects)
     for record in sorted(builder.refs, key=lambda r: (r.source, r.attribute, r.name)):
         _reference(builder, objects, record)
 
@@ -137,35 +158,37 @@ def _expand(objects: dict[str, EntityAcc], key: str, trail: set[str]) -> tuple[s
     return out, ok
 
 
-def _widen_named_addresses(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> None:
-    """Filter entries whose ``src``/``dst`` name address objects: see the module docstring.
-    A name that is no address object (a literal address, ``any``) is left as it is."""
+def _widen_named_objects(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> None:
+    """Filter entries whose ``src``/``dst``/``service`` name objects: see the module docstring.
+    A name that is no object of that family (a literal address, ``any``) is left as it is."""
     for (etype, _), acc in sorted(builder.entities.items()):
         if etype != "FilterRule":
             continue
-        for attr in ("src", "dst"):
+        for attr, family in FAMILIES.items():
             fact = acc.facts.get(attr)
             if fact is None or fact.state is not FactState.EXPLICIT:
                 continue
             for name in sorted(fact.value):
-                extent, ev = _extent(objects, name)
+                extent, ev = _extent(objects, family, name)
                 if extent == "unknown" and ev is not None:
                     fact.unknown(ev)
                     break
                 if extent == "any" and ev is not None:
-                    fact.add(frozenset({"any"}), ev)
+                    fact.add(frozenset({family.widened}), ev)
 
 
-def _extent(objects: dict[str, EntityAcc], name: str) -> tuple[str, Evidence | None]:
-    """``any`` (covers every address), ``some``, ``unknown`` (extent not read) or ``none``
-    (no address object has this name), with the deciding evidence."""
-    group = objects.get(f"address_group:{name}")
+def _extent(
+    objects: dict[str, EntityAcc], family: _Family, name: str
+) -> tuple[str, Evidence | None]:
+    """``any`` (covers everything), ``some``, ``unknown`` (extent not read) or ``none`` (no
+    object of this family has this name), with the deciding evidence."""
+    group = objects.get(f"{family.group}:{name}")
     if group is not None:
         expanded = group.facts.get("expanded")
         if expanded is None or expanded.state is not FactState.EXPLICIT:
             return "unknown", _first(expanded, group)
         leaves = [
-            _extent(objects, leaf) if leaf not in CATCH_ALL else ("any", None)
+            _extent(objects, family, leaf) if leaf not in family.catch_all else ("any", None)
             for leaf in sorted(expanded.value)
         ]
         if any(kind == "any" for kind, _ in leaves):
@@ -173,14 +196,14 @@ def _extent(objects: dict[str, EntityAcc], name: str) -> tuple[str, Evidence | N
         if any(kind == "unknown" for kind, _ in leaves):
             return "unknown", _first(expanded, group)
         return "some", None
-    address = objects.get(f"address:{name}")
-    if address is None:
+    obj = objects.get(f"{family.kind}:{name}")
+    if obj is None:
         return "none", None
-    members = address.facts.get("members")
+    members = obj.facts.get("members")
     if members is None or members.state is not FactState.EXPLICIT:
-        return "unknown", _first(members, address)
-    if members.value & CATCH_ALL:
-        return "any", _first(members, address)
+        return "unknown", _first(members, obj)
+    if members.value & family.catch_all:
+        return "any", _first(members, obj)
     return "some", None
 
 
