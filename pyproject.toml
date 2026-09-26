@@ -19,10 +19,18 @@ dependencies = [
     "fastapi>=0.141,<1",            # MIT (+ starlette BSD-3, anyio MIT, annotated-doc MIT)
     "uvicorn>=0.54,<1",             # BSD-3-Clause (+ click BSD-3, h11 MIT); plain, no [standard]
     "python-multipart>=0.0.32,<0.1", # Apache-2.0 (form and file uploads)
+    "sqlalchemy>=2.1.1,<2.2",       # MIT (+ typing-extensions PSF-2.0); sync API, no greenlet
+    "alembic>=1.20,<2",             # MIT (+ Mako MIT, MarkupSafe BSD-3); schema migrations
 ]
 
 [project.scripts]
 kasauti = "kasauti.cli.main:main"
+
+[project.optional-dependencies]
+# PostgreSQL for multi-user servers (PLAN §4.2); SQLite needs nothing. `uv sync --extra postgresql`
+postgresql = [
+    "psycopg[binary]>=3.3.6,<4",    # LGPL-3.0-only, used unmodified as a library (PLAN §19.1)
+]
 
 [dependency-groups]
 dev = [

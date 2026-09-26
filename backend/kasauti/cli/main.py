@@ -1,7 +1,8 @@
 """``kasauti`` command-line interface (PLAN §4.2).
 
-Commands that work today: ``audit`` (M1), ``packs validate`` (M0) and ``serve`` (M2.01, the web
-API on the loopback interface). ``kasauti verify`` arrives
+Commands that work today: ``audit`` (M1), ``packs validate`` (M0), ``serve`` (M2.01, the web
+API on the loopback interface) and ``db upgrade`` / ``db status`` (M2.02; ``audit`` never needs a
+database). ``kasauti verify`` arrives
 with the transparency log in M5; it is not stubbed, because a command that pretends to work is
 worse than one that doesn't exist yet.
 
@@ -16,6 +17,7 @@ import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from kasauti import __version__
 from kasauti.audit import AuditError, AuditResult, audit, load_kb
@@ -23,8 +25,12 @@ from kasauti.ingest.read import IngestError, read_file
 from kasauti.packs.loader import PackError, load_framework_pack, load_ruleset, load_vendor_pack
 from kasauti.rules.model import Status
 
+if TYPE_CHECKING:
+    from sqlalchemy import URL
+
 FRAMEWORK_ALIASES = {"nist": "nist_800_53r5", "nist_800_53r5": "nist_800_53r5"}
 LOOPBACK_NAMES = ("127.0.0.1", "localhost")
+DATA_DIR_ENV = "KASAUTI_DATA_DIR"
 
 
 def _validate_packs(root: Path) -> int:
@@ -107,13 +113,20 @@ def _serve(args: argparse.Namespace) -> int:
         )
         return 2
     from kasauti.api.app import Settings, create_app  # noqa: PLC0415 - web stack only here
+    from kasauti.db import SchemaError  # noqa: PLC0415
 
     try:
-        app = create_app(Settings(packs=args.packs))
+        url = _database(args.data_dir)
+        if url.drivername.startswith("sqlite"):
+            _migrate(url)  # one user, one file: keep it current. PostgreSQL is the DBA's call.
+        app = create_app(Settings(packs=args.packs, database=url))
     except PackError as err:
         print("kasauti: the knowledge base is invalid:", file=sys.stderr)
         for problem in err.problems:
             print(f"  - {problem}", file=sys.stderr)
+        return 1
+    except (_DatabaseError, SchemaError) as err:
+        print(f"kasauti: {err}", file=sys.stderr)
         return 1
     import uvicorn  # noqa: PLC0415
 
@@ -127,6 +140,85 @@ def _serve(args: argparse.Namespace) -> int:
         log_level="info",
     )
     return 0
+
+
+class _DatabaseError(Exception):
+    """A database that can't be used, described without its password."""
+
+
+def _database(data_dir: Path) -> URL:
+    from kasauti.db import DatabaseConfigError, database_url  # noqa: PLC0415
+
+    try:
+        return database_url(data_dir)
+    except DatabaseConfigError as err:
+        raise _DatabaseError(str(err)) from None
+
+
+def _migrate(url: URL) -> tuple[str | None, str]:
+    """Upgrade ``url`` to the newest schema; the revisions before and after."""
+    from sqlalchemy.exc import SQLAlchemyError  # noqa: PLC0415
+
+    from kasauti.db import create_engine, current_revision, redacted, upgrade  # noqa: PLC0415
+
+    engine = create_engine(url)
+    try:
+        before = current_revision(engine)
+        upgrade(engine)
+        return before, current_revision(engine) or "none"
+    except SQLAlchemyError as err:
+        raise _DatabaseError(f"can't use the database {redacted(url)} ({_cause(err)})") from None
+    finally:
+        engine.dispose()
+
+
+def _db(args: argparse.Namespace) -> int:
+    from sqlalchemy.exc import SQLAlchemyError  # noqa: PLC0415
+
+    from kasauti.db import (  # noqa: PLC0415
+        create_engine,
+        current_revision,
+        exists,
+        head_revision,
+        redacted,
+    )
+
+    try:
+        url = _database(args.data_dir)
+        if args.db_command == "upgrade":
+            before, after = _migrate(url)
+            change = "already current" if before == after else f"{before or 'empty'} -> {after}"
+            print(f"{redacted(url)}: schema {after} ({change})")
+            return 0
+        if not exists(url):  # status mustn't create the file it reports on
+            print(f"{redacted(url)}: no database yet; `kasauti db upgrade` creates it")
+            return 1
+        engine = create_engine(url)
+        try:
+            current = current_revision(engine)
+        except SQLAlchemyError as err:
+            problem = f"can't read the database {redacted(url)} ({_cause(err)})"
+            raise _DatabaseError(problem) from None
+        finally:
+            engine.dispose()
+    except _DatabaseError as err:
+        print(f"kasauti: {err}", file=sys.stderr)
+        return 1
+    head = head_revision()
+    print(f"{redacted(url)}: schema {current or 'none'}, this version needs {head}")
+    # Non-zero when behind, so scripts and health checks can act on it.
+    return 0 if current == head else 1
+
+
+def _cause(err: Exception) -> str:
+    """The driver error's kind, e.g. ``OperationalError``. Not its text: that may echo the
+    URL, and so the password."""
+    orig = getattr(err, "orig", None)
+    return type(orig if orig is not None else err).__name__
+
+
+def _data_dir() -> Path:
+    return Path(os.environ.get(DATA_DIR_ENV) or "var")
 
 
 def _port(text: str) -> int:
@@ -194,6 +286,20 @@ def build_parser() -> argparse.ArgumentParser:
     srv.add_argument("--host", default="127.0.0.1", help="127.0.0.1 or localhost (the default)")
     srv.add_argument("--port", type=_port, default=8000, help="TCP port (default: 8000)")
     srv.add_argument("--packs", type=Path, default=Path("packs"), help="knowledge base root")
+    data_help = (
+        f"where the SQLite database lives (default: ${DATA_DIR_ENV} or ./var); "
+        "PostgreSQL is set with $KASAUTI_DATABASE_URL instead"
+    )
+    srv.add_argument("--data-dir", type=Path, default=None, help=data_help)
+
+    db = sub.add_parser("db", help="the database's schema")
+    db_sub = db.add_subparsers(dest="db_command", required=True)
+    for name, text in (
+        ("upgrade", "migrate the database to this version's schema"),
+        ("status", "show the database's schema (exit 1 if it needs an upgrade)"),
+    ):
+        cmd = db_sub.add_parser(name, help=text)
+        cmd.add_argument("--data-dir", type=Path, default=None, help=data_help)
 
     packs = sub.add_parser("packs", help="work with content packs")
     packs_sub = packs.add_subparsers(dest="packs_command", required=True)
@@ -207,11 +313,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     args = build_parser().parse_args(argv)
+    if getattr(args, "data_dir", False) is None:
+        args.data_dir = _data_dir()
     if args.command == "audit":
         args.framework = args.framework or ["nist"]
         return _audit(args)
     if args.command == "serve":
         return _serve(args)
+    if args.command == "db":
+        return _db(args)
     if args.command == "packs" and args.packs_command == "validate":
         return _validate_packs(args.root)
     return 2  # pragma: no cover - argparse enforces the choices above

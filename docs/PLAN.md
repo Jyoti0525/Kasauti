@@ -951,6 +951,11 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.14 (2026-09-26, M2.02 storage):** SQLAlchemy 2.1 + Alembic; SQLite (WAL) by default,
+  PostgreSQL through the optional `postgresql` extra. §17 gains the database row: owner-only
+  file, `secure_delete` for the retention policy, verified TLS to any PostgreSQL off the machine,
+  URL from the environment only. Migrations are the operator's call on PostgreSQL (`kasauti db
+  upgrade`); for single-user SQLite `serve` applies them. CI gains a PostgreSQL job.
 - **v5.1.13 (2026-09-26, M2.01 web API shell):** `kasauti serve` runs FastAPI on 127.0.0.1
   only. Serving to the LAN is refused, not merely off by default, until accounts, MFA and TLS
   exist (M5): §17's "localhost by default" tightened, because an unauthenticated API would

@@ -40,6 +40,36 @@ jobs:
       - name: Tests (network disabled for the core, TODO S.11)
         run: uv run pytest -p no:cacheprovider
 
+  postgresql:
+    name: database · PostgreSQL
+    # SQLite is covered by every other job; this runs the schema tests on a real PostgreSQL
+    # (PLAN §4.2), the same major version as the one we test against locally.
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17.11-alpine3.24@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+        env:
+          POSTGRES_USER: kasauti
+          POSTGRES_DB: kasauti_test
+          # Throwaway server, reachable only from this job's runner; no password to leak.
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kasauti" --health-interval 2s --health-timeout 5s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: "3.12"
+      - run: uv sync --extra postgresql
+      - name: Migrations on PostgreSQL
+        env:
+          KASAUTI_TEST_POSTGRES_URL: postgresql://kasauti@127.0.0.1:5432/kasauti_test
+        run: uv run pytest backend/tests/db -p no:cacheprovider -rs
+
   content-gates:
     name: content gates
     runs-on: ubuntu-24.04

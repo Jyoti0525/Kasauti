@@ -38,6 +38,16 @@ The web API runs on this machine only (the upload screens arrive with M2.04 and 
 uv run kasauti serve            # http://127.0.0.1:8000/api/health
 ```
 
+Audit history is kept in a SQLite file under `./var` (set `KASAUTI_DATA_DIR` to move it);
+`kasauti serve` creates and upgrades it. For a shared PostgreSQL server instead:
+
+```bash
+uv sync --extra postgresql
+export KASAUTI_DATABASE_URL='postgresql://kasauti@db.internal/kasauti?sslmode=verify-full'
+uv run kasauti db upgrade       # run by the operator; `serve` won't migrate PostgreSQL itself
+uv run kasauti db status        # exit 1 when the schema needs an upgrade
+```
+
 Every finding names the exact configuration lines (secrets masked), the NIST controls it
 supports, and any vendor default it relied on. A missing or unreadable fact is never counted
 as a pass: it becomes REVIEW, and the report says so. `datasets/authored/cisco_ios_xe/hardened.cfg`
