@@ -7,10 +7,18 @@ of the line (at least one item).
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cached_property
 
-from kasauti.mapping.model import Mapping, PatternToken, Slot, Word, parse_pattern
+from kasauti.mapping.model import (
+    Mapping,
+    PatternToken,
+    Slot,
+    Word,
+    parse_pattern,
+    pattern_variants,
+)
 from kasauti.shape.tokens import tokenize, unquote
 from kasauti.shape.values import is_ifname, is_int, is_ip
 
@@ -78,28 +86,48 @@ class Compiled:
     order: int
 
     @cached_property
+    def variants(self) -> tuple[tuple[PatternToken, ...], ...]:
+        """The concrete forms of ``match`` (optional groups expanded), longest first."""
+        return pattern_variants(self.mapping.match)
+
+    @cached_property
     def pattern(self) -> tuple[PatternToken, ...]:
-        return parse_pattern(self.mapping.match)
+        """The longest form: the one shown to people."""
+        return self.variants[0]
 
     @cached_property
     def context(self) -> tuple[tuple[PatternToken, ...], ...]:
         return tuple(parse_pattern(c) for c in self.mapping.context)
 
     @cached_property
-    def negation(self) -> tuple[PatternToken, ...] | None:
+    def negation(self) -> tuple[tuple[PatternToken, ...], ...] | None:
         neg = self.mapping.negation
-        return None if neg in (None, "auto") else parse_pattern(str(neg))
+        return None if neg in (None, "auto") else pattern_variants(str(neg))
 
     @cached_property
     def prefix(self) -> tuple[str, ...]:
-        return literal_prefix(self.pattern)
+        """Keywords every form starts with (the shortest literal prefix across forms)."""
+        return min((literal_prefix(v) for v in self.variants), key=len)
 
     @cached_property
-    def specificity(self) -> tuple[int, int]:
+    def _context_words(self) -> int:
+        return sum(1 for c in self.context for p in c if isinstance(p, Word))
+
+    def specificity(self, variant: tuple[PatternToken, ...]) -> tuple[int, int]:
         """More literal words wins; then more tokens. Used when several mappings match."""
-        words = sum(1 for p in self.pattern if isinstance(p, Word))
-        context_words = sum(1 for c in self.context for p in c if isinstance(p, Word))
-        return (words + context_words, len(self.pattern))
+        words = sum(1 for p in variant if isinstance(p, Word))
+        return (words + self._context_words, len(variant))
+
+    def match(self, tokens: tuple[str, ...]) -> tuple[Captures, tuple[int, int]] | None:
+        """Captures and specificity of the first (longest) form that matches."""
+        return _first(self.variants, tokens, self.specificity)
+
+    def match_negation(self, tokens: tuple[str, ...]) -> tuple[Captures, tuple[int, int]] | None:
+        return _first(self.negation or (), tokens, self.specificity)
+
+    def partial(self, tokens: tuple[str, ...]) -> tuple[int, Captures]:
+        """The best partial match over all forms (for near-miss detection)."""
+        return max((partial_match(v, tokens) for v in self.variants), key=lambda r: r[0])
 
     def match_context(self, path: tuple[tuple[str, ...], ...]) -> Captures | None:
         """Suffix match of the context against the statement's (tokenised) block path.
@@ -115,6 +143,18 @@ class Compiled:
                 return None
             caps.update(got)
         return caps
+
+
+def _first(
+    variants: tuple[tuple[PatternToken, ...], ...],
+    tokens: tuple[str, ...],
+    specificity: Callable[[tuple[PatternToken, ...]], tuple[int, int]],
+) -> tuple[Captures, tuple[int, int]] | None:
+    for variant in variants:
+        caps = match_tokens(variant, tokens)
+        if caps is not None:
+            return caps, specificity(variant)
+    return None
 
 
 def partial_match(

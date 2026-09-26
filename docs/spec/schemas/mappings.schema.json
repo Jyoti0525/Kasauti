@@ -179,9 +179,17 @@
       "additionalProperties": false,
       "properties": {
         "from": {
-          "pattern": "^[a-z][a-z0-9_]*$",
-          "title": "From",
-          "type": "string"
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "From"
         },
         "map": {
           "anyOf": [
@@ -202,6 +210,18 @@
           "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
           "title": "Members",
           "type": "string"
+        },
+        "template": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Template"
         },
         "transform": {
           "default": [],
@@ -228,8 +248,7 @@
         }
       },
       "required": [
-        "members",
-        "from"
+        "members"
       ],
       "title": "MembersEffect",
       "type": "object"
@@ -321,8 +340,12 @@
                 }
               },
               "type": "object"
+            },
+            {
+              "type": "null"
             }
           ],
+          "default": null,
           "title": "From"
         },
         "map": {
@@ -373,6 +396,18 @@
           "title": "Set",
           "type": "string"
         },
+        "template": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Template"
+        },
         "transform": {
           "default": [],
           "items": {
@@ -398,8 +433,7 @@
         }
       },
       "required": [
-        "set",
-        "from"
+        "set"
       ],
       "title": "SetEffect",
       "type": "object"

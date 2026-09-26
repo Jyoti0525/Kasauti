@@ -15,8 +15,9 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 
 | File | Platform | Lines | SHA-256 | Review |
 |---|---|---|---|---|
-| `cisco_ios_xe/hardened.cfg` | Cisco IOS-XE 17.9, edge router | 120 | `0ee90b960fd38b4fe91fe4650d7247d1e7c4ce1439c6fc27cb9ede549766f812` | written; doc cross-check pending (C.06) |
-| `cisco_ios_xe/weak.cfg` | Cisco IOS-XE 17.9, weak twin | 59 | `11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946` | written; doc cross-check pending (C.06) |
+| `cisco_ios_xe/hardened.cfg` | Cisco IOS-XE 17.9, edge router | 121 | `aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2` | commands cross-checked against Cisco docs (C.06, see `docs/reviews/cisco_ios_xe.md`) |
+| `cisco_ios_xe/weak.cfg` | Cisco IOS-XE 17.9, weak twin | 59 | `11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946` | commands cross-checked against Cisco docs (C.06) |
+| `cisco_ios_xe/fixtures/web_mgmt_restricted.cfg` | Cisco IOS-XE 17.9, HTTPS management behind an ACL (pass fixture for MGMT-WEB-ACL-01) | 16 | `b7a21e0d5106bdd3c0e5eb6d6eff77a1d41f0ed3b3719a5ad3530de5d3bc257d` | commands cross-checked against Cisco docs (C.06) |
 | `juniper_junos/hardened.conf` | Junos OS 23.4, branch SRX | 158 | `fd6dbf78b9086b337fdf5b3f9e31e4e5b1c469a5ad7d52a738b82fcc3aaa1fda` | written; doc cross-check pending (C.06) |
 
 References used: Cisco IOS XE 17 configuration guides (security, SSH, AAA, SNMP, NTP, system
@@ -61,13 +62,12 @@ above, never from the engine's output.
 
 | Case | Input | Labels |
 |---|---|---|
-| `cisco_ios_xe_weak` | `authored/cisco_ios_xe/weak.cfg` | 10 rules FAIL (W3–W6, W8, W12–W15, W17–W19) |
-| `cisco_ios_xe_hardened` | `authored/cisco_ios_xe/hardened.cfg` | 10 rules PASS |
+| `cisco_ios_xe_weak` | `authored/cisco_ios_xe/weak.cfg` | all 21 rules FAIL; every weakness W1–W20 is judged by at least one rule |
+| `cisco_ios_xe_hardened` | `authored/cisco_ios_xe/hardened.cfg` | 20 rules PASS; MGMT-WEB-ACL-01 N/A (no web server runs) |
 
-Weaknesses not yet covered by a rule (they arrive with the M2 rule set): W1 `service pad`, W2
-password encryption, W7 minimum password length, W9 HTTPS server without an ACL, W10 proxy ARP,
-W11 the permit-any edge ACL, W16 SSH version, W20 login banner. None of them is reported as a
-PASS today: no rule judges them yet.
+History: on 2026-09-26 the hardened twin changed to `security passwords min-length 15` (NIST SP
+800-63B-4's minimum for single-factor passwords) and `no ip proxy-arp` on GigabitEthernet3, so
+that it is hardened under the full rule set.
 
 ## Third-party data
 

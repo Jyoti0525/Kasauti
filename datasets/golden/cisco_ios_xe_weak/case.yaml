@@ -6,13 +6,24 @@ input_sha256: 11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946
 vendor: null            # must be recognised by fingerprint
 frameworks: [nist_800_53r5]
 expected_statuses:
-  MGMT-TELNET-01: FAIL              # W18 vty 0-4 ssh+telnet, W19 vty 5-15 telnet only
-  MGMT-SESSION-TIMEOUT-01: FAIL     # W17 console 0 0, W18 vty 0-4 0 0, W19 vty 5-15 30 min
-  MGMT-HTTP-01: FAIL                # W8 ip http server
-  MGMT-VTY-ACL-01: FAIL             # W18, W19 no access-class
-  AAA-LOCAL-PASSWORD-HASH-01: FAIL  # W3 enable password 0, W4 username password 7
+  SVC-LEGACY-01: FAIL               # W1 service pad
+  AAA-PASSWORD-ENCRYPTION-01: FAIL  # W2 no service password-encryption
+  AAA-LOCAL-PASSWORD-HASH-01: FAIL  # W3 enable password 0, W4 username password 7, W18 line password 7
   AAA-CENTRAL-AUTH-01: FAIL         # W5 no AAA server
   AAA-LOCKOUT-01: FAIL              # W6 no login block-for
+  AAA-PASSWORD-MIN-LENGTH-01: FAIL  # W7 no minimum password length
+  MGMT-HTTP-01: FAIL                # W8 ip http server
+  MGMT-WEB-ACL-01: FAIL             # W8/W9 HTTP and HTTPS servers without an access-class
+  SVC-PROXY-ARP-01: FAIL            # W10 ip proxy-arp on the WAN interface (on by default elsewhere)
+  FILTER-PERMIT-ANY-01: FAIL        # W11 10 permit ip any any
+  FILTER-UNTRUSTED-INGRESS-01: FAIL # W11 EDGE-IN not applied to the WAN interface
   LOG-REMOTE-01: FAIL               # W12 no logging host
+  LOG-TIMESTAMPS-01: FAIL           # W12 no timestamps
+  LOG-CONFIG-CHANGE-01: FAIL        # W12 no configuration-change logging
   SNMP-COMMUNITY-01: FAIL           # W13 public RO, W14 private RW
   TIME-NTP-AUTH-01: FAIL            # W15 ntp server without authentication
+  MGMT-SSH-V2-01: FAIL              # W16 no `ip ssh version 2` on 17.9 (compatibility mode)
+  MGMT-SESSION-TIMEOUT-01: FAIL     # W17 console 0 0, W18 vty 0-4 0 0, W19 vty 5-15 30 min
+  MGMT-TELNET-01: FAIL              # W18 vty 0-4 ssh+telnet, W19 vty 5-15 telnet only
+  MGMT-VTY-ACL-01: FAIL             # W18, W19 no access-class
+  MGMT-BANNER-01: FAIL              # W20 no login banner

@@ -1,4 +1,4 @@
-# Security Baseline Model (v0.2)
+# Security Baseline Model (v0.3)
 
 Implements PLAN §8 (requirement R-01). Source of truth: `backend/kasauti/sbm/`; JSON Schema:
 `schemas/sbm.schema.json`; OpenConfig alignment: `backend/kasauti/sbm/openconfig.yaml`.
@@ -62,10 +62,12 @@ rely on (PLAN §3.1, principle 5).
 
 ## Versioning
 
-`sbm_version` is `"0.2"`. Loading a document with another version fails with a pointer to
+`sbm_version` is `"0.3"`. Loading a document with another version fails with a pointer to
 `kasauti.sbm.migrations`, which upgrades stored documents step by step (one pure function per
-version change, never edited after release). 0.1 → 0.2 adds the empty sets above; everything a
-0.1 document says is kept (tested).
+version change, never edited after release). 0.1 → 0.2 adds the empty sets above; 0.2 → 0.3
+adds four optional attributes (`MgmtService.access_filter`, `Interface.description`,
+`Interface.proxy_arp`, `PasswordPolicy.cleartext_passwords_encrypted`). Everything an older
+document says is kept (tested).
 
 ## OpenConfig alignment
 

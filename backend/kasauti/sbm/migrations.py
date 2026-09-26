@@ -24,8 +24,18 @@ def _v01_to_v02(data: RawSBM) -> RawSBM:
     return data
 
 
+def _v02_to_v03(data: RawSBM) -> RawSBM:
+    """0.2 -> 0.3 (M1 hardening): new optional attributes only (MgmtService.access_filter,
+    Interface.description, Interface.proxy_arp, PasswordPolicy.cleartext_passwords_encrypted).
+    Absent in older documents, which is exactly what they meant."""
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
-MIGRATIONS: dict[str, tuple[str, Step]] = {"0.1": ("0.2", _v01_to_v02)}
+MIGRATIONS: dict[str, tuple[str, Step]] = {
+    "0.1": ("0.2", _v01_to_v02),
+    "0.2": ("0.3", _v02_to_v03),
+}
 
 
 class MigrationError(ValueError):

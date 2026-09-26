@@ -10,8 +10,9 @@ device's configuration meets CIS, NIST SP 800-53, DISA STIG and ISO/IEC 27001, f
 including ones it has never seen.
 
 > **Status: Milestone 1 (walking skeleton) complete.** A Cisco IOS XE configuration goes end to
-> end: parse → mappings → Security Baseline Model → 10 rules → JSON + PDF report. Parsers for all
-> seven shape families are in place. Progress is tracked task by task in
+> end: parse → mappings → Security Baseline Model → 21 rules → JSON + PDF report. Parsers for all
+> seven shape families are in place, and every Cisco default is sourced from Cisco's documentation
+> ([review record](docs/reviews/cisco_ios_xe.md)). Progress is tracked task by task in
 > [docs/TODO.md](docs/TODO.md).
 
 ## Try it
@@ -23,7 +24,7 @@ uv run kasauti audit datasets/authored/cisco_ios_xe/weak.cfg --framework nist --
 
 ```
 EDGE-R1  (cisco_ios_xe@1, chosen by fingerprint)
-  NIST SP 800-53 Rev. 5: compliance 0.0%, coverage 100.0% (0 pass, 10 fail, 0 review, 0 n/a)
+  NIST SP 800-53 Rev. 5: compliance 0.0%, coverage 100.0% (0 pass, 21 fail, 0 review, 0 n/a)
   FAIL   high     MGMT-TELNET-01: Clear-text Telnet management is not reachable
   ...
   wrote reports/weak.kasauti.json

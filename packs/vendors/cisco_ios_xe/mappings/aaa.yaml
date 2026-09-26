@@ -2,8 +2,9 @@
 # policy. The secret itself is matched by an unnamed <STR> slot: it is never captured into a
 # fact, and evidence lines are masked (`secret 9 ****`).
 #
-# Cisco password types: 0 = clear text, 5 = MD5-crypt, 6 = AES (reversible), 7 = Vigenère
-# (reversible), 8 = PBKDF2-SHA-256, 9 = scrypt. A type not listed here makes hash_type
+# Cisco password types: 0 = clear text, 4 = unsalted SHA-256 (deprecated as broken),
+# 5 = MD5-crypt, 6 = AES (reversible), 7 = Vigenère (reversible), 8 = PBKDF2-SHA-256,
+# 9 = scrypt. A type not listed here makes hash_type
 # *unknown*, which a rule reports as REVIEW rather than guessing.
 mappings:
   # `enable` is modelled as the local account it effectively is (privilege 15), so the
@@ -14,9 +15,9 @@ mappings:
     match: "enable secret <INT:type> <STR>"
     effect:
       - {assert: LocalUser.privilege, value: 15}
-      - {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
+      - {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "4": cisco-type-4, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
     negation: null
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+    provenance: {version: 2, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
   - id: cisco_ios_xe/enable-password
     vendor: cisco_ios_xe
@@ -34,9 +35,9 @@ mappings:
     match: "username <STR:name> privilege <INT:priv> secret <INT:type> <STR>"
     effect:
       - {set: LocalUser.privilege, from: priv}
-      - {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
+      - {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "4": cisco-type-4, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
     negation: null
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+    provenance: {version: 2, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
   - id: cisco_ios_xe/username-privilege-password
     vendor: cisco_ios_xe
@@ -52,9 +53,9 @@ mappings:
     vendor: cisco_ios_xe
     entity: {type: LocalUser, key: "{name}"}
     match: "username <STR:name> secret <INT:type> <STR>"
-    effect: {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
+    effect: {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "4": cisco-type-4, "5": md5-crypt, "8": pbkdf2-sha256, "9": scrypt}}
     negation: null
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+    provenance: {version: 2, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
   - id: cisco_ios_xe/username-password
     vendor: cisco_ios_xe
@@ -169,4 +170,33 @@ mappings:
     vendor: cisco_ios_xe
     match: "security passwords min-length <INT:n>"
     effect: {set: PasswordPolicy.min_length, from: n}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Line passwords: a shared secret on the line itself (`line vty 0 4` / ` password 7 …`).
+  # Modelled as a LocalUser named after the line, so the password-storage rule judges it too.
+  - id: cisco_ios_xe/vty-range-password
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: LocalUser, key: "line vty {first}-{last}"}
+    match: "password <INT:type> <STR>"
+    effect: {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "7": cisco-type-7}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-password
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: LocalUser, key: "line vty {n}"}
+    match: "password <INT:type> <STR>"
+    effect: {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "7": cisco-type-7}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/con-password
+    vendor: cisco_ios_xe
+    context: ["line con <INT:n>"]
+    entity: {type: LocalUser, key: "line con {n}"}
+    match: "password <INT:type> <STR>"
+    effect: {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "7": cisco-type-7}}
+    negation: null
     provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

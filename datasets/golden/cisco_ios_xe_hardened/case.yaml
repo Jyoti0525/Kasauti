@@ -2,17 +2,28 @@
 # every catalogued weakness, so every rule in scope passes.
 description: Cisco IOS XE 17.9 hardened edge router (twin of the weak case)
 input: authored/cisco_ios_xe/hardened.cfg
-input_sha256: 0ee90b960fd38b4fe91fe4650d7247d1e7c4ce1439c6fc27cb9ede549766f812
+input_sha256: aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:
-  MGMT-TELNET-01: PASS              # vty 0-4 ssh only, vty 5-15 none
-  MGMT-SESSION-TIMEOUT-01: PASS     # console 5 min, vty 10 min
-  MGMT-HTTP-01: PASS                # no ip http server
-  MGMT-VTY-ACL-01: PASS             # access-class MGMT-ACL on both vty ranges
-  AAA-LOCAL-PASSWORD-HASH-01: PASS  # enable secret 9, username secret 9
+  SVC-LEGACY-01: PASS               # no service pad, no small servers, no ip finger, no ip bootp server
+  AAA-PASSWORD-ENCRYPTION-01: PASS  # service password-encryption
+  AAA-LOCAL-PASSWORD-HASH-01: PASS  # enable secret 9, username secret 9; no line passwords
   AAA-CENTRAL-AUTH-01: PASS         # tacacs server TAC1 10.10.10.40
   AAA-LOCKOUT-01: PASS              # login block-for 120 attempts 3 within 60
+  AAA-PASSWORD-MIN-LENGTH-01: PASS  # security passwords min-length 15
+  MGMT-HTTP-01: PASS                # no ip http server
+  MGMT-WEB-ACL-01: N/A              # no web server running, so nothing to restrict
+  SVC-PROXY-ARP-01: PASS            # no ip proxy-arp on every interface
+  FILTER-PERMIT-ANY-01: PASS        # explicit allow list ending in deny ip any any log
+  FILTER-UNTRUSTED-INGRESS-01: PASS # ip access-group EDGE-IN in on the WAN interface
   LOG-REMOTE-01: PASS               # logging host 10.10.10.50 over TCP
+  LOG-TIMESTAMPS-01: PASS           # service timestamps log datetime
+  LOG-CONFIG-CHANGE-01: PASS        # archive / log config / logging enable
   SNMP-COMMUNITY-01: PASS           # SNMPv3 only, no community
   TIME-NTP-AUTH-01: PASS            # ntp authenticate + server key 1
+  MGMT-SSH-V2-01: PASS              # ip ssh version 2
+  MGMT-SESSION-TIMEOUT-01: PASS     # console 5 min, vty 10 min
+  MGMT-TELNET-01: PASS              # vty 0-4 ssh only, vty 5-15 none
+  MGMT-VTY-ACL-01: PASS             # access-class MGMT-ACL on both vty ranges
+  MGMT-BANNER-01: PASS              # banner login

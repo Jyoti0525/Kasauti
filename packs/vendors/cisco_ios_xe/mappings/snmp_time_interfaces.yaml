@@ -35,37 +35,23 @@ mappings:
     provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
   # --- NTP -------------------------------------------------------------------------------------
+  # `ntp server [vrf <name>] <address> [key <id>] [prefer]`. Other options (version, source)
+  # are near misses: the server is still recorded, with its facts unknown (REVIEW).
   - id: cisco_ios_xe/ntp-server
     vendor: cisco_ios_xe
     entity: {type: TimeSource, key: "{host}"}
-    match: "ntp server <IP:host>"
+    match: "ntp server [vrf <STR>] <IP:host> [prefer]"
     effect: {set: TimeSource.host, from: host}
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
-
-  - id: cisco_ios_xe/ntp-server-prefer
-    vendor: cisco_ios_xe
-    entity: {type: TimeSource, key: "{host}"}
-    match: "ntp server <IP:host> prefer"
-    effect: {set: TimeSource.host, from: host}
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+    provenance: {version: 2, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
   - id: cisco_ios_xe/ntp-server-key
     vendor: cisco_ios_xe
     entity: {type: TimeSource, key: "{host}"}
-    match: "ntp server <IP:host> key <INT>"
+    match: "ntp server [vrf <STR>] <IP:host> key <INT> [prefer]"
     effect:
       - {set: TimeSource.host, from: host}
       - {assert: TimeSource.authenticated, value: true}
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
-
-  - id: cisco_ios_xe/ntp-server-key-prefer
-    vendor: cisco_ios_xe
-    entity: {type: TimeSource, key: "{host}"}
-    match: "ntp server <IP:host> key <INT> prefer"
-    effect:
-      - {set: TimeSource.host, from: host}
-      - {assert: TimeSource.authenticated, value: true}
-    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+    provenance: {version: 2, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
 
   - id: cisco_ios_xe/ntp-authenticate
     vendor: cisco_ios_xe
@@ -103,4 +89,20 @@ mappings:
     entity: {type: Interface, key: "{name}"}
     match: "ip access-group <STR:acl> out"
     effect: {ref: Interface.filters_out, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/interface-description
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: Interface, key: "{name}"}
+    match: "description <LIST:text>"
+    effect: {set: Interface.description, template: "{text}"}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/interface-proxy-arp
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: Interface, key: "{name}"}
+    match: "ip proxy-arp"
+    effect: {assert: Interface.proxy_arp, value: true}
     provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

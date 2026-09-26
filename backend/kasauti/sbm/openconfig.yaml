@@ -16,6 +16,8 @@ openconfig:
   MgmtService.version: /system/ssh-server/config/protocol-version
   MgmtSession.idle_timeout_s: /system/{ssh-server|telnet-server}/config/timeout
   Interface.admin_up: /interfaces/interface/config/enabled
+  Interface.description: /interfaces/interface/config/description
+  Interface.proxy_arp: /interfaces/interface/subinterfaces/subinterface/ipv4/proxy-arp/config/mode
   LocalUser.privilege: /system/aaa/authentication/users/user/config/role
   LocalUser.hash_type: /system/aaa/authentication/users/user/config/password-hashed
   AuthServer.host: /system/aaa/server-groups/server-group/servers/server/config/address
@@ -37,6 +39,7 @@ x-sbm:
   - MgmtService.ciphers
   - MgmtService.macs
   - MgmtService.kex
+  - MgmtService.access_filter  # OC has no per-service ACL leaf
   - MgmtSession.kind
   - MgmtSession.range
   - MgmtSession.transport
@@ -52,6 +55,7 @@ x-sbm:
   - PasswordPolicy.complexity_required
   - PasswordPolicy.reversible_encryption_blocked
   - PasswordPolicy.max_age_days
+  - PasswordPolicy.cleartext_passwords_encrypted
   - LockoutPolicy.max_attempts
   - LockoutPolicy.lockout_s
   - LoggingPolicy.timestamps

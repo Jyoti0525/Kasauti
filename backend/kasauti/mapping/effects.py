@@ -21,6 +21,7 @@ from kasauti.mapping.model import (
     SplitTransform,
     Transform,
     UnitTransform,
+    template_slots,
 )
 from kasauti.rules.expr import Type
 
@@ -86,18 +87,25 @@ def _assert(effect: AssertEffect, kind: Type, *, negated: bool) -> Outcome:
 
 
 def _set_value(effect: SetEffect, caps: Captures) -> Any:
-    if isinstance(effect.from_, dict):
+    value: Any
+    if effect.template is not None:
+        value = _render(effect.template, caps)
+    elif isinstance(effect.from_, dict):
         total = 0
         for slot, weight in effect.from_.items():
             part = caps.get(slot)
             if not isinstance(part, int):
                 raise _UnreadableError(f"slot {slot!r} is not a number")
             total += part * weight
-        value: Any = total
+        value = total
     else:
-        value = _slot(caps, effect.from_)
+        value = _slot(caps, str(effect.from_))
     if effect.map is not None:
-        word = str(caps.get(f"_raw:{effect.from_}", value)) if isinstance(effect.from_, str) else ""
+        word = (
+            str(caps.get(f"_raw:{effect.from_}", value))
+            if isinstance(effect.from_, str)
+            else str(value)
+        )
         if word in effect.map:
             value = effect.map[word]
         elif effect.otherwise is not None:
@@ -110,6 +118,9 @@ def _set_value(effect: SetEffect, caps: Captures) -> Any:
 
 
 def _members(effect: MembersEffect, caps: Captures, *, negated: bool) -> Outcome:
+    if effect.template is not None:
+        rendered = frozenset({_render(effect.template, caps)})
+        return RemoveItems(rendered) if negated else AddItems(rendered)
     if effect.from_ not in caps:
         if negated:
             return SetValue(frozenset())  # `unset allowaccess`: explicitly none
@@ -127,6 +138,18 @@ def _ref(effect: RefEffect, caps: Captures, kind: Type, *, negated: bool) -> Out
         return Clear()
     name = str(_slot(caps, effect.from_))
     return AddItems(frozenset({name})) if kind == "set" else SetValue(name)
+
+
+def _render(template: str, caps: Captures) -> str:
+    names = template_slots(template)
+    missing = sorted(n for n in names if n not in caps)
+    if missing:
+        raise _UnreadableError(f"slots {missing} not captured")
+    return template.format(**{n: _text(caps[n]) for n in names})
+
+
+def _text(value: Any) -> str:
+    return " ".join(value) if isinstance(value, tuple) else str(value)
 
 
 def _slot(caps: Captures, name: str) -> Any:

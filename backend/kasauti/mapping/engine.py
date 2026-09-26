@@ -27,7 +27,7 @@ from kasauti.ingest.mask import mask_secrets
 from kasauti.mapping import effects as fx
 from kasauti.mapping.builder import EntityRef, FactAcc, SbmBuilder
 from kasauti.mapping.defaults import apply_defaults
-from kasauti.mapping.match import Captures, Compiled, match_tokens, partial_match, tokenize_path
+from kasauti.mapping.match import Captures, Compiled, tokenize_path
 from kasauti.mapping.model import ORDINAL, Mapping, Word
 from kasauti.packs.model import DefaultEntry
 from kasauti.packs.versions import Version, VersionRange
@@ -68,6 +68,7 @@ class _Hit:
     compiled: Compiled
     caps: Captures
     negated: bool
+    specificity: tuple[int, int]
 
 
 def apply_mappings(
@@ -128,11 +129,11 @@ class _Engine:
         self._by_word: dict[str, list[Compiled]] = defaultdict(list)
         self._slot_first: list[Compiled] = []
         for c in compiled:
-            for pattern in (c.pattern, c.negation):
-                if pattern and isinstance(pattern[0], Word):
-                    self._by_word[pattern[0].text].append(c)
-                elif pattern:
-                    self._slot_first.append(c)
+            forms = (*c.variants, *(c.negation or ()))
+            for word in sorted({f[0].text for f in forms if isinstance(f[0], Word)}):
+                self._by_word[word].append(c)
+            if any(not isinstance(f[0], Word) for f in forms):
+                self._slot_first.append(c)
 
     def run(self, device: Device | None) -> None:
         self.builder = SbmBuilder(device)
@@ -168,25 +169,28 @@ class _Engine:
             ctx = c.match_context(path)
             if ctx is None:
                 continue
-            caps = match_tokens(c.pattern, tokens)
-            if caps is not None:
-                hits.append(_Hit(c, {**ctx, **caps}, negated=False))
+            found = c.match(tokens)
+            if found is not None:
+                hits.append(_Hit(c, {**ctx, **found[0]}, negated=False, specificity=found[1]))
                 continue
             neg = self._negated(c, tokens)
             if neg is not None:
-                hits.append(_Hit(c, {**ctx, **neg}, negated=True))
+                hits.append(_Hit(c, {**ctx, **neg[0]}, negated=True, specificity=neg[1]))
         return sorted(hits, key=_most_specific_first)
 
-    def _negated(self, c: Compiled, tokens: tuple[str, ...]) -> Captures | None:
+    def _negated(
+        self, c: Compiled, tokens: tuple[str, ...]
+    ) -> tuple[Captures, tuple[int, int]] | None:
         if c.negation is not None:
-            return match_tokens(c.negation, tokens)
+            return c.match_negation(tokens)
         if c.mapping.negation != "auto" or len(tokens) < 2 or tokens[0] not in self.negation:
             return None
         rest = tokens[1:]
-        caps = match_tokens(c.pattern, rest)
-        if caps is None and c.prefix and rest == c.prefix:
-            return {}  # `no exec-timeout`: the negated form may drop the values
-        return caps
+        found = c.match(rest)
+        if found is None and c.prefix and rest == c.prefix:
+            # `no exec-timeout`: the negated form may drop the values.
+            return {}, c.specificity(c.pattern)
+        return found
 
     # --- applying --------------------------------------------------------------------------
 
@@ -274,7 +278,7 @@ class _Engine:
             ctx = c.match_context(path)
             if ctx is None:
                 continue
-            matched, caps = partial_match(c.pattern, tokens)
+            matched, caps = c.partial(tokens)
             needed = min(len(c.pattern), len(c.prefix) + 1)
             if matched < max(needed, MIN_NEAR_MISS_TOKENS) or matched == len(tokens) == len(
                 c.pattern
@@ -323,7 +327,7 @@ def _record(fact: FactAcc, outcome: fx.Outcome, ev: Evidence) -> None:
 
 
 def _most_specific_first(hit: _Hit) -> tuple[int, int, int]:
-    words, length = hit.compiled.specificity
+    words, length = hit.specificity
     return (-words, -length, hit.compiled.order)
 
 

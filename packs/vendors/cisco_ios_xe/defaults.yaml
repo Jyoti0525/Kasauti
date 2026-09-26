@@ -1,16 +1,23 @@
 # What IOS XE does when the running-config says nothing (PLAN §8.2, §9.4).
 #
-# Only long-standing behaviour we can point to in Cisco's documentation is listed; anything
-# less certain is left out on purpose, so the rule says REVIEW instead of guessing. (For example
-# the default `transport input` on vty lines changed across releases, so there is no entry.)
-# Every entry is scoped to IOS XE 16 and 17. The line-by-line doc cross-check is TODO C.06.
+# Every entry below was checked against Cisco's own documentation on 2026-09-26 (TODO C.06);
+# the review record, with the exact sentences quoted, is docs/reviews/cisco_ios_xe.md.
+# A behaviour Cisco's documentation does not state is left out on purpose, so the rule says
+# REVIEW instead of guessing: the vty `transport input` default, the `username` privilege
+# default and the minimum password length are not stated, so they have no entry.
+#
+# Two entries are *model* defaults, marked as such: they say how IOS XE's design maps onto the
+# vendor-neutral SBM (where Telnet exposure lives), not a factory setting.
 defaults:
   - id: exec-timeout
     attr: MgmtSession.idle_timeout_s
     value: 600
     os_versions: ">=16.1"
-    source: curated
-    reference: "Cisco IOS XE command reference, line configuration: `exec-timeout` defaults to 10 minutes"
+    source: vendor_doc
+    reference: >-
+      Cisco IOS Configuration Fundamentals Command Reference, exec-timeout, Command Default:
+      "The default timeout is 10 minutes and 0 seconds."
+      https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/fundamentals/command/cf_command_ref/D_through_E.html
 
   - id: no-global-telnet-service
     attr: MgmtService.enabled
@@ -19,9 +26,8 @@ defaults:
     os_versions: ">=16.1"
     source: curated
     reference: >-
-      IOS XE has no device-wide Telnet server switch; inbound Telnet is controlled per line by
-      `transport input` (Cisco IOS XE terminal services configuration guide), which the
-      MgmtSession mappings read
+      Model default: IOS XE controls inbound Telnet per line with `transport input` (which the
+      MgmtSession mappings read), so there is no separate device-wide Telnet service to count.
 
   - id: no-interface-mgmt-protocol-list
     attr: Interface.mgmt_protocols
@@ -29,32 +35,162 @@ defaults:
     os_versions: ">=16.1"
     source: curated
     reference: >-
-      IOS XE interfaces carry no per-interface management-protocol list; management access is
-      set per line (vty) and by ACL, not on the interface
+      Model default: IOS XE interfaces carry no per-interface management-protocol list;
+      management access is set per line (vty) and by ACL, not on the interface.
 
   - id: ntp-server-without-key
     attr: TimeSource.authenticated
     value: false
     os_versions: ">=16.1"
-    source: curated
-    reference: "Cisco IOS XE NTP configuration guide: `ntp server` uses no key unless `key <id>` is given"
+    source: vendor_doc
+    reference: >-
+      Cisco IOS XE NTP command reference, ntp server: when a server is configured "an
+      authentication key is not used" unless `key` is given.
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/syst-mgmt/b-system-management/m_bsm-time-calendar-set.html
 
   - id: ntp-authentication-off
     attr: TimePolicy.auth_enforced
     value: false
     os_versions: ">=16.1"
-    source: curated
-    reference: "Cisco IOS XE NTP configuration guide: NTP authentication is disabled until `ntp authenticate` is configured"
+    source: vendor_doc
+    reference: >-
+      System Management Configuration Guide, IOS XE 17.x, NTP: `ntp authenticate` "enables the
+      NTP Authentication feature"; by default NTP authentication is not enabled.
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/syst-mgmt/b-system-management/m_bsm-time-calendar-set.html
 
   - id: no-snmp-communities
     none_of: SnmpCommunity
     os_versions: ">=16.1"
-    source: curated
-    reference: "Cisco IOS XE SNMP configuration guide: no community string exists until one is configured with `snmp-server community`"
+    source: vendor_doc
+    reference: >-
+      Cisco, Configure SNMP Community Strings: "There is no specific command that you use to
+      enable SNMP. The first snmp-server command that you enter enables the supported versions
+      of SNMP"; with no snmp-server statements SNMP is not enabled and no community exists.
+      https://www.cisco.com/c/en/us/support/docs/ip/simple-network-management-protocol-snmp/7282-12.html
 
-  - id: username-privilege
-    attr: LocalUser.privilege
-    value: 1
+  - id: proxy-arp-on
+    attr: Interface.proxy_arp
+    value: true
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      IP Addressing Configuration Guide, IOS XE 17.x, ARP: "Proxy Address Resolution Protocol
+      (ARP) is enabled by default; perform this task to disable proxy ARP on an interface."
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-addressing/b-ip-addressing/m_arp-config-arp-0.html
+
+  - id: ssh-compatibility-mode
+    attr: MgmtService.version
+    entity_key: ssh
+    value: "1.99"
+    os_versions: ">=16.1,<17.10"
+    source: vendor_doc
+    reference: >-
+      Security and VPN Configuration Guide, IOS XE 17.x, SSH Version 2 Support: "If you do not
+      configure this command, SSH by default runs in compatibility mode; that is, both SSH
+      Version 1 and SSH Version 2 connections are honored."
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m_sec-secure-shell-v2-0.html
+
+  - id: ssh-v2-only
+    attr: MgmtService.version
+    entity_key: ssh
+    value: "2"
+    os_versions: ">=17.10"
+    source: vendor_doc
+    reference: >-
+      Same guide: "From Cisco IOS XE Release 17.10, the Secure Shell Version 1.99 is not
+      supported."
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/sec-vpn/b-security-vpn/m_sec-secure-shell-v2-0.html
+
+  - id: pad-on
+    attr: MgmtService.enabled
+    entity_key: pad
+    value: true
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      Cisco IOS Wide-Area Networking Command Reference, service pad, Command Default: "All PAD
+      commands and associated connections are enabled." Corroborated by Cisco bug CSCug16792
+      ("Service PAD should be disabled by default"). The conservative direction: it can only
+      turn a silent config into a FAIL, never into a PASS.
+      https://www.cisco.com/c/en/us/td/docs/ios/wan/command/reference/wan_book/wan_s1.html
+
+  - id: bootp-server-on
+    attr: MgmtService.enabled
+    entity_key: bootp
+    value: true
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      System Management Configuration Guide, IOS XE 17.x, Basic System Management, BOOTP
+      server: "This small server is enabled by default."
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/syst-mgmt/b-system-management/m_bsm-basic-sys-manage-xe.html
+
+  - id: tcp-small-servers-off
+    attr: MgmtService.enabled
+    entity_key: tcp-small-servers
+    value: false
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      Same guide, TCP and UDP small servers: "Minor services are disabled by default."
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/syst-mgmt/b-system-management/m_bsm-basic-sys-manage-xe.html
+
+  - id: udp-small-servers-off
+    attr: MgmtService.enabled
+    entity_key: udp-small-servers
+    value: false
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      Same guide, TCP and UDP small servers: "Minor services are disabled by default."
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/syst-mgmt/b-system-management/m_bsm-basic-sys-manage-xe.html
+
+  - id: finger-off
+    attr: MgmtService.enabled
+    entity_key: finger
+    value: false
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      Cisco IOS Configuration Fundamentals Command Reference, ip finger: "Cisco IOS software
+      releases later than 12.1(5) and 12.1(5)T disable this service" by default (IOS XE
+      descends from these releases).
+      https://www.cisco.com/c/en/us/td/docs/ios/fundamentals/command/reference/cf_book/cf_f1.html
+
+  - id: password-encryption-off
+    attr: PasswordPolicy.cleartext_passwords_encrypted
+    value: false
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      Cisco IOS Security Command Reference, service password-encryption, Command Default:
+      "Passwords are not encrypted."
+      https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/security/s1/sec-s1-cr-book/sec-cr-s1.html
+
+  - id: log-timestamps-off
+    attr: LoggingPolicy.timestamps
+    value: false
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      System Management Configuration Guide, IOS XE 17.15.x, Default System Message Logging
+      Settings: time stamps "Disabled".
+      https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-15/configuration_guide/sys_mgmt/b_1715_sys_mgmt_9300_cg/configuring_system_message_logs.html
+
+  - id: config-change-logging-off
+    attr: LoggingPolicy.config_change_logged
+    value: false
+    os_versions: ">=16.1"
+    source: vendor_doc
+    reference: >-
+      System Management Configuration Guide, IOS XE 17.x, Configuration Change Notification and
+      Logging: "The logging actions described above are disabled by default."
+      https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/syst-mgmt/b-system-management/m_cm-config-logger-0.html
+
+  - id: no-filter-rules
+    none_of: FilterRule
     os_versions: ">=16.1"
     source: curated
-    reference: "Cisco IOS XE command reference, `username`: privilege level defaults to 1"
+    reference: >-
+      Model default: IOS XE ships no user ACL entries, and every configured ACL appears in the
+      running-config, so a running-config without ACL entries has none.

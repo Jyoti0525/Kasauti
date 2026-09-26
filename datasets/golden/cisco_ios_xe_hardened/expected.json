@@ -1,16 +1,16 @@
 {
   "format_version": 1,
-  "audit_id": "e5731019541735326a03e04c",
+  "audit_id": "699d2be1d27f21091e15967a",
   "input": {
     "file": "hardened.cfg",
-    "sha256": "0ee90b960fd38b4fe91fe4650d7247d1e7c4ce1439c6fc27cb9ede549766f812",
+    "sha256": "aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2",
     "encoding": "utf-8",
     "shape_family": "indent",
     "parse_warnings": []
   },
   "detection": {
     "pack_id": "cisco_ios_xe",
-    "pack_version": 1,
+    "pack_version": 2,
     "chosen_by": "fingerprint",
     "score": 1.2,
     "min_score": 0.7,
@@ -52,9 +52,9 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "1879d39e191f2569fa99842987f23b8f79f963f2dd57310a9758a817b2a65b5f",
-    "ruleset_version": "c5f6d1535a3a68e9ffd0fb50395f894f8c55e1799d4cb4af62c2767b0171c013",
-    "vendor_pack": "cisco_ios_xe@1",
+    "kb_version": "f49c1ca424a2c96eabfdbb1a0aff720bc6cfe1472af70995f8436592f5345f69",
+    "ruleset_version": "3fcc4ad5119f30e80d30187500de8eb00aa0945efbb32c713fac6489e6f4057d",
+    "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
     }
@@ -66,10 +66,10 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 10,
+      "passed": 20,
       "failed": 0,
       "review": 0,
-      "not_applicable": 0,
+      "not_applicable": 1,
       "compliance_pct": 100.0,
       "coverage_pct": 100.0
     }
@@ -110,6 +110,64 @@
       "hardening_best_practice": false
     },
     {
+      "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
+      "title": "No password is stored in the configuration in clear text",
+      "domain": "aaa",
+      "status": "PASS",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "IA-5(1)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+      "title": "Passwords must be at least 15 characters",
+      "domain": "aaa",
+      "status": "PASS",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "IA-5(1)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "FILTER-PERMIT-ANY-01",
+      "title": "No filter entry permits all traffic from anywhere to anywhere",
+      "domain": "filtering",
+      "status": "PASS",
+      "severity": "high",
+      "nist_800_53r5": [
+        "SC-7(5)",
+        "AC-4"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+      "title": "Untrusted interfaces filter inbound traffic",
+      "domain": "filtering",
+      "status": "PASS",
+      "severity": "high",
+      "nist_800_53r5": [
+        "SC-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "LOG-CONFIG-CHANGE-01",
+      "title": "Configuration changes are logged",
+      "domain": "logging",
+      "status": "PASS",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AU-2",
+        "AU-12",
+        "CM-3"
+      ],
+      "hardening_best_practice": false
+    },
+    {
       "rule_id": "LOG-REMOTE-01",
       "title": "Logs are sent to a remote log server",
       "domain": "logging",
@@ -118,6 +176,29 @@
       "nist_800_53r5": [
         "AU-4(1)",
         "AU-9(2)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "LOG-TIMESTAMPS-01",
+      "title": "Log messages carry the date and time",
+      "domain": "logging",
+      "status": "PASS",
+      "severity": "low",
+      "nist_800_53r5": [
+        "AU-3",
+        "AU-8"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-BANNER-01",
+      "title": "A login banner warns against unauthorised use",
+      "domain": "management_plane",
+      "status": "PASS",
+      "severity": "low",
+      "nist_800_53r5": [
+        "AC-8"
       ],
       "hardening_best_practice": false
     },
@@ -147,6 +228,19 @@
       "hardening_best_practice": false
     },
     {
+      "rule_id": "MGMT-SSH-V2-01",
+      "title": "SSH management uses protocol version 2 only",
+      "domain": "management_plane",
+      "status": "PASS",
+      "severity": "high",
+      "nist_800_53r5": [
+        "AC-17(2)",
+        "SC-8",
+        "SC-13"
+      ],
+      "hardening_best_practice": false
+    },
+    {
       "rule_id": "MGMT-TELNET-01",
       "title": "Clear-text Telnet management is not reachable",
       "domain": "management_plane",
@@ -172,6 +266,18 @@
       "hardening_best_practice": false
     },
     {
+      "rule_id": "MGMT-WEB-ACL-01",
+      "title": "Web management accepts only permitted sources",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
       "rule_id": "SNMP-COMMUNITY-01",
       "title": "No SNMP community is well known or writable",
       "domain": "snmp",
@@ -180,6 +286,29 @@
       "nist_800_53r5": [
         "IA-5",
         "CM-6"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "SVC-LEGACY-01",
+      "title": "Legacy network services are disabled",
+      "domain": "services",
+      "status": "PASS",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "CM-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "title": "Interfaces do not answer ARP for other hosts",
+      "domain": "services",
+      "status": "PASS",
+      "severity": "low",
+      "nist_800_53r5": [
+        "CM-7",
+        "SC-7"
       ],
       "hardening_best_practice": false
     },
@@ -210,7 +339,16 @@
       "title": "Access Enforcement",
       "status": "satisfied",
       "rules": [
-        "MGMT-VTY-ACL-01"
+        "MGMT-VTY-ACL-01",
+        "MGMT-WEB-ACL-01"
+      ]
+    },
+    {
+      "control": "AC-4",
+      "title": "Information Flow Enforcement",
+      "status": "satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01"
       ]
     },
     {
@@ -219,6 +357,14 @@
       "status": "satisfied",
       "rules": [
         "AAA-LOCKOUT-01"
+      ]
+    },
+    {
+      "control": "AC-8",
+      "title": "System Use Notification",
+      "status": "satisfied",
+      "rules": [
+        "MGMT-BANNER-01"
       ]
     },
     {
@@ -234,7 +380,8 @@
       "title": "Remote Access",
       "status": "satisfied",
       "rules": [
-        "MGMT-VTY-ACL-01"
+        "MGMT-VTY-ACL-01",
+        "MGMT-WEB-ACL-01"
       ]
     },
     {
@@ -243,7 +390,24 @@
       "status": "satisfied",
       "rules": [
         "MGMT-HTTP-01",
+        "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
+      ]
+    },
+    {
+      "control": "AU-2",
+      "title": "Event Logging",
+      "status": "satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ]
+    },
+    {
+      "control": "AU-3",
+      "title": "Content of Audit Records",
+      "status": "satisfied",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
       ]
     },
     {
@@ -255,11 +419,35 @@
       ]
     },
     {
+      "control": "AU-8",
+      "title": "Time Stamps",
+      "status": "satisfied",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ]
+    },
+    {
       "control": "AU-9(2)",
       "title": "Store on Separate Physical Systems or Components",
       "status": "satisfied",
       "rules": [
         "LOG-REMOTE-01"
+      ]
+    },
+    {
+      "control": "AU-12",
+      "title": "Audit Record Generation",
+      "status": "satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ]
+    },
+    {
+      "control": "CM-3",
+      "title": "Configuration Change Control",
+      "status": "satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
       ]
     },
     {
@@ -276,7 +464,9 @@
       "status": "satisfied",
       "rules": [
         "MGMT-HTTP-01",
-        "MGMT-TELNET-01"
+        "MGMT-TELNET-01",
+        "SVC-LEGACY-01",
+        "SVC-PROXY-ARP-01"
       ]
     },
     {
@@ -308,7 +498,26 @@
       "title": "Password-based Authentication",
       "status": "satisfied",
       "rules": [
-        "AAA-LOCAL-PASSWORD-HASH-01"
+        "AAA-LOCAL-PASSWORD-HASH-01",
+        "AAA-PASSWORD-ENCRYPTION-01",
+        "AAA-PASSWORD-MIN-LENGTH-01"
+      ]
+    },
+    {
+      "control": "SC-7",
+      "title": "Boundary Protection",
+      "status": "satisfied",
+      "rules": [
+        "FILTER-UNTRUSTED-INGRESS-01",
+        "SVC-PROXY-ARP-01"
+      ]
+    },
+    {
+      "control": "SC-7(5)",
+      "title": "Deny by Default — Allow by Exception",
+      "status": "satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01"
       ]
     },
     {
@@ -317,6 +526,7 @@
       "status": "satisfied",
       "rules": [
         "MGMT-HTTP-01",
+        "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
       ]
     },
@@ -326,6 +536,14 @@
       "status": "satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
+      ]
+    },
+    {
+      "control": "SC-13",
+      "title": "Cryptographic Protection",
+      "status": "satisfied",
+      "rules": [
+        "MGMT-SSH-V2-01"
       ]
     },
     {
@@ -353,8 +571,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 82,
-          "line_end": 82,
+          "line_start": 83,
+          "line_end": 83,
           "raw": "tacacs server TAC1",
           "mapping_id": "cisco_ios_xe/tacacs-server",
           "mapping_version": 1,
@@ -364,8 +582,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 83,
-          "line_end": 83,
+          "line_start": 84,
+          "line_end": 84,
           "raw": "address ipv4 10.10.10.40",
           "mapping_id": "cisco_ios_xe/tacacs-server-address",
           "mapping_version": 1,
@@ -393,7 +611,7 @@
           "line_end": 19,
           "raw": "enable secret 9 ****",
           "mapping_id": "cisco_ios_xe/enable-secret",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -418,7 +636,7 @@
           "line_end": 27,
           "raw": "username netadmin privilege 15 secret 9 ****",
           "mapping_id": "cisco_ios_xe/username-privilege-secret",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -451,6 +669,229 @@
       ]
     },
     {
+      "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
+      "entity_id": "PasswordPolicy[password-policy]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "No password is stored in the configuration in clear text: holds for PasswordPolicy[password-policy].",
+      "actual": [
+        "PasswordPolicy[password-policy].cleartext_passwords_encrypted = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 8,
+          "line_end": 8,
+          "raw": "service password-encryption",
+          "mapping_id": "cisco_ios_xe/service-password-encryption",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+      "entity_id": "PasswordPolicy[password-policy]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Passwords must be at least 15 characters: holds for PasswordPolicy[password-policy].",
+      "actual": [
+        "PasswordPolicy[password-policy].min_length = 15"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 18,
+          "line_end": 18,
+          "raw": "security passwords min-length 15",
+          "mapping_id": "cisco_ios_xe/security-passwords-min-length",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "FILTER-PERMIT-ANY-01",
+      "entity_id": "Device[device]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "No filter entry permits all traffic from anywhere to anywhere: holds for the device.",
+      "actual": [
+        "filtering.permit_all_present = false",
+        "FilterRule[EDGE-IN:10].action = deny",
+        "FilterRule[EDGE-IN:10].service = {tcp}",
+        "FilterRule[EDGE-IN:20].action = deny",
+        "FilterRule[EDGE-IN:20].service = {udp}",
+        "FilterRule[EDGE-IN:30].service = {tcp}",
+        "FilterRule[EDGE-IN:40].service = {icmp}",
+        "FilterRule[EDGE-IN:50].action = deny",
+        "FilterRule[MGMT-ACL:10].src = {10.10.10.0 0.0.0.255}",
+        "FilterRule[MGMT-ACL:20].action = deny"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 73,
+          "line_end": 73,
+          "raw": "10 permit 10.10.10.0 0.0.0.255",
+          "mapping_id": "cisco_ios_xe/acl-std-net",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 74,
+          "line_end": 74,
+          "raw": "20 deny any log",
+          "mapping_id": "cisco_ios_xe/acl-std-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 77,
+          "line_end": 77,
+          "raw": "10 deny tcp any any eq telnet log",
+          "mapping_id": "cisco_ios_xe/acl-ext-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 78,
+          "line_end": 78,
+          "raw": "20 deny udp any any eq snmp log",
+          "mapping_id": "cisco_ios_xe/acl-ext-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 79,
+          "line_end": 79,
+          "raw": "30 permit tcp any host 203.0.113.2 eq 22 log",
+          "mapping_id": "cisco_ios_xe/acl-ext-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 80,
+          "line_end": 80,
+          "raw": "40 permit icmp any any echo-reply",
+          "mapping_id": "cisco_ios_xe/acl-ext-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 81,
+          "line_end": 81,
+          "raw": "50 deny ip any any log",
+          "mapping_id": "cisco_ios_xe/acl-ext-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+      "entity_id": "Interface[GigabitEthernet1]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Untrusted interfaces filter inbound traffic: holds for Interface[GigabitEthernet1].",
+      "actual": [
+        "Interface[GigabitEthernet1].description = WAN uplink",
+        "Interface[GigabitEthernet1].filters_in = {EDGE-IN}"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 52,
+          "line_end": 52,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 53,
+          "line_end": 53,
+          "raw": "description WAN uplink",
+          "mapping_id": "cisco_ios_xe/interface-description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 55,
+          "line_end": 55,
+          "raw": "ip access-group EDGE-IN in",
+          "mapping_id": "cisco_ios_xe/interface-access-group-in",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "LOG-CONFIG-CHANGE-01",
+      "entity_id": "LoggingPolicy[logging-policy]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Configuration changes are logged: holds for LoggingPolicy[logging-policy].",
+      "actual": [
+        "LoggingPolicy[logging-policy].config_change_logged = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 48,
+          "line_end": 48,
+          "raw": "logging enable",
+          "mapping_id": "cisco_ios_xe/archive-log-config",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
       "rule_id": "LOG-REMOTE-01",
       "entity_id": "Device[device]",
       "status": "PASS",
@@ -465,10 +906,61 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 92,
-          "line_end": 92,
+          "line_start": 93,
+          "line_end": 93,
           "raw": "logging host 10.10.10.50 transport tcp port 601",
           "mapping_id": "cisco_ios_xe/logging-host-transport",
+          "mapping_version": 2,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "LOG-TIMESTAMPS-01",
+      "entity_id": "LoggingPolicy[logging-policy]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Log messages carry the date and time: holds for LoggingPolicy[logging-policy].",
+      "actual": [
+        "LoggingPolicy[logging-policy].timestamps = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 7,
+          "line_end": 7,
+          "raw": "service timestamps log datetime msec localtime show-timezone",
+          "mapping_id": "cisco_ios_xe/service-timestamps-log-datetime",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "MGMT-BANNER-01",
+      "entity_id": "Device[device]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "A login banner warns against unauthorised use: holds for the device.",
+      "actual": [
+        "management.login_banner_present = true",
+        "Banner[login].present = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 104,
+          "line_end": 106,
+          "raw": "banner login ^C",
+          "mapping_id": "cisco_ios_xe/banner",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -517,8 +1009,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 107,
-          "line_end": 107,
+          "line_start": 108,
+          "line_end": 108,
           "raw": "line con 0",
           "mapping_id": "cisco_ios_xe/line-con",
           "mapping_version": 1,
@@ -528,8 +1020,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 108,
-          "line_end": 108,
+          "line_start": 109,
+          "line_end": 109,
           "raw": "exec-timeout 5 0",
           "mapping_id": "cisco_ios_xe/con-exec-timeout",
           "mapping_version": 1,
@@ -554,8 +1046,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 110,
-          "line_end": 110,
+          "line_start": 111,
+          "line_end": 111,
           "raw": "line vty 0 4",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -565,8 +1057,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 112,
-          "line_end": 112,
+          "line_start": 113,
+          "line_end": 113,
           "raw": "exec-timeout 10 0",
           "mapping_id": "cisco_ios_xe/vty-range-exec-timeout",
           "mapping_version": 1,
@@ -591,8 +1083,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 115,
-          "line_end": 115,
+          "line_start": 116,
+          "line_end": 116,
           "raw": "line vty 5 15",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -602,10 +1094,58 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 117,
-          "line_end": 117,
+          "line_start": 118,
+          "line_end": 118,
           "raw": "exec-timeout 10 0",
           "mapping_id": "cisco_ios_xe/vty-range-exec-timeout",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "MGMT-SSH-V2-01",
+      "entity_id": "Device[device]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "SSH management uses protocol version 2 only: holds for the device.",
+      "actual": [
+        "management.ssh_v1_negotiable = false",
+        "MgmtService[ssh].version = 2"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 34,
+          "line_end": 34,
+          "raw": "ip ssh version 2",
+          "mapping_id": "cisco_ios_xe/ip-ssh-version",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 37,
+          "line_end": 37,
+          "raw": "ip ssh server algorithm encryption aes256-ctr aes192-ctr aes128-ctr",
+          "mapping_id": "cisco_ios_xe/ip-ssh-ciphers",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 38,
+          "line_end": 38,
+          "raw": "ip ssh server algorithm mac hmac-sha2-512 hmac-sha2-256",
+          "mapping_id": "cisco_ios_xe/ip-ssh-macs",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -669,8 +1209,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 110,
-          "line_end": 110,
+          "line_start": 111,
+          "line_end": 111,
           "raw": "line vty 0 4",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -680,8 +1220,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 113,
-          "line_end": 113,
+          "line_start": 114,
+          "line_end": 114,
           "raw": "transport input ssh",
           "mapping_id": "cisco_ios_xe/vty-range-transport-input",
           "mapping_version": 1,
@@ -691,8 +1231,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 115,
-          "line_end": 115,
+          "line_start": 116,
+          "line_end": 116,
           "raw": "line vty 5 15",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -702,8 +1242,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 118,
-          "line_end": 118,
+          "line_start": 119,
+          "line_end": 119,
           "raw": "transport input none",
           "mapping_id": "cisco_ios_xe/vty-range-transport-input-none",
           "mapping_version": 1,
@@ -728,8 +1268,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 110,
-          "line_end": 110,
+          "line_start": 111,
+          "line_end": 111,
           "raw": "line vty 0 4",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -739,8 +1279,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 111,
-          "line_end": 111,
+          "line_start": 112,
+          "line_end": 112,
           "raw": "access-class MGMT-ACL in",
           "mapping_id": "cisco_ios_xe/vty-range-access-class",
           "mapping_version": 1,
@@ -765,8 +1305,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 115,
-          "line_end": 115,
+          "line_start": 116,
+          "line_end": 116,
           "raw": "line vty 5 15",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -776,8 +1316,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 116,
-          "line_end": 116,
+          "line_start": 117,
+          "line_end": 117,
           "raw": "access-class MGMT-ACL in",
           "mapping_id": "cisco_ios_xe/vty-range-access-class",
           "mapping_version": 1,
@@ -786,6 +1326,17 @@
           ]
         }
       ]
+    },
+    {
+      "rule_id": "MGMT-WEB-ACL-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: nothing matches `MgmtService where key in [http, https] and enabled` on this device.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -804,6 +1355,188 @@
       "evidence": []
     },
     {
+      "rule_id": "SVC-LEGACY-01",
+      "entity_id": "Device[device]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Legacy network services are disabled: holds for the device.",
+      "actual": [
+        "services.legacy_enabled = false",
+        "MgmtService[pad].enabled = false",
+        "MgmtService[finger].enabled = false",
+        "MgmtService[bootp].enabled = false",
+        "MgmtService[tcp-small-servers].enabled = false",
+        "MgmtService[udp-small-servers].enabled = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 9,
+          "line_end": 9,
+          "raw": "no service pad",
+          "mapping_id": "cisco_ios_xe/service-pad",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 10,
+          "line_end": 10,
+          "raw": "no service tcp-small-servers",
+          "mapping_id": "cisco_ios_xe/service-tcp-small-servers",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 11,
+          "line_end": 11,
+          "raw": "no service udp-small-servers",
+          "mapping_id": "cisco_ios_xe/service-udp-small-servers",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 43,
+          "line_end": 43,
+          "raw": "no ip finger",
+          "mapping_id": "cisco_ios_xe/ip-finger",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 44,
+          "line_end": 44,
+          "raw": "no ip bootp server",
+          "mapping_id": "cisco_ios_xe/ip-bootp-server",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Interface[GigabitEthernet1]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[GigabitEthernet1].",
+      "actual": [
+        "Interface[GigabitEthernet1].proxy_arp = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 52,
+          "line_end": 52,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 58,
+          "line_end": 58,
+          "raw": "no ip proxy-arp",
+          "mapping_id": "cisco_ios_xe/interface-proxy-arp",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Interface[GigabitEthernet2]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[GigabitEthernet2].",
+      "actual": [
+        "Interface[GigabitEthernet2].proxy_arp = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 61,
+          "line_end": 61,
+          "raw": "interface GigabitEthernet2",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 65,
+          "line_end": 65,
+          "raw": "no ip proxy-arp",
+          "mapping_id": "cisco_ios_xe/interface-proxy-arp",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Interface[GigabitEthernet3]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[GigabitEthernet3].",
+      "actual": [
+        "Interface[GigabitEthernet3].proxy_arp = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 67,
+          "line_end": 67,
+          "raw": "interface GigabitEthernet3",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 70,
+          "line_end": 70,
+          "raw": "no ip proxy-arp",
+          "mapping_id": "cisco_ios_xe/interface-proxy-arp",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
       "rule_id": "TIME-NTP-AUTH-01",
       "entity_id": "TimeSource[10.10.10.70]",
       "status": "PASS",
@@ -818,8 +1551,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 99,
-          "line_end": 99,
+          "line_start": 100,
+          "line_end": 100,
           "raw": "ntp authenticate",
           "mapping_id": "cisco_ios_xe/ntp-authenticate",
           "mapping_version": 1,
@@ -829,11 +1562,11 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 101,
-          "line_end": 101,
+          "line_start": 102,
+          "line_end": 102,
           "raw": "ntp server 10.10.10.70 key ****",
           "mapping_id": "cisco_ios_xe/ntp-server-key",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -842,11 +1575,11 @@
     }
   ],
   "assurance": {
-    "statements": 91,
-    "understood": 33,
-    "unmapped": 58,
+    "statements": 92,
+    "understood": 53,
+    "unmapped": 39,
     "near_miss": 0,
-    "understood_pct": 36.3,
+    "understood_pct": 57.6,
     "unmapped_patterns": [
       {
         "pattern_key": "ip address <IP> <IP>",
@@ -861,40 +1594,10 @@
         "example": "no ip redirects"
       },
       {
-        "pattern_key": "no ip proxy-arp",
-        "count": 2,
-        "first_line": 58,
-        "example": "no ip proxy-arp"
-      },
-      {
         "pattern_key": "service timestamps debug datetime msec localtime show-timezone",
         "count": 1,
         "first_line": 6,
         "example": "service timestamps debug datetime msec localtime show-timezone"
-      },
-      {
-        "pattern_key": "service password-encryption",
-        "count": 1,
-        "first_line": 8,
-        "example": "service password-encryption"
-      },
-      {
-        "pattern_key": "no service pad",
-        "count": 1,
-        "first_line": 9,
-        "example": "no service pad"
-      },
-      {
-        "pattern_key": "no service tcp-small-servers",
-        "count": 1,
-        "first_line": 10,
-        "example": "no service tcp-small-servers"
-      },
-      {
-        "pattern_key": "no service udp-small-servers",
-        "count": 1,
-        "first_line": 11,
-        "example": "no service udp-small-servers"
       },
       {
         "pattern_key": "boot-start-marker",
@@ -975,18 +1678,6 @@
         "example": "no ip source-route"
       },
       {
-        "pattern_key": "no ip finger",
-        "count": 1,
-        "first_line": 43,
-        "example": "no ip finger"
-      },
-      {
-        "pattern_key": "no ip bootp server",
-        "count": 1,
-        "first_line": 44,
-        "example": "no ip bootp server"
-      },
-      {
         "pattern_key": "archive",
         "count": 1,
         "first_line": 46,
@@ -1011,12 +1702,6 @@
         "example": "hidekeys"
       },
       {
-        "pattern_key": "description WAN uplink",
-        "count": 1,
-        "first_line": 53,
-        "example": "description WAN uplink"
-      },
-      {
         "pattern_key": "no ip unreachables",
         "count": 1,
         "first_line": 57,
@@ -1029,154 +1714,136 @@
         "example": "no cdp enable"
       },
       {
-        "pattern_key": "description LAN",
-        "count": 1,
-        "first_line": 62,
-        "example": "description LAN"
-      },
-      {
-        "pattern_key": "description Out-of-band management",
-        "count": 1,
-        "first_line": 68,
-        "example": "description Out-of-band management"
-      },
-      {
         "pattern_key": "ip access-list standard MGMT-ACL",
         "count": 1,
-        "first_line": 71,
-        "example": "ip access-list standard MGMT-ACL"
-      },
-      {
-        "pattern_key": "<INT> permit <IP> <IP>",
-        "count": 1,
         "first_line": 72,
-        "example": "10 permit 10.10.10.0 0.0.0.255"
-      },
-      {
-        "pattern_key": "<INT> deny any log",
-        "count": 1,
-        "first_line": 73,
-        "example": "20 deny any log"
+        "example": "ip access-list standard MGMT-ACL"
       },
       {
         "pattern_key": "ip access-list extended EDGE-IN",
         "count": 1,
-        "first_line": 75,
-        "example": "ip access-list extended EDGE-IN"
-      },
-      {
-        "pattern_key": "<INT> deny tcp any any eq telnet log",
-        "count": 1,
         "first_line": 76,
-        "example": "10 deny tcp any any eq telnet log"
-      },
-      {
-        "pattern_key": "<INT> deny udp any any eq snmp log",
-        "count": 1,
-        "first_line": 77,
-        "example": "20 deny udp any any eq snmp log"
-      },
-      {
-        "pattern_key": "<INT> permit tcp any host <IP> eq <INT> log",
-        "count": 1,
-        "first_line": 78,
-        "example": "30 permit tcp any host 203.0.113.2 eq 22 log"
-      },
-      {
-        "pattern_key": "<INT> permit icmp any any echo-reply",
-        "count": 1,
-        "first_line": 79,
-        "example": "40 permit icmp any any echo-reply"
-      },
-      {
-        "pattern_key": "<INT> deny ip any any log",
-        "count": 1,
-        "first_line": 80,
-        "example": "50 deny ip any any log"
+        "example": "ip access-list extended EDGE-IN"
       },
       {
         "pattern_key": "aaa group server tacacs+ TACACS-GRP",
         "count": 1,
-        "first_line": 86,
+        "first_line": 87,
         "example": "aaa group server tacacs+ TACACS-GRP"
       },
       {
         "pattern_key": "server name TAC1",
         "count": 1,
-        "first_line": 87,
+        "first_line": 88,
         "example": "server name TAC1"
       },
       {
         "pattern_key": "logging buffered <INT> informational",
         "count": 1,
-        "first_line": 89,
+        "first_line": 90,
         "example": "logging buffered 64000 informational"
       },
       {
         "pattern_key": "logging trap informational",
         "count": 1,
-        "first_line": 90,
+        "first_line": 91,
         "example": "logging trap informational"
       },
       {
         "pattern_key": "logging source-interface <IFNAME>",
         "count": 1,
-        "first_line": 91,
+        "first_line": 92,
         "example": "logging source-interface GigabitEthernet3"
       },
       {
         "pattern_key": "snmp-server group NMS-GRP v3 priv read NMS-VIEW access MGMT-ACL",
         "count": 1,
-        "first_line": 94,
+        "first_line": 95,
         "example": "snmp-server group NMS-GRP v3 priv read NMS-VIEW access MGMT-ACL"
       },
       {
         "pattern_key": "snmp-server view NMS-VIEW iso included",
         "count": 1,
-        "first_line": 95,
+        "first_line": 96,
         "example": "snmp-server view NMS-VIEW iso included"
       },
       {
         "pattern_key": "snmp-server host <IP> version <INT> priv nmsuser",
         "count": 1,
-        "first_line": 96,
+        "first_line": 97,
         "example": "snmp-server host 10.10.10.60 version 3 priv nmsuser"
       },
       {
         "pattern_key": "ntp authentication-key <INT> hmac-sha2-256 ****",
         "count": 1,
-        "first_line": 98,
+        "first_line": 99,
         "example": "ntp authentication-key 1 hmac-sha2-256 ****"
       },
       {
         "pattern_key": "ntp trusted-key <INT>",
         "count": 1,
-        "first_line": 100,
+        "first_line": 101,
         "example": "ntp trusted-key 1"
-      },
-      {
-        "pattern_key": "banner login ^C",
-        "count": 1,
-        "first_line": 103,
-        "example": "banner login ^C"
       },
       {
         "pattern_key": "logging synchronous",
         "count": 1,
-        "first_line": 109,
+        "first_line": 110,
         "example": "logging synchronous"
       },
       {
         "pattern_key": "transport output none",
         "count": 1,
-        "first_line": 114,
+        "first_line": 115,
         "example": "transport output none"
       }
     ],
     "review_findings": 0,
     "mappings_used": [
       {
+        "mapping": "cisco_ios_xe/acl-ext-entry@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 20
+      },
+      {
+        "mapping": "cisco_ios_xe/acl-ext-ip-any-any@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "cisco_ios_xe/acl-std-any@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/acl-std-entry@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 10
+      },
+      {
+        "mapping": "cisco_ios_xe/acl-std-net@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
         "mapping": "cisco_ios_xe/archive-log-config@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/banner@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1190,7 +1857,7 @@
         "facts": 1
       },
       {
-        "mapping": "cisco_ios_xe/enable-secret@1",
+        "mapping": "cisco_ios_xe/enable-secret@2",
         "approved_by": [
           "maintainer"
         ],
@@ -1198,6 +1865,34 @@
       },
       {
         "mapping": "cisco_ios_xe/interface-access-group-in@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/interface-description@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "cisco_ios_xe/interface-proxy-arp@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "cisco_ios_xe/ip-bootp-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/ip-finger@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1253,7 +1948,7 @@
         "facts": 2
       },
       {
-        "mapping": "cisco_ios_xe/logging-host-transport@1",
+        "mapping": "cisco_ios_xe/logging-host-transport@2",
         "approved_by": [
           "maintainer"
         ],
@@ -1274,7 +1969,7 @@
         "facts": 1
       },
       {
-        "mapping": "cisco_ios_xe/ntp-server-key@1",
+        "mapping": "cisco_ios_xe/ntp-server-key@2",
         "approved_by": [
           "maintainer"
         ],
@@ -1288,7 +1983,35 @@
         "facts": 1
       },
       {
-        "mapping": "cisco_ios_xe/service-timestamps-log@1",
+        "mapping": "cisco_ios_xe/service-pad@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/service-password-encryption@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/service-tcp-small-servers@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/service-timestamps-log-datetime@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/service-udp-small-servers@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1316,7 +2039,7 @@
         "facts": 1
       },
       {
-        "mapping": "cisco_ios_xe/username-privilege-secret@1",
+        "mapping": "cisco_ios_xe/username-privilege-secret@2",
         "approved_by": [
           "maintainer"
         ],
@@ -1359,7 +2082,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.2",
+    "sbm_version": "0.3",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1440,8 +2163,8 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 110,
-            "line_end": 110,
+            "line_start": 111,
+            "line_end": 111,
             "raw": "line vty 0 4",
             "mapping_id": null,
             "mapping_version": null,
@@ -1510,8 +2233,8 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 110,
-            "line_end": 110,
+            "line_start": 111,
+            "line_end": 111,
             "raw": "line vty 0 4",
             "mapping_id": null,
             "mapping_version": null,
@@ -1567,8 +2290,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 82,
-            "line_end": 82,
+            "line_start": 83,
+            "line_end": 83,
             "raw": "tacacs server TAC1",
             "mapping_id": "cisco_ios_xe/tacacs-server",
             "mapping_version": 1,
@@ -1584,8 +2307,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 82,
-              "line_end": 82,
+              "line_start": 83,
+              "line_end": 83,
               "raw": "tacacs server TAC1",
               "mapping_id": "cisco_ios_xe/tacacs-server",
               "mapping_version": 1,
@@ -1602,8 +2325,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 83,
-              "line_end": 83,
+              "line_start": 84,
+              "line_end": 84,
               "raw": "address ipv4 10.10.10.40",
               "mapping_id": "cisco_ios_xe/tacacs-server-address",
               "mapping_version": 1,
@@ -1620,8 +2343,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 84,
-              "line_end": 84,
+              "line_start": 85,
+              "line_end": 85,
               "raw": "key 7 ****",
               "mapping_id": "cisco_ios_xe/tacacs-server-key-typed",
               "mapping_version": 1,
@@ -1630,6 +2353,978 @@
               ]
             }
           ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "login",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 104,
+            "line_end": 106,
+            "raw": "banner login ^C",
+            "mapping_id": "cisco_ios_xe/banner",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Banner",
+        "present": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 104,
+              "line_end": 106,
+              "raw": "banner login ^C",
+              "mapping_id": "cisco_ios_xe/banner",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "text": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "EDGE-IN:10",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "EDGE-IN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 77,
+              "line_end": 77,
+              "raw": "10 deny tcp any any eq telnet log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 10,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 77,
+              "line_end": 77,
+              "raw": "10 deny tcp any any eq telnet log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "dst": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "tcp"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 77,
+              "line_end": 77,
+              "raw": "10 deny tcp any any eq telnet log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "deny",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 77,
+              "line_end": 77,
+              "raw": "10 deny tcp any any eq telnet log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "EDGE-IN:20",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "EDGE-IN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "20 deny udp any any eq snmp log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 20,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "20 deny udp any any eq snmp log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "dst": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "udp"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "20 deny udp any any eq snmp log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "deny",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "20 deny udp any any eq snmp log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "EDGE-IN:30",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "EDGE-IN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 79,
+              "line_end": 79,
+              "raw": "30 permit tcp any host 203.0.113.2 eq 22 log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 30,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 79,
+              "line_end": 79,
+              "raw": "30 permit tcp any host 203.0.113.2 eq 22 log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "dst": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "tcp"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 79,
+              "line_end": 79,
+              "raw": "30 permit tcp any host 203.0.113.2 eq 22 log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 79,
+              "line_end": 79,
+              "raw": "30 permit tcp any host 203.0.113.2 eq 22 log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "EDGE-IN:40",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "EDGE-IN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "40 permit icmp any any echo-reply",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 40,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "40 permit icmp any any echo-reply",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "dst": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "icmp"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "40 permit icmp any any echo-reply",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "40 permit icmp any any echo-reply",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "EDGE-IN:50",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "EDGE-IN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 81,
+              "line_end": 81,
+              "raw": "50 deny ip any any log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 50,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 81,
+              "line_end": 81,
+              "raw": "50 deny ip any any log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 81,
+              "line_end": 81,
+              "raw": "50 deny ip any any log",
+              "mapping_id": "cisco_ios_xe/acl-ext-ip-any-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 81,
+              "line_end": 81,
+              "raw": "50 deny ip any any log",
+              "mapping_id": "cisco_ios_xe/acl-ext-ip-any-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 81,
+              "line_end": 81,
+              "raw": "50 deny ip any any log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "deny",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 81,
+              "line_end": 81,
+              "raw": "50 deny ip any any log",
+              "mapping_id": "cisco_ios_xe/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "MGMT-ACL:10",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "MGMT-ACL",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 73,
+              "line_end": 73,
+              "raw": "10 permit 10.10.10.0 0.0.0.255",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 10,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 73,
+              "line_end": 73,
+              "raw": "10 permit 10.10.10.0 0.0.0.255",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "10.10.10.0 0.0.0.255"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 73,
+              "line_end": 73,
+              "raw": "10 permit 10.10.10.0 0.0.0.255",
+              "mapping_id": "cisco_ios_xe/acl-std-net",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 73,
+              "line_end": 73,
+              "raw": "10 permit 10.10.10.0 0.0.0.255",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 73,
+              "line_end": 73,
+              "raw": "10 permit 10.10.10.0 0.0.0.255",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 73,
+              "line_end": 73,
+              "raw": "10 permit 10.10.10.0 0.0.0.255",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "MGMT-ACL:20",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "MGMT-ACL",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 74,
+              "line_end": 74,
+              "raw": "20 deny any log",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 20,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 74,
+              "line_end": 74,
+              "raw": "20 deny any log",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 74,
+              "line_end": 74,
+              "raw": "20 deny any log",
+              "mapping_id": "cisco_ios_xe/acl-std-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 74,
+              "line_end": 74,
+              "raw": "20 deny any log",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 74,
+              "line_end": 74,
+              "raw": "20 deny any log",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "deny",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 74,
+              "line_end": 74,
+              "raw": "20 deny any log",
+              "mapping_id": "cisco_ios_xe/acl-std-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -1649,6 +3344,24 @@
           }
         ],
         "type": "Interface",
+        "description": {
+          "value": "WAN uplink",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 53,
+              "line_end": 53,
+              "raw": "description WAN uplink",
+              "mapping_id": "cisco_ios_xe/interface-description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
         "zone": {
           "value": null,
           "state": "absent",
@@ -1672,6 +3385,24 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 58,
+              "line_end": 58,
+              "raw": "no ip proxy-arp",
+              "mapping_id": "cisco_ios_xe/interface-proxy-arp",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "filters_in": {
           "value": [
@@ -1716,6 +3447,24 @@
           }
         ],
         "type": "Interface",
+        "description": {
+          "value": "LAN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 62,
+              "line_end": 62,
+              "raw": "description LAN",
+              "mapping_id": "cisco_ios_xe/interface-description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
         "zone": {
           "value": null,
           "state": "absent",
@@ -1739,6 +3488,24 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 65,
+              "line_end": 65,
+              "raw": "no ip proxy-arp",
+              "mapping_id": "cisco_ios_xe/interface-proxy-arp",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "filters_in": {
           "value": null,
@@ -1769,6 +3536,24 @@
           }
         ],
         "type": "Interface",
+        "description": {
+          "value": "Out-of-band management",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 68,
+              "line_end": 68,
+              "raw": "description Out-of-band management",
+              "mapping_id": "cisco_ios_xe/interface-description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
         "zone": {
           "value": null,
           "state": "absent",
@@ -1793,6 +3578,24 @@
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
         },
+        "proxy_arp": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 70,
+              "line_end": 70,
+              "raw": "no ip proxy-arp",
+              "mapping_id": "cisco_ios_xe/interface-proxy-arp",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
         "filters_in": {
           "value": null,
           "state": "absent",
@@ -1815,7 +3618,7 @@
             "line_end": 19,
             "raw": "enable secret 9 ****",
             "mapping_id": "cisco_ios_xe/enable-secret",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -1832,7 +3635,7 @@
               "line_end": 19,
               "raw": "enable secret 9 ****",
               "mapping_id": "cisco_ios_xe/enable-secret",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -1850,7 +3653,7 @@
               "line_end": 19,
               "raw": "enable secret 9 ****",
               "mapping_id": "cisco_ios_xe/enable-secret",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -1868,7 +3671,7 @@
             "line_end": 27,
             "raw": "username netadmin privilege 15 secret 9 ****",
             "mapping_id": "cisco_ios_xe/username-privilege-secret",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -1885,7 +3688,7 @@
               "line_end": 27,
               "raw": "username netadmin privilege 15 secret 9 ****",
               "mapping_id": "cisco_ios_xe/username-privilege-secret",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -1903,7 +3706,7 @@
               "line_end": 27,
               "raw": "username netadmin privilege 15 secret 9 ****",
               "mapping_id": "cisco_ios_xe/username-privilege-secret",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -1958,11 +3761,11 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 92,
-            "line_end": 92,
+            "line_start": 93,
+            "line_end": 93,
             "raw": "logging host 10.10.10.50 transport tcp port 601",
             "mapping_id": "cisco_ios_xe/logging-host-transport",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -1975,11 +3778,11 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 92,
-              "line_end": 92,
+              "line_start": 93,
+              "line_end": 93,
               "raw": "logging host 10.10.10.50 transport tcp port 601",
               "mapping_id": "cisco_ios_xe/logging-host-transport",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -1993,11 +3796,11 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 92,
-              "line_end": 92,
+              "line_start": 93,
+              "line_end": 93,
               "raw": "logging host 10.10.10.50 transport tcp port 601",
               "mapping_id": "cisco_ios_xe/logging-host-transport",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2025,7 +3828,7 @@
               "line_start": 7,
               "line_end": 7,
               "raw": "service timestamps log datetime msec localtime show-timezone",
-              "mapping_id": "cisco_ios_xe/service-timestamps-log",
+              "mapping_id": "cisco_ios_xe/service-timestamps-log-datetime",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2056,6 +3859,136 @@
               ]
             }
           ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "bootp",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 44,
+            "line_end": 44,
+            "raw": "no ip bootp server",
+            "mapping_id": "cisco_ios_xe/ip-bootp-server",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 44,
+              "line_end": 44,
+              "raw": "no ip bootp server",
+              "mapping_id": "cisco_ios_xe/ip-bootp-server",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "finger",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 43,
+            "line_end": 43,
+            "raw": "no ip finger",
+            "mapping_id": "cisco_ios_xe/ip-finger",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 43,
+              "line_end": 43,
+              "raw": "no ip finger",
+              "mapping_id": "cisco_ios_xe/ip-finger",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -2094,6 +4027,12 @@
           "default_source": null
         },
         "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2153,6 +4092,77 @@
           "default_source": null
         },
         "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "pad",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 9,
+            "line_end": 9,
+            "raw": "no service pad",
+            "mapping_id": "cisco_ios_xe/service-pad",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 9,
+              "line_end": 9,
+              "raw": "no service pad",
+              "mapping_id": "cisco_ios_xe/service-pad",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2239,6 +4249,12 @@
           ],
           "default_source": null
         },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": [
             "aes128-ctr",
@@ -2290,6 +4306,71 @@
         }
       },
       {
+        "key": "tcp-small-servers",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 10,
+            "line_end": 10,
+            "raw": "no service tcp-small-servers",
+            "mapping_id": "cisco_ios_xe/service-tcp-small-servers",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 10,
+              "line_end": 10,
+              "raw": "no service tcp-small-servers",
+              "mapping_id": "cisco_ios_xe/service-tcp-small-servers",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
         "key": "telnet",
         "evidence": [],
         "type": "MgmtService",
@@ -2300,6 +4381,77 @@
           "default_source": "cisco_ios_xe/defaults.yaml#no-global-telnet-service"
         },
         "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "udp-small-servers",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 11,
+            "line_end": 11,
+            "raw": "no service udp-small-servers",
+            "mapping_id": "cisco_ios_xe/service-udp-small-servers",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 11,
+              "line_end": 11,
+              "raw": "no service udp-small-servers",
+              "mapping_id": "cisco_ios_xe/service-udp-small-servers",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2329,8 +4481,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 107,
-            "line_end": 107,
+            "line_start": 108,
+            "line_end": 108,
             "raw": "line con 0",
             "mapping_id": "cisco_ios_xe/line-con",
             "mapping_version": 1,
@@ -2346,8 +4498,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 107,
-              "line_end": 107,
+              "line_start": 108,
+              "line_end": 108,
               "raw": "line con 0",
               "mapping_id": "cisco_ios_xe/line-con",
               "mapping_version": 1,
@@ -2382,8 +4534,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 108,
-              "line_end": 108,
+              "line_start": 109,
+              "line_end": 109,
               "raw": "exec-timeout 5 0",
               "mapping_id": "cisco_ios_xe/con-exec-timeout",
               "mapping_version": 1,
@@ -2406,8 +4558,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 110,
-            "line_end": 110,
+            "line_start": 111,
+            "line_end": 111,
             "raw": "line vty 0 4",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -2423,8 +4575,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 110,
-              "line_end": 110,
+              "line_start": 111,
+              "line_end": 111,
               "raw": "line vty 0 4",
               "mapping_id": "cisco_ios_xe/line-vty-range",
               "mapping_version": 1,
@@ -2449,8 +4601,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 113,
-              "line_end": 113,
+              "line_start": 114,
+              "line_end": 114,
               "raw": "transport input ssh",
               "mapping_id": "cisco_ios_xe/vty-range-transport-input",
               "mapping_version": 1,
@@ -2467,8 +4619,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 111,
-              "line_end": 111,
+              "line_start": 112,
+              "line_end": 112,
               "raw": "access-class MGMT-ACL in",
               "mapping_id": "cisco_ios_xe/vty-range-access-class",
               "mapping_version": 1,
@@ -2485,8 +4637,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 112,
-              "line_end": 112,
+              "line_start": 113,
+              "line_end": 113,
               "raw": "exec-timeout 10 0",
               "mapping_id": "cisco_ios_xe/vty-range-exec-timeout",
               "mapping_version": 1,
@@ -2509,8 +4661,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 115,
-            "line_end": 115,
+            "line_start": 116,
+            "line_end": 116,
             "raw": "line vty 5 15",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -2526,8 +4678,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 115,
-              "line_end": 115,
+              "line_start": 116,
+              "line_end": 116,
               "raw": "line vty 5 15",
               "mapping_id": "cisco_ios_xe/line-vty-range",
               "mapping_version": 1,
@@ -2550,8 +4702,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 118,
-              "line_end": 118,
+              "line_start": 119,
+              "line_end": 119,
               "raw": "transport input none",
               "mapping_id": "cisco_ios_xe/vty-range-transport-input-none",
               "mapping_version": 1,
@@ -2568,8 +4720,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 116,
-              "line_end": 116,
+              "line_start": 117,
+              "line_end": 117,
               "raw": "access-class MGMT-ACL in",
               "mapping_id": "cisco_ios_xe/vty-range-access-class",
               "mapping_version": 1,
@@ -2586,8 +4738,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 117,
-              "line_end": 117,
+              "line_start": 118,
+              "line_end": 118,
               "raw": "exec-timeout 10 0",
               "mapping_id": "cisco_ios_xe/vty-range-exec-timeout",
               "mapping_version": 1,
@@ -2610,14 +4762,14 @@
         "evidence": [],
         "type": "PasswordPolicy",
         "min_length": {
-          "value": 12,
+          "value": 15,
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.cfg",
               "line_start": 18,
               "line_end": 18,
-              "raw": "security passwords min-length 12",
+              "raw": "security passwords min-length 15",
               "mapping_id": "cisco_ios_xe/security-passwords-min-length",
               "mapping_version": 1,
               "approved_by": [
@@ -2639,6 +4791,24 @@
           "evidence": [],
           "default_source": null
         },
+        "cleartext_passwords_encrypted": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 8,
+              "line_end": 8,
+              "raw": "service password-encryption",
+              "mapping_id": "cisco_ios_xe/service-password-encryption",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
         "max_age_days": {
           "value": null,
           "state": "absent",
@@ -2656,8 +4826,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 99,
-              "line_end": 99,
+              "line_start": 100,
+              "line_end": 100,
               "raw": "ntp authenticate",
               "mapping_id": "cisco_ios_xe/ntp-authenticate",
               "mapping_version": 1,
@@ -2674,11 +4844,11 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 101,
-            "line_end": 101,
+            "line_start": 102,
+            "line_end": 102,
             "raw": "ntp server 10.10.10.70 key ****",
             "mapping_id": "cisco_ios_xe/ntp-server-key",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -2691,11 +4861,11 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 101,
-              "line_end": 101,
+              "line_start": 102,
+              "line_end": 102,
               "raw": "ntp server 10.10.10.70 key ****",
               "mapping_id": "cisco_ios_xe/ntp-server-key",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2709,11 +4879,11 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 101,
-              "line_end": 101,
+              "line_start": 102,
+              "line_end": 102,
               "raw": "ntp server 10.10.10.70 key ****",
               "mapping_id": "cisco_ios_xe/ntp-server-key",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2730,8 +4900,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 82,
-            "line_end": 82,
+            "line_start": 83,
+            "line_end": 83,
             "raw": "tacacs server TAC1",
             "mapping_id": "cisco_ios_xe/tacacs-server",
             "mapping_version": 1,
@@ -2741,10 +4911,94 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 83,
-            "line_end": 83,
+            "line_start": 84,
+            "line_end": 84,
             "raw": "address ipv4 10.10.10.40",
             "mapping_id": "cisco_ios_xe/tacacs-server-address",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "filtering.permit_all_present": {
+        "value": false,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 73,
+            "line_end": 73,
+            "raw": "10 permit 10.10.10.0 0.0.0.255",
+            "mapping_id": "cisco_ios_xe/acl-std-net",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 74,
+            "line_end": 74,
+            "raw": "20 deny any log",
+            "mapping_id": "cisco_ios_xe/acl-std-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 77,
+            "line_end": 77,
+            "raw": "10 deny tcp any any eq telnet log",
+            "mapping_id": "cisco_ios_xe/acl-ext-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 78,
+            "line_end": 78,
+            "raw": "20 deny udp any any eq snmp log",
+            "mapping_id": "cisco_ios_xe/acl-ext-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 79,
+            "line_end": 79,
+            "raw": "30 permit tcp any host 203.0.113.2 eq 22 log",
+            "mapping_id": "cisco_ios_xe/acl-ext-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 80,
+            "line_end": 80,
+            "raw": "40 permit icmp any any echo-reply",
+            "mapping_id": "cisco_ios_xe/acl-ext-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 81,
+            "line_end": 81,
+            "raw": "50 deny ip any any log",
+            "mapping_id": "cisco_ios_xe/acl-ext-entry",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -2759,11 +5013,11 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 92,
-            "line_end": 92,
+            "line_start": 93,
+            "line_end": 93,
             "raw": "logging host 10.10.10.50 transport tcp port 601",
             "mapping_id": "cisco_ios_xe/logging-host-transport",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -2781,6 +5035,93 @@
             "line_end": 40,
             "raw": "no ip http server",
             "mapping_id": "cisco_ios_xe/ip-http-server",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "management.login_banner_present": {
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 104,
+            "line_end": 106,
+            "raw": "banner login ^C",
+            "mapping_id": "cisco_ios_xe/banner",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "management.ssh_reachable": {
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 111,
+            "line_end": 111,
+            "raw": "line vty 0 4",
+            "mapping_id": "cisco_ios_xe/line-vty-range",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 114,
+            "line_end": 114,
+            "raw": "transport input ssh",
+            "mapping_id": "cisco_ios_xe/vty-range-transport-input",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "management.ssh_v1_negotiable": {
+        "value": false,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 34,
+            "line_end": 34,
+            "raw": "ip ssh version 2",
+            "mapping_id": "cisco_ios_xe/ip-ssh-version",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 37,
+            "line_end": 37,
+            "raw": "ip ssh server algorithm encryption aes256-ctr aes192-ctr aes128-ctr",
+            "mapping_id": "cisco_ios_xe/ip-ssh-ciphers",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 38,
+            "line_end": 38,
+            "raw": "ip ssh server algorithm mac hmac-sha2-512 hmac-sha2-256",
+            "mapping_id": "cisco_ios_xe/ip-ssh-macs",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -2828,8 +5169,8 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 110,
-            "line_end": 110,
+            "line_start": 111,
+            "line_end": 111,
             "raw": "line vty 0 4",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -2839,8 +5180,8 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 113,
-            "line_end": 113,
+            "line_start": 114,
+            "line_end": 114,
             "raw": "transport input ssh",
             "mapping_id": "cisco_ios_xe/vty-range-transport-input",
             "mapping_version": 1,
@@ -2850,8 +5191,8 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 115,
-            "line_end": 115,
+            "line_start": 116,
+            "line_end": 116,
             "raw": "line vty 5 15",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -2861,8 +5202,8 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 118,
-            "line_end": 118,
+            "line_start": 119,
+            "line_end": 119,
             "raw": "transport input none",
             "mapping_id": "cisco_ios_xe/vty-range-transport-input-none",
             "mapping_version": 1,
@@ -2872,6 +5213,68 @@
           }
         ],
         "default_source": "cisco_ios_xe/defaults.yaml#no-global-telnet-service, cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
+      },
+      "services.legacy_enabled": {
+        "value": false,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 9,
+            "line_end": 9,
+            "raw": "no service pad",
+            "mapping_id": "cisco_ios_xe/service-pad",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 10,
+            "line_end": 10,
+            "raw": "no service tcp-small-servers",
+            "mapping_id": "cisco_ios_xe/service-tcp-small-servers",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 11,
+            "line_end": 11,
+            "raw": "no service udp-small-servers",
+            "mapping_id": "cisco_ios_xe/service-udp-small-servers",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 43,
+            "line_end": 43,
+            "raw": "no ip finger",
+            "mapping_id": "cisco_ios_xe/ip-finger",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 44,
+            "line_end": 44,
+            "raw": "no ip bootp server",
+            "mapping_id": "cisco_ios_xe/ip-bootp-server",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
       },
       "snmp.weak_community_present": {
         "value": false,

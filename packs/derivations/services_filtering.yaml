@@ -1,0 +1,48 @@
+# Device-level meanings for SSH exposure, legacy services and packet filtering (PLAN §8.3).
+
+derivations:
+  - id: management.ssh_reachable
+    version: 1
+    type: bool
+    description: SSH can reach the management plane (an SSH service, or a vty range accepting SSH).
+    expr: >
+      any(MgmtService where key == 'ssh': enabled)
+      or any(MgmtSession where kind == 'vty': transport contains 'ssh')
+
+  - id: services.legacy_enabled
+    version: 1
+    type: bool
+    description: >
+      A legacy service hardening guides switch off is running: PAD, finger, BOOTP server or the
+      TCP/UDP small servers. Each service is checked on its own, so one that was never seen and
+      has no known default leaves the answer open (REVIEW) instead of counting as off.
+    expr: >
+      any(MgmtService where key == 'pad': enabled)
+      or any(MgmtService where key == 'finger': enabled)
+      or any(MgmtService where key == 'bootp': enabled)
+      or any(MgmtService where key == 'tcp-small-servers': enabled)
+      or any(MgmtService where key == 'udp-small-servers': enabled)
+
+  - id: filtering.permit_all_present
+    version: 1
+    type: bool
+    description: >
+      Some filter entry permits all IP traffic from any source to any destination. An entry
+      whose addresses weren't read leaves this open (REVIEW) rather than assumed harmless.
+    expr: >
+      any(FilterRule: action == 'permit' and service contains 'ip'
+          and src contains 'any' and dst contains 'any')
+
+  - id: management.ssh_v1_negotiable
+    version: 1
+    type: bool
+    description: SSH is reachable and a client could still negotiate protocol version 1.
+    expr: >
+      management.ssh_reachable
+      and any(MgmtService where key == 'ssh': version != '2')
+
+  - id: management.login_banner_present
+    version: 1
+    type: bool
+    description: A banner is shown before or at login (login or motd banner).
+    expr: "any(Banner where key in [login, motd]: present)"

@@ -43,6 +43,12 @@ Whitespace-separated tokens. A token is a literal word or a slot `<TYPE>` / `<TY
 
 Slot names are unique within a pattern. Literal words match case-sensitively.
 
+**Optional groups** (in `match` and `negation` only): `[log]`, `[vrf <STR>]`. A pattern with
+optional groups stands for every combination of them, at most three groups per pattern:
+`<INT:seq> <STR:action> ip any any [log]` matches both forms. A slot inside a group can't name
+the entity or feed an effect, because it isn't captured in every form. A lone `[` or `]` is an
+ordinary word. Contexts and identity patterns take no optional groups.
+
 **Context** is a list of patterns that must match a contiguous run of the statement's block
 path **ending at its parent** (a suffix match), so a mapping can say
 `["deviceconfig", "system", "service"]` without spelling out the whole XML path. Slots
@@ -65,6 +71,7 @@ Family conventions that make one language serve all shapes (fixed by the shape p
 |---|---|---|
 | `{set: Entity.attr, from: slot, map?, transform?}` | set | slot value becomes the attribute |
 | `{set: Entity.attr, from: {min: 60, sec: 1}}` | set | weighted sum of INT slots (unit normalisation: `exec-timeout 10 0` → 600) |
+| `{set: …, template: "{a} {b}"}` / `{members: …, template: …}` | set / members | one value built from several slots, e.g. an ACL address and wildcard as `"10.0.0.0 0.0.0.255"` |
 | `{assert: Entity.attr, value: v}` | assert | the statement's presence means attr = v |
 | `{members: Entity.attr, from: slot, map?}` | members | each LIST item joins a set attribute |
 | `{ref: Entity.attr, from: slot, target: acl}` | ref | the attribute names another entity; the resolver links it (M2.23) |

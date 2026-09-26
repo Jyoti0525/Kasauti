@@ -1,0 +1,227 @@
+# Hardening rules added with the full W1-W20 coverage (PLAN §12.3): services, password policy,
+# web management, SSH, banners, logging detail and packet filtering.
+rules:
+  - id: SVC-LEGACY-01
+    title: Legacy network services are disabled
+    intent: >
+      PAD, finger, the BOOTP server and the TCP/UDP small servers are rarely needed, leak
+      information or open extra ways in; every one that runs is attack surface.
+    domain: services
+    for_each: Device
+    assert: not services.legacy_enabled
+    on_absent: resolve_default
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: services.legacy_enabled, equal: false}
+    refs:
+      nist_800_53r5: [CM-7]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: AAA-PASSWORD-ENCRYPTION-01
+    title: No password is stored in the configuration in clear text
+    intent: >
+      Anyone who sees the configuration (a backup, a screen share, a support case) must not
+      read passwords from it. Cisco `service password-encryption` only applies reversible
+      type 7, so it is a floor; strong hashing is checked by AAA-LOCAL-PASSWORD-HASH-01.
+    domain: aaa
+    for_each: PasswordPolicy
+    assert: cleartext_passwords_encrypted
+    on_absent: resolve_default
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: cleartext_passwords_encrypted, equal: true}
+    refs:
+      nist_800_53r5: [IA-5(1)]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: AAA-PASSWORD-MIN-LENGTH-01
+    title: Passwords must be at least 15 characters
+    intent: >
+      NIST SP 800-63B-4 requires at least 15 characters for passwords used as a single factor,
+      which is how device logins are used when AAA is unreachable.
+    domain: aaa
+    for_each: PasswordPolicy
+    assert: min_length >= 15
+    on_absent: fail              # no enforced minimum is the violation
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: min_length, equal: 15}
+    refs:
+      nist_800_53r5: [IA-5(1)]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: MGMT-WEB-ACL-01
+    title: Web management accepts only permitted sources
+    intent: >
+      If the device serves a web management interface, only management networks may reach
+      it; otherwise every address that can route to the device can try to log in.
+    domain: management_plane
+    for_each: MgmtService where key in [http, https] and enabled
+    assert: exists(access_filter)
+    on_absent: review
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: access_filter, equal: MGMT-ACL}   # the recipe asks for the site's ACL
+    refs:
+      nist_800_53r5: [AC-3, AC-17]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/fixtures/web_mgmt_restricted.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: MGMT-SSH-V2-01
+    title: SSH management uses protocol version 2 only
+    intent: SSH version 1 has known cryptographic weaknesses and must not be negotiable.
+    domain: management_plane
+    for_each: Device
+    assert: not management.ssh_v1_negotiable
+    on_absent: resolve_default   # the default differs by release (1.99 before IOS XE 17.10)
+    on_unknown: review
+    severity: {base: high}
+    fix_intent: {make: management.ssh_v1_negotiable, equal: false}
+    refs:
+      nist_800_53r5: [AC-17(2), SC-8, SC-13]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: MGMT-BANNER-01
+    title: A login banner warns against unauthorised use
+    intent: >
+      A notice shown before login states that the system is for authorised use and monitored,
+      which organisations need to act on misuse.
+    domain: management_plane
+    for_each: Device
+    assert: management.login_banner_present
+    on_absent: fail              # no banner configured is the violation
+    on_unknown: review
+    severity: {base: low}
+    fix_intent: {make: management.login_banner_present, equal: true}
+    refs:
+      nist_800_53r5: [AC-8]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: SVC-PROXY-ARP-01
+    title: Interfaces do not answer ARP for other hosts
+    intent: >
+      Proxy ARP lets a router answer for addresses behind it, which blurs network boundaries
+      and helps an attacker reach hosts that should be out of reach.
+    domain: services
+    for_each: Interface
+    assert: not proxy_arp
+    on_absent: resolve_default   # on by default in IOS XE
+    on_unknown: review
+    severity: {base: low}
+    fix_intent: {make: proxy_arp, equal: false}
+    refs:
+      nist_800_53r5: [CM-7, SC-7]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: FILTER-PERMIT-ANY-01
+    title: No filter entry permits all traffic from anywhere to anywhere
+    intent: >
+      An entry permitting all IP traffic from any source to any destination turns a filter
+      into a formality: everything after it is dead and nothing is actually restricted.
+    domain: filtering
+    for_each: Device
+    assert: not filtering.permit_all_present
+    on_absent: resolve_default
+    on_unknown: review
+    severity: {base: high}
+    fix_intent: {make: filtering.permit_all_present, equal: false}
+    refs:
+      nist_800_53r5: [SC-7(5), AC-4]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: FILTER-UNTRUSTED-INGRESS-01
+    title: Untrusted interfaces filter inbound traffic
+    intent: >
+      An interface facing the internet or another untrusted network must apply an inbound
+      filter, so only expected traffic reaches the device and what is behind it.
+    domain: filtering
+    applies_to: [router, firewall]
+    # Untrusted: an explicit role, or a zone or description naming the outside (the admin can
+    # set roles explicitly; PLAN §12.7).
+    for_each: >-
+      Interface where (exists(role) and role == 'untrusted')
+      or (exists(zone) and zone matches '(?i)untrust|outside|internet|wan')
+      or (exists(description) and description matches '(?i)\b(wan|internet|isp|outside|untrust(ed)?)\b')
+    assert: exists(filters_in)
+    on_absent: review
+    on_unknown: review
+    severity: {base: high}
+    fix_intent: {make: filters_in, equal: EDGE-IN}   # the recipe asks for the site's ACL
+    refs:
+      nist_800_53r5: [SC-7]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: LOG-TIMESTAMPS-01
+    title: Log messages carry the date and time
+    intent: >
+      Logs are evidence only if events can be placed in time and correlated across devices;
+      time-since-boot stamps can't be.
+    domain: logging
+    for_each: LoggingPolicy
+    assert: timestamps
+    on_absent: resolve_default
+    on_unknown: review
+    severity: {base: low}
+    fix_intent: {make: timestamps, equal: true}
+    refs:
+      nist_800_53r5: [AU-3, AU-8]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]
+
+  - id: LOG-CONFIG-CHANGE-01
+    title: Configuration changes are logged
+    intent: >
+      Every configuration change, and who made it, must leave a record, so unauthorised or
+      mistaken changes can be traced.
+    domain: logging
+    for_each: LoggingPolicy
+    assert: config_change_logged
+    on_absent: resolve_default
+    on_unknown: review
+    severity: {base: medium}
+    fix_intent: {make: config_change_logged, equal: true}
+    refs:
+      nist_800_53r5: [AU-2, AU-12, CM-3]
+      disa_stig: auto
+      iso_27001_2022: derived
+    fixtures:
+      pass: [cisco_ios_xe/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg]

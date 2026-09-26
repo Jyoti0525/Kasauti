@@ -4,7 +4,7 @@ name: Cisco IOS XE
 vendor: Cisco
 os_family: IOS XE
 shape_family: indent
-pack_version: 1
+pack_version: 2
 negation_words: ["no"]
 comment_markers: ["!"]
 time_unit: minutes

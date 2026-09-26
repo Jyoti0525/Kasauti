@@ -38,7 +38,9 @@ def test_weak_config_fails_every_rule_with_its_lines(kb: KnowledgeBase) -> None:
 
 def test_hardened_config_passes_and_names_the_defaults_it_used(kb: KnowledgeBase) -> None:
     result = audit(read_file(HARDENED), kb)
-    assert all(r.status is Status.PASS for r in result.rules)
+    statuses = {r.rule_id: r.status for r in result.rules}
+    assert statuses.pop("MGMT-WEB-ACL-01") is Status.NOT_APPLICABLE  # no web server runs
+    assert set(statuses.values()) == {Status.PASS}
     snmp = next(f for f in result.findings if f.rule_id == "SNMP-COMMUNITY-01")
     assert snmp.defaults_used == ("cisco_ios_xe/defaults.yaml#no-snmp-communities",)
 
@@ -132,3 +134,23 @@ def test_kb_version_does_not_depend_on_line_endings(tmp_path: Path) -> None:
     for path in crlf.rglob("*.yaml"):
         path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
     assert load_kb(crlf).version == load_kb(REPO / "packs").version
+
+
+@pytest.mark.parametrize(
+    ("line", "expected"),
+    [
+        ("ntp server vrf Mgmt-intf 10.0.0.9 key 1", Status.PASS),
+        ("ntp server vrf Mgmt-intf 10.0.0.9", Status.FAIL),
+        ("ntp server 10.0.0.9 version 4", Status.REVIEW),  # read as a near miss, never a pass
+    ],
+)
+def test_ntp_server_forms(kb: KnowledgeBase, line: str, expected: Status) -> None:
+    text = f"version 17.9\nntp authenticate\n{line}\n"
+    result = audit(decode(text.encode(), "ntp.cfg"), kb, vendor="cisco_ios_xe")
+    assert {r.rule_id: r.status for r in result.rules}["TIME-NTP-AUTH-01"] is expected
+
+
+def test_broken_password_types_fail_rather_than_review(kb: KnowledgeBase) -> None:
+    text = "version 17.9\nenable secret 4 Xabc\nusername a privilege 15 secret 5 $1$x$y\n"
+    result = audit(decode(text.encode(), "types.cfg"), kb, vendor="cisco_ios_xe")
+    assert {r.rule_id: r.status for r in result.rules}["AAA-LOCAL-PASSWORD-HASH-01"] is Status.FAIL

@@ -1,0 +1,229 @@
+# ACL entries as FilterRule entities, keyed <acl>:<sequence> (PLAN §8.1, §13).
+#
+# Every entry becomes a FilterRule with its position, ruleset and action. Source, destination
+# and protocol are read for the address forms below; an entry in any other form (object
+# groups, port operators on `ip`) keeps those facts *absent*, so a rule asking "does anything
+# permit all traffic?" answers REVIEW for it rather than guessing. Addresses are recorded as
+# written: "any", "<host ip>", or "<network> <wildcard>".
+#
+# Full ruleset semantics (object expansion, shadowing, redundancy) are the policy analyser's
+# job (TODO M4.13-M4.22); these mappings give it and the M2 rules the entries to work on.
+mappings:
+  # --- Named extended ACLs ------------------------------------------------------------------
+  - id: cisco_ios_xe/acl-ext-entry
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> <STR:proto> <LIST>"
+    effect:
+      - {set: FilterRule.ruleset, from: acl}
+      - {set: FilterRule.position, from: seq}
+      - {set: FilterRule.action, from: action, map: {permit: permit, deny: deny}}
+      - {members: FilterRule.service, from: proto}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-any-any
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip any any [log]"
+    effect:
+      - {assert: FilterRule.src, value: [any]}
+      - {assert: FilterRule.dst, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-any-host
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip any host <IP:d> [log]"
+    effect:
+      - {assert: FilterRule.src, value: [any]}
+      - {members: FilterRule.dst, from: d}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-any-net
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip any <IP:dn> <IP:dw> [log]"
+    effect:
+      - {assert: FilterRule.src, value: [any]}
+      - {members: FilterRule.dst, template: "{dn} {dw}"}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-host-any
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip host <IP:s> any [log]"
+    effect:
+      - {members: FilterRule.src, from: s}
+      - {assert: FilterRule.dst, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-host-host
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip host <IP:s> host <IP:d> [log]"
+    effect:
+      - {members: FilterRule.src, from: s}
+      - {members: FilterRule.dst, from: d}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-host-net
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip host <IP:s> <IP:dn> <IP:dw> [log]"
+    effect:
+      - {members: FilterRule.src, from: s}
+      - {members: FilterRule.dst, template: "{dn} {dw}"}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-net-any
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip <IP:sn> <IP:sw> any [log]"
+    effect:
+      - {members: FilterRule.src, template: "{sn} {sw}"}
+      - {assert: FilterRule.dst, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-net-host
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip <IP:sn> <IP:sw> host <IP:d> [log]"
+    effect:
+      - {members: FilterRule.src, template: "{sn} {sw}"}
+      - {members: FilterRule.dst, from: d}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-ext-ip-net-net
+    vendor: cisco_ios_xe
+    context: ["ip access-list extended <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> ip <IP:sn> <IP:sw> <IP:dn> <IP:dw> [log]"
+    effect:
+      - {members: FilterRule.src, template: "{sn} {sw}"}
+      - {members: FilterRule.dst, template: "{dn} {dw}"}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Named standard ACLs: source only; any protocol, any destination ---------------------
+  - id: cisco_ios_xe/acl-std-entry
+    vendor: cisco_ios_xe
+    context: ["ip access-list standard <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> <LIST>"
+    effect:
+      - {set: FilterRule.ruleset, from: acl}
+      - {set: FilterRule.position, from: seq}
+      - {set: FilterRule.action, from: action, map: {permit: permit, deny: deny}}
+      - {assert: FilterRule.service, value: [ip]}
+      - {assert: FilterRule.dst, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-std-any
+    vendor: cisco_ios_xe
+    context: ["ip access-list standard <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> any [log]"
+    effect: {assert: FilterRule.src, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-std-host
+    vendor: cisco_ios_xe
+    context: ["ip access-list standard <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> host <IP:s> [log]"
+    effect: {members: FilterRule.src, from: s}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-std-address
+    vendor: cisco_ios_xe
+    context: ["ip access-list standard <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> <IP:s> [log]"
+    effect: {members: FilterRule.src, from: s}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-std-net
+    vendor: cisco_ios_xe
+    context: ["ip access-list standard <STR:acl>"]
+    entity: {type: FilterRule, key: "{acl}:{seq}"}
+    match: "<INT:seq> <STR:action> <IP:sn> <IP:sw> [log]"
+    effect: {members: FilterRule.src, template: "{sn} {sw}"}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Numbered ACLs (`access-list 10 permit …`): entries keyed by order within the device ---
+  - id: cisco_ios_xe/acl-numbered-entry
+    vendor: cisco_ios_xe
+    entity: {type: FilterRule, key: "acl {acl}:{#}"}
+    match: "access-list <INT:acl> <STR:action> <LIST>"
+    effect:
+      - {set: FilterRule.ruleset, from: acl}
+      - {set: FilterRule.action, from: action, map: {permit: permit, deny: deny, remark: remark}}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-numbered-ip-any-any
+    vendor: cisco_ios_xe
+    entity: {type: FilterRule, key: "acl {acl}:{#}"}
+    match: "access-list <INT:acl> <STR:action> ip any any [log]"
+    effect:
+      - {assert: FilterRule.service, value: [ip]}
+      - {assert: FilterRule.src, value: [any]}
+      - {assert: FilterRule.dst, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-numbered-std-any
+    vendor: cisco_ios_xe
+    entity: {type: FilterRule, key: "acl {acl}:{#}"}
+    match: "access-list <INT:acl> <STR:action> any [log]"
+    effect:
+      - {assert: FilterRule.service, value: [ip]}
+      - {assert: FilterRule.src, value: [any]}
+      - {assert: FilterRule.dst, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-numbered-std-host
+    vendor: cisco_ios_xe
+    entity: {type: FilterRule, key: "acl {acl}:{#}"}
+    match: "access-list <INT:acl> <STR:action> host <IP:s> [log]"
+    effect:
+      - {assert: FilterRule.service, value: [ip]}
+      - {members: FilterRule.src, from: s}
+      - {assert: FilterRule.dst, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/acl-numbered-std-net
+    vendor: cisco_ios_xe
+    entity: {type: FilterRule, key: "acl {acl}:{#}"}
+    match: "access-list <INT:acl> <STR:action> <IP:sn> <IP:sw> [log]"
+    effect:
+      - {assert: FilterRule.service, value: [ip]}
+      - {members: FilterRule.src, template: "{sn} {sw}"}
+      - {assert: FilterRule.dst, value: [any]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

@@ -59,13 +59,81 @@ class Slot:
 PatternToken = Word | Slot
 
 
+MAX_OPTIONAL_GROUPS = 3
+"""Each optional group doubles the variants a pattern expands to; three is plenty for real
+syntax (``[vrf <STR>] [log]``) and keeps matching cheap and specificity predictable."""
+
+
+def _segments(pattern: str) -> list[tuple[bool, list[str]]]:
+    """Split a pattern into (optional?, words) runs. ``[log]`` and ``[eq <INT:port>]`` are
+    optional groups; a lone ``[`` or ``]`` is an ordinary word (Junos lists use them)."""
+    segments: list[tuple[bool, list[str]]] = []
+    current: list[str] = []
+    in_group = False
+    for raw in pattern.split():
+        opens = raw.startswith("[") and raw != "["
+        closes = raw.endswith("]") and raw != "]"
+        word = raw[1:] if opens else raw
+        if opens:
+            if in_group:
+                raise ValueError("optional groups can't be nested")
+            if current:
+                segments.append((False, current))
+            current, in_group = [], True
+        if closes and in_group:
+            word = word[:-1]
+            if word:
+                current.append(word)
+            if not current:
+                raise ValueError("empty optional group")
+            segments.append((True, current))
+            current, in_group = [], False
+            continue
+        if word:
+            current.append(word)
+    if in_group:
+        raise ValueError("unclosed optional group '['")
+    if current:
+        segments.append((False, current))
+    return segments
+
+
+def pattern_variants(pattern: str) -> tuple[tuple[PatternToken, ...], ...]:
+    """Every concrete pattern an optional-group pattern stands for, longest first.
+
+    ``<INT:seq> <STR:action> ip any any [log]`` gives the variants with and without ``log``.
+    Slot names are unique across the whole pattern; a ``LIST`` slot must be the last token.
+    """
+    segments = _segments(pattern)
+    optional = [i for i, (opt, _) in enumerate(segments) if opt]
+    if len(optional) > MAX_OPTIONAL_GROUPS:
+        raise ValueError(f"at most {MAX_OPTIONAL_GROUPS} optional groups per pattern")
+    full = [w for _, words in segments for w in words]
+    _parse_words(full)  # validates slots, uniqueness and LIST placement on the longest form
+    variants: list[tuple[PatternToken, ...]] = []
+    for mask in range(2 ** len(optional) - 1, -1, -1):
+        keep = {optional[b] for b in range(len(optional)) if mask >> b & 1}
+        words = [w for i, (opt, ws) in enumerate(segments) if not opt or i in keep for w in ws]
+        if not words:
+            raise ValueError("a pattern can't consist only of optional groups")
+        variants.append(_parse_words(words))
+    return tuple(sorted(dict.fromkeys(variants), key=len, reverse=True))
+
+
 def parse_pattern(pattern: str) -> tuple[PatternToken, ...]:
     """Split a pattern such as ``set allowaccess <LIST:protocols>`` into tokens.
 
     Rules: whitespace-separated; ``<TYPE>`` or ``<TYPE:name>`` is a slot; ``LIST`` swallows
-    the rest of the line so it must come last; slot names are unique.
+    the rest of the line so it must come last; slot names are unique. Optional groups are
+    only allowed where :func:`pattern_variants` is used (a mapping's ``match`` and
+    ``negation``), not in contexts or identity sources.
     """
-    raw = pattern.split()
+    if any(optional for optional, _ in _segments(pattern)):
+        raise ValueError("optional [groups] are only allowed in `match` and `negation`")
+    return _parse_words(pattern.split())
+
+
+def _parse_words(raw: list[str]) -> tuple[PatternToken, ...]:
     if not raw:
         raise ValueError("empty pattern")
     tokens: list[PatternToken] = []
@@ -92,7 +160,11 @@ def parse_pattern(pattern: str) -> tuple[PatternToken, ...]:
 
 
 def slot_names(pattern: str) -> frozenset[str]:
-    return frozenset(t.name for t in parse_pattern(pattern) if isinstance(t, Slot) and t.name)
+    """Slots every form of the pattern captures (slots inside optional groups excluded)."""
+    per_variant = [
+        {t.name for t in v if isinstance(t, Slot) and t.name} for v in pattern_variants(pattern)
+    ]
+    return frozenset(set.intersection(*per_variant))
 
 
 def _valid_pattern(value: str) -> str:
@@ -100,7 +172,14 @@ def _valid_pattern(value: str) -> str:
     return value
 
 
+def _valid_match_pattern(value: str) -> str:
+    pattern_variants(value)
+    return value
+
+
 Pattern = Annotated[str, AfterValidator(_valid_pattern)]
+MatchPattern = Annotated[str, AfterValidator(_valid_match_pattern)]
+"""A pattern that may contain optional groups: ``<INT:seq> <STR:a> ip any any [log]``."""
 VersionRangeText = Annotated[str, AfterValidator(validate_range)]
 SlotName = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*$")]
 AttrPath = Annotated[str, StringConstraints(pattern=r"^[A-Z][A-Za-z]+\.[a-z][a-z0-9_]*$")]
@@ -130,11 +209,20 @@ Transform = Literal["invert", "lower", "upper"] | UnitTransform | SplitTransform
 # --- Effects ----------------------------------------------------------------------------------
 
 
+_TEMPLATE_SLOT = re.compile(r"{([a-z][a-z0-9_]*)}")
+
+
+def template_slots(template: str | None) -> frozenset[str]:
+    return frozenset(_TEMPLATE_SLOT.findall(template)) if template else frozenset()
+
+
 class SetEffect(_Strict):
     set: AttrPath
-    from_: SlotName | dict[SlotName, int] = Field(alias="from")
+    from_: SlotName | dict[SlotName, int] | None = Field(default=None, alias="from")
     """A slot, or a weighted sum of slots: ``{min: 60, sec: 1}`` turns Cisco
     ``exec-timeout 10 0`` into 600 seconds."""
+    template: str | None = None
+    """Instead of ``from``: build the value from several slots, e.g. ``"{net} {wildcard}"``."""
     map: dict[str, Scalar] | None = None
     """Vendor word -> value. A word missing from the map makes the fact ``unknown`` (we saw
     the line but can't say what it means), unless ``otherwise`` is given."""
@@ -144,7 +232,11 @@ class SetEffect(_Strict):
     transform: tuple[Transform, ...] = ()
 
     @model_validator(mode="after")
-    def _otherwise_needs_map(self) -> Self:
+    def _coherent(self) -> Self:
+        if (self.from_ is None) == (self.template is None):
+            raise ValueError("give exactly one of `from` and `template`")
+        if self.template is not None and not template_slots(self.template):
+            raise ValueError("a `template` must use at least one {slot}")
         if self.otherwise is not None and self.map is None:
             raise ValueError("`otherwise` only makes sense together with `map`")
         return self
@@ -154,7 +246,11 @@ class SetEffect(_Strict):
         return self.set
 
     def slots(self) -> frozenset[str]:
-        return frozenset(self.from_) if isinstance(self.from_, dict) else frozenset({self.from_})
+        if self.template is not None:
+            return template_slots(self.template)
+        if isinstance(self.from_, dict):
+            return frozenset(self.from_)
+        return frozenset({self.from_}) if self.from_ else frozenset()
 
 
 class AssertEffect(_Strict):
@@ -171,17 +267,29 @@ class AssertEffect(_Strict):
 
 class MembersEffect(_Strict):
     members: AttrPath
-    from_: SlotName = Field(alias="from")
+    from_: SlotName | None = Field(default=None, alias="from")
+    template: str | None = None
+    """Instead of ``from``: one item built from several slots (``"{net} {wildcard}"``)."""
     map: dict[str, str] | None = None
     """Vendor word -> SBM vocabulary (``ping -> icmp``). Unmapped words are kept as-is."""
     transform: tuple[Transform, ...] = ()
+
+    @model_validator(mode="after")
+    def _one_source(self) -> Self:
+        if (self.from_ is None) == (self.template is None):
+            raise ValueError("give exactly one of `from` and `template`")
+        if self.template is not None and not template_slots(self.template):
+            raise ValueError("a `template` must use at least one {slot}")
+        return self
 
     @property
     def attr(self) -> str:
         return self.members
 
     def slots(self) -> frozenset[str]:
-        return frozenset({self.from_})
+        if self.template is not None:
+            return template_slots(self.template)
+        return frozenset({self.from_}) if self.from_ else frozenset()
 
 
 RefTarget = Literal["acl", "address", "address_group", "service", "service_group", "any_object"]
@@ -256,9 +364,9 @@ class Mapping(_Strict):
     """Block path the statement must sit in, matched as a suffix of its path ending at its
     parent. Empty means top level only."""
     entity: EntitySpec | None = None
-    match: Pattern
+    match: MatchPattern
     effect: Effect | tuple[Effect, ...] | None = None
-    negation: Pattern | Literal["auto"] | None = "auto"
+    negation: MatchPattern | Literal["auto"] | None = "auto"
     """``auto`` derives the negated form from the pack's negation words (``no``, ``undo``…)."""
     provenance: Provenance
 

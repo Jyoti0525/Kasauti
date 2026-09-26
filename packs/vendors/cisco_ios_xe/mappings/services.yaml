@@ -1,0 +1,75 @@
+# Device services and global hardening switches: legacy services, password encryption,
+# web-management ACLs and banners.
+mappings:
+  # --- Legacy services (each is a MgmtService: a service the device offers on the network) ---
+  - id: cisco_ios_xe/service-pad
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: pad}
+    match: "service pad"
+    effect: {assert: MgmtService.enabled, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/service-tcp-small-servers
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: tcp-small-servers}
+    match: "service tcp-small-servers"
+    effect: {assert: MgmtService.enabled, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/service-udp-small-servers
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: udp-small-servers}
+    match: "service udp-small-servers"
+    effect: {assert: MgmtService.enabled, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-finger
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: finger}
+    match: "ip finger"
+    effect: {assert: MgmtService.enabled, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/service-finger
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: finger}
+    match: "service finger"
+    effect: {assert: MgmtService.enabled, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-bootp-server
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: bootp}
+    match: "ip bootp server"
+    effect: {assert: MgmtService.enabled, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Password encryption (type 7: hides clear text, but is reversible) ----------------------
+  - id: cisco_ios_xe/service-password-encryption
+    vendor: cisco_ios_xe
+    match: "service password-encryption"
+    effect: {assert: PasswordPolicy.cleartext_passwords_encrypted, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Web management ACL: `ip http access-class` covers both the HTTP and HTTPS server ------
+  - id: cisco_ios_xe/ip-http-access-class
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: http}
+    match: "ip http access-class [ipv4] <STR:acl>"
+    effect: {ref: MgmtService.access_filter, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-https-access-class
+    vendor: cisco_ios_xe
+    entity: {type: MgmtService, key: https}
+    match: "ip http access-class [ipv4] <STR:acl>"
+    effect: {ref: MgmtService.access_filter, from: acl, target: acl}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Banners: `banner login ^C` (delimited; the body is never read as configuration) -------
+  - id: cisco_ios_xe/banner
+    vendor: cisco_ios_xe
+    entity: {type: Banner, key: "{kind}"}
+    match: "banner <STR:kind> <LIST>"
+    effect: {assert: Banner.present, value: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

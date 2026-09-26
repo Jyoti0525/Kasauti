@@ -62,11 +62,15 @@ class Device(Entity):
 
 
 class MgmtService(Entity):
-    """A management-plane service; ``key`` is its kind (ssh, telnet, http, https, snmp, …)."""
+    """A service the device itself offers on the network; ``key`` is its kind. Management
+    services (ssh, telnet, http, https, snmp, netconf) and the legacy ones hardening guides
+    switch off (pad, finger, bootp, tcp-small-servers, udp-small-servers)."""
 
     type: Literal["MgmtService"] = "MgmtService"
     enabled: BoolFact = BoolFact()
     version: StrFact = StrFact()
+    access_filter: StrFact = StrFact()
+    """ACL restricting who may reach the service (Cisco ``ip http access-class``), 0.3."""
     ciphers: SetFact = SetFact()
     macs: SetFact = SetFact()
     kex: SetFact = SetFact()
@@ -88,11 +92,16 @@ class MgmtSession(Entity):
 
 class Interface(Entity):
     type: Literal["Interface"] = "Interface"
+    description: StrFact = StrFact()
+    """Free text written by the admin (0.3). Used only to recognise an interface's role
+    (``WAN uplink``); like banners, never fed to any AI signal (PLAN §17)."""
     zone: StrFact = StrFact()
     role: StrFact = StrFact()
     """untrusted | trusted | mgmt (inferred + overridable; drives exposure, §12.7)."""
     admin_up: BoolFact = BoolFact()
     mgmt_protocols: SetFact = SetFact()
+    proxy_arp: BoolFact = BoolFact()
+    """The interface answers ARP on behalf of other hosts (0.3)."""
     filters_in: SetFact = SetFact()
     filters_out: SetFact = SetFact()
 
@@ -121,7 +130,11 @@ class PasswordPolicy(Entity):
     min_length: IntFact = IntFact()
     complexity_required: BoolFact = BoolFact()
     reversible_encryption_blocked: BoolFact = BoolFact()
-    """e.g. Cisco ``service password-encryption`` / strong-hash enforcement."""
+    """The device refuses to store passwords in a reversible form (a strong-hash-only policy).
+    Not Cisco ``service password-encryption``, which *applies* reversible type 7."""
+    cleartext_passwords_encrypted: BoolFact = BoolFact()
+    """Passwords that would otherwise sit in the configuration in clear text are encrypted
+    (Cisco ``service password-encryption``, type 7). A baseline, not strong protection (0.3)."""
     max_age_days: IntFact = IntFact()
 
 
@@ -147,6 +160,7 @@ class LoggingPolicy(Entity):
     type: Literal["LoggingPolicy"] = "LoggingPolicy"
     key: str = "logging-policy"
     timestamps: BoolFact = BoolFact()
+    """Log messages carry the date and time (not just uptime), so events can be correlated."""
     admin_logged: BoolFact = BoolFact()
     config_change_logged: BoolFact = BoolFact()
 

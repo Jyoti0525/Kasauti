@@ -471,3 +471,80 @@ def test_mapping_yaml_rejects_otherwise_without_map() -> None:
             match="x <STR:v>",
             effect={"set": "MgmtService.version", "from": "v", "otherwise": "2"},
         )
+
+
+# --- optional groups and templates (M1 hardening) ------------------------------------------------
+
+ACL = ["ip access-list extended <STR:acl>"]
+
+
+def test_optional_groups_match_with_and_without_the_optional_words() -> None:
+    any_any = m(
+        id="v/ace",
+        context=ACL,
+        entity={"type": "FilterRule", "key": "{acl}:{seq}"},
+        match="<INT:seq> <STR:action> ip any any [log]",
+        effect=[
+            {"assert": "FilterRule.src", "value": ["any"]},
+            {"set": "FilterRule.action", "from": "action"},
+        ],
+        negation=None,
+    )
+    r = run(
+        "ip access-list extended E\n 10 permit ip any any\n 20 deny ip any any log\n", [any_any]
+    )
+    assert entity(r, "FilterRule", "E:10").action.value == "permit"  # type: ignore[attr-defined]
+    assert entity(r, "FilterRule", "E:20").src.value == {"any"}  # type: ignore[attr-defined]
+
+
+def test_templates_join_several_slots_into_one_value() -> None:
+    net = m(
+        id="v/ace-net",
+        context=ACL,
+        entity={"type": "FilterRule", "key": "{acl}:{seq}"},
+        match="<INT:seq> <STR:action> ip <IP:sn> <IP:sw> any",
+        effect={"members": "FilterRule.src", "template": "{sn} {sw}"},
+        negation=None,
+    )
+    r = run("ip access-list extended E\n 10 permit ip 10.0.0.0 0.0.0.255 any\n", [net])
+    assert entity(r, "FilterRule", "E:10").src.value == {"10.0.0.0 0.0.0.255"}  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize(
+    ("pattern", "message"),
+    [
+        ("a [b [c]]", "nested"),
+        ("a [b", "unclosed"),
+        ("[a] [b] [c] [d] e", "at most"),
+        ("<LIST:x> [log]", "last"),
+    ],
+)
+def test_bad_optional_groups_are_rejected(pattern: str, message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        m(
+            id="v/x",
+            entity={"type": "MgmtService", "key": "ssh"},
+            match=pattern,
+            effect={"assert": "MgmtService.enabled", "value": True},
+        )
+
+
+def test_slots_inside_optional_groups_cannot_name_entities() -> None:
+    with pytest.raises(ValueError, match="not captured"):
+        m(
+            id="v/x",
+            entity={"type": "LogTarget", "key": "{h}"},
+            match="logging [host <IP:h>]",
+            effect={"assert": "LogTarget.transport", "value": "udp"},
+        )
+
+
+def test_optional_groups_are_refused_in_contexts() -> None:
+    with pytest.raises(ValueError, match="only allowed"):
+        m(
+            id="v/x",
+            context=["interface [<IFNAME:n>]"],
+            entity={"type": "MgmtService", "key": "a"},
+            match="x",
+            effect={"assert": "MgmtService.enabled", "value": True},
+        )

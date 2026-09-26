@@ -951,6 +951,28 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.4 (2026-09-26, M1 hardening):** both M1 limits removed.
+  - **Every Cisco default is now sourced from Cisco's documentation** (TODO C.06), with the
+    sentence quoted in `docs/reviews/cisco_ios_xe.md`. A default the docs don't state has no
+    entry, so the rule says REVIEW. Two findings: the SSH default depends on the release
+    (compatibility mode 1.99 before IOS XE 17.10, v2 only from 17.10), which is exactly what
+    version-scoped defaults are for; and a `username` privilege default that came from memory
+    was removed.
+  - **Every planted weakness W1–W20 is judged:** 11 new rules, 21 in total (services, password
+    policy, web-management ACL, SSH v2, banner, proxy ARP, permit-any entries, untrusted-ingress
+    filtering, timestamps, configuration-change logging).
+    - The minimum password length follows NIST SP 800-63B-4: 15 characters for single-factor
+      passwords.
+    - The hardened twin changed to match (`min-length 15`, proxy ARP off everywhere).
+  - **Mapping language:** optional groups in patterns (`[log]`, `[vrf <STR>]`; the `[optional]`
+    syntax §10.4 already anticipates) and value templates (`"{net} {wildcard}"`).
+  - **SBM 0.3**, with its migration: `MgmtService.access_filter`, `Interface.description`,
+    `Interface.proxy_arp`, `PasswordPolicy.cleartext_passwords_encrypted`.
+  - **Cisco ACL entries are read into `FilterRule`s.** Address forms the mappings don't read
+    leave facts absent (REVIEW), never assumed harmless.
+  - **Review of the pack** found two real gaps, both fixed with regression tests:
+    - `ntp server vrf …` was silently dropped (N/A instead of a verdict);
+    - password type 4 gave REVIEW instead of FAIL.
 - **v5.1.3 (2026-09-26, M1 build evidence):** the walking skeleton works end to end; refinements it forced (details in `docs/spec/`):
   - **Pattern keys without Drain3.** Drain3 has had no release since 2022, pulls jsonpickle into the runtime, and its similarity merge joins `ip ssh version 2` with `ip ssh time-out 60`. Keys now abstract values by type and keep keywords literal: deterministic, order-independent, still 48 interfaces → 1 pattern (§6.2).
   - **SBM 0.2**, with the first real migration (TODO M2.25). Entities record the lines that named them. `TimePolicy` holds device-wide NTP authentication enforcement (OpenConfig `enable-ntp-auth`), because a key on one server isn't enforcement. The document gains `known_empty` and `unread`.

@@ -709,6 +709,15 @@
             "value": null
           }
         },
+        "description": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "evidence": {
           "default": [],
           "items": {
@@ -742,6 +751,15 @@
         },
         "mgmt_protocols": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "proxy_arp": {
+          "$ref": "#/$defs/Fact_bool_",
           "default": {
             "default_source": null,
             "evidence": [],
@@ -1056,8 +1074,17 @@
     },
     "MgmtService": {
       "additionalProperties": false,
-      "description": "A management-plane service; ``key`` is its kind (ssh, telnet, http, https, snmp, …).",
+      "description": "A service the device itself offers on the network; ``key`` is its kind. Management\nservices (ssh, telnet, http, https, snmp, netconf) and the legacy ones hardening guides\nswitch off (pad, finger, bootp, tcp-small-servers, udp-small-servers).",
       "properties": {
+        "access_filter": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "ciphers": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
@@ -1264,6 +1291,15 @@
     "PasswordPolicy": {
       "additionalProperties": false,
       "properties": {
+        "cleartext_passwords_encrypted": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "complexity_required": {
           "$ref": "#/$defs/Fact_bool_",
           "default": {
@@ -1742,7 +1778,7 @@
       "type": "object"
     },
     "sbm_version": {
-      "default": "0.2",
+      "default": "0.3",
       "title": "Sbm Version",
       "type": "string"
     },

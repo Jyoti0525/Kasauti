@@ -76,6 +76,14 @@ Rules (checked when the pack loads and when the defaults are applied):
 - A framework `catalog.json` may record `source_sha256`, the hash of the official file its IDs
   were extracted from. `tools/import_oscal.py` writes it for NIST SP 800-53 r5.
 
+## Evidence for defaults
+
+A default's `reference` quotes the vendor's own documentation and gives its URL. A behaviour the
+vendor doesn't document gets no entry: the fact stays absent and the rule says REVIEW. The
+Cisco IOS XE pack's review record, with every default's source, is `docs/reviews/cisco_ios_xe.md`.
+*Model* defaults (how a vendor's design maps onto the SBM, e.g. "Telnet exposure lives in the
+vty lines") are marked `source: curated` and say so in their reference.
+
 ## Who approves seed mappings
 
 Mappings shipped in a seed pack are approved through repository review: pull request, CI

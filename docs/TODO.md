@@ -267,7 +267,7 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
 
 ### 2F · Seed vendor packs (§20.4)
 Each pack has `pack.yaml`, `detect.yaml`, `identity.yaml`, version-scoped `defaults.yaml`, `mappings/`, `verify.yaml`, authored hardened and weak configs, and a pass and fail fixture for every applicable rule. `@content` with `@parse`
-- [ ] **M2.26** Cisco IOS-XE (indent)
+- [~] **M2.26** Cisco IOS-XE (indent) Pack v2 done early: 94 mappings, 15 defaults quoted from Cisco docs plus 3 model defaults, reviewed (`docs/reviews/cisco_ios_xe.md`); a pass and a fail fixture executed for all 21 rules. Remaining: NX-OS/IOS separation in `detect.yaml` once those packs exist.
 - [ ] **M2.27** Arista EOS (indent)
 - [ ] **M2.28** Juniper Junos/SRX (brace + set-path)
 - [ ] **M2.29** Fortinet FortiOS (block-edit)
@@ -659,7 +659,7 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
 - [ ] **C.03** Download the DISA STIGs and the CCI list for the seed vendors from cyber.mil (feeds M2.51, M2.52). *(§20.1)* `@content`
 - [ ] **C.04** Download the free CIS benchmark PDFs for each seed vendor and version, and note the terms (feeds M2.54). *(§20.1)* `@content`
 - [ ] **C.05** Keep the Appendix A references ready for citation in slides, the architecture doc and the README. *(Appendix A)* `@lead`
-- [ ] **C.06** Every authored config and curated recipe gets a second check, since there's no second teammate: (1) each line cross-checked against the vendor's official documentation, with the doc reference recorded in SOURCES; (2) a separate Claude review pass that didn't write it; (3) your read-through of the diff. Container NOS labs (X.05) give a real-device check where available. *(§20.2, §28, adapted for a solo team)* `@content`
+- [~] **C.06** Every authored config and curated recipe gets a second check, since there's no second teammate: (1) each line cross-checked against the vendor's official documentation, with the doc reference recorded in SOURCES; (2) a separate Claude review pass that didn't write it; (3) your read-through of the diff. Container NOS labs (X.05) give a real-device check where available. *(§20.2, §28, adapted for a solo team)* `@content` Cisco IOS XE done 2026-09-26: every default quoted from Cisco's docs and the commands the mappings rely on checked, record in `docs/reviews/cisco_ios_xe.md`. Junos config pending.
 - [ ] **C.07** Look for more openly licensed vendor CLI samples to strengthen E1/E3. Candidates: the raw show-output fixtures in ntc-templates' test suite (for companion files and identity), plus vendor documentation examples. Verify each licence (S.03), record it in SOURCES, and log any new source in PLAN Appendix C. *(§20.2, PS dataset hint)* `@content`
 
 ---
