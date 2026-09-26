@@ -24,11 +24,14 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 | `juniper_junos/weak.conf` | Junos OS 23.4, weak twin | 90 | `f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
 | `arista_eos/hardened.cfg` | Arista EOS 4.30, routed leaf with an ISP uplink | 70 | `d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
 | `arista_eos/weak.cfg` | Arista EOS 4.30, weak twin | 53 | `05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
+| `fortinet_fortios/hardened.conf` | FortiOS 7.4.8, edge FortiGate 60F | 110 | `6ab405110f0e768066ef309d4fd810808720c08d54373c2643e61bf11e44e9d4` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
+| `fortinet_fortios/weak.conf` | FortiOS 7.4.8, weak twin | 82 | `3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
 
 References used: Cisco IOS XE 17 configuration guides (security, SSH, AAA, SNMP, NTP, system
 management); Juniper Junos OS user guides (system basics, login classes, SSH, syslog, NTP,
 firewall filters, security zones); Arista EOS user manual (connection management, user
-security, system clock and time protocols, system event logging, ACLs).
+security, system clock and time protocols, system event logging, ACLs); Fortinet FortiOS 7.4 CLI reference,
+administration guide and log message reference.
 
 ### Planted weaknesses in `cisco_ios_xe/weak.cfg`
 
@@ -109,6 +112,30 @@ PASS) and what the hardened twin does instead.
 `logging format timestamp traditional` is deliberately present and is **not** a weakness under
 LOG-TIMESTAMPS-01: traditional messages are still timestamped.
 
+### Planted weaknesses in `fortinet_fortios/weak.conf`
+
+FortiGate backups print only non-default settings, so several weaknesses are a setting left at
+a weak default (F7, F14) or a value set without its on switch (F10).
+
+| # | Weakness | Hardened twin |
+|---|---|---|
+| F1 | `set admintimeout 480` (8 hours) | `set admintimeout 10` |
+| F2 | `set admin-https-redirect disable`: clear-text HTTP administration | redirect left on (default) |
+| F3 | that HTTP administration has no access restriction | no HTTP administration |
+| F4 | `set admin-ssh-v1 enable` | left disabled (default) |
+| F5 | `telnet` (and `http`) in `wan1` `allowaccess` | `wan1` allows `ping` only |
+| F6 | `set admin-lockout-threshold 10` | `3`, `admin-lockout-duration 900` |
+| F7 | no password policy (status disabled by default, minimum 8) | `status enable`, `minimum-length 15` |
+| F8 | admin password `ENC SH2…` (SHA-256) | `ENC PB2…` (PBKDF2) |
+| F9 | no TACACS+/RADIUS/LDAP server | `config user tacacs+` |
+| F10 | `config log syslogd setting` with a server but `status` left disabled | `status enable`, `mode reliable` |
+| F11 | `config log eventfilter` / `set system disable` | event logging left on (default) |
+| F12 | SNMP community `public` | none |
+| F13 | custom NTP server without `authentication` | `authentication enable`, SHA256 key |
+| F14 | no pre-login banner | `set pre-login-banner enable` |
+| F15 | `config system proxy-arp` entry on `wan1` | none |
+| F16 | policy 1 `wan1 -> internal`, `srcaddr "all"`, `dstaddr "ANY-NET"` (0.0.0.0/0), `service "ALL"`, accept | explicit sources and services only |
+
 ## Golden cases (`datasets/golden/`, E1)
 
 Each case holds a `case.yaml` (the input path and SHA-256, and hand-labelled verdicts for every
@@ -123,6 +150,8 @@ above, never from the engine's output.
 | `juniper_junos_weak` | `authored/juniper_junos/weak.conf` | 17 rules FAIL (J1–J17), LOG-CONFIG-CHANGE-01 REVIEW, 3 PASS by documented Junos defaults, 2 N/A (no vty lines) |
 | `arista_eos_weak` | `authored/arista_eos/weak.cfg` | 17 rules FAIL, covering E1–E20 except E7; LOG-CONFIG-CHANGE-01 and MGMT-SSH-V2-01 REVIEW (no documented default); 4 PASS (3 by documented or model defaults, and MGMT-VTY-ACL-01 because SSH names an ACL: that it dangles is E17, judged by MGMT-VTY-ACL-02) |
 | `arista_eos_hardened` | `authored/arista_eos/hardened.cfg` | 21 rules PASS; MGMT-SSH-V2-01 REVIEW (EOS has no SSH version setting and the version isn't documented in the pages checked); MGMT-WEB-ACL-01 N/A (eAPI off) |
+| `fortinet_fortios_weak` | `authored/fortinet_fortios/weak.conf` | 16 rules FAIL (F1–F16), 4 PASS by documented or model defaults (and zone-style filtering), 3 N/A (no vty lines, no references) |
+| `fortinet_fortios_hardened` | `authored/fortinet_fortios/hardened.conf` | 19 rules PASS, 4 N/A (no vty lines, no references, HTTP redirected) |
 | `juniper_junos_hardened` | `authored/juniper_junos/hardened.conf` | 20 rules PASS, 3 N/A (no vty lines, no web management) |
 
 History: on 2026-09-26 the Junos hardened config gained a login class with `idle-timeout 10` and `minimum-length 15`, and the Cisco hardened twin changed to `security passwords min-length 15` (NIST SP

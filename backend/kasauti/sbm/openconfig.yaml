@@ -56,6 +56,8 @@ x-sbm:
   - PasswordPolicy.reversible_encryption_blocked
   - PasswordPolicy.max_age_days
   - PasswordPolicy.cleartext_passwords_encrypted
+  - PasswordPolicy.enforced  # OC has no password-policy switch
+  - LogTarget.enabled  # OC remote-servers have no enable leaf
   - LockoutPolicy.max_attempts
   - LockoutPolicy.lockout_s
   - LoggingPolicy.timestamps

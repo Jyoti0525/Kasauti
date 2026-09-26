@@ -1,0 +1,19 @@
+format_version: 1
+id: fortinet_fortios
+name: Fortinet FortiOS
+vendor: Fortinet
+os_family: FortiOS
+shape_family: block_edit
+pack_version: 1
+# FortiOS configuration backups print only settings that differ from the default, and `unset`
+# (the FortiOS way back to a default) never appears in them. So no negation words: a setting
+# the file doesn't show is read from the documented defaults in defaults.yaml.
+negation_words: []
+comment_markers: ["#"]
+time_unit: minutes
+default_role: firewall
+description: >
+  Seed pack (PLAN §20.4, TODO M2.29) for FortiGate configuration files (`show` output and
+  backups, `config … / edit … / set … / next / end`). Management access is granted per
+  interface (`allowaccess`); traffic between interfaces is denied unless a firewall policy
+  accepts it. Reviewed against Fortinet's documentation: docs/reviews/fortinet_fortios.md.

@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "467ed4d4591c93dc97a1f67c",
+  "audit_id": "baf7e378e1ad5cb5fc7c4a14",
   "input": {
     "file": "weak.cfg",
     "sha256": "11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "098593c805aee6df528e9f8faf13d9485931011701cd412dafc70ad627578cbc",
-    "ruleset_version": "fbf9088a6f0977cb60e9a2a110a5a34062e471cf5b47771795c0ab2bb02546cd",
+    "kb_version": "1fd75bc794e2381882ec3541668503c60c1d6c2f2e605938aa1e66a2b5063695",
+    "ruleset_version": "0b1b575471bcfafc79f7234f2ec09b05f43bb67415d4a43697d0e464fdc94f28",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -861,7 +861,7 @@
       "entity_id": "Device[device]",
       "status": "FAIL",
       "severity": "critical",
-      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "severity_reason": "High (base) → Critical: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
       "reason": "Unencrypted HTTP management is disabled: is violated for the device.",
       "actual": [
         "management.http_enabled = true",
@@ -1020,7 +1020,7 @@
       "entity_id": "Device[device]",
       "status": "FAIL",
       "severity": "critical",
-      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "severity_reason": "High (base) → Critical: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
       "reason": "SSH management uses protocol version 2 only: is violated for the device (using the vendor default for this OS version).",
       "actual": [
         "management.ssh_v1_negotiable = true",
@@ -1084,7 +1084,7 @@
       "entity_id": "Device[device]",
       "status": "FAIL",
       "severity": "critical",
-      "severity_reason": "High (base) → Critical: telnet is reachable and an untrusted interface lets it through (no inbound filter, or telnet allowed on it)",
+      "severity_reason": "High (base) → Critical: telnet is reachable and an untrusted interface lets it through (no inbound filter or zone, or telnet allowed on it)",
       "reason": "Clear-text Telnet management is not reachable: is violated for the device.",
       "actual": [
         "management.telnet_reachable = true",
@@ -1168,7 +1168,7 @@
       "entity_id": "MgmtSession[vty 0-4]",
       "status": "FAIL",
       "severity": "high",
-      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
       "reason": "Remote management lines accept only permitted sources: is violated for MgmtSession[vty 0-4].",
       "actual": [
         "MgmtSession[vty 0-4].kind = vty",
@@ -1216,7 +1216,7 @@
       "entity_id": "MgmtSession[vty 5-15]",
       "status": "FAIL",
       "severity": "high",
-      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
       "reason": "Remote management lines accept only permitted sources: is violated for MgmtSession[vty 5-15].",
       "actual": [
         "MgmtSession[vty 5-15].kind = vty",
@@ -1275,7 +1275,7 @@
       "entity_id": "MgmtService[http]",
       "status": "FAIL",
       "severity": "high",
-      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
       "reason": "Web management accepts only permitted sources: is violated for MgmtService[http].",
       "actual": [
         "MgmtService[http].enabled = true",
@@ -1323,7 +1323,7 @@
       "entity_id": "MgmtService[https]",
       "status": "FAIL",
       "severity": "high",
-      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
       "reason": "Web management accepts only permitted sources: is violated for MgmtService[https].",
       "actual": [
         "MgmtService[https].enabled = true",
@@ -1382,7 +1382,7 @@
       "entity_id": "Device[device]",
       "status": "FAIL",
       "severity": "critical",
-      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "severity_reason": "High (base) → Critical: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
       "reason": "No SNMP community is well known or writable: is violated for the device.",
       "actual": [
         "snmp.weak_community_present = true",
@@ -1786,7 +1786,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.4",
+    "sbm_version": "0.5",
     "device": {
       "key": "device",
       "evidence": [],
@@ -3322,6 +3322,12 @@
           "default_source": null
         },
         "max_age_days": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enforced": {
           "value": null,
           "state": "absent",
           "evidence": [],

@@ -1,0 +1,270 @@
+# What FortiOS does when the configuration says nothing (PLAN §8.2, §9.4). FortiGate backups
+# print only non-default settings, so these carry much of the weight. Vendor defaults quote the
+# "Default" column of Fortinet's FortiOS 7.4 CLI reference, read 2026-09-26
+# (docs/reviews/fortinet_fortios.md).
+# Not stated in the pages checked, so no entry (the rule says REVIEW): none so far; the gaps
+# this pack can't judge yet are listed in the review record.
+defaults:
+  # --- management plane ----------------------------------------------------------------------
+  - id: admin-session-kind
+    attr: MgmtSession.kind
+    entity_key: admin
+    value: cli
+    source: curated
+    reference: >-
+      Model default: FortiOS has one administrator idle timeout (`admintimeout`) for GUI and CLI
+      sessions, modelled as one session of kind `cli`.
+
+  - id: admintimeout-5-minutes
+    attr: MgmtSession.idle_timeout_s
+    entity_key: admin
+    value: 300
+    source: vendor_doc
+    reference: >-
+      config system global, admintimeout: "Number of minutes before an idle administrator
+      session times out." Default 5 (range 1-480, so it can't be switched off).
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: telnet-only-where-allowed
+    attr: MgmtService.enabled
+    entity_key: telnet
+    value: false
+    source: curated
+    reference: >-
+      Model default: `admin-telnet` (default enable) only permits the service; FortiOS answers
+      Telnet only on interfaces whose `allowaccess` lists telnet, and those are read into
+      Interface.mgmt_protocols (judged by management.telnet_reachable).
+
+  - id: http-redirected-to-https
+    attr: MgmtService.enabled
+    entity_key: http
+    value: false
+    source: vendor_doc
+    reference: >-
+      config system global, admin-https-redirect: "Enable/disable redirection of HTTP
+      administration access to HTTPS." Default enable, so HTTP administration isn't served in
+      clear text unless the redirect is disabled.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: ssh-available
+    attr: MgmtService.enabled
+    entity_key: ssh
+    value: true
+    source: curated
+    reference: >-
+      Model default: FortiOS has no global SSH switch; SSH administration is offered on every
+      interface whose `allowaccess` lists ssh. Assumed on, so the SSH version is always judged.
+
+  - id: ssh-v1-off
+    attr: MgmtService.version
+    entity_key: ssh
+    value: "2"
+    source: vendor_doc
+    reference: >-
+      config system global, admin-ssh-v1: "Enable/disable SSH v1 compatibility." Default disable.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: pre-login-banner-off
+    attr: Banner.present
+    entity_key: login
+    value: false
+    source: vendor_doc
+    reference: >-
+      config system global, pre-login-banner: "Enable/disable displaying the administrator
+      access disclaimer message on the login page before an administrator logs in." Default
+      disable.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: no-interface-mgmt-access
+    attr: Interface.mgmt_protocols
+    value: []
+    source: vendor_doc
+    reference: >-
+      config system interface, allowaccess: "Permitted types of management access to this
+      interface." No default value: nothing is allowed unless listed.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/317104469/config-system-interface
+
+  - id: proxy-arp-off
+    attr: Interface.proxy_arp
+    value: false
+    source: curated
+    reference: >-
+      Model default: FortiOS answers ARP for other addresses only for the ranges listed in
+      `config system proxy-arp`, which the mappings read.
+
+  - id: no-legacy-pad
+    attr: MgmtService.enabled
+    entity_key: pad
+    value: false
+    source: curated
+    reference: "Model default: FortiOS has no X.25 PAD service."
+
+  - id: no-legacy-finger
+    attr: MgmtService.enabled
+    entity_key: finger
+    value: false
+    source: curated
+    reference: "Model default: FortiOS has no finger service."
+
+  - id: no-legacy-bootp
+    attr: MgmtService.enabled
+    entity_key: bootp
+    value: false
+    source: curated
+    reference: "Model default: FortiOS runs no BOOTP server; its DHCP server is configured per interface."
+
+  - id: no-tcp-small-servers
+    attr: MgmtService.enabled
+    entity_key: tcp-small-servers
+    value: false
+    source: curated
+    reference: "Model default: FortiOS has no TCP small servers."
+
+  - id: no-udp-small-servers
+    attr: MgmtService.enabled
+    entity_key: udp-small-servers
+    value: false
+    source: curated
+    reference: "Model default: FortiOS has no UDP small servers."
+
+  # --- AAA -----------------------------------------------------------------------------------
+  - id: lockout-after-3
+    attr: LockoutPolicy.max_attempts
+    value: 3
+    source: vendor_doc
+    reference: >-
+      config system global, admin-lockout-threshold: "Number of failed login attempts before an
+      administrator account is locked out for the admin-lockout-duration." Default 3.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: lockout-60-seconds
+    attr: LockoutPolicy.lockout_s
+    value: 60
+    source: vendor_doc
+    reference: >-
+      config system global, admin-lockout-duration: "Amount of time in seconds that an
+      administrator account is locked out". Default 60.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/339914554/config-system-global
+
+  - id: password-policy-off
+    attr: PasswordPolicy.enforced
+    value: false
+    source: vendor_doc
+    reference: >-
+      config system password-policy, status: "Enable/disable setting a password policy for
+      locally defined administrator passwords and IPsec VPN pre-shared keys." Default disable.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/127236326/config-system-password-policy
+
+  - id: password-minimum-8
+    attr: PasswordPolicy.min_length
+    value: 8
+    source: vendor_doc
+    reference: >-
+      config system password-policy, minimum-length: "Minimum password length." Default 8
+      (range 8-128).
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/127236326/config-system-password-policy
+
+  - id: passwords-stored-encoded
+    attr: PasswordPolicy.cleartext_passwords_encrypted
+    value: true
+    source: vendor_doc
+    reference: >-
+      Enhanced administrator password security: administrator passwords are stored hashed and
+      shown encoded (`set password ENC SH2…` or `ENC PB2…`), never in clear text.
+      https://docs.fortinet.com/document/fortigate/7.4.8/administration-guide/548023/enhanced-administrator-password-security-new
+
+  - id: no-auth-servers
+    none_of: AuthServer
+    source: curated
+    reference: >-
+      Model default: every TACACS+, RADIUS and LDAP server appears under `config user tacacs+`,
+      `config user radius` or `config user ldap`; none there means none exist.
+
+  # --- logging, SNMP, time -------------------------------------------------------------------
+  - id: syslog-off
+    attr: LogTarget.enabled
+    value: false
+    source: vendor_doc
+    reference: >-
+      config log syslogd setting, status: "Enable/disable remote syslog logging." Default
+      disable.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/141516630/config-log-syslogd-setting
+
+  - id: syslog-udp
+    attr: LogTarget.transport
+    value: udp
+    source: vendor_doc
+    reference: >-
+      config log syslogd setting, mode: "Remote syslog logging over UDP/Reliable TCP." Default
+      udp.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/141516630/config-log-syslogd-setting
+
+  - id: config-changes-logged
+    attr: LoggingPolicy.config_change_logged
+    value: true
+    source: vendor_doc
+    reference: >-
+      config log eventfilter: `event` ("Enable/disable event logging") and `system`
+      ("Enable/disable system event logging") both default enable; a configuration change is
+      system event 44546/44547 "Attribute configured" with `user`, `cfgpath` and `cfgattr`.
+      https://docs.fortinet.com/document/fortigate/7.4.2/cli-reference/437620/config-log-eventfilter
+      https://docs.fortinet.com/document/fortigate/7.4.4/fortios-log-message-reference/44547/44547-logid-event-config-objattr
+
+  - id: logs-timestamped
+    attr: LoggingPolicy.timestamps
+    value: true
+    source: vendor_doc
+    reference: >-
+      FortiOS Log Message Reference: every log message carries `date`, `time`, `eventtime` and
+      `tz` fields.
+      https://docs.fortinet.com/document/fortigate/7.4.4/fortios-log-message-reference/44547/44547-logid-event-config-objattr
+
+  - id: no-snmp-communities
+    none_of: SnmpCommunity
+    source: curated
+    reference: >-
+      Model default: every SNMP community appears under `config system snmp community`; none
+      there means none exist.
+
+  - id: snmp-read-only
+    attr: SnmpCommunity.access
+    value: ro
+    source: vendor_doc
+    reference: >-
+      FortiOS SNMP: "The FortiGate SNMP implementation is read-only"; SNMP v1/v2c/v3 managers
+      have read-only access.
+      https://docs.fortinet.com/document/fortigate/7.4.3/administration-guide/62595/snmp
+
+  - id: ntp-server-unauthenticated
+    attr: TimeSource.authenticated
+    value: false
+    source: vendor_doc
+    reference: >-
+      config system ntp, ntpserver, authentication: "Enable/disable authentication." Default
+      disable.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/105110478/config-system-ntp
+
+  - id: ntp-authentication-off
+    attr: TimePolicy.auth_enforced
+    value: false
+    source: vendor_doc
+    reference: >-
+      config system ntp, authentication: "Enable/disable authentication." Default disable.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/105110478/config-system-ntp
+
+  # --- filtering -----------------------------------------------------------------------------
+  - id: policy-action-deny
+    attr: FilterRule.action
+    value: deny
+    source: vendor_doc
+    reference: >-
+      config firewall policy, action: "Policy action (accept/deny/ipsec)." Default deny.
+      https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/333889629/config-firewall-policy
+
+  - id: no-filter-rules
+    none_of: FilterRule
+    source: curated
+    reference: >-
+      Model default: every firewall policy appears under `config firewall policy`; with none,
+      FortiOS denies all traffic through the unit ("If the parameters do not match any
+      configured policies, the traffic is denied").

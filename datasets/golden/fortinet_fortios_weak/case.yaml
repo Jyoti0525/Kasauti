@@ -1,0 +1,31 @@
+# E1 golden case (PLAN §21.1). Labels are ground truth from the weakness catalogue in
+# datasets/SOURCES.md, not engine output.
+description: FortiOS 7.4.8 branch FortiGate with 16 planted weaknesses (F1-F16)
+input: authored/fortinet_fortios/weak.conf
+input_sha256: 3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a
+vendor: null
+frameworks: [nist_800_53r5]
+expected_statuses:
+  AAA-CENTRAL-AUTH-01: FAIL     # F9 no TACACS+/RADIUS/LDAP server
+  AAA-LOCAL-PASSWORD-HASH-01: FAIL     # F8 admin password ENC SH2 (SHA-256, not a password KDF)
+  AAA-LOCKOUT-01: FAIL     # F6 admin-lockout-threshold 10
+  AAA-PASSWORD-ENCRYPTION-01: PASS     # FortiOS stores administrator passwords hashed (vendor default)
+  AAA-PASSWORD-MIN-LENGTH-01: FAIL     # F7 no password policy: status disable by default, minimum 8
+  FILTER-PERMIT-ANY-01: FAIL     # F16 policy 1 accepts all -> ANY-NET (0.0.0.0/0), service ALL
+  FILTER-UNTRUSTED-INGRESS-01: PASS     # traffic between interfaces is denied unless a policy accepts it
+  LOG-CONFIG-CHANGE-01: FAIL     # F11 eventfilter system disable
+  LOG-REMOTE-01: FAIL     # F10 syslog server set but syslogd status left disabled
+  LOG-TIMESTAMPS-01: PASS     # every FortiOS log message carries date, time and tz (vendor default)
+  MGMT-BANNER-01: FAIL     # F14 no pre-login banner
+  MGMT-HTTP-01: FAIL     # F2 admin-https-redirect disable
+  MGMT-SESSION-TIMEOUT-01: FAIL     # F1 admintimeout 480
+  MGMT-SSH-V2-01: FAIL     # F4 admin-ssh-v1 enable
+  MGMT-TELNET-01: FAIL     # F5 telnet in wan1 allowaccess
+  MGMT-VTY-ACL-01: N/A      # FortiOS has no vty lines
+  MGMT-VTY-ACL-02: N/A      # FortiOS has no vty lines
+  MGMT-WEB-ACL-01: FAIL     # F3 clear-text HTTP administration with no access restriction
+  REF-DANGLING-01: N/A      # no statement names an ACL or object by reference
+  SNMP-COMMUNITY-01: FAIL     # F12 SNMP community public
+  SVC-LEGACY-01: PASS     # FortiOS has no PAD, finger, BOOTP or small servers (model default)
+  SVC-PROXY-ARP-01: FAIL     # F15 proxy-arp entry on wan1
+  TIME-NTP-AUTH-01: FAIL     # F13 custom NTP server without authentication

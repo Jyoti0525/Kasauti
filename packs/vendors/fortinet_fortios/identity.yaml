@@ -1,0 +1,13 @@
+# Where identity appears (PLAN §7). A FortiGate backup starts with a comment header:
+#   #config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=admin
+# (model, then release). The host name is in `config system global`.
+fields:
+  hostname:
+    - {source: config, context: ["config system global"], pattern: "set hostname <STR:value>"}
+  os_version:
+    - {source: config, regex: '^#config-version=[A-Z0-9]+-(?P<value>[0-9]+\.[0-9]+\.[0-9]+)-'}
+    - {source: show_version, regex: '^Version: \S+ v(?P<value>[0-9]+\.[0-9]+\.[0-9]+),'}
+  model:
+    - {source: config, regex: '^#config-version=(?P<value>F[A-Z0-9]+)-'}
+  serial:
+    - {source: show_version, pattern: "Serial-Number: <STR:value>"}

@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "f591f508e254515a3bffc332",
+  "audit_id": "99ddbb3aeae020d4e1f7b6f9",
   "input": {
     "file": "hardened.cfg",
     "sha256": "aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2",
@@ -52,8 +52,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "098593c805aee6df528e9f8faf13d9485931011701cd412dafc70ad627578cbc",
-    "ruleset_version": "fbf9088a6f0977cb60e9a2a110a5a34062e471cf5b47771795c0ab2bb02546cd",
+    "kb_version": "1fd75bc794e2381882ec3541668503c60c1d6c2f2e605938aa1e66a2b5063695",
+    "ruleset_version": "0b1b575471bcfafc79f7234f2ec09b05f43bb67415d4a43697d0e464fdc94f28",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -729,7 +729,8 @@
       "severity_reason": null,
       "reason": "Passwords must be at least 15 characters: holds for PasswordPolicy[password-policy].",
       "actual": [
-        "PasswordPolicy[password-policy].min_length = 15"
+        "PasswordPolicy[password-policy].min_length = 15",
+        "PasswordPolicy[password-policy].enforced: missing"
       ],
       "defaults_used": [],
       "evidence": [
@@ -928,7 +929,8 @@
       "reason": "Logs are sent to a remote log server: holds for the device.",
       "actual": [
         "logging.remote_configured = true",
-        "LogTarget[10.10.10.50].host = 10.10.10.50"
+        "LogTarget[10.10.10.50].host = 10.10.10.50",
+        "LogTarget[10.10.10.50].enabled: missing"
       ],
       "defaults_used": [],
       "evidence": [
@@ -2267,7 +2269,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.4",
+    "sbm_version": "0.5",
     "device": {
       "key": "device",
       "evidence": [],
@@ -4066,6 +4068,12 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -5157,6 +5165,12 @@
           "default_source": null
         },
         "max_age_days": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enforced": {
           "value": null,
           "state": "absent",
           "evidence": [],

@@ -1,0 +1,160 @@
+# AAA: administrator password hashes, TACACS+/RADIUS/LDAP servers, lockout, password policy.
+# Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
+mappings:
+- id: fortinet_fortios/admin-password
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set password ENC <STR:h>
+  effect:
+    set: LocalUser.hash_type
+    from: h
+    transform:
+    - prefix:
+        PB2: pbkdf2-sha256
+        SH2: sha256
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/tacacs-server
+  vendor: fortinet_fortios
+  context:
+  - config user tacacs+
+  - edit <STR:n>
+  entity:
+    type: AuthServer
+    key: tacacs:{n}
+  match: set server <STR:h>
+  effect:
+  - set: AuthServer.host
+    from: h
+  - assert: AuthServer.kind
+    value: tacacs
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/radius-server
+  vendor: fortinet_fortios
+  context:
+  - config user radius
+  - edit <STR:n>
+  entity:
+    type: AuthServer
+    key: radius:{n}
+  match: set server <STR:h>
+  effect:
+  - set: AuthServer.host
+    from: h
+  - assert: AuthServer.kind
+    value: radius
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/ldap-server
+  vendor: fortinet_fortios
+  context:
+  - config user ldap
+  - edit <STR:n>
+  entity:
+    type: AuthServer
+    key: ldap:{n}
+  match: set server <STR:h>
+  effect:
+  - set: AuthServer.host
+    from: h
+  - assert: AuthServer.kind
+    value: ldap
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/lockout-threshold
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  match: set admin-lockout-threshold <INT:n>
+  effect:
+    set: LockoutPolicy.max_attempts
+    from: n
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/lockout-duration
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  match: set admin-lockout-duration <INT:d>
+  effect:
+    set: LockoutPolicy.lockout_s
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/password-policy-status
+  vendor: fortinet_fortios
+  context:
+  - config system password-policy
+  match: set status <STR:s>
+  effect:
+    set: PasswordPolicy.enforced
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/password-minimum-length
+  vendor: fortinet_fortios
+  context:
+  - config system password-policy
+  match: set minimum-length <INT:n>
+  effect:
+    set: PasswordPolicy.min_length
+    from: n
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

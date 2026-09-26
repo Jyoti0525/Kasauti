@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from kasauti.sbm.entities import ENTITY_TYPES, SINGLETON_TYPES, AnyEntity, Device, Entity
 from kasauti.sbm.facts import Evidence, Fact
 
-SBM_VERSION = "0.4"
+SBM_VERSION = "0.5"
 """Bumped on any schema change; older documents are upgraded by ``kasauti.sbm.migrations``."""
 
 E = TypeVar("E", bound=Entity)

@@ -111,6 +111,21 @@ def test_resolve_default_uses_the_vendor_default_and_says_so() -> None:
     assert strict.status is Status.REVIEW  # the author asked not to trust defaults
 
 
+def test_on_no_default_decides_only_when_no_default_is_known() -> None:
+    absent = SecurityBaselineModel(entities=(vty("vty 0-4"),))
+    defaulted = SecurityBaselineModel(
+        entities=(vty("vty 0-4", Fact.vendor_default(600, "v/defaults.yaml#t")),)
+    )
+    strict = rule(on_absent="resolve_default", on_no_default="fail")
+    assert findings(absent, strict)[0].status is Status.FAIL
+    assert findings(defaulted, strict)[0].status is Status.PASS
+
+
+def test_on_no_default_needs_resolve_default() -> None:
+    with pytest.raises(ValueError, match="on_no_default applies only"):
+        rule(on_absent="review", on_no_default="fail")
+
+
 def test_unknown_facts_follow_on_unknown() -> None:
     model = SecurityBaselineModel(entities=(vty("vty 0-4", Fact.unknown(APPROVED)),))
     (f,) = findings(model, rule(on_unknown="fail"))

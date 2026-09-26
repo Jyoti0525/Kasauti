@@ -1,0 +1,9 @@
+# Fingerprint for FortiGate configuration files (PLAN §7).
+min_score: 0.7
+signatures:
+  - {id: config-version-header, kind: regex, pattern: '^#config-version=F[A-Z0-9]+-\d', weight: 0.6}
+  - {id: system-global, kind: line_prefix, pattern: "config system global", weight: 0.2}
+  - {id: firewall-policy, kind: line_prefix, pattern: "config firewall policy", weight: 0.2}
+  - {id: system-interface, kind: line_prefix, pattern: "config system interface", weight: 0.1}
+  - {id: allowaccess, kind: regex, pattern: '^\s+set allowaccess ', weight: 0.2}
+  - {id: edit-next, kind: regex, pattern: '^\s+next$', weight: 0.1}

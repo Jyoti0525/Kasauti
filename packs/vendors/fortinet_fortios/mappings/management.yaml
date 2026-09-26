@@ -1,0 +1,127 @@
+# Management plane: admin timeout, Telnet/HTTP/SSH switches, login banner.
+# Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
+mappings:
+- id: fortinet_fortios/admintimeout
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtSession
+    key: admin
+  match: set admintimeout <INT:m>
+  effect:
+  - assert: MgmtSession.kind
+    value: cli
+  - set: MgmtSession.idle_timeout_s
+    from: m
+    transform:
+    - unit: minutes
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-telnet-disable
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtService
+    key: telnet
+  match: set admin-telnet disable
+  effect:
+    assert: MgmtService.enabled
+    value: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/https-redirect-disable
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtService
+    key: http
+  match: set admin-https-redirect disable
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/https-redirect-enable
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtService
+    key: http
+  match: set admin-https-redirect enable
+  effect:
+    assert: MgmtService.enabled
+    value: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-ssh-v1
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: MgmtService
+    key: ssh
+  match: set admin-ssh-v1 <STR:s>
+  effect:
+    set: MgmtService.version
+    from: s
+    map:
+      enable: '1.99'
+      disable: '2'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/pre-login-banner
+  vendor: fortinet_fortios
+  context:
+  - config system global
+  entity:
+    type: Banner
+    key: login
+  match: set pre-login-banner <STR:s>
+  effect:
+    set: Banner.present
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

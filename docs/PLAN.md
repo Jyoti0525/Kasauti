@@ -951,6 +951,18 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.8 (2026-09-26, fourth seed vendor: FortiOS):**
+  - **FortiOS pack** (63 mappings; 18 defaults read from the "Default" column of Fortinet's CLI
+    reference), a weak twin with 16 catalogued weaknesses (all caught), golden cases, fixtures
+    for four vendors.
+  - **`on_no_default: fail`:** a rule where absence is the violation now accepts a documented
+    protective default (FortiOS locks out after 3 failures) and fails only when there is none.
+  - **SBM 0.5:** `PasswordPolicy.enforced` and `LogTarget.enabled`, so a value configured while
+    its feature is off (a FortiOS syslog server with `status` disabled) is never a PASS.
+  - **Address objects seen through:** the resolver widens policy sources and destinations that
+    name catch-all objects or groups, and gives REVIEW where an object's extent wasn't read.
+  - **Zone-aware exposures:** "management reachable from untrusted" now asks for management
+    protocols on the interface (or no filter and no zone), not only a missing ACL.
 - **v5.1.7 (2026-09-26, third seed vendor: Arista EOS):**
   - **Arista EOS pack** (56 mappings, 9 defaults quoted from Arista's documentation, 7 model defaults), a weak
     twin with 20 catalogued weaknesses (19 caught, 1 honestly REVIEW), golden cases, fixtures

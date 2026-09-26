@@ -9,7 +9,12 @@ the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference`
 * **ACL targets**: does any entry permit traffic from *any* source? That's the chain
   vty -> ACL -> permitted sources, and it's *unknown* if a permit entry's sources weren't read;
 * **groups**: ``ObjectDef.expanded`` holds members after recursive expansion, and is
-  *unknown* if the nesting has a cycle or names an object that doesn't exist.
+  *unknown* if the nesting has a cycle or names an object that doesn't exist;
+* **filter entries naming address objects** (a FortiOS policy's ``set srcaddr "WEB-SRV"``):
+  if the object or group covers every address, ``any`` is added to the entry's ``src``/``dst``
+  (with the object's line as evidence), so a catch-all hidden behind a name is still a
+  permit-any. If the object's extent wasn't read, the entry's addresses become *unknown*:
+  REVIEW, never an assumed-harmless PASS.
 
 A dangling reference is a finding of its own (rule REF-DANGLING-01): on many platforms a
 filter naming a missing ACL filters nothing.
@@ -17,17 +22,19 @@ filter naming a missing ACL filters nothing.
 
 from __future__ import annotations
 
-from kasauti.mapping.builder import EntityAcc, RefRecord, SbmBuilder
+from kasauti.mapping.builder import EntityAcc, FactAcc, RefRecord, SbmBuilder
 from kasauti.sbm.facts import Evidence, FactState
 
 GROUP_KINDS = {"address_group": "address", "service_group": "service"}
+CATCH_ALL = frozenset({"any", "all", "0.0.0.0/0", "0.0.0.0/0.0.0.0", "::/0"})
 
 
 def resolve_references(builder: SbmBuilder) -> None:
     objects = {key: acc for (etype, key), acc in builder.entities.items() if etype == "ObjectDef"}
+    _expand_groups(objects)
+    _widen_named_addresses(builder, objects)
     for record in sorted(builder.refs, key=lambda r: (r.source, r.attribute, r.name)):
         _reference(builder, objects, record)
-    _expand_groups(objects)
 
 
 def _target_key(objects: dict[str, EntityAcc], kind: str, name: str) -> str | None:
@@ -128,3 +135,60 @@ def _expand(objects: dict[str, EntityAcc], key: str, trail: set[str]) -> tuple[s
         else:
             ok = False
     return out, ok
+
+
+def _widen_named_addresses(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> None:
+    """Filter entries whose ``src``/``dst`` name address objects: see the module docstring.
+    A name that is no address object (a literal address, ``any``) is left as it is."""
+    for (etype, _), acc in sorted(builder.entities.items()):
+        if etype != "FilterRule":
+            continue
+        for attr in ("src", "dst"):
+            fact = acc.facts.get(attr)
+            if fact is None or fact.state is not FactState.EXPLICIT:
+                continue
+            for name in sorted(fact.value):
+                extent, ev = _extent(objects, name)
+                if extent == "unknown" and ev is not None:
+                    fact.unknown(ev)
+                    break
+                if extent == "any" and ev is not None:
+                    fact.add(frozenset({"any"}), ev)
+
+
+def _extent(objects: dict[str, EntityAcc], name: str) -> tuple[str, Evidence | None]:
+    """``any`` (covers every address), ``some``, ``unknown`` (extent not read) or ``none``
+    (no address object has this name), with the deciding evidence."""
+    group = objects.get(f"address_group:{name}")
+    if group is not None:
+        expanded = group.facts.get("expanded")
+        if expanded is None or expanded.state is not FactState.EXPLICIT:
+            return "unknown", _first(expanded, group)
+        leaves = [
+            _extent(objects, leaf) if leaf not in CATCH_ALL else ("any", None)
+            for leaf in sorted(expanded.value)
+        ]
+        if any(kind == "any" for kind, _ in leaves):
+            return "any", _first(expanded, group)
+        if any(kind == "unknown" for kind, _ in leaves):
+            return "unknown", _first(expanded, group)
+        return "some", None
+    address = objects.get(f"address:{name}")
+    if address is None:
+        return "none", None
+    members = address.facts.get("members")
+    if members is None or members.state is not FactState.EXPLICIT:
+        return "unknown", _first(members, address)
+    if members.value & CATCH_ALL:
+        return "any", _first(members, address)
+    return "some", None
+
+
+def _first(fact: FactAcc | None, owner: EntityAcc) -> Evidence | None:
+    """The deciding line: the fact's, else the object's own, else any line about the object
+    (its header's ``kind``). An object always has one, so widening is never skipped."""
+    if fact is not None and fact.evidence:
+        return fact.evidence[0]
+    if owner.evidence:
+        return owner.evidence[0]
+    return next((f.evidence[0] for _, f in sorted(owner.facts.items()) if f.evidence), None)

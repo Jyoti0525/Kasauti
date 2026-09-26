@@ -1,59 +1,59 @@
 {
   "format_version": 1,
-  "audit_id": "b5554cf8cc117029c2a47fb2",
+  "audit_id": "d0fb3ae0476105ef436e0fca",
   "input": {
     "file": "hardened.conf",
-    "sha256": "b6a504c35d9066a1b0da376dc94e82b7878c9f502fee8b7c0f159f08cdcc7cc9",
+    "sha256": "6ab405110f0e768066ef309d4fd810808720c08d54373c2643e61bf11e44e9d4",
     "encoding": "utf-8",
-    "shape_family": "brace",
+    "shape_family": "block_edit",
     "parse_warnings": []
   },
   "detection": {
-    "pack_id": "juniper_junos",
+    "pack_id": "fortinet_fortios",
     "pack_version": 1,
     "chosen_by": "fingerprint",
-    "score": 1.2,
+    "score": 1.4,
     "min_score": 0.7,
     "signatures": [
-      "version-statement",
-      "system-block",
-      "host-name",
-      "junos-interface",
-      "root-authentication",
-      "security-zones"
+      "config-version-header",
+      "system-global",
+      "firewall-policy",
+      "system-interface",
+      "allowaccess",
+      "edit-next"
     ]
   },
   "identity": {
     "hostname": {
-      "value": "BR-SRX1",
-      "source": "config line 5"
+      "value": "FGT-EDGE",
+      "source": "config line 11"
     },
     "vendor": {
-      "value": "Juniper",
+      "value": "Fortinet",
       "source": "fingerprint (6 signatures)"
     },
     "os_version": {
-      "value": "23.4R1.9",
-      "source": "config line 3"
+      "value": "7.4.8",
+      "source": "config line 1"
     },
     "model": {
-      "value": null,
-      "source": "Model: not present in supplied artefacts; upload `show version` to populate"
+      "value": "FGT60F",
+      "source": "config line 1"
     },
     "serial": {
       "value": null,
-      "source": "Serial: not present in supplied artefacts; upload `show chassis hardware` to populate"
+      "source": "Serial: not present in supplied artefacts; upload `show version` to populate"
     },
     "hardware": {
       "value": null,
-      "source": "Hardware: not present in supplied artefacts; upload `show chassis hardware` to populate"
+      "source": "Hardware: not present in supplied artefacts"
     }
   },
   "kb": {
     "kasauti_version": "0.1.0",
     "kb_version": "1fd75bc794e2381882ec3541668503c60c1d6c2f2e605938aa1e66a2b5063695",
     "ruleset_version": "0b1b575471bcfafc79f7234f2ec09b05f43bb67415d4a43697d0e464fdc94f28",
-    "vendor_pack": "juniper_junos@1",
+    "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
     }
@@ -65,10 +65,10 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 20,
+      "passed": 19,
       "failed": 0,
       "review": 0,
-      "not_applicable": 3,
+      "not_applicable": 4,
       "compliance_pct": 100.0,
       "coverage_pct": 100.0
     }
@@ -292,7 +292,7 @@
       "rule_id": "REF-DANGLING-01",
       "title": "Every reference points at something that exists",
       "domain": "filtering",
-      "status": "PASS",
+      "status": "N/A",
       "severity": "medium",
       "nist_800_53r5": [
         "CM-6",
@@ -360,7 +360,7 @@
     {
       "control": "AC-3",
       "title": "Access Enforcement",
-      "status": "satisfied",
+      "status": "not applicable",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -592,16 +592,16 @@
       "reason": "Administrators authenticate against a central AAA server: holds for the device.",
       "actual": [
         "aaa.central_server_configured = true",
-        "AuthServer[tacacs:10.20.10.40].host = 10.20.10.40"
+        "AuthServer[tacacs:TACACS-1].host = 10.30.10.40"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 33,
-          "line_end": 33,
-          "raw": "10.20.10.40 secret \"****\"",
-          "mapping_id": "juniper_junos/tacplus-server",
+          "line_start": 55,
+          "line_end": 55,
+          "raw": "set server \"10.30.10.40\"",
+          "mapping_id": "fortinet_fortios/tacacs-server",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -617,41 +617,16 @@
       "severity_reason": null,
       "reason": "Local passwords are stored with a strong one-way hash: holds for LocalUser[netadmin].",
       "actual": [
-        "LocalUser[netadmin].hash_type = sha512-crypt"
+        "LocalUser[netadmin].hash_type = pbkdf2-sha256"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 26,
-          "line_end": 26,
-          "raw": "encrypted-password \"****\"",
-          "mapping_id": "juniper_junos/user-password",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
-    },
-    {
-      "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
-      "entity_id": "LocalUser[root]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Local passwords are stored with a strong one-way hash: holds for LocalUser[root].",
-      "actual": [
-        "LocalUser[root].hash_type = sha512-crypt"
-      ],
-      "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 7,
-          "line_end": 7,
-          "raw": "encrypted-password \"****\"",
-          "mapping_id": "juniper_junos/root-password",
+          "line_start": 50,
+          "line_end": 50,
+          "raw": "set password ENC ****",
+          "mapping_id": "fortinet_fortios/admin-password",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -673,10 +648,10 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 15,
-          "line_end": 15,
-          "raw": "tries-before-disconnect 3",
-          "mapping_id": "juniper_junos/retry-tries",
+          "line_start": 7,
+          "line_end": 7,
+          "raw": "set admin-lockout-threshold 3",
+          "mapping_id": "fortinet_fortios/lockout-threshold",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -695,7 +670,7 @@
         "PasswordPolicy[password-policy].cleartext_passwords_encrypted = true (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#passwords-always-hashed"
+        "fortinet_fortios/defaults.yaml#passwords-stored-encoded"
       ],
       "evidence": []
     },
@@ -708,16 +683,27 @@
       "reason": "Passwords must be at least 15 characters: holds for PasswordPolicy[password-policy].",
       "actual": [
         "PasswordPolicy[password-policy].min_length = 15",
-        "PasswordPolicy[password-policy].enforced: missing"
+        "PasswordPolicy[password-policy].enforced = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 19,
-          "line_end": 19,
-          "raw": "minimum-length 15",
-          "mapping_id": "juniper_junos/password-minimum-length",
+          "line_start": 16,
+          "line_end": 16,
+          "raw": "set status enable",
+          "mapping_id": "fortinet_fortios/password-policy-status",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.conf",
+          "line_start": 17,
+          "line_end": 17,
+          "raw": "set minimum-length 15",
+          "mapping_id": "fortinet_fortios/password-minimum-length",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -731,23 +717,23 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "No filter entry permits all traffic from anywhere to anywhere: holds for the device.",
+      "reason": "No filter entry permits all traffic from anywhere to anywhere: holds for the device (using the vendor default for this OS version).",
       "actual": [
         "filtering.permit_all_present = false",
-        "FilterRule[PROTECT-RE:ALLOW-NTP].service = {udp}",
-        "FilterRule[PROTECT-RE:ALLOW-NTP].src = {10.20.10.70/32}",
-        "FilterRule[PROTECT-RE:ALLOW-SSH-MGMT].service = {tcp}",
-        "FilterRule[PROTECT-RE:ALLOW-SSH-MGMT].src = {10.20.10.0/24}",
-        "FilterRule[PROTECT-RE:DENY-REST].action = deny"
+        "FilterRule[policy:1].service = {DNS, HTTPS}",
+        "FilterRule[policy:1].src = {LAN-NET}",
+        "FilterRule[policy:2].action = deny (vendor default)"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#policy-action-deny"
+      ],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 117,
-          "line_end": 117,
-          "raw": "10.20.10.0/24",
-          "mapping_id": "juniper_junos/term-source-address",
+          "line_start": 93,
+          "line_end": 93,
+          "raw": "set srcaddr \"LAN-NET\"",
+          "mapping_id": "fortinet_fortios/policy-srcaddr",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -755,43 +741,10 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 119,
-          "line_end": 119,
-          "raw": "protocol tcp",
-          "mapping_id": "juniper_junos/term-protocol",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 127,
-          "line_end": 127,
-          "raw": "10.20.10.70/32",
-          "mapping_id": "juniper_junos/term-source-address",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 129,
-          "line_end": 129,
-          "raw": "protocol udp",
-          "mapping_id": "juniper_junos/term-protocol",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 137,
-          "line_end": 137,
-          "raw": "discard",
-          "mapping_id": "juniper_junos/term-then-block-discard",
+          "line_start": 96,
+          "line_end": 96,
+          "raw": "set service \"HTTPS\" \"DNS\"",
+          "mapping_id": "fortinet_fortios/policy-service",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -801,23 +754,23 @@
     },
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
-      "entity_id": "Interface[ge-0/0/0.0]",
+      "entity_id": "Interface[wan1]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Untrusted interfaces filter inbound traffic: holds for Interface[ge-0/0/0.0].",
+      "reason": "Untrusted interfaces filter inbound traffic: holds for Interface[wan1].",
       "actual": [
-        "Interface[ge-0/0/0.0].role = untrusted",
-        "Interface[ge-0/0/0.0].zone = untrust"
+        "Interface[wan1].role = untrusted",
+        "Interface[wan1].zone = wan1"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 147,
-          "line_end": 147,
-          "raw": "ge-0/0/0.0",
-          "mapping_id": "inference/interface.role.untrusted_by_zone",
+          "line_start": 20,
+          "line_end": 20,
+          "raw": "edit \"wan1\"",
+          "mapping_id": "fortinet_fortios/interface",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -825,10 +778,10 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 147,
-          "line_end": 147,
-          "raw": "ge-0/0/0.0",
-          "mapping_id": "juniper_junos/zone-interface",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "set role wan",
+          "mapping_id": "fortinet_fortios/interface-role-wan",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -842,24 +795,14 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Configuration changes are logged: holds for LoggingPolicy[logging-policy].",
+      "reason": "Configuration changes are logged: holds for LoggingPolicy[logging-policy] (using the vendor default for this OS version).",
       "actual": [
-        "LoggingPolicy[logging-policy].config_change_logged = true"
+        "LoggingPolicy[logging-policy].config_change_logged = true (vendor default)"
       ],
-      "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 53,
-          "line_end": 53,
-          "raw": "interactive-commands any",
-          "mapping_id": "juniper_junos/syslog-file-interactive-commands",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#config-changes-logged"
+      ],
+      "evidence": []
     },
     {
       "rule_id": "LOG-REMOTE-01",
@@ -870,17 +813,28 @@
       "reason": "Logs are sent to a remote log server: holds for the device.",
       "actual": [
         "logging.remote_configured = true",
-        "LogTarget[10.20.10.50].host = 10.20.10.50",
-        "LogTarget[10.20.10.50].enabled: missing"
+        "LogTarget[syslogd].host = 10.30.10.50",
+        "LogTarget[syslogd].enabled = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 47,
-          "line_end": 47,
-          "raw": "host 10.20.10.50",
-          "mapping_id": "juniper_junos/syslog-host",
+          "line_start": 60,
+          "line_end": 60,
+          "raw": "set status enable",
+          "mapping_id": "fortinet_fortios/syslogd-status",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.conf",
+          "line_start": 61,
+          "line_end": 61,
+          "raw": "set server \"10.30.10.50\"",
+          "mapping_id": "fortinet_fortios/syslogd-server",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -899,7 +853,7 @@
         "LoggingPolicy[logging-policy].timestamps = true (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#syslog-date-timestamps"
+        "fortinet_fortios/defaults.yaml#logs-timestamped"
       ],
       "evidence": []
     },
@@ -918,10 +872,10 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 29,
-          "line_end": 29,
-          "raw": "message \"Authorised access only. Activity is logged and monitored.\"",
-          "mapping_id": "juniper_junos/login-message",
+          "line_start": 12,
+          "line_end": 12,
+          "raw": "set pre-login-banner enable",
+          "mapping_id": "fortinet_fortios/pre-login-banner",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -941,40 +895,29 @@
         "MgmtService[http].enabled = false (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#http-off"
+        "fortinet_fortios/defaults.yaml#http-redirected-to-https"
       ],
       "evidence": []
     },
     {
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
-      "entity_id": "MgmtSession[class:NETADMIN]",
+      "entity_id": "MgmtSession[admin]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Idle management sessions time out within 10 minutes: holds for MgmtSession[class:NETADMIN].",
+      "reason": "Idle management sessions time out within 10 minutes: holds for MgmtSession[admin].",
       "actual": [
-        "MgmtSession[class:NETADMIN].kind = cli",
-        "MgmtSession[class:NETADMIN].idle_timeout_s = 600"
+        "MgmtSession[admin].kind = cli",
+        "MgmtSession[admin].idle_timeout_s = 600"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 11,
-          "line_end": 11,
-          "raw": "idle-timeout 10",
-          "mapping_id": "juniper_junos/login-class-idle-timeout",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 24,
-          "line_end": 24,
-          "raw": "class NETADMIN",
-          "mapping_id": "juniper_junos/user-class",
+          "line_start": 9,
+          "line_end": 9,
+          "raw": "set admintimeout 10",
+          "mapping_id": "fortinet_fortios/admintimeout",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -988,25 +931,15 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "SSH management uses protocol version 2 only: holds for the device.",
+      "reason": "SSH management uses protocol version 2 only: holds for the device (using the vendor default for this OS version).",
       "actual": [
         "management.ssh_v1_negotiable = false",
-        "MgmtService[ssh].version = 2"
+        "MgmtService[ssh].version = 2 (vendor default)"
       ],
-      "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 38,
-          "line_end": 38,
-          "raw": "protocol-version v2",
-          "mapping_id": "juniper_junos/ssh-v2",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#ssh-v1-off"
+      ],
+      "evidence": []
     },
     {
       "rule_id": "MGMT-TELNET-01",
@@ -1014,26 +947,23 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Clear-text Telnet management is not reachable: holds for the device (using the vendor default for this OS version).",
+      "reason": "Clear-text Telnet management is not reachable: holds for the device.",
       "actual": [
         "management.telnet_reachable = false",
-        "MgmtService[telnet].enabled = false (vendor default)",
-        "MgmtSession[class:NETADMIN].kind = cli",
-        "Interface[ge-0/0/0.0].mgmt_protocols = {} (vendor default)",
-        "Interface[ge-0/0/1.0].mgmt_protocols = {ssh}",
-        "Interface[lo0.0].mgmt_protocols = {} (vendor default)"
+        "MgmtService[telnet].enabled = false",
+        "MgmtSession[admin].kind = cli",
+        "Interface[internal].mgmt_protocols = {ping}",
+        "Interface[mgmt].mgmt_protocols = {https, ping, ssh}",
+        "Interface[wan1].mgmt_protocols = {ping}"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#no-host-inbound-services",
-        "juniper_junos/defaults.yaml#services-off"
-      ],
+      "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 24,
-          "line_end": 24,
-          "raw": "class NETADMIN",
-          "mapping_id": "juniper_junos/user-class",
+          "line_start": 8,
+          "line_end": 8,
+          "raw": "set admin-telnet disable",
+          "mapping_id": "fortinet_fortios/admin-telnet-disable",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1041,10 +971,43 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 155,
-          "line_end": 155,
-          "raw": "ssh",
-          "mapping_id": "juniper_junos/zone-host-inbound-service",
+          "line_start": 9,
+          "line_end": 9,
+          "raw": "set admintimeout 10",
+          "mapping_id": "fortinet_fortios/admintimeout",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.conf",
+          "line_start": 23,
+          "line_end": 23,
+          "raw": "set allowaccess ping",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.conf",
+          "line_start": 31,
+          "line_end": 31,
+          "raw": "set allowaccess ping",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.conf",
+          "line_start": 39,
+          "line_end": 39,
+          "raw": "set allowaccess ping https ssh",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1087,28 +1050,14 @@
     },
     {
       "rule_id": "REF-DANGLING-01",
-      "entity_id": "Reference[Interface[lo0.0].filters_in -> PROTECT-RE]",
-      "status": "PASS",
+      "entity_id": "Device[device]",
+      "status": "N/A",
       "severity": null,
       "severity_reason": null,
-      "reason": "Every reference points at something that exists: holds for Reference[Interface[lo0.0].filters_in -> PROTECT-RE].",
-      "actual": [
-        "Reference[Interface[lo0.0].filters_in -> PROTECT-RE].resolved = true"
-      ],
+      "reason": "Not applicable: nothing matches `Reference` on this device.",
+      "actual": [],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 88,
-          "line_end": 88,
-          "raw": "input PROTECT-RE",
-          "mapping_id": "juniper_junos/unit-filter-input",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -1122,7 +1071,7 @@
         "SnmpCommunity: none configured = none (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#no-snmp-communities"
+        "fortinet_fortios/defaults.yaml#no-snmp-communities"
       ],
       "evidence": []
     },
@@ -1142,78 +1091,78 @@
         "MgmtService[udp-small-servers].enabled = false (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#finger-off",
-        "juniper_junos/defaults.yaml#no-bootp-server",
-        "juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad",
-        "juniper_junos/defaults.yaml#no-tcp-small-servers",
-        "juniper_junos/defaults.yaml#no-udp-small-servers"
+        "fortinet_fortios/defaults.yaml#no-legacy-bootp",
+        "fortinet_fortios/defaults.yaml#no-legacy-finger",
+        "fortinet_fortios/defaults.yaml#no-legacy-pad",
+        "fortinet_fortios/defaults.yaml#no-tcp-small-servers",
+        "fortinet_fortios/defaults.yaml#no-udp-small-servers"
       ],
       "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[ge-0/0/0.0]",
+      "entity_id": "Interface[internal]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ge-0/0/0.0] (using the vendor default for this OS version).",
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[internal] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[ge-0/0/0.0].proxy_arp = false (vendor default)"
+        "Interface[internal].proxy_arp = false (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#proxy-arp-off"
+        "fortinet_fortios/defaults.yaml#proxy-arp-off"
       ],
       "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[ge-0/0/1.0]",
+      "entity_id": "Interface[mgmt]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ge-0/0/1.0] (using the vendor default for this OS version).",
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[mgmt] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[ge-0/0/1.0].proxy_arp = false (vendor default)"
+        "Interface[mgmt].proxy_arp = false (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#proxy-arp-off"
+        "fortinet_fortios/defaults.yaml#proxy-arp-off"
       ],
       "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[lo0.0]",
+      "entity_id": "Interface[wan1]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[lo0.0] (using the vendor default for this OS version).",
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[wan1] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[lo0.0].proxy_arp = false (vendor default)"
+        "Interface[wan1].proxy_arp = false (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#proxy-arp-off"
+        "fortinet_fortios/defaults.yaml#proxy-arp-off"
       ],
       "evidence": []
     },
     {
       "rule_id": "TIME-NTP-AUTH-01",
-      "entity_id": "TimeSource[10.20.10.70]",
+      "entity_id": "TimeSource[ntp-1]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Time sources are authenticated: holds for TimeSource[10.20.10.70].",
+      "reason": "Time sources are authenticated: holds for TimeSource[ntp-1].",
       "actual": [
-        "TimeSource[10.20.10.70].authenticated = true",
+        "TimeSource[ntp-1].authenticated = true",
         "TimePolicy[time-policy].auth_enforced = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 63,
-          "line_end": 63,
-          "raw": "server 10.20.10.70 key ****",
-          "mapping_id": "juniper_junos/ntp-server-key",
+          "line_start": 70,
+          "line_end": 70,
+          "raw": "set authentication enable",
+          "mapping_id": "fortinet_fortios/ntpserver-authentication-enforced",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1221,10 +1170,10 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 64,
-          "line_end": 64,
-          "raw": "trusted-key 1",
-          "mapping_id": "juniper_junos/ntp-trusted-key",
+          "line_start": 70,
+          "line_end": 70,
+          "raw": "set authentication enable",
+          "mapping_id": "fortinet_fortios/ntpserver-authentication",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1234,523 +1183,416 @@
     }
   ],
   "assurance": {
-    "statements": 105,
-    "understood": 38,
-    "unmapped": 67,
+    "statements": 85,
+    "understood": 50,
+    "unmapped": 36,
     "near_miss": 0,
-    "understood_pct": 36.2,
+    "understood_pct": 58.8,
     "unmapped_patterns": [
       {
-        "pattern_key": "family inet",
+        "pattern_key": "set vdom <STR>",
         "count": 4,
-        "first_line": 71,
-        "example": "family inet"
+        "first_line": 21,
+        "example": "set vdom \"root\""
       },
       {
-        "pattern_key": "interfaces",
+        "pattern_key": "set ip <IP> <IP>",
         "count": 3,
-        "first_line": 67,
-        "example": "interfaces"
+        "first_line": 22,
+        "example": "set ip 198.51.100.2 255.255.255.252"
       },
       {
-        "pattern_key": "<IFNAME>",
-        "count": 3,
-        "first_line": 68,
-        "example": "ge-0/0/0"
+        "pattern_key": "set type physical",
+        "count": 2,
+        "first_line": 24,
+        "example": "set type physical"
       },
       {
-        "pattern_key": "address <IP>",
-        "count": 3,
-        "first_line": 72,
-        "example": "address 198.51.100.2/30"
-      },
-      {
-        "pattern_key": "syslog",
+        "pattern_key": "edit <STR>",
         "count": 2,
         "first_line": 46,
-        "example": "syslog"
+        "example": "edit \"netadmin\""
       },
       {
-        "pattern_key": "any notice",
+        "pattern_key": "set key ENC ****",
         "count": 2,
-        "first_line": 48,
-        "example": "any notice"
+        "first_line": 56,
+        "example": "set key ENC ****"
       },
       {
-        "pattern_key": "authorization info",
+        "pattern_key": "set schedule <STR>",
         "count": 2,
-        "first_line": 49,
-        "example": "authorization info"
+        "first_line": 95,
+        "example": "set schedule \"always\""
       },
       {
-        "pattern_key": "description <STR>",
-        "count": 2,
-        "first_line": 69,
-        "example": "description \"WAN uplink\""
-      },
-      {
-        "pattern_key": "from",
-        "count": 2,
-        "first_line": 115,
-        "example": "from"
-      },
-      {
-        "pattern_key": "source-address",
-        "count": 2,
-        "first_line": 116,
-        "example": "source-address"
-      },
-      {
-        "pattern_key": "system",
+        "pattern_key": "config system global",
         "count": 1,
-        "first_line": 4,
-        "example": "system"
+        "first_line": 5,
+        "example": "config system global"
       },
       {
-        "pattern_key": "root-authentication",
+        "pattern_key": "set alias <STR>",
         "count": 1,
-        "first_line": 6,
-        "example": "root-authentication"
+        "first_line": 10,
+        "example": "set alias \"FGT-EDGE\""
       },
       {
-        "pattern_key": "login",
+        "pattern_key": "set timezone <STR>",
         "count": 1,
-        "first_line": 9,
-        "example": "login"
+        "first_line": 13,
+        "example": "set timezone \"Asia/Kolkata\""
       },
       {
-        "pattern_key": "permissions all",
+        "pattern_key": "config system password-policy",
         "count": 1,
-        "first_line": 12,
-        "example": "permissions all"
+        "first_line": 15,
+        "example": "config system password-policy"
       },
       {
-        "pattern_key": "retry-options",
+        "pattern_key": "config system interface",
         "count": 1,
-        "first_line": 14,
-        "example": "retry-options"
+        "first_line": 19,
+        "example": "config system interface"
       },
       {
-        "pattern_key": "password",
-        "count": 1,
-        "first_line": 18,
-        "example": "password"
-      },
-      {
-        "pattern_key": "change-type character-sets",
-        "count": 1,
-        "first_line": 20,
-        "example": "change-type character-sets"
-      },
-      {
-        "pattern_key": "minimum-character-changes <INT>",
-        "count": 1,
-        "first_line": 21,
-        "example": "minimum-character-changes 4"
-      },
-      {
-        "pattern_key": "authentication",
-        "count": 1,
-        "first_line": 25,
-        "example": "authentication"
-      },
-      {
-        "pattern_key": "authentication-order [ tacplus password ****",
-        "count": 1,
-        "first_line": 31,
-        "example": "authentication-order [ tacplus password ****"
-      },
-      {
-        "pattern_key": "tacplus-server",
+        "pattern_key": "set type hard-switch",
         "count": 1,
         "first_line": 32,
-        "example": "tacplus-server"
+        "example": "set type hard-switch"
       },
       {
-        "pattern_key": "services",
+        "pattern_key": "config system admin",
         "count": 1,
-        "first_line": 35,
-        "example": "services"
+        "first_line": 45,
+        "example": "config system admin"
       },
       {
-        "pattern_key": "root-login deny",
+        "pattern_key": "set accprofile <STR>",
         "count": 1,
-        "first_line": 37,
-        "example": "root-login deny"
+        "first_line": 47,
+        "example": "set accprofile \"super_admin\""
       },
       {
-        "pattern_key": "connection-limit <INT>",
+        "pattern_key": "set trusthost1 <IP> <IP>",
         "count": 1,
-        "first_line": 39,
-        "example": "connection-limit 10"
+        "first_line": 49,
+        "example": "set trusthost1 10.30.10.0 255.255.255.0"
       },
       {
-        "pattern_key": "rate-limit <INT>",
+        "pattern_key": "config user tacacs+",
         "count": 1,
-        "first_line": 40,
-        "example": "rate-limit 5"
+        "first_line": 53,
+        "example": "config user tacacs+"
       },
       {
-        "pattern_key": "netconf",
-        "count": 1,
-        "first_line": 42,
-        "example": "netconf"
-      },
-      {
-        "pattern_key": "ssh",
-        "count": 1,
-        "first_line": 43,
-        "example": "ssh"
-      },
-      {
-        "pattern_key": "file interactive-commands",
-        "count": 1,
-        "first_line": 52,
-        "example": "file interactive-commands"
-      },
-      {
-        "pattern_key": "file messages",
-        "count": 1,
-        "first_line": 55,
-        "example": "file messages"
-      },
-      {
-        "pattern_key": "time-format millisecond",
+        "pattern_key": "config log syslogd setting",
         "count": 1,
         "first_line": 59,
-        "example": "time-format millisecond"
+        "example": "config log syslogd setting"
       },
       {
-        "pattern_key": "ntp",
+        "pattern_key": "config system ntp",
         "count": 1,
-        "first_line": 61,
-        "example": "ntp"
+        "first_line": 64,
+        "example": "config system ntp"
       },
       {
-        "pattern_key": "authentication-key <INT> **** sha256 value <STR>",
+        "pattern_key": "set ntpsync enable",
         "count": 1,
-        "first_line": 62,
-        "example": "authentication-key 1 **** sha256 value \"$9$PLACEHOLDER\""
+        "first_line": 65,
+        "example": "set ntpsync enable"
       },
       {
-        "pattern_key": "filter",
+        "pattern_key": "set type custom",
+        "count": 1,
+        "first_line": 66,
+        "example": "set type custom"
+      },
+      {
+        "pattern_key": "config ntpserver",
+        "count": 1,
+        "first_line": 67,
+        "example": "config ntpserver"
+      },
+      {
+        "pattern_key": "edit <INT>",
+        "count": 1,
+        "first_line": 68,
+        "example": "edit 1"
+      },
+      {
+        "pattern_key": "set key-type SHA256",
+        "count": 1,
+        "first_line": 71,
+        "example": "set key-type SHA256"
+      },
+      {
+        "pattern_key": "set key-id <INT>",
+        "count": 1,
+        "first_line": 73,
+        "example": "set key-id 1"
+      },
+      {
+        "pattern_key": "config firewall address",
+        "count": 1,
+        "first_line": 77,
+        "example": "config firewall address"
+      },
+      {
+        "pattern_key": "config firewall policy",
         "count": 1,
         "first_line": 87,
-        "example": "filter"
+        "example": "config firewall policy"
       },
       {
-        "pattern_key": "snmp",
-        "count": 1,
-        "first_line": 95,
-        "example": "snmp"
-      },
-      {
-        "pattern_key": "v3",
-        "count": 1,
-        "first_line": 96,
-        "example": "v3"
-      },
-      {
-        "pattern_key": "usm",
-        "count": 1,
-        "first_line": 97,
-        "example": "usm"
-      },
-      {
-        "pattern_key": "local-engine",
+        "pattern_key": "set nat enable",
         "count": 1,
         "first_line": 98,
-        "example": "local-engine"
-      },
-      {
-        "pattern_key": "user nmsuser",
-        "count": 1,
-        "first_line": 99,
-        "example": "user nmsuser"
-      },
-      {
-        "pattern_key": "authentication-sha",
-        "count": 1,
-        "first_line": 100,
-        "example": "authentication-sha"
-      },
-      {
-        "pattern_key": "authentication-key <STR>",
-        "count": 1,
-        "first_line": 101,
-        "example": "authentication-key \"****\""
-      },
-      {
-        "pattern_key": "privacy-aes128",
-        "count": 1,
-        "first_line": 103,
-        "example": "privacy-aes128"
-      },
-      {
-        "pattern_key": "privacy-key <STR>",
-        "count": 1,
-        "first_line": 104,
-        "example": "privacy-key \"$9$PLACEHOLDER\""
-      },
-      {
-        "pattern_key": "firewall",
-        "count": 1,
-        "first_line": 111,
-        "example": "firewall"
-      },
-      {
-        "pattern_key": "destination-port ssh",
-        "count": 1,
-        "first_line": 120,
-        "example": "destination-port ssh"
-      },
-      {
-        "pattern_key": "port ntp",
-        "count": 1,
-        "first_line": 130,
-        "example": "port ntp"
-      },
-      {
-        "pattern_key": "then",
-        "count": 1,
-        "first_line": 135,
-        "example": "then"
-      },
-      {
-        "pattern_key": "security",
-        "count": 1,
-        "first_line": 143,
-        "example": "security"
-      },
-      {
-        "pattern_key": "zones",
-        "count": 1,
-        "first_line": 144,
-        "example": "zones"
-      },
-      {
-        "pattern_key": "security-zone untrust",
-        "count": 1,
-        "first_line": 145,
-        "example": "security-zone untrust"
-      },
-      {
-        "pattern_key": "security-zone trust",
-        "count": 1,
-        "first_line": 150,
-        "example": "security-zone trust"
-      },
-      {
-        "pattern_key": "host-inbound-traffic",
-        "count": 1,
-        "first_line": 153,
-        "example": "host-inbound-traffic"
-      },
-      {
-        "pattern_key": "system-services",
-        "count": 1,
-        "first_line": 154,
-        "example": "system-services"
+        "example": "set nat enable"
       }
     ],
     "review_findings": 0,
     "mappings_used": [
       {
-        "mapping": "inference/interface.role.untrusted_by_zone@1",
+        "mapping": "fortinet_fortios/address-subnet@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 2
       },
       {
-        "mapping": "juniper_junos/filter-inet@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/filter-term@1",
+        "mapping": "fortinet_fortios/address@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 3
       },
       {
-        "mapping": "juniper_junos/login-class-idle-timeout@1",
+        "mapping": "fortinet_fortios/admin-password@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/login-message@1",
+        "mapping": "fortinet_fortios/admin-telnet-disable@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/ntp-server-key@1",
+        "mapping": "fortinet_fortios/admintimeout@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "juniper_junos/ntp-trusted-key@1",
+        "mapping": "fortinet_fortios/interface-alias@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 3
       },
       {
-        "mapping": "juniper_junos/password-minimum-length@1",
+        "mapping": "fortinet_fortios/interface-allowaccess@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 3
       },
       {
-        "mapping": "juniper_junos/retry-lockout-period@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/retry-tries@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/root-password@1",
+        "mapping": "fortinet_fortios/interface-role-lan@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "juniper_junos/service-ssh@1",
+        "mapping": "fortinet_fortios/interface-role-wan@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/ssh-v2@1",
+        "mapping": "fortinet_fortios/interface@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "fortinet_fortios/lockout-duration@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/syslog-file-interactive-commands@1",
+        "mapping": "fortinet_fortios/lockout-threshold@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/syslog-host@1",
+        "mapping": "fortinet_fortios/ntpserver-authentication-enforced@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/tacplus-server-inline-secret@1",
+        "mapping": "fortinet_fortios/ntpserver-authentication@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/tacplus-server@1",
+        "mapping": "fortinet_fortios/ntpserver-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/password-minimum-length@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/password-policy-status@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-action@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-dstaddr@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "juniper_junos/term-protocol@1",
+        "mapping": "fortinet_fortios/policy-dstintf@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "juniper_junos/term-source-address@1",
+        "mapping": "fortinet_fortios/policy-logtraffic@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "juniper_junos/term-then-accept@1",
+        "mapping": "fortinet_fortios/policy-name@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "juniper_junos/term-then-block-discard@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/unit-filter-input@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 8
-      },
-      {
-        "mapping": "juniper_junos/user-class@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/user-password@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/zone-host-inbound-service@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/zone-interface@1",
+        "mapping": "fortinet_fortios/policy-service@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
+      },
+      {
+        "mapping": "fortinet_fortios/policy-srcaddr@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "fortinet_fortios/policy-srcintf@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "fortinet_fortios/policy@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 4
+      },
+      {
+        "mapping": "fortinet_fortios/pre-login-banner@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/syslogd-mode@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/syslogd-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/syslogd-status@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/tacacs-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "inference/device.role.firewall_by_zones@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 4
       }
     ],
     "defaults_used": [
-      "juniper_junos/defaults.yaml#finger-off",
-      "juniper_junos/defaults.yaml#http-off",
-      "juniper_junos/defaults.yaml#no-bootp-server",
-      "juniper_junos/defaults.yaml#no-host-inbound-services",
-      "juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad",
-      "juniper_junos/defaults.yaml#no-snmp-communities",
-      "juniper_junos/defaults.yaml#no-tcp-small-servers",
-      "juniper_junos/defaults.yaml#no-udp-small-servers",
-      "juniper_junos/defaults.yaml#passwords-always-hashed",
-      "juniper_junos/defaults.yaml#proxy-arp-off",
-      "juniper_junos/defaults.yaml#services-off",
-      "juniper_junos/defaults.yaml#syslog-date-timestamps"
+      "fortinet_fortios/defaults.yaml#config-changes-logged",
+      "fortinet_fortios/defaults.yaml#http-redirected-to-https",
+      "fortinet_fortios/defaults.yaml#logs-timestamped",
+      "fortinet_fortios/defaults.yaml#no-legacy-bootp",
+      "fortinet_fortios/defaults.yaml#no-legacy-finger",
+      "fortinet_fortios/defaults.yaml#no-legacy-pad",
+      "fortinet_fortios/defaults.yaml#no-snmp-communities",
+      "fortinet_fortios/defaults.yaml#no-tcp-small-servers",
+      "fortinet_fortios/defaults.yaml#no-udp-small-servers",
+      "fortinet_fortios/defaults.yaml#passwords-stored-encoded",
+      "fortinet_fortios/defaults.yaml#policy-action-deny",
+      "fortinet_fortios/defaults.yaml#proxy-arp-off",
+      "fortinet_fortios/defaults.yaml#ssh-v1-off"
     ],
     "mappings_skipped_for_version": []
   },
@@ -1761,14 +1603,14 @@
       "evidence": [],
       "type": "Device",
       "hostname": {
-        "value": "BR-SRX1",
+        "value": "FGT-EDGE",
         "state": "explicit",
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 5,
-            "line_end": 5,
-            "raw": "host-name BR-SRX1",
+            "line_start": 11,
+            "line_end": 11,
+            "raw": "set hostname \"FGT-EDGE\"",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1777,23 +1619,14 @@
         "default_source": null
       },
       "vendor": {
-        "value": "Juniper",
+        "value": "Fortinet",
         "state": "explicit",
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 3,
-            "line_end": 3,
-            "raw": "version 23.4R1.9;",
-            "mapping_id": null,
-            "mapping_version": null,
-            "approved_by": []
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 4,
-            "line_end": 4,
-            "raw": "system {",
+            "line_start": 1,
+            "line_end": 1,
+            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=netadmin",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1802,34 +1635,43 @@
             "file": "hardened.conf",
             "line_start": 5,
             "line_end": 5,
-            "raw": "host-name BR-SRX1;",
+            "raw": "config system global",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
             "file": "hardened.conf",
-            "line_start": 6,
-            "line_end": 6,
-            "raw": "root-authentication {",
+            "line_start": 19,
+            "line_end": 19,
+            "raw": "config system interface",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
             "file": "hardened.conf",
-            "line_start": 68,
-            "line_end": 68,
-            "raw": "ge-0/0/0 {",
+            "line_start": 23,
+            "line_end": 23,
+            "raw": "set allowaccess ping",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
             "file": "hardened.conf",
-            "line_start": 145,
-            "line_end": 145,
-            "raw": "security-zone untrust {",
+            "line_start": 27,
+            "line_end": 27,
+            "raw": "next",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 87,
+            "line_end": 87,
+            "raw": "config firewall policy",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1838,23 +1680,14 @@
         "default_source": null
       },
       "os_family": {
-        "value": "Junos OS",
+        "value": "FortiOS",
         "state": "explicit",
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 3,
-            "line_end": 3,
-            "raw": "version 23.4R1.9;",
-            "mapping_id": null,
-            "mapping_version": null,
-            "approved_by": []
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 4,
-            "line_end": 4,
-            "raw": "system {",
+            "line_start": 1,
+            "line_end": 1,
+            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=netadmin",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1863,34 +1696,43 @@
             "file": "hardened.conf",
             "line_start": 5,
             "line_end": 5,
-            "raw": "host-name BR-SRX1;",
+            "raw": "config system global",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
             "file": "hardened.conf",
-            "line_start": 6,
-            "line_end": 6,
-            "raw": "root-authentication {",
+            "line_start": 19,
+            "line_end": 19,
+            "raw": "config system interface",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
             "file": "hardened.conf",
-            "line_start": 68,
-            "line_end": 68,
-            "raw": "ge-0/0/0 {",
+            "line_start": 23,
+            "line_end": 23,
+            "raw": "set allowaccess ping",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
             "file": "hardened.conf",
-            "line_start": 145,
-            "line_end": 145,
-            "raw": "security-zone untrust {",
+            "line_start": 27,
+            "line_end": 27,
+            "raw": "next",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 87,
+            "line_end": 87,
+            "raw": "config firewall policy",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1899,14 +1741,14 @@
         "default_source": null
       },
       "os_version": {
-        "value": "23.4R1.9",
+        "value": "7.4.8",
         "state": "explicit",
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 3,
-            "line_end": 3,
-            "raw": "version 23.4R1.9",
+            "line_start": 1,
+            "line_end": 1,
+            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=netadmin",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1915,9 +1757,19 @@
         "default_source": null
       },
       "model": {
-        "value": null,
-        "state": "absent",
-        "evidence": [],
+        "value": "FGT60F",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.conf",
+            "line_start": 1,
+            "line_end": 1,
+            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=netadmin",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
         "default_source": null
       },
       "serial": {
@@ -1933,15 +1785,60 @@
         "default_source": null
       },
       "role": {
-        "value": "router",
-        "state": "vendor_default",
-        "evidence": [],
-        "default_source": "juniper_junos/pack.yaml#default_role"
+        "value": "firewall",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.conf",
+            "line_start": 90,
+            "line_end": 90,
+            "raw": "set srcintf \"internal\"",
+            "mapping_id": "inference/device.role.firewall_by_zones",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 91,
+            "line_end": 91,
+            "raw": "set dstintf \"wan1\"",
+            "mapping_id": "inference/device.role.firewall_by_zones",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 102,
+            "line_end": 102,
+            "raw": "set srcintf \"wan1\"",
+            "mapping_id": "inference/device.role.firewall_by_zones",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 103,
+            "line_end": 103,
+            "raw": "set dstintf \"internal\"",
+            "mapping_id": "inference/device.role.firewall_by_zones",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
       }
     },
     "entities": [
       {
-        "key": "tacacs:10.20.10.40",
+        "key": "tacacs:TACACS-1",
         "evidence": [],
         "type": "AuthServer",
         "kind": {
@@ -1950,10 +1847,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 33,
-              "line_end": 33,
-              "raw": "10.20.10.40 secret \"****\"",
-              "mapping_id": "juniper_junos/tacplus-server",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "set server \"10.30.10.40\"",
+              "mapping_id": "fortinet_fortios/tacacs-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1963,15 +1860,15 @@
           "default_source": null
         },
         "host": {
-          "value": "10.20.10.40",
+          "value": "10.30.10.40",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 33,
-              "line_end": 33,
-              "raw": "10.20.10.40 secret \"****\"",
-              "mapping_id": "juniper_junos/tacplus-server",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "set server \"10.30.10.40\"",
+              "mapping_id": "fortinet_fortios/tacacs-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1981,21 +1878,9 @@
           "default_source": null
         },
         "key_present": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 33,
-              "line_end": 33,
-              "raw": "10.20.10.40 secret \"****\"",
-              "mapping_id": "juniper_junos/tacplus-server-inline-secret",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -2009,10 +1894,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 29,
-              "line_end": 29,
-              "raw": "message \"Authorised access only. Activity is logged and monitored.\"",
-              "mapping_id": "juniper_junos/login-message",
+              "line_start": 12,
+              "line_end": 12,
+              "raw": "set pre-login-banner enable",
+              "mapping_id": "fortinet_fortios/pre-login-banner",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2029,19 +1914,19 @@
         }
       },
       {
-        "key": "PROTECT-RE:ALLOW-NTP",
+        "key": "policy:1",
         "evidence": [],
         "type": "FilterRule",
         "ruleset": {
-          "value": "PROTECT-RE",
+          "value": "policy",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 124,
-              "line_end": 124,
-              "raw": "term ALLOW-NTP",
-              "mapping_id": "juniper_junos/filter-term",
+              "line_start": 88,
+              "line_end": 88,
+              "raw": "edit 1",
+              "mapping_id": "fortinet_fortios/policy",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2051,29 +1936,53 @@
           "default_source": null
         },
         "position": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": 1,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 88,
+              "line_end": 88,
+              "raw": "edit 1",
+              "mapping_id": "fortinet_fortios/policy",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "name": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "LAN-to-internet",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 89,
+              "line_end": 89,
+              "raw": "set name \"LAN-to-internet\"",
+              "mapping_id": "fortinet_fortios/policy-name",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "src": {
           "value": [
-            "10.20.10.70/32"
+            "LAN-NET"
           ],
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 127,
-              "line_end": 127,
-              "raw": "10.20.10.70/32",
-              "mapping_id": "juniper_junos/term-source-address",
+              "line_start": 93,
+              "line_end": 93,
+              "raw": "set srcaddr \"LAN-NET\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2086,22 +1995,35 @@
           "value": [
             "any"
           ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 94,
+              "line_end": 94,
+              "raw": "set dstaddr \"all\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "service": {
           "value": [
-            "udp"
+            "DNS",
+            "HTTPS"
           ],
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 129,
-              "line_end": 129,
-              "raw": "protocol udp",
-              "mapping_id": "juniper_junos/term-protocol",
+              "line_start": 96,
+              "line_end": 96,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2116,10 +2038,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 132,
-              "line_end": 132,
-              "raw": "then accept",
-              "mapping_id": "juniper_junos/term-then-accept",
+              "line_start": 92,
+              "line_end": 92,
+              "raw": "set action accept",
+              "mapping_id": "fortinet_fortios/policy-action",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2129,9 +2051,21 @@
           "default_source": null
         },
         "log": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 97,
+              "line_end": 97,
+              "raw": "set logtraffic all",
+              "mapping_id": "fortinet_fortios/policy-logtraffic",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "enabled": {
@@ -2141,32 +2075,56 @@
           "default_source": null
         },
         "zone_from": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone_to": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "PROTECT-RE:ALLOW-SSH-MGMT",
-        "evidence": [],
-        "type": "FilterRule",
-        "ruleset": {
-          "value": "PROTECT-RE",
+          "value": "internal",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 114,
-              "line_end": 114,
-              "raw": "term ALLOW-SSH-MGMT",
-              "mapping_id": "juniper_junos/filter-term",
+              "line_start": 90,
+              "line_end": 90,
+              "raw": "set srcintf \"internal\"",
+              "mapping_id": "fortinet_fortios/policy-srcintf",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": "wan1",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "set dstintf \"wan1\"",
+              "mapping_id": "fortinet_fortios/policy-dstintf",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "policy:2",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "policy",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 100,
+              "line_end": 100,
+              "raw": "edit 2",
+              "mapping_id": "fortinet_fortios/policy",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2176,29 +2134,53 @@
           "default_source": null
         },
         "position": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": 2,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 100,
+              "line_end": 100,
+              "raw": "edit 2",
+              "mapping_id": "fortinet_fortios/policy",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "name": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "deny-and-log",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 101,
+              "line_end": 101,
+              "raw": "set name \"deny-and-log\"",
+              "mapping_id": "fortinet_fortios/policy-name",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "src": {
           "value": [
-            "10.20.10.0/24"
+            "any"
           ],
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 117,
-              "line_end": 117,
-              "raw": "10.20.10.0/24",
-              "mapping_id": "juniper_junos/term-source-address",
+              "line_start": 104,
+              "line_end": 104,
+              "raw": "set srcaddr \"all\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2211,22 +2193,14 @@
           "value": [
             "any"
           ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination"
-        },
-        "service": {
-          "value": [
-            "tcp"
-          ],
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 119,
-              "line_end": 119,
-              "raw": "protocol tcp",
-              "mapping_id": "juniper_junos/term-protocol",
+              "line_start": 105,
+              "line_end": 105,
+              "raw": "set dstaddr \"all\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2234,118 +2208,19 @@
             }
           ],
           "default_source": null
-        },
-        "action": {
-          "value": "permit",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 122,
-              "line_end": 122,
-              "raw": "then accept",
-              "mapping_id": "juniper_junos/term-then-accept",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "log": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "enabled": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone_from": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone_to": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "PROTECT-RE:DENY-REST",
-        "evidence": [],
-        "type": "FilterRule",
-        "ruleset": {
-          "value": "PROTECT-RE",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 134,
-              "line_end": 134,
-              "raw": "term DENY-REST",
-              "mapping_id": "juniper_junos/filter-term",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "position": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "name": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "src": {
-          "value": [
-            "any"
-          ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-source"
-        },
-        "dst": {
-          "value": [
-            "any"
-          ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination"
         },
         "service": {
           "value": [
             "ip"
           ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-protocol"
-        },
-        "action": {
-          "value": "deny",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 137,
-              "line_end": 137,
-              "raw": "discard",
-              "mapping_id": "juniper_junos/term-then-block-discard",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "set service \"ALL\"",
+              "mapping_id": "fortinet_fortios/policy-service",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2354,10 +2229,28 @@
           ],
           "default_source": null
         },
-        "log": {
-          "value": null,
-          "state": "absent",
+        "action": {
+          "value": "deny",
+          "state": "vendor_default",
           "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#policy-action-deny"
+        },
+        "log": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 108,
+              "line_end": 108,
+              "raw": "set logtraffic all",
+              "mapping_id": "fortinet_fortios/policy-logtraffic",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "enabled": {
@@ -2367,12 +2260,139 @@
           "default_source": null
         },
         "zone_from": {
+          "value": "wan1",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 102,
+              "line_end": 102,
+              "raw": "set srcintf \"wan1\"",
+              "mapping_id": "fortinet_fortios/policy-srcintf",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": "internal",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 103,
+              "line_end": 103,
+              "raw": "set dstintf \"internal\"",
+              "mapping_id": "fortinet_fortios/policy-dstintf",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "internal",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
+          "value": "LAN server segment",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 34,
+              "line_end": 34,
+              "raw": "set alias \"LAN server segment\"",
+              "mapping_id": "fortinet_fortios/interface-alias",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
+          "value": "internal",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 28,
+              "line_end": 28,
+              "raw": "edit \"internal\"",
+              "mapping_id": "fortinet_fortios/interface",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "role": {
+          "value": "trusted",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 33,
+              "line_end": 33,
+              "raw": "set role lan",
+              "mapping_id": "fortinet_fortios/interface-role-lan",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "admin_up": {
           "value": null,
           "state": "absent",
           "evidence": [],
           "default_source": null
         },
-        "zone_to": {
+        "mgmt_protocols": {
+          "value": [
+            "ping"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 31,
+              "line_end": 31,
+              "raw": "set allowaccess ping",
+              "mapping_id": "fortinet_fortios/interface-allowaccess",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#proxy-arp-off"
+        },
+        "filters_in": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "filters_out": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2380,25 +2400,142 @@
         }
       },
       {
-        "key": "ge-0/0/0.0",
+        "key": "mgmt",
         "evidence": [],
         "type": "Interface",
         "description": {
+          "value": "OOB management",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 42,
+              "line_end": 42,
+              "raw": "set alias \"OOB management\"",
+              "mapping_id": "fortinet_fortios/interface-alias",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
+          "value": "mgmt",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 36,
+              "line_end": 36,
+              "raw": "edit \"mgmt\"",
+              "mapping_id": "fortinet_fortios/interface",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "role": {
+          "value": "trusted",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 41,
+              "line_end": 41,
+              "raw": "set role lan",
+              "mapping_id": "fortinet_fortios/interface-role-lan",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "admin_up": {
           "value": null,
           "state": "absent",
           "evidence": [],
           "default_source": null
         },
-        "zone": {
-          "value": "untrust",
+        "mgmt_protocols": {
+          "value": [
+            "https",
+            "ping",
+            "ssh"
+          ],
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 147,
-              "line_end": 147,
-              "raw": "ge-0/0/0.0",
-              "mapping_id": "juniper_junos/zone-interface",
+              "line_start": 39,
+              "line_end": 39,
+              "raw": "set allowaccess ping https ssh",
+              "mapping_id": "fortinet_fortios/interface-allowaccess",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#proxy-arp-off"
+        },
+        "filters_in": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "wan1",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
+          "value": "WAN uplink to ISP",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 26,
+              "line_end": 26,
+              "raw": "set alias \"WAN uplink to ISP\"",
+              "mapping_id": "fortinet_fortios/interface-alias",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
+          "value": "wan1",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 20,
+              "line_end": 20,
+              "raw": "edit \"wan1\"",
+              "mapping_id": "fortinet_fortios/interface",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2413,81 +2550,16 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 147,
-              "line_end": 147,
-              "raw": "ge-0/0/0.0",
-              "mapping_id": "inference/interface.role.untrusted_by_zone",
+              "line_start": 25,
+              "line_end": 25,
+              "raw": "set role wan",
+              "mapping_id": "fortinet_fortios/interface-role-wan",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
               ]
             }
           ],
-          "default_source": null
-        },
-        "admin_up": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_protocols": {
-          "value": [],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
-        },
-        "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#proxy-arp-off"
-        },
-        "filters_in": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "filters_out": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "ge-0/0/1.0",
-        "evidence": [],
-        "type": "Interface",
-        "description": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone": {
-          "value": "trust",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 152,
-              "line_end": 152,
-              "raw": "ge-0/0/1.0",
-              "mapping_id": "juniper_junos/zone-interface",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "role": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
           "default_source": null
         },
         "admin_up": {
@@ -2498,16 +2570,16 @@
         },
         "mgmt_protocols": {
           "value": [
-            "ssh"
+            "ping"
           ],
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 155,
-              "line_end": 155,
-              "raw": "ssh",
-              "mapping_id": "juniper_junos/zone-host-inbound-service",
+              "line_start": 23,
+              "line_end": 23,
+              "raw": "set allowaccess ping",
+              "mapping_id": "fortinet_fortios/interface-allowaccess",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2520,79 +2592,12 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#proxy-arp-off"
+          "default_source": "fortinet_fortios/defaults.yaml#proxy-arp-off"
         },
         "filters_in": {
           "value": null,
           "state": "absent",
           "evidence": [],
-          "default_source": null
-        },
-        "filters_out": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "lo0.0",
-        "evidence": [],
-        "type": "Interface",
-        "description": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "role": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "admin_up": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_protocols": {
-          "value": [],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
-        },
-        "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#proxy-arp-off"
-        },
-        "filters_in": {
-          "value": [
-            "PROTECT-RE"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
           "default_source": null
         },
         "filters_out": {
@@ -2613,56 +2618,15 @@
           "default_source": null
         },
         "hash_type": {
-          "value": "sha512-crypt",
+          "value": "pbkdf2-sha256",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 26,
-              "line_end": 26,
-              "raw": "encrypted-password \"****\"",
-              "mapping_id": "juniper_junos/user-password",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "root",
-        "evidence": [],
-        "type": "LocalUser",
-        "privilege": {
-          "value": 15,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 7,
-              "line_end": 7,
-              "raw": "encrypted-password \"****\"",
-              "mapping_id": "juniper_junos/root-password",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "hash_type": {
-          "value": "sha512-crypt",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 7,
-              "line_end": 7,
-              "raw": "encrypted-password \"****\"",
-              "mapping_id": "juniper_junos/root-password",
+              "line_start": 50,
+              "line_end": 50,
+              "raw": "set password ENC ****",
+              "mapping_id": "fortinet_fortios/admin-password",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2682,10 +2646,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 15,
-              "line_end": 15,
-              "raw": "tries-before-disconnect 3",
-              "mapping_id": "juniper_junos/retry-tries",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "set admin-lockout-threshold 3",
+              "mapping_id": "fortinet_fortios/lockout-threshold",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2695,15 +2659,15 @@
           "default_source": null
         },
         "lockout_s": {
-          "value": 600,
+          "value": 900,
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 16,
-              "line_end": 16,
-              "raw": "lockout-period 10",
-              "mapping_id": "juniper_junos/retry-lockout-period",
+              "line_start": 6,
+              "line_end": 6,
+              "raw": "set admin-lockout-duration 900",
+              "mapping_id": "fortinet_fortios/lockout-duration",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2714,19 +2678,19 @@
         }
       },
       {
-        "key": "10.20.10.50",
+        "key": "syslogd",
         "evidence": [],
         "type": "LogTarget",
         "host": {
-          "value": "10.20.10.50",
+          "value": "10.30.10.50",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 47,
-              "line_end": 47,
-              "raw": "host 10.20.10.50",
-              "mapping_id": "juniper_junos/syslog-host",
+              "line_start": 61,
+              "line_end": 61,
+              "raw": "set server \"10.30.10.50\"",
+              "mapping_id": "fortinet_fortios/syslogd-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2736,9 +2700,21 @@
           "default_source": null
         },
         "transport": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "tcp",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 62,
+              "line_end": 62,
+              "raw": "set mode reliable",
+              "mapping_id": "fortinet_fortios/syslogd-mode",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "severity": {
@@ -2748,9 +2724,21 @@
           "default_source": null
         },
         "enabled": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 60,
+              "line_end": 60,
+              "raw": "set status enable",
+              "mapping_id": "fortinet_fortios/syslogd-status",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         }
       },
@@ -2762,7 +2750,7 @@
           "value": true,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#syslog-date-timestamps"
+          "default_source": "fortinet_fortios/defaults.yaml#logs-timestamped"
         },
         "admin_logged": {
           "value": null,
@@ -2772,21 +2760,9 @@
         },
         "config_change_logged": {
           "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 53,
-              "line_end": 53,
-              "raw": "interactive-commands any",
-              "mapping_id": "juniper_junos/syslog-file-interactive-commands",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#config-changes-logged"
         }
       },
       {
@@ -2797,7 +2773,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-bootp-server"
+          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-bootp"
         },
         "version": {
           "value": null,
@@ -2838,7 +2814,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#finger-off"
+          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-finger"
         },
         "version": {
           "value": null,
@@ -2879,7 +2855,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#http-off"
+          "default_source": "fortinet_fortios/defaults.yaml#http-redirected-to-https"
         },
         "version": {
           "value": null,
@@ -2920,7 +2896,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad"
+          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-pad"
         },
         "version": {
           "value": null,
@@ -2959,39 +2935,15 @@
         "type": "MgmtService",
         "enabled": {
           "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 36,
-              "line_end": 36,
-              "raw": "ssh",
-              "mapping_id": "juniper_junos/service-ssh",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#ssh-available"
         },
         "version": {
           "value": "2",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 38,
-              "line_end": 38,
-              "raw": "protocol-version v2",
-              "mapping_id": "juniper_junos/ssh-v2",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#ssh-v1-off"
         },
         "access_filter": {
           "value": null,
@@ -3026,7 +2978,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-tcp-small-servers"
+          "default_source": "fortinet_fortios/defaults.yaml#no-tcp-small-servers"
         },
         "version": {
           "value": null,
@@ -3065,9 +3017,21 @@
         "type": "MgmtService",
         "enabled": {
           "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#services-off"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 8,
+              "line_end": 8,
+              "raw": "set admin-telnet disable",
+              "mapping_id": "fortinet_fortios/admin-telnet-disable",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "version": {
           "value": null,
@@ -3108,7 +3072,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-udp-small-servers"
+          "default_source": "fortinet_fortios/defaults.yaml#no-udp-small-servers"
         },
         "version": {
           "value": null,
@@ -3142,7 +3106,7 @@
         }
       },
       {
-        "key": "class:NETADMIN",
+        "key": "admin",
         "evidence": [],
         "type": "MgmtSession",
         "kind": {
@@ -3151,10 +3115,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 24,
-              "line_end": 24,
-              "raw": "class NETADMIN",
-              "mapping_id": "juniper_junos/user-class",
+              "line_start": 9,
+              "line_end": 9,
+              "raw": "set admintimeout 10",
+              "mapping_id": "fortinet_fortios/admintimeout",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3187,10 +3151,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 11,
-              "line_end": 11,
-              "raw": "idle-timeout 10",
-              "mapping_id": "juniper_junos/login-class-idle-timeout",
+              "line_start": 9,
+              "line_end": 9,
+              "raw": "set admintimeout 10",
+              "mapping_id": "fortinet_fortios/admintimeout",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3207,19 +3171,117 @@
         }
       },
       {
-        "key": "acl:PROTECT-RE",
+        "key": "address:LAN-NET",
         "evidence": [],
         "type": "ObjectDef",
         "kind": {
-          "value": "acl",
+          "value": "address",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 113,
-              "line_end": 113,
-              "raw": "filter PROTECT-RE",
-              "mapping_id": "juniper_junos/filter-inet",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "edit \"LAN-NET\"",
+              "mapping_id": "fortinet_fortios/address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "10.20.0.0/255.255.255.0"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 81,
+              "line_end": 81,
+              "raw": "set subnet 10.20.0.0 255.255.255.0",
+              "mapping_id": "fortinet_fortios/address-subnet",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "address:WEB-SRV",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "address",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 83,
+              "line_end": 83,
+              "raw": "edit \"WEB-SRV\"",
+              "mapping_id": "fortinet_fortios/address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "10.20.0.10/255.255.255.255"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 84,
+              "line_end": 84,
+              "raw": "set subnet 10.20.0.10 255.255.255.255",
+              "mapping_id": "fortinet_fortios/address-subnet",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "address:all",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "address",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "edit \"all\"",
+              "mapping_id": "fortinet_fortios/address",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3251,10 +3313,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 19,
-              "line_end": 19,
-              "raw": "minimum-length 15",
-              "mapping_id": "juniper_junos/password-minimum-length",
+              "line_start": 17,
+              "line_end": 17,
+              "raw": "set minimum-length 15",
+              "mapping_id": "fortinet_fortios/password-minimum-length",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3279,7 +3341,7 @@
           "value": true,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#passwords-always-hashed"
+          "default_source": "fortinet_fortios/defaults.yaml#passwords-stored-encoded"
         },
         "max_age_days": {
           "value": null,
@@ -3288,146 +3350,15 @@
           "default_source": null
         },
         "enforced": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "Interface[lo0.0].filters_in -> PROTECT-RE",
-        "evidence": [
-          {
-            "file": "hardened.conf",
-            "line_start": 88,
-            "line_end": 88,
-            "raw": "input PROTECT-RE",
-            "mapping_id": "juniper_junos/unit-filter-input",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "type": "Reference",
-        "source": {
-          "value": "Interface[lo0.0]",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "attribute": {
-          "value": "Interface.filters_in",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "target_kind": {
-          "value": "acl",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "name": {
-          "value": "PROTECT-RE",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "resolved": {
           "value": true,
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "target": {
-          "value": "ObjectDef[acl:PROTECT-RE]",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "permits_any": {
-          "value": false,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
+              "line_start": 16,
+              "line_end": 16,
+              "raw": "set status enable",
+              "mapping_id": "fortinet_fortios/password-policy-status",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3447,10 +3378,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 64,
-              "line_end": 64,
-              "raw": "trusted-key 1",
-              "mapping_id": "juniper_junos/ntp-trusted-key",
+              "line_start": 70,
+              "line_end": 70,
+              "raw": "set authentication enable",
+              "mapping_id": "fortinet_fortios/ntpserver-authentication-enforced",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3461,19 +3392,19 @@
         }
       },
       {
-        "key": "10.20.10.70",
+        "key": "ntp-1",
         "evidence": [],
         "type": "TimeSource",
         "host": {
-          "value": "10.20.10.70",
+          "value": "10.30.10.70",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 63,
-              "line_end": 63,
-              "raw": "server 10.20.10.70 key ****",
-              "mapping_id": "juniper_junos/ntp-server-key",
+              "line_start": 69,
+              "line_end": 69,
+              "raw": "set server \"10.30.10.70\"",
+              "mapping_id": "fortinet_fortios/ntpserver-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3488,10 +3419,10 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 63,
-              "line_end": 63,
-              "raw": "server 10.20.10.70 key ****",
-              "mapping_id": "juniper_junos/ntp-server-key",
+              "line_start": 70,
+              "line_end": 70,
+              "raw": "set authentication enable",
+              "mapping_id": "fortinet_fortios/ntpserver-authentication",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3509,10 +3440,10 @@
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 33,
-            "line_end": 33,
-            "raw": "10.20.10.40 secret \"****\"",
-            "mapping_id": "juniper_junos/tacplus-server",
+            "line_start": 55,
+            "line_end": 55,
+            "raw": "set server \"10.30.10.40\"",
+            "mapping_id": "fortinet_fortios/tacacs-server",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3523,14 +3454,14 @@
       },
       "filtering.permit_all_present": {
         "value": false,
-        "state": "explicit",
+        "state": "vendor_default",
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 117,
-            "line_end": 117,
-            "raw": "10.20.10.0/24",
-            "mapping_id": "juniper_junos/term-source-address",
+            "line_start": 93,
+            "line_end": 93,
+            "raw": "set srcaddr \"LAN-NET\"",
+            "mapping_id": "fortinet_fortios/policy-srcaddr",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3538,50 +3469,17 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 119,
-            "line_end": 119,
-            "raw": "protocol tcp",
-            "mapping_id": "juniper_junos/term-protocol",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 127,
-            "line_end": 127,
-            "raw": "10.20.10.70/32",
-            "mapping_id": "juniper_junos/term-source-address",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 129,
-            "line_end": 129,
-            "raw": "protocol udp",
-            "mapping_id": "juniper_junos/term-protocol",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 137,
-            "line_end": 137,
-            "raw": "discard",
-            "mapping_id": "juniper_junos/term-then-block-discard",
+            "line_start": 96,
+            "line_end": 96,
+            "raw": "set service \"HTTPS\" \"DNS\"",
+            "mapping_id": "fortinet_fortios/policy-service",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
-        "default_source": null
+        "default_source": "fortinet_fortios/defaults.yaml#policy-action-deny"
       },
       "logging.remote_configured": {
         "value": true,
@@ -3589,10 +3487,21 @@
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 47,
-            "line_end": 47,
-            "raw": "host 10.20.10.50",
-            "mapping_id": "juniper_junos/syslog-host",
+            "line_start": 60,
+            "line_end": 60,
+            "raw": "set status enable",
+            "mapping_id": "fortinet_fortios/syslogd-status",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 61,
+            "line_end": 61,
+            "raw": "set server \"10.30.10.50\"",
+            "mapping_id": "fortinet_fortios/syslogd-server",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3605,7 +3514,7 @@
         "value": false,
         "state": "vendor_default",
         "evidence": [],
-        "default_source": "juniper_junos/defaults.yaml#http-off"
+        "default_source": "fortinet_fortios/defaults.yaml#http-redirected-to-https"
       },
       "management.login_banner_present": {
         "value": true,
@@ -3613,10 +3522,10 @@
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 29,
-            "line_end": 29,
-            "raw": "message \"Authorised access only. Activity is logged and monitored.\"",
-            "mapping_id": "juniper_junos/login-message",
+            "line_start": 12,
+            "line_end": 12,
+            "raw": "set pre-login-banner enable",
+            "mapping_id": "fortinet_fortios/pre-login-banner",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3627,50 +3536,26 @@
       },
       "management.ssh_reachable": {
         "value": true,
-        "state": "explicit",
-        "evidence": [
-          {
-            "file": "hardened.conf",
-            "line_start": 36,
-            "line_end": 36,
-            "raw": "ssh",
-            "mapping_id": "juniper_junos/service-ssh",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "default_source": null
+        "state": "vendor_default",
+        "evidence": [],
+        "default_source": "fortinet_fortios/defaults.yaml#ssh-available"
       },
       "management.ssh_v1_negotiable": {
         "value": false,
+        "state": "vendor_default",
+        "evidence": [],
+        "default_source": "fortinet_fortios/defaults.yaml#ssh-v1-off"
+      },
+      "management.telnet_reachable": {
+        "value": false,
         "state": "explicit",
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 38,
-            "line_end": 38,
-            "raw": "protocol-version v2",
-            "mapping_id": "juniper_junos/ssh-v2",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "default_source": null
-      },
-      "management.telnet_reachable": {
-        "value": false,
-        "state": "vendor_default",
-        "evidence": [
-          {
-            "file": "hardened.conf",
-            "line_start": 24,
-            "line_end": 24,
-            "raw": "class NETADMIN",
-            "mapping_id": "juniper_junos/user-class",
+            "line_start": 8,
+            "line_end": 8,
+            "raw": "set admin-telnet disable",
+            "mapping_id": "fortinet_fortios/admin-telnet-disable",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3678,33 +3563,66 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 155,
-            "line_end": 155,
-            "raw": "ssh",
-            "mapping_id": "juniper_junos/zone-host-inbound-service",
+            "line_start": 9,
+            "line_end": 9,
+            "raw": "set admintimeout 10",
+            "mapping_id": "fortinet_fortios/admintimeout",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 23,
+            "line_end": 23,
+            "raw": "set allowaccess ping",
+            "mapping_id": "fortinet_fortios/interface-allowaccess",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 31,
+            "line_end": 31,
+            "raw": "set allowaccess ping",
+            "mapping_id": "fortinet_fortios/interface-allowaccess",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 39,
+            "line_end": 39,
+            "raw": "set allowaccess ping https ssh",
+            "mapping_id": "fortinet_fortios/interface-allowaccess",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
-        "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services, juniper_junos/defaults.yaml#services-off"
+        "default_source": null
       },
       "services.legacy_enabled": {
         "value": false,
         "state": "vendor_default",
         "evidence": [],
-        "default_source": "juniper_junos/defaults.yaml#finger-off, juniper_junos/defaults.yaml#no-bootp-server, juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad, juniper_junos/defaults.yaml#no-tcp-small-servers, juniper_junos/defaults.yaml#no-udp-small-servers"
+        "default_source": "fortinet_fortios/defaults.yaml#no-legacy-bootp, fortinet_fortios/defaults.yaml#no-legacy-finger, fortinet_fortios/defaults.yaml#no-legacy-pad, fortinet_fortios/defaults.yaml#no-tcp-small-servers, fortinet_fortios/defaults.yaml#no-udp-small-servers"
       },
       "snmp.weak_community_present": {
         "value": false,
         "state": "vendor_default",
         "evidence": [],
-        "default_source": "juniper_junos/defaults.yaml#no-snmp-communities"
+        "default_source": "fortinet_fortios/defaults.yaml#no-snmp-communities"
       }
     },
     "known_empty": {
-      "SnmpCommunity": "juniper_junos/defaults.yaml#no-snmp-communities"
+      "SnmpCommunity": "fortinet_fortios/defaults.yaml#no-snmp-communities"
     },
     "unread": {}
   },

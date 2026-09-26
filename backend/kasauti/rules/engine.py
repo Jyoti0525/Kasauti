@@ -7,7 +7,7 @@ assertion on it:
 =========  ===================================================================
 TRUE       PASS
 FALSE      FAIL
-ABSENT     ``on_absent`` (``resolve_default`` has already been tried: REVIEW)
+ABSENT     ``on_absent`` (``resolve_default`` has already been tried: ``on_no_default``)
 UNKNOWN    ``on_unknown``
 =========  ===================================================================
 
@@ -152,6 +152,8 @@ def _verdict(
     else:
         handling = rule.on_unknown if val.kind == "unknown" else rule.on_absent
         status = _ON_MISSING[handling]
+        if handling is OnMissing.RESOLVE_DEFAULT and rule.on_no_default == "fail":
+            status = Status.FAIL
 
     unapproved = sorted(
         {ref for o in why for e in o.evidence if (ref := e.mapping_ref) and not e.approved_by}

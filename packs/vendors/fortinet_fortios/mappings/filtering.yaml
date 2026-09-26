@@ -1,0 +1,539 @@
+# Interfaces (management access, role), proxy ARP, firewall policies, address objects.
+# Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
+mappings:
+- id: fortinet_fortios/interface
+  vendor: fortinet_fortios
+  context:
+  - config system interface
+  entity:
+    type: Interface
+    key: '{i}'
+  match: edit <STR:i>
+  effect:
+    set: Interface.zone
+    template: '{i}'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/interface-allowaccess
+  vendor: fortinet_fortios
+  context:
+  - config system interface
+  - edit <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: set allowaccess <LIST:a>
+  effect:
+    members: Interface.mgmt_protocols
+    from: a
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/interface-description
+  vendor: fortinet_fortios
+  context:
+  - config system interface
+  - edit <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: set description <STR:d>
+  effect:
+    set: Interface.description
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/interface-alias
+  vendor: fortinet_fortios
+  context:
+  - config system interface
+  - edit <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: set alias <STR:d>
+  effect:
+    set: Interface.description
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/interface-role-wan
+  vendor: fortinet_fortios
+  context:
+  - config system interface
+  - edit <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: set role wan
+  effect:
+    assert: Interface.role
+    value: untrusted
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/interface-role-lan
+  vendor: fortinet_fortios
+  context:
+  - config system interface
+  - edit <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: set role lan
+  effect:
+    assert: Interface.role
+    value: trusted
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/interface-status-down
+  vendor: fortinet_fortios
+  context:
+  - config system interface
+  - edit <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: set status down
+  effect:
+    assert: Interface.admin_up
+    value: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/proxy-arp-interface
+  vendor: fortinet_fortios
+  context:
+  - config system proxy-arp
+  - edit <INT>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: set interface <STR:i>
+  effect:
+    assert: Interface.proxy_arp
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: edit <INT:id>
+  effect:
+  - assert: FilterRule.ruleset
+    value: policy
+  - set: FilterRule.position
+    from: id
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-name
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set name <STR:n>
+  effect:
+    set: FilterRule.name
+    from: n
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-action
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set action <STR:a>
+  effect:
+    set: FilterRule.action
+    from: a
+    map:
+      accept: permit
+      deny: deny
+      ipsec: permit
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-status
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set status <STR:s>
+  effect:
+    set: FilterRule.enabled
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-srcintf
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set srcintf <STR:z> [<LIST>]
+  effect:
+    set: FilterRule.zone_from
+    from: z
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-srcaddr
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set srcaddr <LIST:a>
+  effect:
+    members: FilterRule.src
+    from: a
+    map:
+      all: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-dstintf
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set dstintf <STR:z> [<LIST>]
+  effect:
+    set: FilterRule.zone_to
+    from: z
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-dstaddr
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set dstaddr <LIST:a>
+  effect:
+    members: FilterRule.dst
+    from: a
+    map:
+      all: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-service
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set service <LIST:s>
+  effect:
+    members: FilterRule.service
+    from: s
+    map:
+      ALL: ip
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-logtraffic
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set logtraffic <STR:l>
+  effect:
+    set: FilterRule.log
+    from: l
+    map:
+      all: true
+      utm: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/address
+  vendor: fortinet_fortios
+  context:
+  - config firewall address
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: address
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/address-subnet
+  vendor: fortinet_fortios
+  context:
+  - config firewall address
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: set subnet <IP:a> <IP:k>
+  effect:
+    members: ObjectDef.members
+    template: '{a}/{k}'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/address-fqdn
+  vendor: fortinet_fortios
+  context:
+  - config firewall address
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: set fqdn <STR:f>
+  effect:
+    members: ObjectDef.members
+    template: fqdn:{f}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/address-country
+  vendor: fortinet_fortios
+  context:
+  - config firewall address
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: set country <STR:c>
+  effect:
+    members: ObjectDef.members
+    template: geo:{c}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/address-range-start
+  vendor: fortinet_fortios
+  context:
+  - config firewall address
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: set start-ip <IP:s>
+  effect:
+    members: ObjectDef.members
+    template: range-from:{s}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/address-range-from-zero
+  vendor: fortinet_fortios
+  context:
+  - config firewall address
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: set start-ip 0.0.0.0
+  effect:
+    assert: ObjectDef.members
+    value:
+    - any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/addrgrp
+  vendor: fortinet_fortios
+  context:
+  - config firewall addrgrp
+  entity:
+    type: ObjectDef
+    key: address_group:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: address_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/addrgrp-member
+  vendor: fortinet_fortios
+  context:
+  - config firewall addrgrp
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: address_group:{n}
+  match: set member <LIST:m>
+  effect:
+    members: ObjectDef.members
+    from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

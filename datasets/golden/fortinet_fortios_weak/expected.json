@@ -1,44 +1,44 @@
 {
   "format_version": 1,
-  "audit_id": "e2ce823d7995e9dab714f10d",
+  "audit_id": "73d849256250213d01bbadd9",
   "input": {
-    "file": "weak.cfg",
-    "sha256": "05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48",
+    "file": "weak.conf",
+    "sha256": "3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a",
     "encoding": "utf-8",
-    "shape_family": "indent",
+    "shape_family": "block_edit",
     "parse_warnings": []
   },
   "detection": {
-    "pack_id": "arista_eos",
+    "pack_id": "fortinet_fortios",
     "pack_version": 1,
     "chosen_by": "fingerprint",
-    "score": 1.5,
+    "score": 1.4,
     "min_score": 0.7,
     "signatures": [
-      "device-header",
-      "command-header",
-      "management-block",
-      "eos-ethernet",
-      "username-role",
-      "spanning-tree-mode"
+      "config-version-header",
+      "system-global",
+      "firewall-policy",
+      "system-interface",
+      "allowaccess",
+      "edit-next"
     ]
   },
   "identity": {
     "hostname": {
-      "value": "LEAF-2",
-      "source": "config line 10"
+      "value": "FGT-BRANCH",
+      "source": "config line 11"
     },
     "vendor": {
-      "value": "Arista",
+      "value": "Fortinet",
       "source": "fingerprint (6 signatures)"
     },
     "os_version": {
-      "value": "4.30.1F",
-      "source": "config line 2"
+      "value": "7.4.8",
+      "source": "config line 1"
     },
     "model": {
-      "value": "DCS-7050SX3-48YC8",
-      "source": "config line 2"
+      "value": "FGT60F",
+      "source": "config line 1"
     },
     "serial": {
       "value": null,
@@ -46,14 +46,14 @@
     },
     "hardware": {
       "value": null,
-      "source": "Hardware: not present in supplied artefacts; upload `show version` to populate"
+      "source": "Hardware: not present in supplied artefacts"
     }
   },
   "kb": {
     "kasauti_version": "0.1.0",
     "kb_version": "1fd75bc794e2381882ec3541668503c60c1d6c2f2e605938aa1e66a2b5063695",
     "ruleset_version": "0b1b575471bcfafc79f7234f2ec09b05f43bb67415d4a43697d0e464fdc94f28",
-    "vendor_pack": "arista_eos@1",
+    "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
     }
@@ -66,11 +66,11 @@
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
       "passed": 4,
-      "failed": 17,
-      "review": 2,
-      "not_applicable": 0,
-      "compliance_pct": 19.0,
-      "coverage_pct": 91.3
+      "failed": 16,
+      "review": 0,
+      "not_applicable": 3,
+      "compliance_pct": 20.0,
+      "coverage_pct": 100.0
     }
   ],
   "rules": [
@@ -146,7 +146,7 @@
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
       "title": "Untrusted interfaces filter inbound traffic",
       "domain": "filtering",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "high",
       "nist_800_53r5": [
         "SC-7"
@@ -157,7 +157,7 @@
       "rule_id": "LOG-CONFIG-CHANGE-01",
       "title": "Configuration changes are logged",
       "domain": "logging",
-      "status": "REVIEW",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "AU-2",
@@ -230,7 +230,7 @@
       "rule_id": "MGMT-SSH-V2-01",
       "title": "SSH management uses protocol version 2 only",
       "domain": "management_plane",
-      "status": "REVIEW",
+      "status": "FAIL",
       "severity": "high",
       "nist_800_53r5": [
         "AC-17(2)",
@@ -256,7 +256,7 @@
       "rule_id": "MGMT-VTY-ACL-01",
       "title": "Remote management lines accept only permitted sources",
       "domain": "management_plane",
-      "status": "PASS",
+      "status": "N/A",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-3",
@@ -268,7 +268,7 @@
       "rule_id": "MGMT-VTY-ACL-02",
       "title": "The ACL guarding remote management exists and doesn't permit everyone",
       "domain": "management_plane",
-      "status": "FAIL",
+      "status": "N/A",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-3",
@@ -292,7 +292,7 @@
       "rule_id": "REF-DANGLING-01",
       "title": "Every reference points at something that exists",
       "domain": "filtering",
-      "status": "FAIL",
+      "status": "N/A",
       "severity": "medium",
       "nist_800_53r5": [
         "CM-6",
@@ -360,7 +360,7 @@
     {
       "control": "AC-3",
       "title": "Access Enforcement",
-      "status": "partially satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -403,7 +403,7 @@
     {
       "control": "AC-17",
       "title": "Remote Access",
-      "status": "partially satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -423,7 +423,7 @@
     {
       "control": "AU-2",
       "title": "Event Logging",
-      "status": "undetermined",
+      "status": "not satisfied",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
       ]
@@ -463,7 +463,7 @@
     {
       "control": "AU-12",
       "title": "Audit Record Generation",
-      "status": "undetermined",
+      "status": "not satisfied",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
       ]
@@ -471,7 +471,7 @@
     {
       "control": "CM-3",
       "title": "Configuration Change Control",
-      "status": "undetermined",
+      "status": "not satisfied",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
       ]
@@ -533,7 +533,7 @@
     {
       "control": "SC-7",
       "title": "Boundary Protection",
-      "status": "not satisfied",
+      "status": "partially satisfied",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
@@ -568,7 +568,7 @@
     {
       "control": "SC-13",
       "title": "Cryptographic Protection",
-      "status": "undetermined",
+      "status": "not satisfied",
       "rules": [
         "MGMT-SSH-V2-01"
       ]
@@ -589,11 +589,14 @@
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Administrators authenticate against a central AAA server: fails for the device; the rule treats absence as a violation (missing: any AuthServer).",
+      "reason": "Administrators authenticate against a central AAA server: is violated for the device (using the vendor default for this OS version).",
       "actual": [
-        "any AuthServer: missing"
+        "aaa.central_server_configured = false",
+        "AuthServer: none configured = none (vendor default)"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#no-auth-servers"
+      ],
       "evidence": []
     },
     {
@@ -604,41 +607,16 @@
       "severity_reason": "High (base)",
       "reason": "Local passwords are stored with a strong one-way hash: is violated for LocalUser[admin].",
       "actual": [
-        "LocalUser[admin].hash_type = none"
+        "LocalUser[admin].hash_type = sha256"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 7,
-          "line_end": 7,
-          "raw": "username admin privilege 15 role network-admin nopassword",
-          "mapping_id": "arista_eos/username-nopassword",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
-    },
-    {
-      "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
-      "entity_id": "LocalUser[netadmin]",
-      "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "High (base)",
-      "reason": "Local passwords are stored with a strong one-way hash: is violated for LocalUser[netadmin].",
-      "actual": [
-        "LocalUser[netadmin].hash_type = md5-crypt"
-      ],
-      "defaults_used": [],
-      "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 8,
-          "line_end": 8,
-          "raw": "username netadmin privilege 15 role network-admin secret 5 ****",
-          "mapping_id": "arista_eos/username-secret",
+          "file": "weak.conf",
+          "line_start": 41,
+          "line_end": 41,
+          "raw": "set password ENC ****",
+          "mapping_id": "fortinet_fortios/admin-password",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -652,12 +630,24 @@
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Repeated failed logins are blocked: fails for LockoutPolicy[lockout-policy]; the rule treats absence as a violation (missing: LockoutPolicy[lockout-policy].max_attempts).",
+      "reason": "Repeated failed logins are blocked: is violated for LockoutPolicy[lockout-policy].",
       "actual": [
-        "LockoutPolicy[lockout-policy].max_attempts: missing"
+        "LockoutPolicy[lockout-policy].max_attempts = 10"
       ],
       "defaults_used": [],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 7,
+          "line_end": 7,
+          "raw": "set admin-lockout-threshold 10",
+          "mapping_id": "fortinet_fortios/lockout-threshold",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
@@ -670,7 +660,7 @@
         "PasswordPolicy[password-policy].cleartext_passwords_encrypted = true (vendor default)"
       ],
       "defaults_used": [
-        "arista_eos/defaults.yaml#passwords-stored-encrypted"
+        "fortinet_fortios/defaults.yaml#passwords-stored-encoded"
       ],
       "evidence": []
     },
@@ -680,46 +670,105 @@
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Passwords must be at least 15 characters: fails for PasswordPolicy[password-policy]; the rule treats absence as a violation (missing: PasswordPolicy[password-policy].min_length).",
+      "reason": "Passwords must be at least 15 characters: is violated for PasswordPolicy[password-policy] (using the vendor default for this OS version).",
       "actual": [
-        "PasswordPolicy[password-policy].min_length: missing"
+        "PasswordPolicy[password-policy].min_length = 8 (vendor default)",
+        "PasswordPolicy[password-policy].enforced = false (vendor default)"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#password-minimum-8",
+        "fortinet_fortios/defaults.yaml#password-policy-off"
+      ],
       "evidence": []
     },
     {
       "rule_id": "FILTER-PERMIT-ANY-01",
       "entity_id": "Device[device]",
       "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "High (base)",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: the device is a firewall, so its filtering is the perimeter",
       "reason": "No filter entry permits all traffic from anywhere to anywhere: is violated for the device.",
       "actual": [
         "filtering.permit_all_present = true",
-        "FilterRule[EDGE-IN:10].action = permit",
-        "FilterRule[EDGE-IN:10].service = {ip}",
-        "FilterRule[EDGE-IN:10].src = {any}",
-        "FilterRule[EDGE-IN:10].dst = {any}"
+        "FilterRule[policy:1].action = permit",
+        "FilterRule[policy:1].service = {ip}",
+        "FilterRule[policy:1].src = {any}",
+        "FilterRule[policy:1].dst = {ANY-NET, any}"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 37,
-          "line_end": 37,
-          "raw": "10 permit ip any any",
-          "mapping_id": "arista_eos/acl-ext-entry",
+          "file": "weak.conf",
+          "line_start": 68,
+          "line_end": 68,
+          "raw": "set subnet 0.0.0.0 0.0.0.0",
+          "mapping_id": "fortinet_fortios/address-subnet",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 37,
-          "line_end": 37,
-          "raw": "10 permit ip any any",
-          "mapping_id": "arista_eos/acl-ext-ip-any-any",
+          "file": "weak.conf",
+          "line_start": 74,
+          "line_end": 74,
+          "raw": "set srcintf \"wan1\"",
+          "mapping_id": "inference/device.role.firewall_by_zones",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 75,
+          "line_end": 75,
+          "raw": "set dstintf \"internal\"",
+          "mapping_id": "inference/device.role.firewall_by_zones",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 76,
+          "line_end": 76,
+          "raw": "set action accept",
+          "mapping_id": "fortinet_fortios/policy-action",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 77,
+          "line_end": 77,
+          "raw": "set srcaddr \"all\"",
+          "mapping_id": "fortinet_fortios/policy-srcaddr",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 78,
+          "line_end": 78,
+          "raw": "set dstaddr \"ANY-NET\"",
+          "mapping_id": "fortinet_fortios/policy-dstaddr",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 80,
+          "line_end": 80,
+          "raw": "set service \"ALL\"",
+          "mapping_id": "fortinet_fortios/policy-service",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -729,35 +778,34 @@
     },
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
-      "entity_id": "Interface[Ethernet1]",
-      "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "High (base)",
-      "reason": "Untrusted interfaces filter inbound traffic: is violated for Interface[Ethernet1].",
+      "entity_id": "Interface[wan1]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Untrusted interfaces filter inbound traffic: holds for Interface[wan1].",
       "actual": [
-        "Interface[Ethernet1].role = untrusted",
-        "Interface[Ethernet1].filters_in: missing",
-        "Interface[Ethernet1].zone: missing"
+        "Interface[wan1].role = untrusted",
+        "Interface[wan1].zone = wan1"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
+          "file": "weak.conf",
+          "line_start": 15,
+          "line_end": 15,
+          "raw": "edit \"wan1\"",
+          "mapping_id": "fortinet_fortios/interface",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "description WAN uplink to ISP",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "file": "weak.conf",
+          "line_start": 20,
+          "line_end": 20,
+          "raw": "set role wan",
+          "mapping_id": "fortinet_fortios/interface-role-wan",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -768,47 +816,21 @@
     {
       "rule_id": "LOG-CONFIG-CHANGE-01",
       "entity_id": "LoggingPolicy[logging-policy]",
-      "status": "REVIEW",
-      "severity": "medium",
-      "severity_reason": "Medium (base)",
-      "reason": "Cannot judge the rule for LoggingPolicy[logging-policy] (missing: LoggingPolicy[logging-policy].config_change_logged). No vendor default is known for this OS version.",
-      "actual": [
-        "LoggingPolicy[logging-policy].config_change_logged: missing"
-      ],
-      "defaults_used": [],
-      "evidence": []
-    },
-    {
-      "rule_id": "LOG-REMOTE-01",
-      "entity_id": "Device[device]",
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Logs are sent to a remote log server: fails for the device; the rule treats absence as a violation (missing: any LogTarget).",
+      "reason": "Configuration changes are logged: is violated for LoggingPolicy[logging-policy].",
       "actual": [
-        "any LogTarget: missing"
-      ],
-      "defaults_used": [],
-      "evidence": []
-    },
-    {
-      "rule_id": "LOG-TIMESTAMPS-01",
-      "entity_id": "LoggingPolicy[logging-policy]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Log messages carry the date and time: holds for LoggingPolicy[logging-policy].",
-      "actual": [
-        "LoggingPolicy[logging-policy].timestamps = true"
+        "LoggingPolicy[logging-policy].config_change_logged = false"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 12,
-          "line_end": 12,
-          "raw": "logging format timestamp traditional",
-          "mapping_id": "arista_eos/logging-format-timestamp",
+          "file": "weak.conf",
+          "line_start": 53,
+          "line_end": 53,
+          "raw": "set system disable",
+          "mapping_id": "fortinet_fortios/eventfilter-system",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -817,16 +839,50 @@
       ]
     },
     {
+      "rule_id": "LOG-REMOTE-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Logs are sent to a remote log server: is violated for the device (using the vendor default for this OS version).",
+      "actual": [
+        "logging.remote_configured = false",
+        "LogTarget[syslogd].enabled = false (vendor default)"
+      ],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#syslog-off"
+      ],
+      "evidence": []
+    },
+    {
+      "rule_id": "LOG-TIMESTAMPS-01",
+      "entity_id": "LoggingPolicy[logging-policy]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Log messages carry the date and time: holds for LoggingPolicy[logging-policy] (using the vendor default for this OS version).",
+      "actual": [
+        "LoggingPolicy[logging-policy].timestamps = true (vendor default)"
+      ],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#logs-timestamped"
+      ],
+      "evidence": []
+    },
+    {
       "rule_id": "MGMT-BANNER-01",
       "entity_id": "Device[device]",
       "status": "FAIL",
       "severity": "low",
       "severity_reason": "Low (base)",
-      "reason": "A login banner warns against unauthorised use: fails for the device; the rule treats absence as a violation (missing: any Banner).",
+      "reason": "A login banner warns against unauthorised use: is violated for the device (using the vendor default for this OS version).",
       "actual": [
-        "any Banner: missing"
+        "management.login_banner_present = false",
+        "Banner[login].present = false (vendor default)"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#pre-login-banner-off"
+      ],
       "evidence": []
     },
     {
@@ -843,33 +899,33 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
+          "file": "weak.conf",
+          "line_start": 6,
+          "line_end": 6,
+          "raw": "set admin-https-redirect disable",
+          "mapping_id": "fortinet_fortios/https-redirect-disable",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "description WAN uplink to ISP",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "file": "weak.conf",
+          "line_start": 18,
+          "line_end": 18,
+          "raw": "set allowaccess ping https ssh http telnet",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 40,
-          "line_end": 40,
-          "raw": "protocol http",
-          "mapping_id": "arista_eos/eapi-protocol-http",
+          "file": "weak.conf",
+          "line_start": 20,
+          "line_end": 20,
+          "raw": "set role wan",
+          "mapping_id": "fortinet_fortios/interface-role-wan",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -879,71 +935,23 @@
     },
     {
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
-      "entity_id": "MgmtSession[console]",
+      "entity_id": "MgmtSession[admin]",
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Idle management sessions time out within 10 minutes: is violated for MgmtSession[console].",
+      "reason": "Idle management sessions time out within 10 minutes: is violated for MgmtSession[admin].",
       "actual": [
-        "MgmtSession[console].kind = console",
-        "MgmtSession[console].idle_timeout_s = 0"
+        "MgmtSession[admin].kind = cli",
+        "MgmtSession[admin].idle_timeout_s = 28800"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 43,
-          "line_end": 43,
-          "raw": "management console",
-          "mapping_id": "arista_eos/management-console",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 44,
-          "line_end": 44,
-          "raw": "idle-timeout 0",
-          "mapping_id": "arista_eos/console-idle-timeout",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
-    },
-    {
-      "rule_id": "MGMT-SESSION-TIMEOUT-01",
-      "entity_id": "MgmtSession[ssh]",
-      "status": "FAIL",
-      "severity": "medium",
-      "severity_reason": "Medium (base)",
-      "reason": "Idle management sessions time out within 10 minutes: is violated for MgmtSession[ssh].",
-      "actual": [
-        "MgmtSession[ssh].kind = vty",
-        "MgmtSession[ssh].idle_timeout_s = 0"
-      ],
-      "defaults_used": [],
-      "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 46,
-          "line_end": 46,
-          "raw": "management ssh",
-          "mapping_id": "arista_eos/management-ssh",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 48,
-          "line_end": 48,
-          "raw": "idle-timeout 0",
-          "mapping_id": "arista_eos/ssh-idle-timeout",
+          "file": "weak.conf",
+          "line_start": 9,
+          "line_end": 9,
+          "raw": "set admintimeout 480",
+          "mapping_id": "fortinet_fortios/admintimeout",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -954,32 +962,48 @@
     {
       "rule_id": "MGMT-SSH-V2-01",
       "entity_id": "Device[device]",
-      "status": "REVIEW",
+      "status": "FAIL",
       "severity": "critical",
       "severity_reason": "High (base) → Critical: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
-      "reason": "Cannot judge the rule for the device (missing: MgmtService[ssh].version). No vendor default is known for this OS version.",
+      "reason": "SSH management uses protocol version 2 only: is violated for the device (using the vendor default for this OS version).",
       "actual": [
-        "MgmtService[ssh].version: missing"
+        "management.ssh_v1_negotiable = true",
+        "management.ssh_reachable = true",
+        "MgmtService[ssh].enabled = true (vendor default)",
+        "MgmtService[ssh].version = 1.99"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#ssh-available"
+      ],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
+          "file": "weak.conf",
+          "line_start": 8,
+          "line_end": 8,
+          "raw": "set admin-ssh-v1 enable",
+          "mapping_id": "fortinet_fortios/admin-ssh-v1",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "description WAN uplink to ISP",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "file": "weak.conf",
+          "line_start": 18,
+          "line_end": 18,
+          "raw": "set allowaccess ping https ssh http telnet",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.conf",
+          "line_start": 20,
+          "line_end": 20,
+          "raw": "set role wan",
+          "mapping_id": "fortinet_fortios/interface-role-wan",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -996,49 +1020,27 @@
       "reason": "Clear-text Telnet management is not reachable: is violated for the device.",
       "actual": [
         "management.telnet_reachable = true",
-        "MgmtService[telnet].enabled = true"
+        "Interface[wan1].mgmt_protocols = {http, https, ping, ssh, telnet}"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
+          "file": "weak.conf",
+          "line_start": 18,
+          "line_end": 18,
+          "raw": "set allowaccess ping https ssh http telnet",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "description WAN uplink to ISP",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 50,
-          "line_end": 50,
-          "raw": "management telnet",
-          "mapping_id": "arista_eos/management-telnet",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 51,
-          "line_end": 51,
-          "raw": "no shutdown",
-          "mapping_id": "arista_eos/telnet-shutdown",
+          "file": "weak.conf",
+          "line_start": 20,
+          "line_end": 20,
+          "raw": "set role wan",
+          "mapping_id": "fortinet_fortios/interface-role-wan",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1048,88 +1050,25 @@
     },
     {
       "rule_id": "MGMT-VTY-ACL-01",
-      "entity_id": "MgmtSession[ssh]",
-      "status": "PASS",
+      "entity_id": "Device[device]",
+      "status": "N/A",
       "severity": null,
       "severity_reason": null,
-      "reason": "Remote management lines accept only permitted sources: holds for MgmtSession[ssh].",
-      "actual": [
-        "MgmtSession[ssh].kind = vty",
-        "MgmtSession[ssh].access_filter = MGMT-ACL"
-      ],
+      "reason": "Not applicable: nothing matches `MgmtSession where kind == 'vty'` on this device.",
+      "actual": [],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 46,
-          "line_end": 46,
-          "raw": "management ssh",
-          "mapping_id": "arista_eos/management-ssh",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 47,
-          "line_end": 47,
-          "raw": "ip access-group MGMT-ACL in",
-          "mapping_id": "arista_eos/ssh-access-group",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "MGMT-VTY-ACL-02",
-      "entity_id": "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL]",
-      "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
-      "reason": "The ACL guarding remote management exists and doesn't permit everyone: is violated for Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].",
-      "actual": [
-        "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].attribute = MgmtSession.access_filter",
-        "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].resolved = false"
-      ],
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: nothing matches `Reference where attribute == 'MgmtSession.access_filter'` on this device.",
+      "actual": [],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "description WAN uplink to ISP",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 47,
-          "line_end": 47,
-          "raw": "ip access-group MGMT-ACL in",
-          "mapping_id": "arista_eos/ssh-access-group",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "MGMT-WEB-ACL-01",
@@ -1145,33 +1084,33 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
+          "file": "weak.conf",
+          "line_start": 6,
+          "line_end": 6,
+          "raw": "set admin-https-redirect disable",
+          "mapping_id": "fortinet_fortios/https-redirect-disable",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "description WAN uplink to ISP",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "file": "weak.conf",
+          "line_start": 18,
+          "line_end": 18,
+          "raw": "set allowaccess ping https ssh http telnet",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 40,
-          "line_end": 40,
-          "raw": "protocol http",
-          "mapping_id": "arista_eos/eapi-protocol-http",
+          "file": "weak.conf",
+          "line_start": 20,
+          "line_end": 20,
+          "raw": "set role wan",
+          "mapping_id": "fortinet_fortios/interface-role-wan",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1181,28 +1120,14 @@
     },
     {
       "rule_id": "REF-DANGLING-01",
-      "entity_id": "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL]",
-      "status": "FAIL",
-      "severity": "medium",
-      "severity_reason": "Medium (base)",
-      "reason": "Every reference points at something that exists: is violated for Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].",
-      "actual": [
-        "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].resolved = false"
-      ],
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: nothing matches `Reference` on this device.",
+      "actual": [],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 47,
-          "line_end": 47,
-          "raw": "ip access-group MGMT-ACL in",
-          "mapping_id": "arista_eos/ssh-access-group",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -1213,51 +1138,38 @@
       "reason": "No SNMP community is well known or writable: is violated for the device.",
       "actual": [
         "snmp.weak_community_present = true",
-        "SnmpCommunity[community-1].is_well_known = true",
-        "SnmpCommunity[community-2].is_well_known = true",
-        "SnmpCommunity[community-2].access = rw"
+        "SnmpCommunity[community-1].is_well_known = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 16,
-          "line_end": 16,
-          "raw": "snmp-server community **** ro",
-          "mapping_id": "arista_eos/snmp-community",
+          "file": "weak.conf",
+          "line_start": 18,
+          "line_end": 18,
+          "raw": "set allowaccess ping https ssh http telnet",
+          "mapping_id": "fortinet_fortios/interface-allowaccess",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 17,
-          "line_end": 17,
-          "raw": "snmp-server community **** rw",
-          "mapping_id": "arista_eos/snmp-community",
+          "file": "weak.conf",
+          "line_start": 20,
+          "line_end": 20,
+          "raw": "set role wan",
+          "mapping_id": "fortinet_fortios/interface-role-wan",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "description WAN uplink to ISP",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "file": "weak.conf",
+          "line_start": 46,
+          "line_end": 46,
+          "raw": "set name \"public\"",
+          "mapping_id": "fortinet_fortios/snmp-community-name",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1281,97 +1193,47 @@
         "MgmtService[udp-small-servers].enabled = false (vendor default)"
       ],
       "defaults_used": [
-        "arista_eos/defaults.yaml#no-legacy-bootp",
-        "arista_eos/defaults.yaml#no-legacy-finger",
-        "arista_eos/defaults.yaml#no-legacy-pad",
-        "arista_eos/defaults.yaml#no-tcp-small-servers",
-        "arista_eos/defaults.yaml#no-udp-small-servers"
+        "fortinet_fortios/defaults.yaml#no-legacy-bootp",
+        "fortinet_fortios/defaults.yaml#no-legacy-finger",
+        "fortinet_fortios/defaults.yaml#no-legacy-pad",
+        "fortinet_fortios/defaults.yaml#no-tcp-small-servers",
+        "fortinet_fortios/defaults.yaml#no-udp-small-servers"
       ],
       "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[Ethernet1]",
+      "entity_id": "Interface[internal]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[internal] (using the vendor default for this OS version).",
+      "actual": [
+        "Interface[internal].proxy_arp = false (vendor default)"
+      ],
+      "defaults_used": [
+        "fortinet_fortios/defaults.yaml#proxy-arp-off"
+      ],
+      "evidence": []
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Interface[wan1]",
       "status": "FAIL",
       "severity": "low",
       "severity_reason": "Low (base)",
-      "reason": "Interfaces do not answer ARP for other hosts: is violated for Interface[Ethernet1].",
+      "reason": "Interfaces do not answer ARP for other hosts: is violated for Interface[wan1].",
       "actual": [
-        "Interface[Ethernet1].proxy_arp = true"
+        "Interface[wan1].proxy_arp = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 25,
-          "line_end": 25,
-          "raw": "ip proxy-arp",
-          "mapping_id": "arista_eos/interface-proxy-arp",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
-    },
-    {
-      "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[Ethernet2]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[Ethernet2] (using the vendor default for this OS version).",
-      "actual": [
-        "Interface[Ethernet2].proxy_arp = false (vendor default)"
-      ],
-      "defaults_used": [
-        "arista_eos/defaults.yaml#proxy-arp-off"
-      ],
-      "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 27,
-          "line_end": 27,
-          "raw": "interface Ethernet2",
-          "mapping_id": "arista_eos/interface",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
-    },
-    {
-      "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[Management1]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[Management1] (using the vendor default for this OS version).",
-      "actual": [
-        "Interface[Management1].proxy_arp = false (vendor default)"
-      ],
-      "defaults_used": [
-        "arista_eos/defaults.yaml#proxy-arp-off"
-      ],
-      "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 32,
-          "line_end": 32,
-          "raw": "interface Management1",
-          "mapping_id": "arista_eos/interface",
+          "file": "weak.conf",
+          "line_start": 33,
+          "line_end": 33,
+          "raw": "set interface \"wan1\"",
+          "mapping_id": "fortinet_fortios/proxy-arp-interface",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1381,218 +1243,376 @@
     },
     {
       "rule_id": "TIME-NTP-AUTH-01",
-      "entity_id": "TimeSource[10.30.10.70]",
+      "entity_id": "TimeSource[ntp-1]",
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Time sources are authenticated: is violated for TimeSource[10.30.10.70] (using the vendor default for this OS version).",
+      "reason": "Time sources are authenticated: is violated for TimeSource[ntp-1] (using the vendor default for this OS version).",
       "actual": [
-        "TimeSource[10.30.10.70].authenticated = false (vendor default)",
+        "TimeSource[ntp-1].authenticated = false (vendor default)",
         "TimePolicy[time-policy].auth_enforced = false (vendor default)"
       ],
       "defaults_used": [
-        "arista_eos/defaults.yaml#ntp-authentication-off",
-        "arista_eos/defaults.yaml#ntp-server-without-key"
+        "fortinet_fortios/defaults.yaml#ntp-authentication-off",
+        "fortinet_fortios/defaults.yaml#ntp-server-unauthenticated"
       ],
-      "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 14,
-          "line_end": 14,
-          "raw": "ntp server 10.30.10.70 iburst",
-          "mapping_id": "arista_eos/ntp-server",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     }
   ],
   "assurance": {
-    "statements": 32,
-    "understood": 25,
-    "unmapped": 8,
+    "statements": 58,
+    "understood": 30,
+    "unmapped": 29,
     "near_miss": 0,
-    "understood_pct": 78.1,
+    "understood_pct": 51.7,
     "unmapped_patterns": [
       {
-        "pattern_key": "ip address <IP>",
+        "pattern_key": "set vdom <STR>",
         "count": 3,
-        "first_line": 24,
-        "example": "ip address 198.51.100.6/30"
+        "first_line": 16,
+        "example": "set vdom \"root\""
       },
       {
-        "pattern_key": "no switchport",
+        "pattern_key": "edit <INT>",
+        "count": 3,
+        "first_line": 32,
+        "example": "edit 1"
+      },
+      {
+        "pattern_key": "set ip <IP> <IP>",
         "count": 2,
-        "first_line": 23,
-        "example": "no switchport"
+        "first_line": 17,
+        "example": "set ip 198.51.100.6 255.255.255.252"
       },
       {
-        "pattern_key": "spanning-tree mode mstp",
+        "pattern_key": "config system global",
+        "count": 1,
+        "first_line": 5,
+        "example": "config system global"
+      },
+      {
+        "pattern_key": "set alias <STR>",
+        "count": 1,
+        "first_line": 10,
+        "example": "set alias \"FGT-BRANCH\""
+      },
+      {
+        "pattern_key": "set timezone <STR>",
+        "count": 1,
+        "first_line": 12,
+        "example": "set timezone \"Asia/Kolkata\""
+      },
+      {
+        "pattern_key": "config system interface",
+        "count": 1,
+        "first_line": 14,
+        "example": "config system interface"
+      },
+      {
+        "pattern_key": "set type physical",
         "count": 1,
         "first_line": 19,
-        "example": "spanning-tree mode mstp"
+        "example": "set type physical"
       },
       {
-        "pattern_key": "management api http-commands",
+        "pattern_key": "set type hard-switch",
+        "count": 1,
+        "first_line": 27,
+        "example": "set type hard-switch"
+      },
+      {
+        "pattern_key": "config system proxy-arp",
+        "count": 1,
+        "first_line": 31,
+        "example": "config system proxy-arp"
+      },
+      {
+        "pattern_key": "set ip <IP>",
+        "count": 1,
+        "first_line": 34,
+        "example": "set ip 198.51.100.8"
+      },
+      {
+        "pattern_key": "config system admin",
+        "count": 1,
+        "first_line": 37,
+        "example": "config system admin"
+      },
+      {
+        "pattern_key": "edit <STR>",
+        "count": 1,
+        "first_line": 38,
+        "example": "edit \"admin\""
+      },
+      {
+        "pattern_key": "set accprofile <STR>",
         "count": 1,
         "first_line": 39,
-        "example": "management api http-commands"
+        "example": "set accprofile \"super_admin\""
       },
       {
-        "pattern_key": "no shutdown",
+        "pattern_key": "config system snmp community",
         "count": 1,
-        "first_line": 41,
-        "example": "no shutdown"
+        "first_line": 44,
+        "example": "config system snmp community"
+      },
+      {
+        "pattern_key": "config log syslogd setting",
+        "count": 1,
+        "first_line": 49,
+        "example": "config log syslogd setting"
+      },
+      {
+        "pattern_key": "config log eventfilter",
+        "count": 1,
+        "first_line": 52,
+        "example": "config log eventfilter"
+      },
+      {
+        "pattern_key": "config system ntp",
+        "count": 1,
+        "first_line": 55,
+        "example": "config system ntp"
+      },
+      {
+        "pattern_key": "set ntpsync enable",
+        "count": 1,
+        "first_line": 56,
+        "example": "set ntpsync enable"
+      },
+      {
+        "pattern_key": "set type custom",
+        "count": 1,
+        "first_line": 57,
+        "example": "set type custom"
+      },
+      {
+        "pattern_key": "config ntpserver",
+        "count": 1,
+        "first_line": 58,
+        "example": "config ntpserver"
+      },
+      {
+        "pattern_key": "config firewall address",
+        "count": 1,
+        "first_line": 64,
+        "example": "config firewall address"
+      },
+      {
+        "pattern_key": "config firewall policy",
+        "count": 1,
+        "first_line": 71,
+        "example": "config firewall policy"
+      },
+      {
+        "pattern_key": "set schedule <STR>",
+        "count": 1,
+        "first_line": 79,
+        "example": "set schedule \"always\""
       }
     ],
-    "review_findings": 2,
+    "review_findings": 0,
     "mappings_used": [
       {
-        "mapping": "arista_eos/acl-ext-entry@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 4
-      },
-      {
-        "mapping": "arista_eos/acl-ext-ip-any-any@1",
+        "mapping": "fortinet_fortios/address-subnet@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "arista_eos/acl-extended@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "arista_eos/console-idle-timeout@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "arista_eos/eapi-protocol-http@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "arista_eos/interface-description@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 3
-      },
-      {
-        "mapping": "arista_eos/interface-proxy-arp@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "arista_eos/logging-format-timestamp@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "arista_eos/management-console@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "arista_eos/management-ssh@1",
+        "mapping": "fortinet_fortios/address@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "arista_eos/ntp-server@1",
+        "mapping": "fortinet_fortios/admin-password@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "arista_eos/snmp-community@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 4
-      },
-      {
-        "mapping": "arista_eos/ssh-access-group@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 6
-      },
-      {
-        "mapping": "arista_eos/ssh-idle-timeout@1",
+        "mapping": "fortinet_fortios/admin-ssh-v1@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "arista_eos/telnet-shutdown@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "arista_eos/username-nopassword@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "arista_eos/username-privilege@1",
+        "mapping": "fortinet_fortios/admintimeout@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "arista_eos/username-secret@1",
+        "mapping": "fortinet_fortios/eventfilter-system@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "inference/interface.role.untrusted_by_description@1",
+        "mapping": "fortinet_fortios/https-redirect-disable@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/interface-alias@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/interface-allowaccess@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "fortinet_fortios/interface-role-lan@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/interface-role-wan@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/interface@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "fortinet_fortios/lockout-threshold@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/ntpserver-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-action@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-dstaddr@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-dstintf@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-name@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-service@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-srcaddr@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy-srcintf@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/policy@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "fortinet_fortios/proxy-arp-interface@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/snmp-community-name@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "fortinet_fortios/syslogd-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "inference/device.role.firewall_by_zones@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
       }
     ],
     "defaults_used": [
-      "arista_eos/defaults.yaml#no-legacy-bootp",
-      "arista_eos/defaults.yaml#no-legacy-finger",
-      "arista_eos/defaults.yaml#no-legacy-pad",
-      "arista_eos/defaults.yaml#no-tcp-small-servers",
-      "arista_eos/defaults.yaml#no-udp-small-servers",
-      "arista_eos/defaults.yaml#ntp-authentication-off",
-      "arista_eos/defaults.yaml#ntp-server-without-key",
-      "arista_eos/defaults.yaml#passwords-stored-encrypted",
-      "arista_eos/defaults.yaml#proxy-arp-off"
+      "fortinet_fortios/defaults.yaml#logs-timestamped",
+      "fortinet_fortios/defaults.yaml#no-auth-servers",
+      "fortinet_fortios/defaults.yaml#no-legacy-bootp",
+      "fortinet_fortios/defaults.yaml#no-legacy-finger",
+      "fortinet_fortios/defaults.yaml#no-legacy-pad",
+      "fortinet_fortios/defaults.yaml#no-tcp-small-servers",
+      "fortinet_fortios/defaults.yaml#no-udp-small-servers",
+      "fortinet_fortios/defaults.yaml#ntp-authentication-off",
+      "fortinet_fortios/defaults.yaml#ntp-server-unauthenticated",
+      "fortinet_fortios/defaults.yaml#password-minimum-8",
+      "fortinet_fortios/defaults.yaml#password-policy-off",
+      "fortinet_fortios/defaults.yaml#passwords-stored-encoded",
+      "fortinet_fortios/defaults.yaml#pre-login-banner-off",
+      "fortinet_fortios/defaults.yaml#proxy-arp-off",
+      "fortinet_fortios/defaults.yaml#ssh-available",
+      "fortinet_fortios/defaults.yaml#syslog-off"
     ],
     "mappings_skipped_for_version": []
   },
@@ -1603,14 +1623,14 @@
       "evidence": [],
       "type": "Device",
       "hostname": {
-        "value": "LEAF-2",
+        "value": "FGT-BRANCH",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
-            "line_start": 10,
-            "line_end": 10,
-            "raw": "hostname LEAF-2",
+            "file": "weak.conf",
+            "line_start": 11,
+            "line_end": 11,
+            "raw": "set hostname \"FGT-BRANCH\"",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1619,59 +1639,59 @@
         "default_source": null
       },
       "vendor": {
-        "value": "Arista",
+        "value": "Fortinet",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
+            "file": "weak.conf",
             "line_start": 1,
             "line_end": 1,
-            "raw": "! Command: show running-config",
+            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=admin",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 2,
-            "line_end": 2,
-            "raw": "! device: LEAF-2 (DCS-7050SX3-48YC8, EOS-4.30.1F)",
+            "file": "weak.conf",
+            "line_start": 5,
+            "line_end": 5,
+            "raw": "config system global",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 7,
-            "line_end": 7,
-            "raw": "username admin privilege 15 role network-admin nopassword",
+            "file": "weak.conf",
+            "line_start": 14,
+            "line_end": 14,
+            "raw": "config system interface",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 19,
-            "line_end": 19,
-            "raw": "spanning-tree mode mstp",
+            "file": "weak.conf",
+            "line_start": 18,
+            "line_end": 18,
+            "raw": "set allowaccess ping https ssh http telnet",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 21,
-            "line_end": 21,
-            "raw": "interface Ethernet1",
+            "file": "weak.conf",
+            "line_start": 22,
+            "line_end": 22,
+            "raw": "next",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 39,
-            "line_end": 39,
-            "raw": "management api http-commands",
+            "file": "weak.conf",
+            "line_start": 71,
+            "line_end": 71,
+            "raw": "config firewall policy",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1680,59 +1700,59 @@
         "default_source": null
       },
       "os_family": {
-        "value": "EOS",
+        "value": "FortiOS",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
+            "file": "weak.conf",
             "line_start": 1,
             "line_end": 1,
-            "raw": "! Command: show running-config",
+            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=admin",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 2,
-            "line_end": 2,
-            "raw": "! device: LEAF-2 (DCS-7050SX3-48YC8, EOS-4.30.1F)",
+            "file": "weak.conf",
+            "line_start": 5,
+            "line_end": 5,
+            "raw": "config system global",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 7,
-            "line_end": 7,
-            "raw": "username admin privilege 15 role network-admin nopassword",
+            "file": "weak.conf",
+            "line_start": 14,
+            "line_end": 14,
+            "raw": "config system interface",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 19,
-            "line_end": 19,
-            "raw": "spanning-tree mode mstp",
+            "file": "weak.conf",
+            "line_start": 18,
+            "line_end": 18,
+            "raw": "set allowaccess ping https ssh http telnet",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 21,
-            "line_end": 21,
-            "raw": "interface Ethernet1",
+            "file": "weak.conf",
+            "line_start": 22,
+            "line_end": 22,
+            "raw": "next",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.cfg",
-            "line_start": 39,
-            "line_end": 39,
-            "raw": "management api http-commands",
+            "file": "weak.conf",
+            "line_start": 71,
+            "line_end": 71,
+            "raw": "config firewall policy",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1741,14 +1761,14 @@
         "default_source": null
       },
       "os_version": {
-        "value": "4.30.1F",
+        "value": "7.4.8",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
-            "line_start": 2,
-            "line_end": 2,
-            "raw": "! device: LEAF-2 (DCS-7050SX3-48YC8, EOS-4.30.1F)",
+            "file": "weak.conf",
+            "line_start": 1,
+            "line_end": 1,
+            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=admin",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1757,14 +1777,14 @@
         "default_source": null
       },
       "model": {
-        "value": "DCS-7050SX3-48YC8",
+        "value": "FGT60F",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
-            "line_start": 2,
-            "line_end": 2,
-            "raw": "! device: LEAF-2 (DCS-7050SX3-48YC8, EOS-4.30.1F)",
+            "file": "weak.conf",
+            "line_start": 1,
+            "line_end": 1,
+            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=admin",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1785,27 +1805,67 @@
         "default_source": null
       },
       "role": {
-        "value": "switch",
-        "state": "vendor_default",
-        "evidence": [],
-        "default_source": "arista_eos/pack.yaml#default_role"
+        "value": "firewall",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 74,
+            "line_end": 74,
+            "raw": "set srcintf \"wan1\"",
+            "mapping_id": "inference/device.role.firewall_by_zones",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 75,
+            "line_end": 75,
+            "raw": "set dstintf \"internal\"",
+            "mapping_id": "inference/device.role.firewall_by_zones",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
       }
     },
     "entities": [
       {
-        "key": "EDGE-IN:10",
+        "key": "login",
+        "evidence": [],
+        "type": "Banner",
+        "present": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#pre-login-banner-off"
+        },
+        "text": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "policy:1",
         "evidence": [],
         "type": "FilterRule",
         "ruleset": {
-          "value": "EDGE-IN",
+          "value": "policy",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 37,
-              "line_end": 37,
-              "raw": "10 permit ip any any",
-              "mapping_id": "arista_eos/acl-ext-entry",
+              "file": "weak.conf",
+              "line_start": 72,
+              "line_end": 72,
+              "raw": "edit 1",
+              "mapping_id": "fortinet_fortios/policy",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1815,15 +1875,15 @@
           "default_source": null
         },
         "position": {
-          "value": 10,
+          "value": 1,
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 37,
-              "line_end": 37,
-              "raw": "10 permit ip any any",
-              "mapping_id": "arista_eos/acl-ext-entry",
+              "file": "weak.conf",
+              "line_start": 72,
+              "line_end": 72,
+              "raw": "edit 1",
+              "mapping_id": "fortinet_fortios/policy",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1833,9 +1893,21 @@
           "default_source": null
         },
         "name": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "wan-in",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 73,
+              "line_end": 73,
+              "raw": "set name \"wan-in\"",
+              "mapping_id": "fortinet_fortios/policy-name",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "src": {
@@ -1845,11 +1917,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 37,
-              "line_end": 37,
-              "raw": "10 permit ip any any",
-              "mapping_id": "arista_eos/acl-ext-ip-any-any",
+              "file": "weak.conf",
+              "line_start": 77,
+              "line_end": 77,
+              "raw": "set srcaddr \"all\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1860,16 +1932,28 @@
         },
         "dst": {
           "value": [
+            "ANY-NET",
             "any"
           ],
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 37,
-              "line_end": 37,
-              "raw": "10 permit ip any any",
-              "mapping_id": "arista_eos/acl-ext-ip-any-any",
+              "file": "weak.conf",
+              "line_start": 68,
+              "line_end": 68,
+              "raw": "set subnet 0.0.0.0 0.0.0.0",
+              "mapping_id": "fortinet_fortios/address-subnet",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "weak.conf",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "set dstaddr \"ANY-NET\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1885,11 +1969,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 37,
-              "line_end": 37,
-              "raw": "10 permit ip any any",
-              "mapping_id": "arista_eos/acl-ext-entry",
+              "file": "weak.conf",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "set service \"ALL\"",
+              "mapping_id": "fortinet_fortios/policy-service",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1903,11 +1987,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 37,
-              "line_end": 37,
-              "raw": "10 permit ip any any",
-              "mapping_id": "arista_eos/acl-ext-entry",
+              "file": "weak.conf",
+              "line_start": 76,
+              "line_end": 76,
+              "raw": "set action accept",
+              "mapping_id": "fortinet_fortios/policy-action",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1929,12 +2013,129 @@
           "default_source": null
         },
         "zone_from": {
+          "value": "wan1",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 74,
+              "line_end": 74,
+              "raw": "set srcintf \"wan1\"",
+              "mapping_id": "fortinet_fortios/policy-srcintf",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": "internal",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 75,
+              "line_end": 75,
+              "raw": "set dstintf \"internal\"",
+              "mapping_id": "fortinet_fortios/policy-dstintf",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "internal",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
           "value": null,
           "state": "absent",
           "evidence": [],
           "default_source": null
         },
-        "zone_to": {
+        "zone": {
+          "value": "internal",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 23,
+              "line_end": 23,
+              "raw": "edit \"internal\"",
+              "mapping_id": "fortinet_fortios/interface",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "role": {
+          "value": "trusted",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 28,
+              "line_end": 28,
+              "raw": "set role lan",
+              "mapping_id": "fortinet_fortios/interface-role-lan",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "admin_up": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols": {
+          "value": [
+            "https",
+            "ping",
+            "ssh"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 26,
+              "line_end": 26,
+              "raw": "set allowaccess ping https ssh",
+              "mapping_id": "fortinet_fortios/interface-allowaccess",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#proxy-arp-off"
+        },
+        "filters_in": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "filters_out": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -1942,31 +2143,19 @@
         }
       },
       {
-        "key": "Ethernet1",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 21,
-            "line_end": 21,
-            "raw": "interface Ethernet1",
-            "mapping_id": "arista_eos/interface",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "key": "wan1",
+        "evidence": [],
         "type": "Interface",
         "description": {
           "value": "WAN uplink to ISP",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 22,
-              "line_end": 22,
-              "raw": "description WAN uplink to ISP",
-              "mapping_id": "arista_eos/interface-description",
+              "file": "weak.conf",
+              "line_start": 21,
+              "line_end": 21,
+              "raw": "set alias \"WAN uplink to ISP\"",
+              "mapping_id": "fortinet_fortios/interface-alias",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1976,9 +2165,21 @@
           "default_source": null
         },
         "zone": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "wan1",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 15,
+              "line_end": 15,
+              "raw": "edit \"wan1\"",
+              "mapping_id": "fortinet_fortios/interface",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "role": {
@@ -1986,11 +2187,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 22,
-              "line_end": 22,
-              "raw": "description WAN uplink to ISP",
-              "mapping_id": "inference/interface.role.untrusted_by_description",
+              "file": "weak.conf",
+              "line_start": 20,
+              "line_end": 20,
+              "raw": "set role wan",
+              "mapping_id": "fortinet_fortios/interface-role-wan",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2006,145 +2207,39 @@
           "default_source": null
         },
         "mgmt_protocols": {
-          "value": [],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#no-interface-mgmt-protocol-list"
+          "value": [
+            "http",
+            "https",
+            "ping",
+            "ssh",
+            "telnet"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 18,
+              "line_end": 18,
+              "raw": "set allowaccess ping https ssh http telnet",
+              "mapping_id": "fortinet_fortios/interface-allowaccess",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "proxy_arp": {
           "value": true,
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 25,
-              "line_end": 25,
-              "raw": "ip proxy-arp",
-              "mapping_id": "arista_eos/interface-proxy-arp",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "filters_in": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "filters_out": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "Ethernet2",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 27,
-            "line_end": 27,
-            "raw": "interface Ethernet2",
-            "mapping_id": "arista_eos/interface",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "type": "Interface",
-        "description": {
-          "value": "LAN server segment",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 28,
-              "line_end": 28,
-              "raw": "description LAN server segment",
-              "mapping_id": "arista_eos/interface-description",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "zone": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "role": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "admin_up": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_protocols": {
-          "value": [],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#no-interface-mgmt-protocol-list"
-        },
-        "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#proxy-arp-off"
-        },
-        "filters_in": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "filters_out": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "Management1",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 32,
-            "line_end": 32,
-            "raw": "interface Management1",
-            "mapping_id": "arista_eos/interface",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "type": "Interface",
-        "description": {
-          "value": "OOB management",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
+              "file": "weak.conf",
               "line_start": 33,
               "line_end": 33,
-              "raw": "description OOB management",
-              "mapping_id": "arista_eos/interface-description",
+              "raw": "set interface \"wan1\"",
+              "mapping_id": "fortinet_fortios/proxy-arp-interface",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2152,36 +2247,6 @@
             }
           ],
           "default_source": null
-        },
-        "zone": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "role": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "admin_up": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_protocols": {
-          "value": [],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#no-interface-mgmt-protocol-list"
-        },
-        "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#proxy-arp-off"
         },
         "filters_in": {
           "value": null,
@@ -2198,48 +2263,24 @@
       },
       {
         "key": "admin",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 7,
-            "line_end": 7,
-            "raw": "username admin privilege 15 role network-admin nopassword",
-            "mapping_id": "arista_eos/username-nopassword",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "evidence": [],
         "type": "LocalUser",
         "privilege": {
-          "value": 15,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 7,
-              "line_end": 7,
-              "raw": "username admin privilege 15 role network-admin nopassword",
-              "mapping_id": "arista_eos/username-privilege",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         },
         "hash_type": {
-          "value": "none",
+          "value": "sha256",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 7,
-              "line_end": 7,
-              "raw": "username admin privilege 15 role network-admin nopassword",
-              "mapping_id": "arista_eos/username-nopassword",
+              "file": "weak.conf",
+              "line_start": 41,
+              "line_end": 41,
+              "raw": "set password ENC ****",
+              "mapping_id": "fortinet_fortios/admin-password",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2250,31 +2291,19 @@
         }
       },
       {
-        "key": "netadmin",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 8,
-            "line_end": 8,
-            "raw": "username netadmin privilege 15 role network-admin secret 5 ****",
-            "mapping_id": "arista_eos/username-secret",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "type": "LocalUser",
-        "privilege": {
-          "value": 15,
+        "key": "lockout-policy",
+        "evidence": [],
+        "type": "LockoutPolicy",
+        "max_attempts": {
+          "value": 10,
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 8,
-              "line_end": 8,
-              "raw": "username netadmin privilege 15 role network-admin secret 5 ****",
-              "mapping_id": "arista_eos/username-privilege",
+              "file": "weak.conf",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "set admin-lockout-threshold 10",
+              "mapping_id": "fortinet_fortios/lockout-threshold",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2283,16 +2312,27 @@
           ],
           "default_source": null
         },
-        "hash_type": {
-          "value": "md5-crypt",
+        "lockout_s": {
+          "value": 60,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#lockout-60-seconds"
+        }
+      },
+      {
+        "key": "syslogd",
+        "evidence": [],
+        "type": "LogTarget",
+        "host": {
+          "value": "10.30.10.50",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 8,
-              "line_end": 8,
-              "raw": "username netadmin privilege 15 role network-admin secret 5 ****",
-              "mapping_id": "arista_eos/username-secret",
+              "file": "weak.conf",
+              "line_start": 50,
+              "line_end": 50,
+              "raw": "set server \"10.30.10.50\"",
+              "mapping_id": "fortinet_fortios/syslogd-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2300,6 +2340,24 @@
             }
           ],
           "default_source": null
+        },
+        "transport": {
+          "value": "udp",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#syslog-udp"
+        },
+        "severity": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#syslog-off"
         }
       },
       {
@@ -2308,21 +2366,9 @@
         "type": "LoggingPolicy",
         "timestamps": {
           "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 12,
-              "line_end": 12,
-              "raw": "logging format timestamp traditional",
-              "mapping_id": "arista_eos/logging-format-timestamp",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#logs-timestamped"
         },
         "admin_logged": {
           "value": null,
@@ -2331,9 +2377,21 @@
           "default_source": null
         },
         "config_change_logged": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 53,
+              "line_end": 53,
+              "raw": "set system disable",
+              "mapping_id": "fortinet_fortios/eventfilter-system",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         }
       },
@@ -2345,7 +2403,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#no-legacy-bootp"
+          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-bootp"
         },
         "version": {
           "value": null,
@@ -2386,7 +2444,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#no-legacy-finger"
+          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-finger"
         },
         "version": {
           "value": null,
@@ -2428,11 +2486,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 40,
-              "line_end": 40,
-              "raw": "protocol http",
-              "mapping_id": "arista_eos/eapi-protocol-http",
+              "file": "weak.conf",
+              "line_start": 6,
+              "line_end": 6,
+              "raw": "set admin-https-redirect disable",
+              "mapping_id": "fortinet_fortios/https-redirect-disable",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2440,47 +2498,6 @@
             }
           ],
           "default_source": null
-        },
-        "version": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "access_filter": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "ciphers": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "macs": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "kex": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "https",
-        "evidence": [],
-        "type": "MgmtService",
-        "enabled": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#eapi-https-off"
         },
         "version": {
           "value": null,
@@ -2521,7 +2538,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#no-legacy-pad"
+          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-pad"
         },
         "version": {
           "value": null,
@@ -2562,12 +2579,24 @@
           "value": true,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#ssh-on"
+          "default_source": "fortinet_fortios/defaults.yaml#ssh-available"
         },
         "version": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": "1.99",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 8,
+              "line_end": 8,
+              "raw": "set admin-ssh-v1 enable",
+              "mapping_id": "fortinet_fortios/admin-ssh-v1",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "access_filter": {
@@ -2603,7 +2632,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#no-tcp-small-servers"
+          "default_source": "fortinet_fortios/defaults.yaml#no-tcp-small-servers"
         },
         "version": {
           "value": null,
@@ -2638,37 +2667,13 @@
       },
       {
         "key": "telnet",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 50,
-            "line_end": 50,
-            "raw": "management telnet",
-            "mapping_id": "arista_eos/management-telnet",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "evidence": [],
         "type": "MgmtService",
         "enabled": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 51,
-              "line_end": 51,
-              "raw": "no shutdown",
-              "mapping_id": "arista_eos/telnet-shutdown",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#telnet-only-where-allowed"
         },
         "version": {
           "value": null,
@@ -2709,7 +2714,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#no-udp-small-servers"
+          "default_source": "fortinet_fortios/defaults.yaml#no-udp-small-servers"
         },
         "version": {
           "value": null,
@@ -2743,31 +2748,19 @@
         }
       },
       {
-        "key": "console",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 43,
-            "line_end": 43,
-            "raw": "management console",
-            "mapping_id": "arista_eos/management-console",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "key": "admin",
+        "evidence": [],
         "type": "MgmtSession",
         "kind": {
-          "value": "console",
+          "value": "cli",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 43,
-              "line_end": 43,
-              "raw": "management console",
-              "mapping_id": "arista_eos/management-console",
+              "file": "weak.conf",
+              "line_start": 9,
+              "line_end": 9,
+              "raw": "set admintimeout 480",
+              "mapping_id": "fortinet_fortios/admintimeout",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2795,15 +2788,15 @@
           "default_source": null
         },
         "idle_timeout_s": {
-          "value": 0,
+          "value": 28800,
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 44,
-              "line_end": 44,
-              "raw": "idle-timeout 0",
-              "mapping_id": "arista_eos/console-idle-timeout",
+              "file": "weak.conf",
+              "line_start": 9,
+              "line_end": 9,
+              "raw": "set admintimeout 480",
+              "mapping_id": "fortinet_fortios/admintimeout",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2820,134 +2813,68 @@
         }
       },
       {
-        "key": "ssh",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 46,
-            "line_end": 46,
-            "raw": "management ssh",
-            "mapping_id": "arista_eos/management-ssh",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "type": "MgmtSession",
-        "kind": {
-          "value": "vty",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 46,
-              "line_end": 46,
-              "raw": "management ssh",
-              "mapping_id": "arista_eos/management-ssh",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "range": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "transport": {
-          "value": [
-            "ssh"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 46,
-              "line_end": 46,
-              "raw": "management ssh",
-              "mapping_id": "arista_eos/management-ssh",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "access_filter": {
-          "value": "MGMT-ACL",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
-              "raw": "ip access-group MGMT-ACL in",
-              "mapping_id": "arista_eos/ssh-access-group",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "idle_timeout_s": {
-          "value": 0,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 48,
-              "line_end": 48,
-              "raw": "idle-timeout 0",
-              "mapping_id": "arista_eos/ssh-idle-timeout",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "auth_method": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "acl:EDGE-IN",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 36,
-            "line_end": 36,
-            "raw": "ip access-list EDGE-IN",
-            "mapping_id": "arista_eos/acl-extended",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "key": "address:ANY-NET",
+        "evidence": [],
         "type": "ObjectDef",
         "kind": {
-          "value": "acl",
+          "value": "address",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 36,
-              "line_end": 36,
-              "raw": "ip access-list EDGE-IN",
-              "mapping_id": "arista_eos/acl-extended",
+              "file": "weak.conf",
+              "line_start": 67,
+              "line_end": 67,
+              "raw": "edit \"ANY-NET\"",
+              "mapping_id": "fortinet_fortios/address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "0.0.0.0/0.0.0.0"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 68,
+              "line_end": 68,
+              "raw": "set subnet 0.0.0.0 0.0.0.0",
+              "mapping_id": "fortinet_fortios/address-subnet",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "address:all",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "address",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 65,
+              "line_end": 65,
+              "raw": "edit \"all\"",
+              "mapping_id": "fortinet_fortios/address",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2974,10 +2901,10 @@
         "evidence": [],
         "type": "PasswordPolicy",
         "min_length": {
-          "value": null,
-          "state": "absent",
+          "value": 8,
+          "state": "vendor_default",
           "evidence": [],
-          "default_source": null
+          "default_source": "fortinet_fortios/defaults.yaml#password-minimum-8"
         },
         "complexity_required": {
           "value": null,
@@ -2995,7 +2922,7 @@
           "value": true,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#passwords-stored-encrypted"
+          "default_source": "fortinet_fortios/defaults.yaml#passwords-stored-encoded"
         },
         "max_age_days": {
           "value": null,
@@ -3004,164 +2931,21 @@
           "default_source": null
         },
         "enforced": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "MgmtSession[ssh].access_filter -> MGMT-ACL",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 47,
-            "line_end": 47,
-            "raw": "ip access-group MGMT-ACL in",
-            "mapping_id": "arista_eos/ssh-access-group",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "type": "Reference",
-        "source": {
-          "value": "MgmtSession[ssh]",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
-              "raw": "ip access-group MGMT-ACL in",
-              "mapping_id": "arista_eos/ssh-access-group",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "attribute": {
-          "value": "MgmtSession.access_filter",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
-              "raw": "ip access-group MGMT-ACL in",
-              "mapping_id": "arista_eos/ssh-access-group",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "target_kind": {
-          "value": "acl",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
-              "raw": "ip access-group MGMT-ACL in",
-              "mapping_id": "arista_eos/ssh-access-group",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "name": {
-          "value": "MGMT-ACL",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
-              "raw": "ip access-group MGMT-ACL in",
-              "mapping_id": "arista_eos/ssh-access-group",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "resolved": {
           "value": false,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
-              "raw": "ip access-group MGMT-ACL in",
-              "mapping_id": "arista_eos/ssh-access-group",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "target": {
-          "value": null,
-          "state": "absent",
+          "state": "vendor_default",
           "evidence": [],
-          "default_source": null
-        },
-        "permits_any": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
+          "default_source": "fortinet_fortios/defaults.yaml#password-policy-off"
         }
       },
       {
         "key": "community-1",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 16,
-            "line_end": 16,
-            "raw": "snmp-server community **** ro",
-            "mapping_id": "arista_eos/snmp-community",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "evidence": [],
         "type": "SnmpCommunity",
         "access": {
           "value": "ro",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 16,
-              "line_end": 16,
-              "raw": "snmp-server community **** ro",
-              "mapping_id": "arista_eos/snmp-community",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#snmp-read-only"
         },
         "filter": {
           "value": null,
@@ -3174,70 +2958,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 16,
-              "line_end": 16,
-              "raw": "snmp-server community **** ro",
-              "mapping_id": "arista_eos/snmp-community",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "community-2",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 17,
-            "line_end": 17,
-            "raw": "snmp-server community **** rw",
-            "mapping_id": "arista_eos/snmp-community",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "type": "SnmpCommunity",
-        "access": {
-          "value": "rw",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 17,
-              "line_end": 17,
-              "raw": "snmp-server community **** rw",
-              "mapping_id": "arista_eos/snmp-community",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "filter": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "is_well_known": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.cfg",
-              "line_start": 17,
-              "line_end": 17,
-              "raw": "snmp-server community **** rw",
-              "mapping_id": "arista_eos/snmp-community",
+              "file": "weak.conf",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "set name \"public\"",
+              "mapping_id": "fortinet_fortios/snmp-community-name",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3255,35 +2980,23 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#ntp-authentication-off"
+          "default_source": "fortinet_fortios/defaults.yaml#ntp-authentication-off"
         }
       },
       {
-        "key": "10.30.10.70",
-        "evidence": [
-          {
-            "file": "weak.cfg",
-            "line_start": 14,
-            "line_end": 14,
-            "raw": "ntp server 10.30.10.70 iburst",
-            "mapping_id": "arista_eos/ntp-server",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "key": "ntp-1",
+        "evidence": [],
         "type": "TimeSource",
         "host": {
           "value": "10.30.10.70",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.cfg",
-              "line_start": 14,
-              "line_end": 14,
-              "raw": "ntp server 10.30.10.70 iburst",
-              "mapping_id": "arista_eos/ntp-server",
+              "file": "weak.conf",
+              "line_start": 60,
+              "line_end": 60,
+              "raw": "set server \"10.30.10.70\"",
+              "mapping_id": "fortinet_fortios/ntpserver-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3296,38 +3009,71 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "arista_eos/defaults.yaml#ntp-server-without-key"
+          "default_source": "fortinet_fortios/defaults.yaml#ntp-server-unauthenticated"
         }
       }
     ],
     "derived": {
       "aaa.central_server_configured": {
-        "value": null,
-        "state": "absent",
+        "value": false,
+        "state": "vendor_default",
         "evidence": [],
-        "default_source": null
+        "default_source": "fortinet_fortios/defaults.yaml#no-auth-servers"
       },
       "filtering.permit_all_present": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
-            "line_start": 37,
-            "line_end": 37,
-            "raw": "10 permit ip any any",
-            "mapping_id": "arista_eos/acl-ext-entry",
+            "file": "weak.conf",
+            "line_start": 68,
+            "line_end": 68,
+            "raw": "set subnet 0.0.0.0 0.0.0.0",
+            "mapping_id": "fortinet_fortios/address-subnet",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           },
           {
-            "file": "weak.cfg",
-            "line_start": 37,
-            "line_end": 37,
-            "raw": "10 permit ip any any",
-            "mapping_id": "arista_eos/acl-ext-ip-any-any",
+            "file": "weak.conf",
+            "line_start": 76,
+            "line_end": 76,
+            "raw": "set action accept",
+            "mapping_id": "fortinet_fortios/policy-action",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 77,
+            "line_end": 77,
+            "raw": "set srcaddr \"all\"",
+            "mapping_id": "fortinet_fortios/policy-srcaddr",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 78,
+            "line_end": 78,
+            "raw": "set dstaddr \"ANY-NET\"",
+            "mapping_id": "fortinet_fortios/policy-dstaddr",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.conf",
+            "line_start": 80,
+            "line_end": 80,
+            "raw": "set service \"ALL\"",
+            "mapping_id": "fortinet_fortios/policy-service",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3337,21 +3083,21 @@
         "default_source": null
       },
       "logging.remote_configured": {
-        "value": null,
-        "state": "absent",
+        "value": false,
+        "state": "vendor_default",
         "evidence": [],
-        "default_source": null
+        "default_source": "fortinet_fortios/defaults.yaml#syslog-off"
       },
       "management.http_enabled": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
-            "line_start": 40,
-            "line_end": 40,
-            "raw": "protocol http",
-            "mapping_id": "arista_eos/eapi-protocol-http",
+            "file": "weak.conf",
+            "line_start": 6,
+            "line_end": 6,
+            "raw": "set admin-https-redirect disable",
+            "mapping_id": "fortinet_fortios/https-redirect-disable",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3361,56 +3107,45 @@
         "default_source": null
       },
       "management.login_banner_present": {
-        "value": null,
-        "state": "absent",
+        "value": false,
+        "state": "vendor_default",
         "evidence": [],
-        "default_source": null
+        "default_source": "fortinet_fortios/defaults.yaml#pre-login-banner-off"
       },
       "management.ssh_reachable": {
         "value": true,
         "state": "vendor_default",
+        "evidence": [],
+        "default_source": "fortinet_fortios/defaults.yaml#ssh-available"
+      },
+      "management.ssh_v1_negotiable": {
+        "value": true,
+        "state": "vendor_default",
         "evidence": [
           {
-            "file": "weak.cfg",
-            "line_start": 46,
-            "line_end": 46,
-            "raw": "management ssh",
-            "mapping_id": "arista_eos/management-ssh",
+            "file": "weak.conf",
+            "line_start": 8,
+            "line_end": 8,
+            "raw": "set admin-ssh-v1 enable",
+            "mapping_id": "fortinet_fortios/admin-ssh-v1",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
-        "default_source": "arista_eos/defaults.yaml#ssh-on"
-      },
-      "management.ssh_v1_negotiable": {
-        "value": null,
-        "state": "absent",
-        "evidence": [],
-        "default_source": null
+        "default_source": "fortinet_fortios/defaults.yaml#ssh-available"
       },
       "management.telnet_reachable": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
-            "line_start": 50,
-            "line_end": 50,
-            "raw": "management telnet",
-            "mapping_id": "arista_eos/management-telnet",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "weak.cfg",
-            "line_start": 51,
-            "line_end": 51,
-            "raw": "no shutdown",
-            "mapping_id": "arista_eos/telnet-shutdown",
+            "file": "weak.conf",
+            "line_start": 18,
+            "line_end": 18,
+            "raw": "set allowaccess ping https ssh http telnet",
+            "mapping_id": "fortinet_fortios/interface-allowaccess",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3423,29 +3158,18 @@
         "value": false,
         "state": "vendor_default",
         "evidence": [],
-        "default_source": "arista_eos/defaults.yaml#no-legacy-bootp, arista_eos/defaults.yaml#no-legacy-finger, arista_eos/defaults.yaml#no-legacy-pad, arista_eos/defaults.yaml#no-tcp-small-servers, arista_eos/defaults.yaml#no-udp-small-servers"
+        "default_source": "fortinet_fortios/defaults.yaml#no-legacy-bootp, fortinet_fortios/defaults.yaml#no-legacy-finger, fortinet_fortios/defaults.yaml#no-legacy-pad, fortinet_fortios/defaults.yaml#no-tcp-small-servers, fortinet_fortios/defaults.yaml#no-udp-small-servers"
       },
       "snmp.weak_community_present": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.cfg",
-            "line_start": 16,
-            "line_end": 16,
-            "raw": "snmp-server community **** ro",
-            "mapping_id": "arista_eos/snmp-community",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "weak.cfg",
-            "line_start": 17,
-            "line_end": 17,
-            "raw": "snmp-server community **** rw",
-            "mapping_id": "arista_eos/snmp-community",
+            "file": "weak.conf",
+            "line_start": 46,
+            "line_end": 46,
+            "raw": "set name \"public\"",
+            "mapping_id": "fortinet_fortios/snmp-community-name",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3455,7 +3179,9 @@
         "default_source": null
       }
     },
-    "known_empty": {},
+    "known_empty": {
+      "AuthServer": "fortinet_fortios/defaults.yaml#no-auth-servers"
+    },
     "unread": {}
   },
   "warnings": []

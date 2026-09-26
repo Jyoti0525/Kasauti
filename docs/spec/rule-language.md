@@ -98,7 +98,14 @@ ABSENT, UNKNOWN**.
 never silently decides a rule whose author asked for review.
 
 **The verdict for an entity:** TRUE → PASS; FALSE → FAIL; ABSENT → `on_absent`
-(`resolve_default` has already had its chance, so it gives REVIEW); UNKNOWN → `on_unknown`.
+(`resolve_default` has already had its chance, so it gives `on_no_default`: REVIEW unless the
+rule says `fail`); UNKNOWN → `on_unknown`.
+
+**`on_no_default: fail`** is for rules where a missing statement is the violation *unless the
+vendor documents a protective default*. Lockout is the example: Cisco IOS XE has no lockout
+until `login block-for` is set (FAIL), while FortiOS locks an administrator out after 3 failed
+logins out of the box (`admin-lockout-threshold` default 3: PASS, citing the default). Plain
+`on_absent: fail` would call the FortiGate non-compliant for a protection it has.
 If a PASS or FAIL rests on evidence from a mapping with no approvers, it becomes REVIEW
 (PLAN §12.6). A rule whose device role isn't in `applies_to` is N/A. A rule with nothing in
 scope gives one N/A finding, unless statements about that type were unread; then it gives

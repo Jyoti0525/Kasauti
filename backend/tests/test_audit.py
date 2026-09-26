@@ -220,3 +220,109 @@ def test_junos_predefined_classes_never_time_out(kb: KnowledgeBase) -> None:
     timeout = next(f for f in result.findings if f.rule_id == "MGMT-SESSION-TIMEOUT-01")
     assert timeout.status is Status.FAIL
     assert timeout.defaults_used == ("juniper_junos/defaults.yaml#class-never-times-out",)
+
+
+FGT_HEADER = "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=admin\n"
+
+
+def _fortios(kb: KnowledgeBase, body: str) -> dict[str, Status]:
+    result = audit(decode((FGT_HEADER + body).encode(), "fgt.conf"), kb, vendor="fortinet_fortios")
+    return {r.rule_id: r.status for r in result.rules}
+
+
+def test_fortios_identity_comes_from_the_config_version_header(kb: KnowledgeBase) -> None:
+    path = REPO / "datasets" / "authored" / "fortinet_fortios" / "hardened.conf"
+    result = audit(read_file(path), kb)
+    assert result.detection.pack_id == "fortinet_fortios"
+    ident = result.identity
+    assert (ident["hostname"].value, ident["os_version"].value, ident["model"].value) == (
+        "FGT-EDGE",
+        "7.4.8",
+        "FGT60F",
+    )
+
+
+POLICY = (
+    'config firewall policy\n    edit 1\n        set srcintf "wan1"\n'
+    '        set dstintf "internal"\n        set action accept\n'
+    '        set srcaddr "all"\n        set dstaddr "{dst}"\n        set service "ALL"\n'
+    "    next\nend\n"
+)
+
+
+@pytest.mark.parametrize(
+    ("objects", "expected"),
+    [
+        # A host object: not a permit-any.
+        ('    edit "SRV"\n        set subnet 10.0.0.1 255.255.255.255\n    next\n', Status.PASS),
+        # A catch-all hidden behind a name is still a permit-any.
+        ('    edit "SRV"\n        set subnet 0.0.0.0 0.0.0.0\n    next\n', Status.FAIL),
+        # An object whose extent wasn't read (a dynamic address): REVIEW, never an assumed PASS.
+        ('    edit "SRV"\n        set type dynamic\n    next\n', Status.REVIEW),
+    ],
+)
+def test_fortios_policies_see_through_address_objects(
+    kb: KnowledgeBase, objects: str, expected: Status
+) -> None:
+    body = "config firewall address\n" + objects + "end\n" + POLICY.format(dst="SRV")
+    assert _fortios(kb, body)["FILTER-PERMIT-ANY-01"] is expected
+
+
+def test_fortios_catch_all_inside_an_address_group_is_found(kb: KnowledgeBase) -> None:
+    body = (
+        'config firewall address\n    edit "WIDE"\n        set subnet 0.0.0.0 0.0.0.0\n'
+        '    next\n    edit "SRV"\n        set subnet 10.0.0.1 255.255.255.255\n    next\nend\n'
+        'config firewall addrgrp\n    edit "GRP"\n        set member "SRV" "WIDE"\n    next\nend\n'
+        + POLICY.format(dst="GRP")
+    )
+    assert _fortios(kb, body)["FILTER-PERMIT-ANY-01"] is Status.FAIL
+
+
+@pytest.mark.parametrize(
+    ("block", "rule", "expected"),
+    [
+        # A value set while its feature is switched off doesn't count.
+        (
+            'config log syslogd setting\n    set server "10.0.0.5"\nend\n',
+            "LOG-REMOTE-01",
+            Status.FAIL,
+        ),
+        (
+            'config log syslogd setting\n    set status enable\n    set server "10.0.0.5"\nend\n',
+            "LOG-REMOTE-01",
+            Status.PASS,
+        ),
+        (
+            "config system password-policy\n    set minimum-length 15\nend\n",
+            "AAA-PASSWORD-MIN-LENGTH-01",
+            Status.FAIL,
+        ),
+        (
+            "config system password-policy\n    set status enable\n"
+            "    set minimum-length 15\nend\n",
+            "AAA-PASSWORD-MIN-LENGTH-01",
+            Status.PASS,
+        ),
+    ],
+)
+def test_fortios_on_switches_are_respected(
+    kb: KnowledgeBase, block: str, rule: str, expected: Status
+) -> None:
+    assert _fortios(kb, block)[rule] is expected
+
+
+def test_a_documented_protective_default_passes_where_absence_would_fail(
+    kb: KnowledgeBase,
+) -> None:
+    """FortiOS locks administrators out after 3 failures by default (on_no_default: fail)."""
+    result = audit(
+        decode((FGT_HEADER + "config system global\nend\n").encode(), "fgt.conf"),
+        kb,
+        vendor="fortinet_fortios",
+    )
+    lockout = next(f for f in result.findings if f.rule_id == "AAA-LOCKOUT-01")
+    assert lockout.status is Status.PASS
+    assert lockout.defaults_used == ("fortinet_fortios/defaults.yaml#lockout-after-3",)
+    # Cisco documents no lockout default, so there absence is still the violation.
+    cisco = audit(decode(b"version 17.9\nhostname R1\n", "r.cfg"), kb, vendor="cisco_ios_xe")
+    assert {r.rule_id: r.status for r in cisco.rules}["AAA-LOCKOUT-01"] is Status.FAIL

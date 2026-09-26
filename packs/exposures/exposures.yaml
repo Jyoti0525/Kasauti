@@ -9,14 +9,23 @@ exposures:
     when: >
       management.telnet_reachable
       and (any(Interface where exists(role) and role == 'untrusted': mgmt_protocols contains 'telnet')
-           or any(Interface where exists(role) and role == 'untrusted': not exists(filters_in)))
-    explain: telnet is reachable and an untrusted interface lets it through (no inbound filter, or telnet allowed on it)
+           or any(Interface where exists(role) and role == 'untrusted':
+                  not exists(filters_in) and not exists(zone)))
+    explain: telnet is reachable and an untrusted interface lets it through (no inbound filter or zone, or telnet allowed on it)
 
   - id: mgmt_reachable_from_untrusted
     direction: raise
     scopes: [Device, MgmtService, MgmtSession, SnmpCommunity, LocalUser, Reference]
-    when: "any(Interface where exists(role) and role == 'untrusted': not exists(filters_in))"
-    explain: an untrusted interface has no inbound filter, so the management plane is reachable from outside
+    # Unfiltered and zoneless (Cisco, EOS), or management protocols granted on it (FortiOS
+    # allowaccess, Junos host-inbound services): a zone blocks transit traffic, not the
+    # device's own management services.
+    when: >
+      any(Interface where exists(role) and role == 'untrusted':
+          (not exists(filters_in) and not exists(zone))
+          or mgmt_protocols contains 'ssh' or mgmt_protocols contains 'telnet'
+          or mgmt_protocols contains 'http' or mgmt_protocols contains 'https'
+          or mgmt_protocols contains 'snmp')
+    explain: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)
 
   - id: perimeter_firewall
     direction: raise

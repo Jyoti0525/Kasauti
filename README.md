@@ -11,9 +11,10 @@ including ones it has never seen.
 
 > **Status: Milestone 1 (walking skeleton) complete.** A Cisco IOS XE configuration goes end to
 > end: parse → mappings → Security Baseline Model → 23 rules → JSON + PDF report. Parsers for all
-> seven shape families are in place. Seed packs for Cisco IOS XE, Juniper Junos and Arista EOS
-> take every default from the vendor's own documentation ([review records](docs/reviews/)).
-> Progress is tracked task by task in [docs/TODO.md](docs/TODO.md).
+> seven shape families are in place. Seed packs for Cisco IOS XE, Juniper Junos, Arista EOS and
+> Fortinet FortiOS take every default from the vendor's own documentation
+> ([review records](docs/reviews/)). Progress is tracked task by task in
+> [docs/TODO.md](docs/TODO.md).
 
 ## Try it
 

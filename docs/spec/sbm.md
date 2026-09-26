@@ -1,4 +1,4 @@
-# Security Baseline Model (v0.4)
+# Security Baseline Model (v0.5)
 
 Implements PLAN §8 (requirement R-01). Source of truth: `backend/kasauti/sbm/`; JSON Schema:
 `schemas/sbm.schema.json`; OpenConfig alignment: `backend/kasauti/sbm/openconfig.yaml`.
@@ -67,13 +67,16 @@ rely on (PLAN §3.1, principle 5).
 
 ## Versioning
 
-`sbm_version` is `"0.4"`. Loading a document with another version fails with a pointer to
+`sbm_version` is `"0.5"`. Loading a document with another version fails with a pointer to
 `kasauti.sbm.migrations`, which upgrades stored documents step by step (one pure function per
 version change, never edited after release). 0.1 → 0.2 adds the empty sets above; 0.2 → 0.3
 adds four optional attributes (`MgmtService.access_filter`, `Interface.description`,
 `Interface.proxy_arp`, `PasswordPolicy.cleartext_passwords_encrypted`); 0.3 → 0.4 adds
 `Reference` and `ObjectDef.expanded` (members after recursive group expansion, *unknown* on a
-cycle or a missing member). Everything an older document says is kept (tested).
+cycle or a missing member); 0.4 → 0.5 adds `PasswordPolicy.enforced` and `LogTarget.enabled`,
+the on/off switches FortiOS keeps apart from the values they govern (a minimum length or a
+syslog server can be configured while the feature is off). Everything an older document says
+is kept (tested).
 
 ## OpenConfig alignment
 

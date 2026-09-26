@@ -8,10 +8,12 @@ derivations:
     expr: "any(AuthServer: exists(host))"
 
   - id: logging.remote_configured
-    version: 1
+    version: 2
     type: bool
-    description: At least one remote log target (syslog host) is configured.
-    expr: "any(LogTarget: exists(host))"
+    description: >
+      At least one remote log target (syslog host) is configured and switched on. Where a
+      platform has no separate switch (no `enabled` fact), naming the host is what turns it on.
+    expr: "any(LogTarget: exists(host) and (not exists(enabled) or enabled))"
 
   - id: snmp.weak_community_present
     version: 1

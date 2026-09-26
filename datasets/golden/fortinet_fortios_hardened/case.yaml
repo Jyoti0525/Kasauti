@@ -1,0 +1,31 @@
+# E1 golden case (PLAN §21.1). Labels are ground truth from the weakness catalogue in
+# datasets/SOURCES.md, not engine output.
+description: FortiOS 7.4.8 hardened edge FortiGate (twin of the weak case)
+input: authored/fortinet_fortios/hardened.conf
+input_sha256: 6ab405110f0e768066ef309d4fd810808720c08d54373c2643e61bf11e44e9d4
+vendor: null
+frameworks: [nist_800_53r5]
+expected_statuses:
+  AAA-CENTRAL-AUTH-01: PASS
+  AAA-LOCAL-PASSWORD-HASH-01: PASS
+  AAA-LOCKOUT-01: PASS
+  AAA-PASSWORD-ENCRYPTION-01: PASS
+  AAA-PASSWORD-MIN-LENGTH-01: PASS
+  FILTER-PERMIT-ANY-01: PASS
+  FILTER-UNTRUSTED-INGRESS-01: PASS
+  LOG-CONFIG-CHANGE-01: PASS
+  LOG-REMOTE-01: PASS
+  LOG-TIMESTAMPS-01: PASS
+  MGMT-BANNER-01: PASS
+  MGMT-HTTP-01: PASS
+  MGMT-SESSION-TIMEOUT-01: PASS
+  MGMT-SSH-V2-01: PASS
+  MGMT-TELNET-01: PASS
+  MGMT-VTY-ACL-01: N/A      # FortiOS has no vty lines
+  MGMT-VTY-ACL-02: N/A      # FortiOS has no vty lines
+  MGMT-WEB-ACL-01: N/A      # HTTP administration is redirected to HTTPS
+  REF-DANGLING-01: N/A      # no statement names an ACL or object by reference
+  SNMP-COMMUNITY-01: PASS
+  SVC-LEGACY-01: PASS
+  SVC-PROXY-ARP-01: PASS
+  TIME-NTP-AUTH-01: PASS

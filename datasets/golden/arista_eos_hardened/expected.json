@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "7efbe54f4f3b8130a3668a7f",
+  "audit_id": "8248378b4d23d4137664f6e5",
   "input": {
     "file": "hardened.cfg",
     "sha256": "d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "098593c805aee6df528e9f8faf13d9485931011701cd412dafc70ad627578cbc",
-    "ruleset_version": "fbf9088a6f0977cb60e9a2a110a5a34062e471cf5b47771795c0ab2bb02546cd",
+    "kb_version": "1fd75bc794e2381882ec3541668503c60c1d6c2f2e605938aa1e66a2b5063695",
+    "ruleset_version": "0b1b575471bcfafc79f7234f2ec09b05f43bb67415d4a43697d0e464fdc94f28",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -682,7 +682,8 @@
       "severity_reason": null,
       "reason": "Passwords must be at least 15 characters: holds for PasswordPolicy[password-policy].",
       "actual": [
-        "PasswordPolicy[password-policy].min_length = 15"
+        "PasswordPolicy[password-policy].min_length = 15",
+        "PasswordPolicy[password-policy].enforced: missing"
       ],
       "defaults_used": [],
       "evidence": [
@@ -843,7 +844,8 @@
       "reason": "Logs are sent to a remote log server: holds for the device.",
       "actual": [
         "logging.remote_configured = true",
-        "LogTarget[10.30.10.50].host = 10.30.10.50"
+        "LogTarget[10.30.10.50].host = 10.30.10.50",
+        "LogTarget[10.30.10.50].enabled: missing"
       ],
       "defaults_used": [],
       "evidence": [
@@ -1658,7 +1660,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.4",
+    "sbm_version": "0.5",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2955,6 +2957,12 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -3688,6 +3696,12 @@
           "default_source": "arista_eos/defaults.yaml#passwords-stored-encrypted"
         },
         "max_age_days": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enforced": {
           "value": null,
           "state": "absent",
           "evidence": [],

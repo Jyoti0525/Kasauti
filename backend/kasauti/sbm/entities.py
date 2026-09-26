@@ -136,6 +136,10 @@ class PasswordPolicy(Entity):
     """Passwords that would otherwise sit in the configuration in clear text are encrypted
     (Cisco ``service password-encryption``, type 7). A baseline, not strong protection (0.3)."""
     max_age_days: IntFact = IntFact()
+    enforced: BoolFact = BoolFact()
+    """The policy is switched on, on platforms where it has its own switch (FortiOS
+    ``config system password-policy`` / ``set status enable``). Absent where stating a
+    minimum is what enforces it (Cisco, Junos, EOS) (0.5)."""
 
 
 class LockoutPolicy(Entity):
@@ -154,6 +158,10 @@ class LogTarget(Entity):
     transport: StrFact = StrFact()
     """udp | tcp | tls"""
     severity: StrFact = StrFact()
+    enabled: BoolFact = BoolFact()
+    """The target is switched on, on platforms where a configured server can be off (FortiOS
+    ``config log syslogd setting`` / ``set status enable``). Absent where naming a host is
+    what turns it on (0.5)."""
 
 
 class LoggingPolicy(Entity):

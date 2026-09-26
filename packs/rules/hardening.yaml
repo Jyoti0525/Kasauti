@@ -18,7 +18,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: AAA-PASSWORD-ENCRYPTION-01
@@ -39,7 +39,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: AAA-PASSWORD-MIN-LENGTH-01
@@ -49,8 +49,10 @@ rules:
       which is how device logins are used when AAA is unreachable.
     domain: aaa
     for_each: PasswordPolicy
-    assert: min_length >= 15
-    on_absent: fail              # no enforced minimum is the violation
+    # FortiOS keeps the minimum and its on/off switch apart; elsewhere stating it enforces it.
+    assert: min_length >= 15 and (not exists(enforced) or enforced)
+    on_absent: resolve_default   # a documented default decides; with none, no enforced minimum is the violation
+    on_no_default: fail
     on_unknown: review
     severity: {base: medium}
     fix_intent: {make: min_length, equal: 15}
@@ -59,8 +61,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf]
 
   - id: MGMT-WEB-ACL-01
     title: Web management accepts only permitted sources
@@ -81,7 +83,7 @@ rules:
       iso_27001_2022: derived
     fixtures:
       pass: [cisco_ios_xe/fixtures/web_mgmt_restricted.cfg]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf]
 
   - id: MGMT-SSH-V2-01
     title: SSH management uses protocol version 2 only
@@ -99,8 +101,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, fortinet_fortios/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, fortinet_fortios/weak.conf]
 
   - id: MGMT-BANNER-01
     title: A login banner warns against unauthorised use
@@ -110,7 +112,8 @@ rules:
     domain: management_plane
     for_each: Device
     assert: management.login_banner_present
-    on_absent: fail              # no banner configured is the violation
+    on_absent: resolve_default   # a documented default decides; with none, no banner is the violation
+    on_no_default: fail
     on_unknown: review
     severity: {base: low}
     fix_intent: {make: management.login_banner_present, equal: true}
@@ -119,8 +122,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf]
 
   - id: SVC-PROXY-ARP-01
     title: Interfaces do not answer ARP for other hosts
@@ -139,8 +142,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf]
 
   - id: FILTER-PERMIT-ANY-01
     title: No filter entry permits all traffic from anywhere to anywhere
@@ -160,8 +163,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf]
 
   - id: FILTER-UNTRUSTED-INGRESS-01
     title: Untrusted interfaces filter inbound traffic
@@ -187,7 +190,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
 
   - id: LOG-TIMESTAMPS-01
@@ -207,7 +210,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: LOG-CONFIG-CHANGE-01
@@ -227,5 +230,5 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
-      fail: [cisco_ios_xe/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
+      fail: [cisco_ios_xe/weak.cfg, fortinet_fortios/weak.conf]

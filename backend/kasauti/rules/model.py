@@ -111,6 +111,10 @@ class Rule(_Strict):
     for_each: str
     assert_: str = Field(alias="assert")
     on_absent: OnMissing = OnMissing.REVIEW
+    on_no_default: Literal["review", "fail"] = "review"
+    """With ``on_absent: resolve_default``: the verdict when no vendor default is known either.
+    ``fail`` for rules where a missing statement is the violation unless the vendor documents a
+    protective default (FortiOS locks administrators out after 3 failures out of the box)."""
     on_unknown: OnMissing = OnMissing.REVIEW
     severity: SeveritySpec
     exposure: tuple[str, ...] = ()
@@ -128,6 +132,8 @@ class Rule(_Strict):
         ex.parse(self.assert_)
         if self.on_unknown is OnMissing.RESOLVE_DEFAULT:
             raise ValueError("on_unknown cannot be resolve_default: defaults only fill absence")
+        if self.on_no_default == "fail" and self.on_absent is not OnMissing.RESOLVE_DEFAULT:
+            raise ValueError("on_no_default applies only with on_absent: resolve_default")
         if not self.refs.nist_800_53r5 and not self.hardening_best_practice:
             raise ValueError(
                 "every rule is anchored to NIST SP 800-53 r5 (§12.4); "

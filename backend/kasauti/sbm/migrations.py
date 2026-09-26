@@ -37,11 +37,19 @@ def _v03_to_v04(data: RawSBM) -> RawSBM:
     return data
 
 
+def _v04_to_v05(data: RawSBM) -> RawSBM:
+    """0.4 -> 0.5 (M2, FortiOS): new optional attributes ``PasswordPolicy.enforced`` and
+    ``LogTarget.enabled``. Absent in older documents: no platform before FortiOS had a
+    separate on/off switch for either, which is exactly what absence means."""
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
 MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.1": ("0.2", _v01_to_v02),
     "0.2": ("0.3", _v02_to_v03),
     "0.3": ("0.4", _v03_to_v04),
+    "0.4": ("0.5", _v04_to_v05),
 }
 
 

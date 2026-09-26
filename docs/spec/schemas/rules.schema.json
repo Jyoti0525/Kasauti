@@ -232,6 +232,15 @@
           "$ref": "#/$defs/OnMissing",
           "default": "review"
         },
+        "on_no_default": {
+          "default": "review",
+          "enum": [
+            "review",
+            "fail"
+          ],
+          "title": "On No Default",
+          "type": "string"
+        },
         "on_unknown": {
           "$ref": "#/$defs/OnMissing",
           "default": "review"

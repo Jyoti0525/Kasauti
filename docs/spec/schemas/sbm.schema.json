@@ -966,6 +966,15 @@
     "LogTarget": {
       "additionalProperties": false,
       "properties": {
+        "enabled": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "evidence": {
           "default": [],
           "items": {
@@ -1310,6 +1319,15 @@
           }
         },
         "complexity_required": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "enforced": {
           "$ref": "#/$defs/Fact_bool_",
           "default": {
             "default_source": null,
@@ -1884,7 +1902,7 @@
       "type": "object"
     },
     "sbm_version": {
-      "default": "0.4",
+      "default": "0.5",
       "title": "Sbm Version",
       "type": "string"
     },

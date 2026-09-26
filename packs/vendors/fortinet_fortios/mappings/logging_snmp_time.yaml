@@ -1,0 +1,512 @@
+# Remote syslog, event logging, SNMP communities, NTP.
+# Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
+mappings:
+- id: fortinet_fortios/syslogd-status
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd setting
+  entity:
+    type: LogTarget
+    key: syslogd
+  match: set status <STR:s>
+  effect:
+    set: LogTarget.enabled
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd-server
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd setting
+  entity:
+    type: LogTarget
+    key: syslogd
+  match: set server <STR:h>
+  effect:
+    set: LogTarget.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd-mode
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd setting
+  entity:
+    type: LogTarget
+    key: syslogd
+  match: set mode <STR:p>
+  effect:
+    set: LogTarget.transport
+    from: p
+    map:
+      udp: udp
+      reliable: tcp
+      legacy-reliable: tcp
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd-tls
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd setting
+  entity:
+    type: LogTarget
+    key: syslogd
+  match: set enc-algorithm <STR:e>
+  effect:
+    set: LogTarget.transport
+    from: e
+    map:
+      high-medium: tls
+      high: tls
+      low: tls
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd2-status
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd2 setting
+  entity:
+    type: LogTarget
+    key: syslogd2
+  match: set status <STR:s>
+  effect:
+    set: LogTarget.enabled
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd2-server
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd2 setting
+  entity:
+    type: LogTarget
+    key: syslogd2
+  match: set server <STR:h>
+  effect:
+    set: LogTarget.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd2-mode
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd2 setting
+  entity:
+    type: LogTarget
+    key: syslogd2
+  match: set mode <STR:p>
+  effect:
+    set: LogTarget.transport
+    from: p
+    map:
+      udp: udp
+      reliable: tcp
+      legacy-reliable: tcp
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd2-tls
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd2 setting
+  entity:
+    type: LogTarget
+    key: syslogd2
+  match: set enc-algorithm <STR:e>
+  effect:
+    set: LogTarget.transport
+    from: e
+    map:
+      high-medium: tls
+      high: tls
+      low: tls
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd3-status
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd3 setting
+  entity:
+    type: LogTarget
+    key: syslogd3
+  match: set status <STR:s>
+  effect:
+    set: LogTarget.enabled
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd3-server
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd3 setting
+  entity:
+    type: LogTarget
+    key: syslogd3
+  match: set server <STR:h>
+  effect:
+    set: LogTarget.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd3-mode
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd3 setting
+  entity:
+    type: LogTarget
+    key: syslogd3
+  match: set mode <STR:p>
+  effect:
+    set: LogTarget.transport
+    from: p
+    map:
+      udp: udp
+      reliable: tcp
+      legacy-reliable: tcp
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd3-tls
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd3 setting
+  entity:
+    type: LogTarget
+    key: syslogd3
+  match: set enc-algorithm <STR:e>
+  effect:
+    set: LogTarget.transport
+    from: e
+    map:
+      high-medium: tls
+      high: tls
+      low: tls
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd4-status
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd4 setting
+  entity:
+    type: LogTarget
+    key: syslogd4
+  match: set status <STR:s>
+  effect:
+    set: LogTarget.enabled
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd4-server
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd4 setting
+  entity:
+    type: LogTarget
+    key: syslogd4
+  match: set server <STR:h>
+  effect:
+    set: LogTarget.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd4-mode
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd4 setting
+  entity:
+    type: LogTarget
+    key: syslogd4
+  match: set mode <STR:p>
+  effect:
+    set: LogTarget.transport
+    from: p
+    map:
+      udp: udp
+      reliable: tcp
+      legacy-reliable: tcp
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/syslogd4-tls
+  vendor: fortinet_fortios
+  context:
+  - config log syslogd4 setting
+  entity:
+    type: LogTarget
+    key: syslogd4
+  match: set enc-algorithm <STR:e>
+  effect:
+    set: LogTarget.transport
+    from: e
+    map:
+      high-medium: tls
+      high: tls
+      low: tls
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/eventfilter-event
+  vendor: fortinet_fortios
+  context:
+  - config log eventfilter
+  match: set event <STR:s>
+  effect:
+    set: LoggingPolicy.config_change_logged
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/eventfilter-system
+  vendor: fortinet_fortios
+  context:
+  - config log eventfilter
+  match: set system <STR:s>
+  effect:
+    set: LoggingPolicy.config_change_logged
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/snmp-community-name
+  vendor: fortinet_fortios
+  context:
+  - config system snmp community
+  - edit <INT:id>
+  entity:
+    type: SnmpCommunity
+    key: community-{id}
+  match: set name <STR:c>
+  effect:
+    set: SnmpCommunity.is_well_known
+    from: c
+    map:
+      public: true
+      private: true
+      cisco: true
+      community: true
+      admin: true
+      default: true
+      secret: true
+      manager: true
+      monitor: true
+      snmp: true
+      snmpd: true
+      read: true
+      write: true
+      all: true
+      security: true
+      test: true
+      password: true
+      fortinet: true
+      fortigate: true
+    otherwise: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/ntp-authentication
+  vendor: fortinet_fortios
+  context:
+  - config system ntp
+  match: set authentication <STR:s>
+  effect:
+    set: TimePolicy.auth_enforced
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/ntpserver-server
+  vendor: fortinet_fortios
+  context:
+  - config system ntp
+  - config ntpserver
+  - edit <INT:id>
+  entity:
+    type: TimeSource
+    key: ntp-{id}
+  match: set server <STR:h>
+  effect:
+    set: TimeSource.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/ntpserver-authentication
+  vendor: fortinet_fortios
+  context:
+  - config system ntp
+  - config ntpserver
+  - edit <INT:id>
+  entity:
+    type: TimeSource
+    key: ntp-{id}
+  match: set authentication <STR:s>
+  effect:
+    set: TimeSource.authenticated
+    from: s
+    map:
+      enable: true
+      disable: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/ntpserver-authentication-enforced
+  vendor: fortinet_fortios
+  context:
+  - config system ntp
+  - config ntpserver
+  - edit <INT:id>
+  match: set authentication enable
+  effect:
+    assert: TimePolicy.auth_enforced
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
