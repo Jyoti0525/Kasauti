@@ -20,6 +20,9 @@ from kasauti.shape.model import ConfigTree
 from kasauti.shape.parse import parse_text
 from kasauti.shape.tokens import split_lines
 
+_STRUCTURED = frozenset({"json_key", "xml_path"})
+"""Signature kinds matched against the parsed tree rather than the text."""
+
 
 @dataclass(frozen=True, slots=True)
 class Detection:
@@ -47,14 +50,20 @@ def score_pack(text: str, pack: VendorPack, tree: ConfigTree | None = None) -> D
 
 
 def detect_vendor(text: str, packs: Sequence[VendorPack]) -> list[Detection]:
-    """All packs, best first (ties broken by pack id, so the order is deterministic)."""
+    """All packs, best first (ties broken by pack id, so the order is deterministic).
+
+    A pack's shape family is parsed only if one of its signatures reads structure: a parse is
+    most of what an audit costs in time and memory, and text signatures don't need one."""
     trees: dict[str, ConfigTree] = {}
     out: list[Detection] = []
     for pack in packs:
-        family = pack.manifest.shape_family
-        if family not in trees:
-            trees[family] = parse_text(text, source_file="detect", family=family)
-        out.append(score_pack(text, pack, trees[family]))
+        tree = None
+        if any(s.kind in _STRUCTURED for s in pack.detect.signatures):
+            family = pack.manifest.shape_family
+            if family not in trees:
+                trees[family] = parse_text(text, source_file="detect", family=family)
+            tree = trees[family]
+        out.append(score_pack(text, pack, tree))
     return sorted(out, key=lambda d: (-d.score, d.pack_id))
 
 

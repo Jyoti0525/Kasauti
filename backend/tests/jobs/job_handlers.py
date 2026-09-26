@@ -8,7 +8,6 @@ import time
 from typing import Any
 
 from kasauti.jobs import JobError
-from kasauti.jobs.table import RESULT_LIMIT
 
 LEAKED_LINE = "enable secret 5 $1$PLACEHOLDER$leaked"
 
@@ -19,6 +18,7 @@ HANDLERS = {
     "crash": "job_handlers:crash",
     "sleep": "job_handlers:sleep",
     "huge": "job_handlers:huge",
+    "hog": "job_handlers:hog",
     "not_json": "job_handlers:not_json",
     "not_object": "job_handlers:not_object",
 }
@@ -46,8 +46,18 @@ def sleep(payload: dict[str, Any]) -> dict[str, Any]:
     return {"slept": payload["s"]}
 
 
-def huge(_payload: dict[str, Any]) -> dict[str, Any]:
-    return {"x": "a" * (RESULT_LIMIT + 10)}
+def huge(payload: dict[str, Any]) -> dict[str, Any]:
+    """``2n`` characters: random hex, which gzip can only halve, or with ``plain`` one letter
+    repeated, which it shrinks a thousandfold."""
+    n = payload["n"]
+    return {"x": "a" * 2 * n if payload.get("plain") else os.urandom(n).hex()}
+
+
+def hog(payload: dict[str, Any]) -> dict[str, Any]:
+    """Asks for ``mib`` MiB at once, and touches it."""
+    block = bytearray(payload["mib"] * 1024 * 1024)
+    block[-1] = 1
+    return {"got": len(block)}
 
 
 def not_json(_payload: dict[str, Any]) -> dict[str, Any]:

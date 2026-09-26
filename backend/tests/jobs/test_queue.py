@@ -10,7 +10,9 @@ from sqlalchemy import Engine, select, update
 from sqlalchemy.exc import StatementError
 
 from kasauti.jobs import JobInputError, JobQueue, JobState
+from kasauti.jobs import queue as queue_module
 from kasauti.jobs.queue import PAYLOAD_LIMIT
+from kasauti.jobs.results import decode_result, encode_result
 from kasauti.jobs.table import ERROR_LIMIT, jobs
 
 T0 = dt.datetime(2026, 9, 26, 12, 0, tzinfo=dt.UTC)
@@ -49,13 +51,14 @@ def test_a_queued_job(queue: JobQueue) -> None:
     job_id = queue.enqueue("a", {"upload": "sha256:ab", "n": 1}, now=T0)
     job = queue.get(job_id)
     assert job is not None
-    assert (job.kind, job.state, job.attempts, job.result, job.error) == (
+    assert (job.kind, job.state, job.attempts, job.has_result, job.error) == (
         "a",
         JobState.QUEUED,
         0,
-        None,
+        False,
         None,
     )
+    assert queue.result(job_id) is None
     assert job.created_at == T0  # comes back aware, in UTC
     assert job.created_at.tzinfo is dt.UTC
     assert queue.get("00000000-0000-4000-8000-000000000000") is None
@@ -103,14 +106,31 @@ def test_concurrent_pools_never_claim_the_same_job(any_engine: Engine) -> None:
 def test_only_the_holder_records_the_outcome(queue: JobQueue) -> None:
     job_id = queue.enqueue("a", {})
     queue.claim("w1", 1)
-    assert not queue.finish("w2", job_id, JobState.SUCCEEDED, result={"x": 1})
-    assert queue.finish("w1", job_id, JobState.SUCCEEDED, result={"x": 1})
+    result = encode_result({"x": 1})
+    assert not queue.finish("w2", job_id, JobState.SUCCEEDED, result=result)
+    assert queue.finish("w1", job_id, JobState.SUCCEEDED, result=result)
     assert not queue.finish("w1", job_id, JobState.FAILED, error="again")  # already finished
     job = queue.get(job_id)
     assert job is not None
-    assert (job.state, job.result, job.error) == (JobState.SUCCEEDED, {"x": 1}, None)
+    assert (job.state, job.has_result, job.error) == (JobState.SUCCEEDED, True, None)
+    stored = queue.result(job_id)
+    assert stored == result
+    assert decode_result(stored) == {"x": 1}
     with pytest.raises(ValueError, match="finished state"):
         queue.finish("w1", job_id, JobState.RUNNING)
+
+
+def test_a_result_over_the_limit_is_refused(
+    queue: JobQueue, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(queue_module, "RESULT_LIMIT", 10)
+    job_id = queue.enqueue("a", {})
+    queue.claim("w1", 1)
+    with pytest.raises(ValueError, match="over 10 bytes compressed"):
+        queue.finish("w1", job_id, JobState.SUCCEEDED, result=bytes(11))
+    job = queue.get(job_id)
+    assert job is not None
+    assert job.state is JobState.RUNNING
 
 
 def test_errors_are_capped(queue: JobQueue) -> None:
@@ -126,7 +146,7 @@ def test_cancelling(queue: JobQueue) -> None:
     done = queue.enqueue("a", {}, now=T0)
     running = queue.enqueue("a", {}, now=T0 + dt.timedelta(seconds=1))
     queue.claim("w1", 2)
-    queue.finish("w1", done, JobState.SUCCEEDED, result={})
+    queue.finish("w1", done, JobState.SUCCEEDED, result=encode_result({}))
     queued = queue.enqueue("a", {})
 
     job = queue.cancel(queued)

@@ -800,6 +800,15 @@ nciipc.gov.in refused connections from our research environment (2026-09-25) and
 | Cold start (models loaded) | < 20 s |
 | Hostile inputs (fuzz corpus) | 0 crashes, 0 hangs beyond limits |
 
+**Large files (measured 2026-09-27, v5.1.17).** An audit costs about 14 s and 200 MiB of memory per MiB of a
+dense configuration (the densest input found, a bare `interface` line after line: 44 s and
+470 MiB). The limits are set from these numbers, so none of them fails a file the upload has
+accepted without saying why: the job's time limit grows with the file (2 min + 1 min per MiB),
+the result is stored gzip-compressed (at most about 2.2 times the file, against a 64 MiB limit
+for a 20 MiB file), and each worker has a memory ceiling (2 GiB by default, about 10 MiB of
+dense configuration; `kasauti serve --worker-memory`). A file that needs more fails its own
+job with that message. Lowering the memory cost per fact is a performance task (M2.09).
+
 ---
 
 ## 23. Engineering practice and repository layout
@@ -955,6 +964,16 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.17 (2026-09-27, large files):** Closes the result-size limit raised in v5.1.16, and the
+  limits behind it. The 32 MiB result limit had in fact capped a configuration at about 1 MiB
+  (an audit's JSON is 31 times its configuration). Results are now written by the worker as
+  gzip-compressed canonical JSON, checked by the server without being parsed, stored
+  compressed (migration 0004, which converts stored results) and served as stored with
+  `Content-Encoding: gzip` at `GET /api/jobs/{id}/result`; 64 MiB compressed, 2 GiB expanded.
+  An audit's time limit grows with the file's size. Each worker caps its own memory (Windows
+  job object, POSIX `RLIMIT_AS`; the memory part of M5.02). Vendor detection no longer parses
+  the file once per shape family when no signature needs a tree: a 2.65 MB audit went from 55
+  to 37 s and from 1.17 GB to 0.54 GB peak. §22 gains the large-file measurements.
 - **v5.1.16 (2026-09-27, M2.04 uploads):** Upload API: an upload is opened, filled one file per
   request (raw bytes, name in `X-File-Name`; a folder is its files, a `.zip` is expanded entry
   by entry), then started as one audit job per accepted file. Every refused file keeps a row

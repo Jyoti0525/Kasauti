@@ -13,7 +13,7 @@ from alembic import command
 from alembic.autogenerate import compare_metadata
 from alembic.runtime.migration import MigrationContext
 from alembic.script import ScriptDirectory
-from sqlalchemy import Engine, make_url
+from sqlalchemy import Engine, make_url, text
 
 from kasauti.db import (
     SchemaError,
@@ -26,6 +26,8 @@ from kasauti.db import (
 )
 from kasauti.db.migrate import MIGRATIONS, config, downgrade
 from kasauti.db.tables import metadata
+from kasauti.jobs.queue import canonical
+from kasauti.jobs.results import decode_result
 
 LIVE_POSTGRES = "KASAUTI_TEST_POSTGRES_URL"
 
@@ -73,6 +75,64 @@ def test_every_migration_can_be_undone_and_redone(engine: Engine) -> None:
     assert current_revision(engine) is None
     upgrade(engine)
     assert current_revision(engine) == head_revision()
+
+
+def _stored_results(engine: Engine, column: str) -> dict[str, object]:
+    with engine.connect() as conn:
+        rows = conn.execute(text(f"SELECT id, {column} FROM jobs ORDER BY id")).all()  # noqa: S608
+    return {r[0]: r[1] for r in rows}
+
+
+def test_0004_compresses_stored_results_and_keeps_every_upload_s_job(engine: Engine) -> None:
+    """Results already stored as text are converted, both ways, and ``jobs`` is altered in
+    place: a copy-and-swap would null every ``upload_files.job_id`` pointing at it."""
+    upgrade(engine, "0003")
+    now = "2026-09-27 00:00:00+00:00"
+    result = {"b": [1, 2], "a": "é"}
+    with engine.begin() as conn:
+        for job_id, state, value in (
+            ("00000000-0000-4000-8000-000000000001", "succeeded", canonical(result)),
+            ("00000000-0000-4000-8000-000000000002", "queued", None),
+        ):
+            conn.execute(
+                text(
+                    "INSERT INTO jobs (id, kind, state, payload, result, attempts, max_attempts,"
+                    " timeout_s, cancel_requested, created_at)"
+                    " VALUES (:id, 'audit_file', :state, '{}', :result, 0, 3, 300, 0, :now)"
+                ),
+                {"id": job_id, "state": state, "result": value, "now": now},
+            )
+        conn.execute(
+            text(
+                "INSERT INTO uploads (id, state, frameworks, created_at, touched_at)"
+                " VALUES ('00000000-0000-4000-8000-00000000000a', 'started', '[]', :now, :now)"
+            ),
+            {"now": now},
+        )
+        conn.execute(
+            text(
+                "INSERT INTO upload_files (id, upload_id, name, size, accepted, job_id,"
+                " created_at) VALUES ('00000000-0000-4000-8000-00000000000b',"
+                " '00000000-0000-4000-8000-00000000000a', 'r.cfg', 1, 1,"
+                " '00000000-0000-4000-8000-000000000001', :now)"
+            ),
+            {"now": now},
+        )
+
+    def linked() -> object:
+        with engine.connect() as conn:
+            return conn.execute(text("SELECT job_id FROM upload_files")).scalar_one()
+
+    upgrade(engine)
+    blob, nothing = _stored_results(engine, "result_gzip").values()
+    assert nothing is None
+    assert isinstance(blob, bytes)
+    assert decode_result(blob) == result
+    assert linked() == "00000000-0000-4000-8000-000000000001"
+
+    downgrade(engine, "0003")
+    assert list(_stored_results(engine, "result").values()) == [canonical(result), None]
+    assert linked() == "00000000-0000-4000-8000-000000000001"
 
 
 def test_an_old_schema_names_the_fix(engine: Engine, monkeypatch: pytest.MonkeyPatch) -> None:

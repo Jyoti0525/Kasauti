@@ -65,6 +65,7 @@ from kasauti.ingest.staging import Staging
 from kasauti.ingest.store import UploadStore
 from kasauti.jobs import JobQueue, WorkerPool
 from kasauti.jobs.kinds import HANDLERS
+from kasauti.jobs.limits import DEFAULT_MEMORY_MIB
 from kasauti.log import get_logger
 
 log = get_logger(__name__)
@@ -97,6 +98,8 @@ class Settings:
     allowed_hosts: tuple[str, ...] = LOOPBACK_HOSTS
     workers: int = 0
     """Worker processes for background jobs; 0 runs none (jobs wait in the queue)."""
+    worker_memory_mib: int = DEFAULT_MEMORY_MIB
+    """Memory each worker may use (:mod:`kasauti.jobs.limits`)."""
     handlers: Mapping[str, str] = field(default_factory=lambda: HANDLERS)
     """Job kind to ``module:function``; :data:`kasauti.jobs.kinds.HANDLERS` unless testing."""
 
@@ -128,7 +131,12 @@ def create_app(settings: Settings) -> FastAPI:
         staging.prepare()
         store = UploadStore(engine, staging)
         pool = (
-            WorkerPool(queue, settings.handlers, workers=settings.workers)
+            WorkerPool(
+                queue,
+                settings.handlers,
+                workers=settings.workers,
+                memory_mib=settings.worker_memory_mib,
+            )
             if settings.workers
             else None
         )

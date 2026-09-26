@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import math
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -37,6 +38,12 @@ MAX_UPLOAD_BYTES = 1024 * 1024 * 1024
 """Bytes of accepted files per upload, all waiting on disk until audited."""
 OPEN_TTL = dt.timedelta(hours=1)
 """An upload left open this long after its last change expires and its files are deleted."""
+AUDIT_TIMEOUT_S = 120
+AUDIT_TIMEOUT_PER_MIB_S = 60
+"""An audit job's wall-clock limit: a base for start-up and the knowledge base, plus this per
+MiB of the file. Measured 2026-09-27 on the plan's laptop: 14 s per MiB for a typical dense
+configuration and 44 s per MiB for the densest input found, so a file at the 20 MiB limit gets
+22 minutes against 15 at worst. A timeout catches a hang, never a large file."""
 
 
 class UploadNotFoundError(LookupError):
@@ -71,6 +78,11 @@ class UploadView:
     touched_at: dt.datetime
     started_at: dt.datetime | None
     files: tuple[FileView, ...]
+
+
+def audit_timeout(size: int) -> int:
+    """Seconds an audit of a ``size``-byte file may take (:data:`AUDIT_TIMEOUT_PER_MIB_S`)."""
+    return AUDIT_TIMEOUT_S + math.ceil(AUDIT_TIMEOUT_PER_MIB_S * size / (1024 * 1024))
 
 
 class UploadStore:
@@ -237,7 +249,7 @@ class UploadStore:
                 select(uploads.c.frameworks, uploads.c.vendor).where(uploads.c.id == upload_id)
             ).one()
             accepted = conn.execute(
-                select(upload_files.c.id, upload_files.c.name)
+                select(upload_files.c.id, upload_files.c.name, upload_files.c.size)
                 .where(upload_files.c.upload_id == upload_id, upload_files.c.accepted)
                 .order_by(upload_files.c.created_at, upload_files.c.name, upload_files.c.id)
             ).all()
@@ -254,7 +266,9 @@ class UploadStore:
                     "staging": str(self.staging.root.resolve()),
                     "packs": str(packs.resolve()),
                 }
-                job_id = queue.enqueue(AUDIT_KIND, payload, now=now, conn=conn)
+                job_id = queue.enqueue(
+                    AUDIT_KIND, payload, timeout_s=audit_timeout(row.size), now=now, conn=conn
+                )
                 conn.execute(
                     update(upload_files).where(upload_files.c.id == row.id).values(job_id=job_id)
                 )

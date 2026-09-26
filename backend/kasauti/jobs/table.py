@@ -15,6 +15,7 @@ from sqlalchemy import (
     Column,
     Index,
     Integer,
+    LargeBinary,
     String,
     Table,
     Text,
@@ -26,10 +27,16 @@ from kasauti.db.types import UtcDateTime
 
 PAYLOAD_LIMIT = 64 * 1024
 """Bytes of JSON: enough for references and options, too small for a configuration."""
-RESULT_LIMIT = 32 * 1024 * 1024
-"""Bytes of JSON a job may return. An audit's result is about 550 bytes per configuration line
-(a 6,100-line Cisco configuration gave 3.3 MB, measured 2026-09-27), so this holds about 60,000
-lines; the limit bounds what a worker can make the server hold, not what an audit may be."""
+RESULT_LIMIT = 64 * 1024 * 1024
+"""Bytes of *compressed* result a job may return (:mod:`kasauti.jobs.results`). Measured
+2026-09-27: an audit's JSON is 31 times its configuration's size and compresses to 0.8 times
+it; the densest input found (a bare ``interface`` line after line) compresses to 2.2 times.
+So a configuration at the 20 MiB upload limit gives at most about 44 MiB: no file the upload
+accepts can fail here."""
+RESULT_EXPANDED_LIMIT = 2 * 1024 * 1024 * 1024
+"""Bytes a stored result may expand to. The densest input measured expands 92 times its size
+(1.8 GiB for 20 MiB); this bounds what a reader of a result must be ready for, and how long
+checking one can take."""
 ERROR_LIMIT = 500
 """Characters of the error shown for a failed job."""
 
@@ -53,7 +60,11 @@ jobs = Table(
     Column("kind", String(64), nullable=False, comment="a key of kasauti.jobs.kinds.HANDLERS"),
     Column("state", String(16), nullable=False),
     Column("payload", Text, nullable=False, comment="canonical JSON object"),
-    Column("result", Text, comment="canonical JSON object, once succeeded"),
+    Column(
+        "result_gzip",
+        LargeBinary,
+        comment="gzip of the canonical JSON object, once succeeded (kasauti.jobs.results)",
+    ),
     Column("error", String(ERROR_LIMIT), comment="why it failed; never configuration text"),
     Column("attempts", Integer, nullable=False, comment="times claimed by a worker"),
     Column("max_attempts", Integer, nullable=False),

@@ -57,7 +57,8 @@ class Job:
     started_at: dt.datetime | None
     finished_at: dt.datetime | None
     error: str | None
-    result: JsonObject | None
+    has_result: bool
+    """The result itself is read with :meth:`JobQueue.result`: it can be tens of MiB."""
     cancel_requested: bool
 
 
@@ -138,8 +139,17 @@ class JobQueue:
 
     def get(self, job_id: str) -> Job | None:
         with self.engine.connect() as conn:
-            row = conn.execute(select(jobs).where(jobs.c.id == job_id)).mappings().first()
+            row = conn.execute(select(*_SUMMARY).where(jobs.c.id == job_id)).mappings().first()
         return None if row is None else _job(row)
+
+    def result(self, job_id: str) -> bytes | None:
+        """The stored result: gzip-compressed canonical JSON (:mod:`kasauti.jobs.results`), or
+        ``None`` if the job doesn't exist or has none."""
+        with self.engine.connect() as conn:
+            blob = conn.execute(
+                select(jobs.c.result_gzip).where(jobs.c.id == job_id)
+            ).scalar_one_or_none()
+        return None if blob is None else bytes(blob)
 
     def cancel(self, job_id: str, *, now: dt.datetime | None = None) -> Job | None:
         """Cancel a job: at once if it is queued; a running one is stopped by its pool at its
@@ -221,16 +231,19 @@ class JobQueue:
         job_id: str,
         state: JobState,
         *,
-        result: JsonObject | None = None,
+        result: bytes | None = None,
         error: str | None = None,
         now: dt.datetime | None = None,
     ) -> bool:
-        """Record how ``worker``'s run of ``job_id`` ended; False if it no longer held the job."""
+        """Record how ``worker``'s run of ``job_id`` ended; False if it no longer held the job.
+        ``result`` is already compressed (:func:`kasauti.jobs.results.encode_result`)."""
         if state not in FINISHED:
             raise ValueError(f"{state} isn't a finished state")
         values: dict[str, Any] = {"state": state, "finished_at": now or utcnow(), "worker": None}
         if result is not None:
-            values["result"] = canonical(result)
+            if len(result) > RESULT_LIMIT:
+                raise ValueError(f"the result is over {RESULT_LIMIT} bytes compressed")
+            values["result_gzip"] = result
         if error is not None:
             values["error"] = error[:ERROR_LIMIT]
         with self.engine.begin() as conn:
@@ -303,9 +316,16 @@ def _job(row: RowMapping) -> Job:
         started_at=row["started_at"],
         finished_at=row["finished_at"],
         error=row["error"],
-        result=None if row["result"] is None else json.loads(row["result"]),
+        has_result=bool(row["has_result"]),
         cancel_requested=bool(row["cancel_requested"]),
     )
+
+
+_SUMMARY = (
+    *(c for c in jobs.c if c.name != "result_gzip"),
+    jobs.c.result_gzip.is_not(None).label("has_result"),
+)
+"""A job without its result, which can be tens of MiB."""
 
 
 __all__ = [

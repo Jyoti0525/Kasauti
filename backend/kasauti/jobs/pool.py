@@ -3,13 +3,16 @@
 One process per job, started fresh (``spawn``, on every OS). A configuration that crashes or
 hangs the parser takes down only its own process: the pool records the job as failed and goes
 on. Nothing one job leaves behind in memory can reach the next. Starting a process costs about
-0.1 s, small beside an audit. Operating-system limits on each process's CPU and memory are
-M5.02; the wall-clock limit is enforced here.
+0.1 s, small beside an audit. Each worker caps its own memory first (:mod:`kasauti.jobs.limits`),
+so a file too large to audit fails its job instead of exhausting the machine; the wall-clock
+limit is enforced here. Confining workers further (CPU, files) is M5.02.
 
 The worker processes never see the database. They get the handler and payload when they start,
-and send back one message of JSON bytes, which the pool reads with a size limit and parses as
-JSON. Never a pickle: a process that a hostile file has taken over could otherwise run code in
-the server by what it sends back.
+and send back one message, which the pool reads with a size limit: a result as gzip-compressed
+canonical JSON (:mod:`kasauti.jobs.results`), checked but not parsed, so it costs the server no
+more than its compressed size; or a small JSON object saying why the job failed. Never a
+pickle: a process that a hostile file has taken over could otherwise run code in the server by
+what it sends back.
 
 Errors shown for a failed job are the handler's own :class:`JobError` messages, which are written
 to be shown; for anything else only the exception's type is recorded, since an exception's text
@@ -40,8 +43,16 @@ from typing import Any
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from kasauti.jobs.limits import DEFAULT_MEMORY_MIB, MIN_MEMORY_MIB, limit_memory
 from kasauti.jobs.queue import Claim, JobQueue, JsonObject, canonical
-from kasauti.jobs.table import ERROR_LIMIT, RESULT_LIMIT, JobState
+from kasauti.jobs.results import (
+    GZIP_MAGIC,
+    ResultError,
+    ResultTooLargeError,
+    check_result,
+    encode_result,
+)
+from kasauti.jobs.table import ERROR_LIMIT, RESULT_EXPANDED_LIMIT, RESULT_LIMIT, JobState
 from kasauti.log import get_logger
 
 log = get_logger(__name__)
@@ -50,10 +61,8 @@ type Handler = Callable[[JsonObject], JsonObject]
 
 _TARGET = re.compile(r"[A-Za-z_][\w.]*:[A-Za-z_]\w*")
 _CONTEXT = multiprocessing.get_context("spawn")
-_ENVELOPE_SLACK = 1024
-"""Bytes read beyond the result limit, for the JSON wrapper around a result."""
-_OK_WRAPPER = len(b'{"ok":}')
-"""The wrapper around a result as the worker writes it (canonical JSON)."""
+_MESSAGE_LIMIT = 64 * 1024
+"""Bytes of a message that isn't a result (why the job failed)."""
 
 
 class JobError(Exception):
@@ -79,26 +88,33 @@ def resolve(target: str) -> Handler:
     return handler  # type: ignore[no-any-return]
 
 
-def _child(conn: Connection, target: str, payload: str) -> None:
-    """A worker process's whole life: run one job, send one message, exit."""
+def _child(conn: Connection, target: str, payload: str, memory_mib: int) -> None:
+    """A worker process's whole life: cap its memory, run one job, send one message, exit."""
     # Ctrl+C in a console reaches every process in it; stopping jobs is the pool's decision.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     try:
+        limit_memory(memory_mib)
         result: object = resolve(target)(json.loads(payload))  # a handler may break its type
         if not isinstance(result, dict):
-            message: JsonObject = {"error": "the job returned something other than an object"}
+            data = _failure("the job returned something other than an object")
         else:
-            message = {"ok": result}
-        data = canonical(message).encode()
+            data = encode_result(result)
     except JobError as err:
-        data = canonical({"error": str(err)[:ERROR_LIMIT]}).encode()
+        data = _failure(str(err))
+    except MemoryError:
+        # What the job built is released as the exception unwinds, so there is room to answer.
+        data = _failure(f"it needed more than the {memory_mib} MiB of memory a worker may use")
     except BaseException as err:  # anything the handler raises is reported
-        # Including a result that isn't JSON (TypeError from canonical()).
+        # Including a result that isn't JSON (TypeError or ValueError from encode_result()).
         data = canonical({"exception": type(err).__name__}).encode()
     try:
         conn.send_bytes(data)
     finally:
         conn.close()
+
+
+def _failure(error: str) -> bytes:
+    return canonical({"error": error[:ERROR_LIMIT]}).encode()
 
 
 def _has_message(conn: Any) -> bool:
@@ -132,6 +148,7 @@ class WorkerPool:
         heartbeat_s: float = 10.0,
         lease: dt.timedelta = dt.timedelta(seconds=60),
         grace_s: float = 10.0,
+        memory_mib: int = DEFAULT_MEMORY_MIB,
     ) -> None:
         if set(handlers) != set(queue.kinds):
             raise ValueError("the pool's handlers and the queue's kinds differ")
@@ -142,6 +159,9 @@ class WorkerPool:
         self.workers = default_workers() if workers is None else workers
         if self.workers < 1:
             raise ValueError("a pool needs at least one worker")
+        if memory_mib < MIN_MEMORY_MIB:
+            raise ValueError(f"a worker needs at least {MIN_MEMORY_MIB} MiB")
+        self.memory_mib = memory_mib
         self.poll_s = poll_s
         self.heartbeat_s = heartbeat_s
         self.lease = lease
@@ -247,7 +267,7 @@ class WorkerPool:
         receive, send = _CONTEXT.Pipe(duplex=False)
         process = _CONTEXT.Process(
             target=_child,
-            args=(send, self.handlers[claim.kind], claim.payload),
+            args=(send, self.handlers[claim.kind], claim.payload, self.memory_mib),
             name=f"kasauti-job-{claim.id[:8]}",
             daemon=True,
         )
@@ -282,25 +302,35 @@ class WorkerPool:
 
     def _read(self, run: _Running) -> None:
         try:
-            raw = run.conn.recv_bytes(RESULT_LIMIT + _ENVELOPE_SLACK)
+            raw = run.conn.recv_bytes(RESULT_LIMIT)
         except EOFError:
             self._crashed(run)
             return
         except OSError:
-            self._end(run, JobState.FAILED, error=f"the result is over {RESULT_LIMIT} bytes")
+            error = f"the result is over {RESULT_LIMIT} bytes compressed"
+            self._end(run, JobState.FAILED, error=error)
             return
-        try:
-            message = json.loads(raw)
-        except (ValueError, RecursionError):  # also nesting deep enough to exhaust the stack
-            message = {}
+        if raw.startswith(GZIP_MAGIC):
+            try:
+                check_result(raw, limit=RESULT_EXPANDED_LIMIT)
+            except ResultTooLargeError:
+                error = f"the result is over {RESULT_EXPANDED_LIMIT} bytes uncompressed"
+                self._end(run, JobState.FAILED, error=error)
+            except ResultError as err:
+                log.warning("unreadable job result", job=run.claim.id, why=str(err))
+                self._end(run, JobState.FAILED, error="the worker sent an unreadable result")
+            else:
+                self._end(run, JobState.SUCCEEDED, result=raw)
+            return
+        message: object = {}
+        if len(raw) <= _MESSAGE_LIMIT:
+            try:
+                message = json.loads(raw)
+            except (ValueError, RecursionError):  # also nesting deep enough to exhaust the stack
+                message = {}
         if not isinstance(message, dict):
             message = {}
-        if isinstance(message.get("ok"), dict):
-            if len(raw) - _OK_WRAPPER > RESULT_LIMIT:
-                self._end(run, JobState.FAILED, error=f"the result is over {RESULT_LIMIT} bytes")
-            else:
-                self._end(run, JobState.SUCCEEDED, result=message["ok"])
-        elif isinstance(message.get("error"), str):
+        if isinstance(message.get("error"), str):
             self._end(run, JobState.FAILED, error=message["error"])
         elif isinstance(message.get("exception"), str):
             name = message["exception"][:80]
@@ -330,7 +360,7 @@ class WorkerPool:
         run: _Running,
         state: JobState,
         *,
-        result: JsonObject | None = None,
+        result: bytes | None = None,
         error: str | None = None,
     ) -> None:
         self._stop_process(run)
@@ -341,7 +371,7 @@ class WorkerPool:
         claim: Claim,
         state: JobState,
         *,
-        result: JsonObject | None = None,
+        result: bytes | None = None,
         error: str | None = None,
         seconds: float | None = None,
     ) -> None:

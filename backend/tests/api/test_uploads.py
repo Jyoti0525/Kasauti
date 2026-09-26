@@ -21,12 +21,14 @@ import pytest
 from fastapi.testclient import TestClient
 
 from kasauti.api.app import Settings, create_app
+from kasauti.api.jobs import accepts_gzip
 from kasauti.audit import KnowledgeBase, audit, load_kb
 from kasauti.db import create_engine, database_url, upgrade
 from kasauti.ingest import upload
 from kasauti.ingest.read import decode
 from kasauti.jobs import WorkerPool
 from kasauti.jobs.kinds import HANDLERS
+from kasauti.jobs.results import expand
 
 REPO = Path(__file__).resolve().parents[3]
 PACKS = REPO / "packs"
@@ -276,17 +278,65 @@ def test_upload_to_audit_results_with_no_secret_left_behind(client: TestClient, 
     }
     kb = client.app.state.kb  # type: ignore[attr-defined]
     for f, source in zip(view["files"], (WEAK, PANOS), strict=True):
-        result = client.get(f"/api/jobs/{f['job_id']}").json()["result"]
+        assert client.get(f"/api/jobs/{f['job_id']}").json()["has_result"]
+        response = client.get(f"/api/jobs/{f['job_id']}/result")
+        assert response.headers["content-encoding"] == "gzip"  # sent as stored
         expected = audit(decode(source.read_bytes(), f["name"]), kb)
-        assert result == json.loads(expected.canonical_json())
+        assert response.json() == json.loads(expected.canonical_json())
 
-    # Nothing unmasked anywhere Kasauti writes: the database (with its WAL) and staging.
+    # Nothing unmasked anywhere Kasauti writes: the database (with its WAL) and staging. Results
+    # are stored compressed, where a byte scan can't see, so they are scanned expanded too.
+    queue = client.app.state.jobs  # type: ignore[attr-defined]
+    for f in view["files"]:
+        assert not SECRETS.search(b"".join(expand(queue.result(f["job_id"])))), f["name"]
     client.app.state.engine.dispose()  # type: ignore[attr-defined]
     written = [p for p in var.rglob("*") if p.is_file()]
     assert any(p.name == "kasauti.db" for p in written)
     for path in written:
         assert not SECRETS.search(path.read_bytes()), path.name
     assert not [p for p in (var / "staging").rglob("*") if p.is_file()]
+
+
+def test_a_result_is_expanded_for_a_client_that_refuses_gzip(client: TestClient) -> None:
+    upload_id = _new(client)
+    _send(client, upload_id, "weak.cfg", WEAK.read_bytes())
+    (row,) = client.post(f"/api/uploads/{upload_id}/start", headers=GUARD).json()["files"]
+    early = client.get(f"/api/jobs/{row['job_id']}/result")
+    assert (early.status_code, early.json()["detail"]) == (
+        409,
+        "the job has no result; it is queued",
+    )
+    _run_jobs(client)
+    url = f"/api/jobs/{row['job_id']}/result"
+    zipped = client.get(url)
+    plain = client.get(url, headers={"Accept-Encoding": "identity"})
+    assert "content-encoding" not in plain.headers
+    assert plain.headers["vary"] == "Accept-Encoding"
+    assert plain.headers["content-type"] == "application/json"
+    assert plain.json() == zipped.json()
+    assert client.get(f"/api/jobs/{upload_id}/result").status_code == 404  # not a job id
+
+
+@pytest.mark.parametrize(
+    ("header", "gzip"),
+    [
+        (None, False),
+        ("", False),
+        ("identity", False),
+        ("gzip", True),
+        ("GZip", True),
+        ("deflate, gzip;q=0.5", True),
+        ("gzip;q=0", False),
+        ("gzip; q=0.0, *", False),  # named and refused beats the wildcard
+        ("*", True),
+        ("*;q=0", False),
+        ("x-gzip", True),
+        ("gzip;q=nope", False),
+        ("br, zstd", False),
+    ],
+)
+def test_gzip_is_sent_only_when_accepted(header: str | None, gzip: bool) -> None:
+    assert accepts_gzip(header) is gzip
 
 
 def test_a_started_upload_takes_no_more_files_and_starts_once(client: TestClient) -> None:
@@ -331,7 +381,10 @@ def test_the_installed_kasauti_serve_runs_an_upload_to_its_audit(tmp_path: Path)
     env = {**os.environ, "KASAUTI_DATA_DIR": str(tmp_path)}
     env.pop("KASAUTI_DATABASE_URL", None)
     server = subprocess.Popen(
-        [command, "serve", "--port", str(port), "--packs", str(PACKS), "--workers", "1"],
+        [
+            *(command, "serve", "--port", str(port), "--packs", str(PACKS)),
+            *("--workers", "1", "--worker-memory", "1024"),
+        ],
         env=env,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -365,6 +418,9 @@ def test_the_installed_kasauti_serve_runs_an_upload_to_its_audit(tmp_path: Path)
                 assert time.monotonic() < deadline, "the audit didn't finish"
                 time.sleep(0.2)
             assert (row["job_state"], row["job_error"]) == ("succeeded", None)
+            result = http.get(f"/api/jobs/{row['job_id']}/result")
+            assert result.headers["content-encoding"] == "gzip"
+            assert result.json()["detection"]["pack_id"] == "cisco_ios_xe"
     finally:
         server.terminate()
         server.wait(timeout=30)

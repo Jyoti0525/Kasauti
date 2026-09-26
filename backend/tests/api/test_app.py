@@ -24,6 +24,7 @@ from kasauti.db import (
     head_revision,
     upgrade,
 )
+from kasauti.jobs.limits import DEFAULT_MEMORY_MIB
 
 REPO = Path(__file__).resolve().parents[3]
 PACKS = REPO / "packs"
@@ -229,7 +230,8 @@ def test_the_server_runs_jobs_in_the_background_while_it_is_up(
         while (body := client.get(f"/api/jobs/{job_id}").json())["state"] != "succeeded":
             assert time.monotonic() < deadline, body
             time.sleep(0.05)
-        assert body["result"]["echo"] == {"n": 1}
+        assert body["has_result"]
+        assert client.get(f"/api/jobs/{job_id}/result").json()["echo"] == {"n": 1}
     assert app.state.pool._thread is None  # stopped with the application
 
 
@@ -239,20 +241,30 @@ def test_serve_starts_the_worker_pool_it_is_asked_for(
     apps: list[Any] = []
     monkeypatch.setattr(uvicorn, "run", lambda app, **_kw: apps.append(app))
     base = ["serve", "--packs", str(PACKS), "--data-dir", str(tmp_path)]
-    assert main([*base, "--workers", "3"]) == 0
+    assert main([*base, "--workers", "3", "--worker-memory", "1024"]) == 0
     assert main(base) == 0
     assert main([*base, "--workers", "0"]) == 0
-    assert apps[0].state.pool.workers == 3
+    assert (apps[0].state.pool.workers, apps[0].state.pool.memory_mib) == (3, 1024)
     assert apps[1].state.pool.workers in (1, 2)
+    assert apps[1].state.pool.memory_mib == DEFAULT_MEMORY_MIB
     assert apps[2].state.pool is None
     for app in apps:
         app.state.engine.dispose()
 
 
-@pytest.mark.parametrize("workers", ["-1", "33", "many"])
-def test_serve_rejects_a_worker_count_out_of_range(
-    workers: str, capsys: pytest.CaptureFixture[str]
+@pytest.mark.parametrize(
+    ("option", "value"),
+    [
+        ("--workers", "-1"),
+        ("--workers", "33"),
+        ("--workers", "many"),
+        ("--worker-memory", "100"),
+        ("--worker-memory", "lots"),
+    ],
+)
+def test_serve_rejects_worker_settings_out_of_range(
+    option: str, value: str, capsys: pytest.CaptureFixture[str]
 ) -> None:
     with pytest.raises(SystemExit):
-        main(["serve", "--workers", workers])
-    assert "--workers" in capsys.readouterr().err
+        main(["serve", option, value])
+    assert option in capsys.readouterr().err

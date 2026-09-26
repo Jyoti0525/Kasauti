@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import dataclasses
 from pathlib import Path
+from typing import Any
 
 import pytest
 
+from kasauti.identity import detect
 from kasauti.identity.detect import Detection, choose, detect_vendor
 from kasauti.identity.resolve import resolve_identity
 from kasauti.packs.loader import VendorPack, load_vendor_pack
+from kasauti.packs.model import DetectSpec, Signature
+from kasauti.shape.model import ConfigTree
 from kasauti.shape.parse import parse_text
 
 REPO = Path(__file__).resolve().parents[3]
@@ -58,3 +63,38 @@ def test_identity_from_config_with_sources_and_stated_gaps(cisco: VendorPack) ->
     )
     assert ident.lines == {6, 10}
     assert ident.device.hostname.evidence[0].raw == "hostname EDGE-R1"
+
+
+def test_a_tree_is_parsed_only_for_a_signature_that_reads_structure(
+    cisco: VendorPack, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Parsing is most of an audit's cost; text signatures never need it (M2.04 follow-up)."""
+    panos = load_vendor_pack(REPO / "packs" / "vendors" / "paloalto_panos")
+    structural = dataclasses.replace(
+        panos,
+        detect=DetectSpec(
+            signatures=(
+                Signature(
+                    id="deviceconfig-path",
+                    kind="xml_path",
+                    pattern="devices/entry/deviceconfig",
+                    weight=1,
+                ),
+            ),
+            min_score=1,
+        ),
+    )
+    parsed: list[str] = []
+
+    def counting(text: str, **kw: Any) -> ConfigTree:
+        parsed.append(kw["family"])
+        return parse_text(text, **kw)
+
+    monkeypatch.setattr(detect, "parse_text", counting)
+    xml = (AUTHORED / "paloalto_panos" / "weak.xml").read_text(encoding="utf-8")
+    detect_vendor(xml, [cisco, panos])
+    assert parsed == []
+    chosen = choose(detect_vendor(xml, [cisco, structural]))
+    assert chosen is not None
+    assert chosen.pack_id == "paloalto_panos"
+    assert parsed == ["xml"]

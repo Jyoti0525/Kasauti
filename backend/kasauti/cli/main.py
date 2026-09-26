@@ -126,6 +126,7 @@ def _serve(args: argparse.Namespace) -> int:
                 database=url,
                 staging=args.data_dir / "staging",
                 workers=args.workers,
+                worker_memory_mib=args.worker_memory,
             )
         )
     except PackError as err:
@@ -243,6 +244,15 @@ def _workers(text: str) -> int:
     return workers
 
 
+def _worker_memory(text: str) -> int:
+    from kasauti.jobs.limits import MIN_MEMORY_MIB  # noqa: PLC0415
+
+    mib = int(text)
+    if mib < MIN_MEMORY_MIB:
+        raise argparse.ArgumentTypeError(f"{mib} MiB is below a worker's {MIN_MEMORY_MIB} MiB")
+    return mib
+
+
 def _report_date(given: str | None) -> str:
     """``--date``, else ``SOURCE_DATE_EPOCH`` (reproducible builds), else today."""
     if given:
@@ -312,6 +322,14 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="processes running background jobs (default: 2, or 1 below 4 CPUs; 0 for none)",
     )
+    srv.add_argument(
+        "--worker-memory",
+        type=_worker_memory,
+        default=None,
+        metavar="MIB",
+        help="memory each job worker may use, in MiB (default: 2048); a file that needs more "
+        "fails with a message saying so",
+    )
 
     db = sub.add_parser("db", help="the database's schema")
     db_sub = db.add_subparsers(dest="db_command", required=True)
@@ -340,6 +358,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         from kasauti.jobs import default_workers  # noqa: PLC0415
 
         args.workers = default_workers()
+    if args.command == "serve" and args.worker_memory is None:
+        from kasauti.jobs.limits import DEFAULT_MEMORY_MIB  # noqa: PLC0415
+
+        args.worker_memory = DEFAULT_MEMORY_MIB
     if args.command == "audit":
         args.framework = args.framework or ["nist"]
         return _audit(args)

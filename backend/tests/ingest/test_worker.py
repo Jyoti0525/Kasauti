@@ -10,11 +10,13 @@ from typing import Any
 import pytest
 
 from kasauti.audit import audit, load_kb
-from kasauti.ingest.read import decode
+from kasauti.ingest.read import MAX_BYTES, decode
 from kasauti.ingest.staging import Staging
 from kasauti.ingest.upload import new_id
 from kasauti.ingest.worker import audit_file
 from kasauti.jobs import JobError
+from kasauti.jobs.results import encode_result
+from kasauti.jobs.table import RESULT_LIMIT
 
 REPO = Path(__file__).resolve().parents[3]
 PACKS = REPO / "packs"
@@ -71,3 +73,14 @@ def test_failures_are_sentences_for_the_user(
     with pytest.raises(JobError, match=message) as caught:
         audit_file(_payload(tmp_path, data, **extra))
     assert "some words" not in str(caught.value)
+
+
+def test_no_file_the_upload_accepts_can_outgrow_the_result_limit(tmp_path: Path) -> None:
+    """The densest input found: a bare ``interface`` line after line, each an entity whose every
+    fact is written out. Its compressed result is 1.8 times its size here and 2.24 times at
+    100,000 lines (measured 2026-09-27; gzip's window finds fewer repeats in a larger file). The
+    limit keeps a margin over that for a file at the upload limit (TODO M2.04 follow-up)."""
+    dense = WEAK.read_bytes() + b"".join(b"interface Loopback%d\n" % i for i in range(2000))
+    result = audit_file(_payload(tmp_path, dense))
+    assert len(encode_result(result)) <= 2.5 * len(dense)
+    assert RESULT_LIMIT >= 3 * MAX_BYTES

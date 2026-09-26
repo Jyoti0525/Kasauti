@@ -37,11 +37,14 @@ The web API runs on this machine only (the web screens arrive with M2.75):
 ```bash
 uv run kasauti serve            # http://127.0.0.1:8000/api/health
 uv run kasauti serve --workers 4  # background job processes (default 2; 0 for none)
+uv run kasauti serve --worker-memory 4096  # MiB each job process may use (default 2048)
 ```
 
 Long work (parsing uploads, bulk audits) runs as background jobs: the queue is a table in the
 database, and each job runs in its own worker process, so a file that crashes or hangs the
-parser stops only that job. `GET /api/jobs/{id}` reports a job's progress.
+parser stops only that job, and a file too large for a worker's memory fails its job with a
+message saying so. `GET /api/jobs/{id}` reports a job's progress and `GET /api/jobs/{id}/result`
+gives its result, sent gzip-compressed as it is stored (`curl --compressed`).
 
 Uploading from a script (the web UI will do the same). Requests that change something need the
 `X-Kasauti-Request: 1` header, so that no other website can send them through your browser:
@@ -52,7 +55,8 @@ curl -s -X POST localhost:8000/api/uploads -H "$H" -H 'Content-Type: application
 # -> {"id": "<upload>", ...}
 curl -s -X POST localhost:8000/api/uploads/<upload>/files -H "$H"      -H 'Content-Type: application/octet-stream' -H 'X-File-Name: core/r1.cfg' --data-binary @r1.cfg
 curl -s -X POST localhost:8000/api/uploads/<upload>/start -H "$H"
-curl -s localhost:8000/api/uploads/<upload>     # each file's audit state; results at /api/jobs/<job>
+curl -s localhost:8000/api/uploads/<upload>     # each file's audit state and job id
+curl -s --compressed localhost:8000/api/jobs/<job>/result -o result.json
 ```
 
 Send a folder file by file (named by its path), or as one `.zip`. Every file you send is listed,

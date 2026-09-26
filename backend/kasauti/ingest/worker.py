@@ -12,7 +12,6 @@ Failures the user should read (not a text file, vendor not recognised) are raise
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +39,6 @@ def audit_file(payload: dict[str, Any]) -> dict[str, Any]:
         )
     except (IngestError, AuditError) as err:
         raise JobError(str(err)) from None
-    # Through JSON text, so the result is exactly what the canonical file would hold.
-    out: dict[str, Any] = json.loads(result.model_dump_json())
-    return out
+    # JSON-mode data, exactly what the canonical file holds; the pool compresses it as it
+    # writes it, so the whole JSON text is never built (kasauti.jobs.results).
+    return result.model_dump(mode="json")

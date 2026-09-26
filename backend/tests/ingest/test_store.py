@@ -9,16 +9,20 @@ import time
 from pathlib import Path
 
 import pytest
-from sqlalchemy import Engine, update
+from sqlalchemy import Engine, select, update
 
 from kasauti.ingest import store as store_module
+from kasauti.ingest.read import MAX_BYTES
 from kasauti.ingest.staging import Staging
 from kasauti.ingest.store import (
     AUDIT_KIND,
+    AUDIT_TIMEOUT_PER_MIB_S,
+    AUDIT_TIMEOUT_S,
     OPEN_TTL,
     UploadNotFoundError,
     UploadStateError,
     UploadStore,
+    audit_timeout,
 )
 from kasauti.ingest.table import UploadState
 from kasauti.ingest.upload import Received, new_id
@@ -217,3 +221,20 @@ def test_housekeeping_clears_orphans_and_stale_parts_but_not_files_in_flight(
     assert store.staging.part(uid, fresh.id).exists()
     assert not store.staging.part(uid, stale.id).exists()
     assert stranger.exists(), "housekeeping deletes only what staging creates"
+
+
+def test_an_audit_s_time_limit_grows_with_its_file(store: UploadStore, queue: JobQueue) -> None:
+    assert audit_timeout(0) == AUDIT_TIMEOUT_S
+    assert audit_timeout(MAX_BYTES) == AUDIT_TIMEOUT_S + 20 * AUDIT_TIMEOUT_PER_MIB_S
+    uid = _open(store)
+    small = _staged(store, uid, b"hostname R1\n", "small.cfg")
+    large = _staged(store, uid, b"!" * (3 * 1024 * 1024 + 1), "large.cfg")
+    store.add(uid, [small, large])
+    timeouts = []
+    for job_id in store.start(uid, queue, packs=PACKS):
+        with store.engine.connect() as conn:
+            timeouts.append(
+                conn.execute(select(jobs.c.timeout_s).where(jobs.c.id == job_id)).scalar_one()
+            )
+    # In name order; a part of a second rounds up.
+    assert timeouts == [AUDIT_TIMEOUT_S + 3 * AUDIT_TIMEOUT_PER_MIB_S + 1, AUDIT_TIMEOUT_S + 1]

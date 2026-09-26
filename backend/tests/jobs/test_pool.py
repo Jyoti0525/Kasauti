@@ -6,14 +6,17 @@ import datetime as dt
 import os
 import pickle
 import time
+import zlib
 from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import pytest
 from sqlalchemy import Engine, select, update
 
-from kasauti.jobs import JobQueue, JobState, WorkerPool
+from kasauti.jobs import Job, JobQueue, JobState, WorkerPool
+from kasauti.jobs import pool as pool_module
 from kasauti.jobs.pool import _CONTEXT, _Running
+from kasauti.jobs.results import GZIP_MAGIC, decode_result, encode_result
 from kasauti.jobs.table import jobs
 
 
@@ -41,7 +44,9 @@ def _run(
     pool.run_until_idle(timeout_s=60)
     job = queue.get(job_id)
     assert job is not None
-    return job_id, job.state, job.error, job.result
+    blob = queue.result(job_id)
+    assert job.has_result == (blob is not None)
+    return job_id, job.state, job.error, None if blob is None else decode_result(blob)
 
 
 def _until(check: Callable[[], bool], pool: WorkerPool | None, timeout_s: float = 30) -> None:
@@ -105,15 +110,97 @@ def test_a_hung_job_is_stopped_at_its_time_limit(queue: JobQueue, pool: WorkerPo
 @pytest.mark.parametrize(
     ("kind", "error"),
     [
-        ("huge", "the result is over 33554432 bytes"),
         ("not_json", "the job failed with an internal error (TypeError)"),
         ("not_object", "the job returned something other than an object"),
     ],
 )
-def test_results_must_be_small_json_objects(
+def test_results_must_be_json_objects(
     queue: JobQueue, pool: WorkerPool, kind: str, error: str
 ) -> None:
     assert _run(queue, pool, kind)[1:3] == (JobState.FAILED, error)
+
+
+def test_the_compressed_size_is_what_is_limited(
+    queue: JobQueue, pool: WorkerPool, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(pool_module, "RESULT_LIMIT", 64 * 1024)
+    # 200 KiB of random bytes, as hex: 400 KiB of JSON that gzip only halves.
+    _, state, error, _ = _run(queue, pool, "huge", {"n": 200 * 1024})
+    assert (state, error) == (JobState.FAILED, "the result is over 65536 bytes compressed")
+    # 400 KiB of JSON that compresses far below the limit is fine.
+    _, state, _, result = _run(queue, pool, "huge", {"n": 200 * 1024, "plain": True})
+    assert (state, result) == (JobState.SUCCEEDED, {"x": "a" * 400 * 1024})
+
+
+def test_a_job_that_needs_too_much_memory_fails_saying_so(
+    queue: JobQueue, handlers: dict[str, str]
+) -> None:
+    pool = WorkerPool(queue, handlers, workers=1, poll_s=0.05, memory_mib=512)
+    try:
+        _, state, error, _ = _run(queue, pool, "hog", {"mib": 1024})
+        assert (state, error) == (
+            JobState.FAILED,
+            "it needed more than the 512 MiB of memory a worker may use",
+        )
+        _, state, _, result = _run(queue, pool, "hog", {"mib": 64})
+        assert (state, result) == (JobState.SUCCEEDED, {"got": 64 * 1024 * 1024})
+    finally:
+        pool._drain(grace_s=0)
+    with pytest.raises(ValueError, match="at least 256 MiB"):
+        WorkerPool(queue, handlers, memory_mib=100)
+
+
+def _gzip(data: bytes) -> bytes:
+    packer = zlib.compressobj(6, zlib.DEFLATED, 31)
+    return packer.compress(data) + packer.flush()
+
+
+def _deliver(queue: JobQueue, pool: WorkerPool, data: bytes) -> Job:
+    """What the pool records when a worker sends ``data``: a worker taken over by a hostile
+    file can send anything at all."""
+    job_id = queue.enqueue("echo", {})
+    (claim,) = queue.claim(pool.name, 1)
+    receive, send = _CONTEXT.Pipe(duplex=False)
+    send.send_bytes(data)
+    send.close()
+    process = _CONTEXT.Process(target=time.sleep, args=(0,))
+    process.start()
+    process.join()
+    pool._read(_Running(claim, process, receive, deadline=time.monotonic() + 60))
+    job = queue.get(job_id)
+    assert job is not None
+    return job
+
+
+@pytest.mark.parametrize(
+    ("data", "error"),
+    [
+        (_gzip(b'{"a":1}')[:-6], "the worker sent an unreadable result"),  # cut short
+        (_gzip(b'{"a":1}') + _gzip(b'{"b":2}'), "the worker sent an unreadable result"),
+        (_gzip(b'{"a":1}') + b"junk", "the worker sent an unreadable result"),
+        (_gzip(b"[1,2]"), "the worker sent an unreadable result"),  # not an object
+        (GZIP_MAGIC + bytes(100), "the worker sent an unreadable result"),  # damaged
+        (_gzip(b'{"a":"' + b"a" * (3 * 1024 * 1024) + b'"}'), "over 2097152 bytes uncompressed"),
+        (b'{"ok":{"a":1}}', "the worker sent an unreadable result"),  # the old format
+    ],
+)
+def test_a_result_is_checked_before_it_is_stored(
+    queue: JobQueue, pool: WorkerPool, monkeypatch: pytest.MonkeyPatch, data: bytes, error: str
+) -> None:
+    monkeypatch.setattr(pool_module, "RESULT_EXPANDED_LIMIT", 2 * 1024 * 1024)
+    job = _deliver(queue, pool, data)
+    assert job.state is JobState.FAILED
+    assert job.error is not None
+    assert error in job.error
+    assert not job.has_result
+
+
+def test_a_sound_result_is_stored_as_sent(queue: JobQueue, pool: WorkerPool) -> None:
+    blob = encode_result({"b": [1, 2], "a": "é"})
+    job = _deliver(queue, pool, blob)
+    assert (job.state, job.has_result) == (JobState.SUCCEEDED, True)
+    assert queue.result(job.id) == blob
+    assert decode_result(blob) == {"a": "é", "b": [1, 2]}
 
 
 def test_what_a_worker_sends_back_is_never_unpickled(
@@ -127,18 +214,7 @@ def test_what_a_worker_sends_back_is_never_unpickled(
         def __reduce__(self) -> tuple[object, tuple[str, str]]:
             return (open, (str(marker), "w"))
 
-    job_id = queue.enqueue("echo", {})
-    (claim,) = queue.claim(pool.name, 1)
-    receive, send = _CONTEXT.Pipe(duplex=False)
-    send.send_bytes(pickle.dumps(Payload()))
-    send.close()
-    process = _CONTEXT.Process(target=time.sleep, args=(0,))
-    process.start()
-    process.join()
-    pool._read(_Running(claim, process, receive, deadline=time.monotonic() + 60))
-
-    job = queue.get(job_id)
-    assert job is not None
+    job = _deliver(queue, pool, pickle.dumps(Payload()))
     assert (job.state, job.error) == (JobState.FAILED, "the worker sent an unreadable result")
     assert not marker.exists()
 
