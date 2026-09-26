@@ -224,6 +224,9 @@ def template_slots(template: str | None) -> frozenset[str]:
     return frozenset(_TEMPLATE_SLOT.findall(template)) if template else frozenset()
 
 
+Combine = Literal["last", "any"]
+
+
 class SetEffect(_Strict):
     set: AttrPath
     from_: SlotName | dict[SlotName, int] | None = Field(default=None, alias="from")
@@ -238,6 +241,11 @@ class SetEffect(_Strict):
     """Value for any word not in ``map`` (``is_well_known``: listed strings -> true, any other
     string -> false)."""
     transform: tuple[Transform, ...] = ()
+    combine: Combine = "last"
+    """``last`` (default): the statement replaces what earlier ones said, as on the device.
+    ``any``: it adds to them instead, so the order of statements doesn't matter: a flag once
+    true stays true, a set gains items. PAN-OS turns a management service on from the MGT
+    port's switches *or* from any interface management profile."""
 
     @model_validator(mode="after")
     def _coherent(self) -> Self:
@@ -264,6 +272,11 @@ class SetEffect(_Strict):
 class AssertEffect(_Strict):
     assert_: AttrPath = Field(alias="assert")
     value: Scalar | tuple[Scalar, ...]
+    combine: Combine = "last"
+    """``last`` (default): the statement replaces what earlier ones said, as on the device.
+    ``any``: it adds to them instead, so the order of statements doesn't matter: a flag once
+    true stays true, a set gains items. PAN-OS turns a management service on from the MGT
+    port's switches *or* from any interface management profile."""
 
     @property
     def attr(self) -> str:
@@ -301,13 +314,19 @@ class MembersEffect(_Strict):
         return frozenset({self.from_}) if self.from_ else frozenset()
 
 
-RefTarget = Literal["acl", "address", "address_group", "service", "service_group", "any_object"]
+RefTarget = Literal[
+    "acl", "address", "address_group", "service", "service_group", "mgmt_profile", "any_object"
+]
 
 
 class RefEffect(_Strict):
     ref: AttrPath
     from_: SlotName = Field(alias="from")
     target: RefTarget
+    expand: bool = False
+    """The attribute takes the target's ``members`` (once the resolver has linked it) instead
+    of its name: a PAN-OS interface naming its management profile gets the profile's
+    protocols. Unknown if the target is missing or its members weren't read."""
 
     @property
     def attr(self) -> str:
@@ -433,3 +452,15 @@ class Mapping(_Strict):
             raise ValueError(f"{eff.attr}: a weighted sum needs an int attribute")
         if isinstance(eff, RefEffect) and kind not in ("str", "set"):
             raise ValueError(f"{eff.attr}: `ref` needs a name- or set-valued attribute")
+        if isinstance(eff, RefEffect) and eff.expand and kind != "set":
+            raise ValueError(f"{eff.attr}: `expand` needs a set-valued attribute")
+        if (
+            isinstance(eff, SetEffect | AssertEffect)
+            and eff.combine == "any"
+            and kind
+            not in (
+                "bool",
+                "set",
+            )
+        ):
+            raise ValueError(f"{eff.attr}: `combine: any` needs a flag or a set attribute")

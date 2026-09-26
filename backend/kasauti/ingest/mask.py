@@ -43,6 +43,12 @@ _KEYWORDS = frozenset(
         "secret-key",
         "md5-key",
         "auth-key",
+        # PAN-OS XML element names (rendered as "<element> <value>").
+        "phash",
+        "snmp-community-string",
+        "bind-password",
+        "authpwd",
+        "privpwd",
     }
 )
 # Words between the keyword and the value that describe the secret's kind. Kept visible.

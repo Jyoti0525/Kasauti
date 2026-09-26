@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<config version="11.1.0" urldb="paloaltonetworks" detail-version="11.1.2">
+  <mgt-config>
+    <users>
+      <entry name="admin">
+        <phash>$1$PLACEHOLDERSALT$PLACEHOLDERHASH</phash>
+        <permissions>
+          <role-based>
+            <superuser>yes</superuser>
+          </role-based>
+        </permissions>
+      </entry>
+    </users>
+    <password-complexity>
+      <enabled>yes</enabled>
+      <minimum-length>8</minimum-length>
+    </password-complexity>
+  </mgt-config>
+  <shared>
+    <log-settings>
+      <syslog>
+        <entry name="SIEM">
+          <server>
+            <entry name="siem-1">
+              <server>10.30.10.50</server>
+              <transport>UDP</transport>
+              <port>514</port>
+              <format>BSD</format>
+              <facility>LOG_USER</facility>
+            </entry>
+          </server>
+        </entry>
+      </syslog>
+    </log-settings>
+  </shared>
+  <devices>
+    <entry name="localhost.localdomain">
+      <network>
+        <interface>
+          <ethernet>
+            <entry name="ethernet1/1">
+              <layer3>
+                <ip>
+                  <entry name="198.51.100.6/30"/>
+                </ip>
+                <interface-management-profile>ALLOW-MGMT</interface-management-profile>
+              </layer3>
+              <comment>WAN uplink to ISP</comment>
+            </entry>
+            <entry name="ethernet1/2">
+              <layer3>
+                <ip>
+                  <entry name="10.20.0.1/24"/>
+                </ip>
+                <interface-management-profile>ALLOW-MGMT</interface-management-profile>
+              </layer3>
+            </entry>
+          </ethernet>
+        </interface>
+        <profiles>
+          <interface-management-profile>
+            <entry name="ALLOW-MGMT">
+              <ping>yes</ping>
+              <https>yes</https>
+              <ssh>yes</ssh>
+            </entry>
+          </interface-management-profile>
+        </profiles>
+      </network>
+      <deviceconfig>
+        <system>
+          <hostname>PA-BRANCH</hostname>
+          <ip-address>10.30.10.6</ip-address>
+          <netmask>255.255.255.0</netmask>
+          <default-gateway>10.30.10.1</default-gateway>
+          <service>
+            <disable-telnet>no</disable-telnet>
+            <disable-http>no</disable-http>
+            <disable-https>no</disable-https>
+            <disable-ssh>no</disable-ssh>
+          </service>
+          <ntp-servers>
+            <primary-ntp-server>
+              <ntp-server-address>10.30.10.70</ntp-server-address>
+              <authentication-type>
+                <none/>
+              </authentication-type>
+            </primary-ntp-server>
+          </ntp-servers>
+          <snmp-setting>
+            <access-setting>
+              <version>
+                <v2c>
+                  <snmp-community-string>public</snmp-community-string>
+                </v2c>
+              </version>
+            </access-setting>
+          </snmp-setting>
+          <timezone>Asia/Kolkata</timezone>
+        </system>
+        <setting>
+          <management>
+            <idle-timeout>0</idle-timeout>
+          </management>
+        </setting>
+      </deviceconfig>
+      <vsys>
+        <entry name="vsys1">
+          <zone>
+            <entry name="untrust">
+              <network>
+                <layer3>
+                  <member>ethernet1/1</member>
+                </layer3>
+              </network>
+            </entry>
+            <entry name="trust">
+              <network>
+                <layer3>
+                  <member>ethernet1/2</member>
+                </layer3>
+              </network>
+            </entry>
+          </zone>
+          <rulebase>
+            <security>
+              <rules>
+                <entry name="allow-all">
+                  <from>
+                    <member>untrust</member>
+                  </from>
+                  <to>
+                    <member>trust</member>
+                  </to>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>any</member>
+                  </service>
+                  <action>allow</action>
+                </entry>
+              </rules>
+            </security>
+          </rulebase>
+          <import>
+            <network>
+              <interface>
+                <member>ethernet1/1</member>
+                <member>ethernet1/2</member>
+              </interface>
+            </network>
+          </import>
+        </entry>
+      </vsys>
+    </entry>
+  </devices>
+</config>

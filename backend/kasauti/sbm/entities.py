@@ -71,6 +71,10 @@ class MgmtService(Entity):
     version: StrFact = StrFact()
     access_filter: StrFact = StrFact()
     """ACL restricting who may reach the service (Cisco ``ip http access-class``), 0.3."""
+    permitted_sources: SetFact = SetFact()
+    """Addresses the service accepts connections from; ``any`` means anywhere (PAN-OS
+    ``permitted-ip``, where an empty list means any address). Absent where an ACL
+    (``access_filter``) or per-account sources restrict access instead (0.7)."""
     ciphers: SetFact = SetFact()
     macs: SetFact = SetFact()
     kex: SetFact = SetFact()
@@ -252,6 +256,10 @@ class FilterRule(Entity):
     enabled: BoolFact = BoolFact()
     zone_from: StrFact = StrFact()
     zone_to: StrFact = StrFact()
+    applications: SetFact = SetFact()
+    """Applications the entry matches, on platforms that match by application as well as by
+    port (PAN-OS ``application``); ``any`` means every application. Absent where entries match
+    by protocol and port only (0.7)."""
 
 
 class ObjectDef(Entity):
@@ -259,7 +267,7 @@ class ObjectDef(Entity):
 
     type: Literal["ObjectDef"] = "ObjectDef"
     kind: StrFact = StrFact()
-    """address | address_group | service | service_group | acl"""
+    """address | address_group | service | service_group | acl | mgmt_profile"""
     members: SetFact = SetFact()
     expanded: SetFact = SetFact()
     """Groups only: members after recursive expansion of nested groups (0.4). Unknown if the

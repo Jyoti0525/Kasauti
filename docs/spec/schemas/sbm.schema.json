@@ -581,6 +581,15 @@
             "value": null
           }
         },
+        "applications": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "dst": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
@@ -1153,6 +1162,15 @@
           "type": "string"
         },
         "macs": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "permitted_sources": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
             "default_source": null,
@@ -1938,7 +1956,7 @@
       "type": "object"
     },
     "sbm_version": {
-      "default": "0.6",
+      "default": "0.7",
       "title": "Sbm Version",
       "type": "string"
     },

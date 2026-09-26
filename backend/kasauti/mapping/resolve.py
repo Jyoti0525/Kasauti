@@ -17,6 +17,11 @@ the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference`
   catch-all hidden behind a name is still a permit-any. If the object's extent wasn't read,
   the entry's fact becomes *unknown*: REVIEW, never an assumed-harmless PASS.
 
+* **expanding references** (``ref`` with ``expand``): the source attribute becomes the union
+  of its targets' members, so a PAN-OS interface naming its management profile gets the
+  protocols the profile allows. A missing target, or one whose members weren't read, makes
+  the attribute *unknown*.
+
 A dangling reference is a finding of its own (rule REF-DANGLING-01): on many platforms a
 filter naming a missing ACL filters nothing.
 """
@@ -25,7 +30,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from kasauti.mapping.builder import EntityAcc, FactAcc, RefRecord, SbmBuilder
+from kasauti.mapping.builder import EntityAcc, EntityRef, FactAcc, RefRecord, SbmBuilder
 from kasauti.sbm.facts import Evidence, FactState
 
 GROUP_KINDS = {"address_group": "address", "service_group": "service"}
@@ -56,6 +61,7 @@ def resolve_references(builder: SbmBuilder) -> None:
     _widen_named_objects(builder, objects)
     for record in sorted(builder.refs, key=lambda r: (r.source, r.attribute, r.name)):
         _reference(builder, objects, record)
+    _expand_references(builder, objects)
 
 
 def _target_key(objects: dict[str, EntityAcc], kind: str, name: str) -> str | None:
@@ -84,6 +90,34 @@ def _reference(builder: SbmBuilder, objects: dict[str, EntityAcc], record: RefRe
     if target.startswith("acl:"):
         unread = builder.unread_children.get(("ObjectDef", target), [])
         _permits_any(builder, ref, target.split(":", 1)[1], ev, unread)
+
+
+def _expand_references(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> None:
+    groups: dict[tuple[EntityRef, str], list[RefRecord]] = {}
+    for record in builder.refs:
+        if record.expand:
+            attr = record.attribute.split(".", 1)[1]
+            groups.setdefault((record.source, attr), []).append(record)
+    for (source, attr), records in sorted(groups.items()):
+        items: set[str] = set()
+        evidence: list[Evidence] = []
+        unknown: Evidence | None = None
+        for record in sorted(records, key=lambda r: r.name):
+            target = _target_key(objects, record.target_kind, record.name)
+            members = objects[target].facts.get("members") if target else None
+            if target is None or (members is not None and members.state is FactState.UNKNOWN):
+                unknown = unknown or record.evidence
+                continue
+            evidence.append(record.evidence)
+            if members is not None and members.state is FactState.EXPLICIT:
+                items |= members.value
+                evidence.extend(members.evidence)  # a target listing nothing allows nothing
+        fact = builder.entity(source).fact(attr)
+        if unknown is not None:
+            fact.unknown(unknown)
+            continue
+        fact.set(frozenset(items), evidence[0])
+        fact.evidence.extend(evidence[1:])
 
 
 def _permits_any(

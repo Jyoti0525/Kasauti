@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "c34b4544e69b082e1d9aaf5b",
+  "audit_id": "9f204ac89a8cd152aca688b3",
   "input": {
     "file": "hardened.cfg",
     "sha256": "d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "6e9188739236a6c400956af638e0002508c00846d7500eb6eee57a67c957fdca",
-    "ruleset_version": "c0136460e71b069fa79978e1fc0c33bc0585614cb0771413bc2f54bc81b6f0ea",
+    "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
+    "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -642,7 +642,8 @@
       "severity_reason": null,
       "reason": "Repeated failed logins are blocked: holds for LockoutPolicy[lockout-policy].",
       "actual": [
-        "LockoutPolicy[lockout-policy].max_attempts = 3"
+        "LockoutPolicy[lockout-policy].max_attempts = 3",
+        "LockoutPolicy[lockout-policy].lockout_s = 900"
       ],
       "defaults_used": [],
       "evidence": [
@@ -1660,7 +1661,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.6",
+    "sbm_version": "0.7",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2100,6 +2101,12 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2245,6 +2252,12 @@
           "default_source": null
         },
         "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2398,6 +2411,12 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2543,6 +2562,12 @@
           "default_source": null
         },
         "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3046,6 +3071,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3082,6 +3113,12 @@
           "default_source": null
         },
         "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3128,6 +3165,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3164,6 +3207,12 @@
           "default_source": null
         },
         "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3210,6 +3259,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3246,6 +3301,12 @@
           "default_source": null
         },
         "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3292,6 +3353,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3333,6 +3400,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -3369,6 +3442,12 @@
           "default_source": null
         },
         "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
           "value": null,
           "state": "absent",
           "evidence": [],

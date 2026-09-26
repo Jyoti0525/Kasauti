@@ -951,6 +951,18 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.10 (2026-09-26, fifth seed vendor: PAN-OS, first XML pack):**
+  - **PAN-OS pack** (67 mappings over the XML shape family; 10 defaults quoted from Palo Alto's
+    web interface help and admin guide, element names checked against pan-os-python), a weak
+    twin with 14 catalogued weaknesses (all caught), golden cases, fixtures for five vendors.
+  - **SBM 0.7:** `MgmtService.permitted_sources` (PAN-OS `permitted-ip`; an empty list means
+    any) and `FilterRule.applications` (a rule naming applications isn't a permit-all).
+  - **Mapping language:** `combine: any` (a service turned on at the MGT port or in any profile
+    stays on, whatever the file order) and `ref … expand` (an interface inherits its management
+    profile's protocols; unknown if the profile is missing).
+  - **Content:** permit-all derivation v3 skips disabled rules and respects applications;
+    AAA-LOCKOUT-01 doesn't count a zero lockout duration (PAN-OS documents 0 two ways); a
+    per-service permitted-sources inference; PAN-OS secret elements masked.
 - **v5.1.9 (2026-09-26, FortiOS gaps closed):**
   - **Administrator trusted hosts** are read per account (SBM 0.6 `LocalUser.permitted_sources`,
     `permitted_sources_v6`); a vendor-neutral inference treats management services as

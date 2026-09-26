@@ -403,7 +403,177 @@ def test_a_documented_protective_default_passes_where_absence_would_fail(
     )
     lockout = next(f for f in result.findings if f.rule_id == "AAA-LOCKOUT-01")
     assert lockout.status is Status.PASS
-    assert lockout.defaults_used == ("fortinet_fortios/defaults.yaml#lockout-after-3",)
+    assert lockout.defaults_used == (
+        "fortinet_fortios/defaults.yaml#lockout-60-seconds",
+        "fortinet_fortios/defaults.yaml#lockout-after-3",
+    )
     # Cisco documents no lockout default, so there absence is still the violation.
     cisco = audit(decode(b"version 17.9\nhostname R1\n", "r.cfg"), kb, vendor="cisco_ios_xe")
     assert {r.rule_id: r.status for r in cisco.rules}["AAA-LOCKOUT-01"] is Status.FAIL
+
+
+# --- PAN-OS (XML) ------------------------------------------------------------------------------
+
+PANOS = """<?xml version="1.0"?>
+<config version="11.1.0" urldb="paloaltonetworks" detail-version="11.1.2">
+  <mgt-config>{mgt}</mgt-config>
+  <devices>
+    <entry name="localhost.localdomain">
+      <network>{network}</network>
+      <deviceconfig>
+        <system>{system}</system>
+        <setting><management>{management}</management></setting>
+      </deviceconfig>
+      <vsys><entry name="vsys1">{vsys}</entry></vsys>
+    </entry>
+  </devices>
+</config>
+"""
+
+
+def _panos(kb: KnowledgeBase, **parts: str) -> dict[str, Status]:
+    fields = {k: parts.get(k, "") for k in ("mgt", "network", "system", "management", "vsys")}
+    text = PANOS.format(**fields)
+    result = audit(decode(text.encode(), "running-config.xml"), kb)
+    assert result.detection.pack_id == "paloalto_panos"
+    return {r.rule_id: r.status for r in result.rules}
+
+
+def test_panos_identity_comes_from_the_config_root_and_system(kb: KnowledgeBase) -> None:
+    path = REPO / "datasets" / "authored" / "paloalto_panos" / "hardened.xml"
+    result = audit(read_file(path), kb)
+    assert result.detection.pack_id == "paloalto_panos"
+    ident = result.identity
+    assert (ident["hostname"].value, ident["os_version"].value) == ("PA-EDGE", "11.1.2")
+
+
+def _rule(**members: str) -> str:
+    base = {
+        "source": "any",
+        "destination": "any",
+        "application": "any",
+        "service": "any",
+    }
+    base.update(members)
+    body = "".join(f"<{k}><member>{v}</member></{k}>" for k, v in base.items())
+    extra = members.get("extra", "")
+    return (
+        "<rulebase><security><rules><entry name='r1'><from><member>untrust</member></from>"
+        f"<to><member>trust</member></to>{body}<action>allow</action>{extra}"
+        "</entry></rules></security></rulebase>"
+    ).replace("<extra><member></member></extra>", "")
+
+
+@pytest.mark.parametrize(
+    ("members", "expected"),
+    [
+        ({}, Status.FAIL),
+        # Application-default ports for every application is still everything.
+        ({"service": "application-default"}, Status.FAIL),
+        # Naming the applications narrows the rule even with service any.
+        ({"application": "ssl"}, Status.PASS),
+        ({"destination": "10.20.0.10"}, Status.PASS),
+        # "Everything except X" is taken as any.
+        (
+            {"destination": "10.20.0.10", "extra": "<negate-destination>yes</negate-destination>"},
+            Status.FAIL,
+        ),
+        # A disabled rule filters nothing either way.
+        ({"extra": "<disabled>yes</disabled>"}, Status.PASS),
+    ],
+)
+def test_panos_permit_all_needs_every_application_and_an_enabled_rule(
+    kb: KnowledgeBase, members: dict[str, str], expected: Status
+) -> None:
+    assert _panos(kb, vsys=_rule(**members))["FILTER-PERMIT-ANY-01"] is expected
+
+
+PROFILE_WEB = (
+    "<profiles><interface-management-profile><entry name='WEB'><https>yes</https>"
+    "</entry></interface-management-profile></profiles>"
+)
+
+
+@pytest.mark.parametrize(
+    ("system", "network", "expected"),
+    [
+        # The MGT port accepts any address unless permitted IPs are listed.
+        ("<service><disable-https>no</disable-https></service>", "", Status.FAIL),
+        (
+            "<service><disable-https>no</disable-https><disable-http>yes</disable-http></service>"
+            "<permitted-ip><entry name='10.30.10.0/24'/></permitted-ip>",
+            "",
+            Status.PASS,
+        ),
+        (
+            "<service><disable-https>no</disable-https></service>"
+            "<permitted-ip><entry name='0.0.0.0/0'/></permitted-ip>",
+            "",
+            Status.FAIL,
+        ),
+        # A profile offering HTTPS on a data interface isn't covered by the MGT port's list,
+        # whichever comes first in the file.
+        (
+            "<service><disable-https>yes</disable-https></service>"
+            "<permitted-ip><entry name='10.30.10.0/24'/></permitted-ip>",
+            PROFILE_WEB,
+            Status.FAIL,
+        ),
+    ],
+)
+def test_panos_web_management_sources(
+    kb: KnowledgeBase, system: str, network: str, expected: Status
+) -> None:
+    got = _panos(kb, system=system, network=network)["MGMT-WEB-ACL-01"]
+    assert got is expected
+
+
+@pytest.mark.parametrize(
+    ("lockout", "expected"),
+    [
+        ("", Status.FAIL),  # Failed Attempts defaults to 0: unlimited
+        ("<admin-lockout><failed-attempts>5</failed-attempts></admin-lockout>", Status.FAIL),
+        (
+            "<admin-lockout><failed-attempts>5</failed-attempts>"
+            "<lockout-time>30</lockout-time></admin-lockout>",
+            Status.PASS,
+        ),
+    ],
+)
+def test_panos_lockout_needs_attempts_and_a_duration(
+    kb: KnowledgeBase, lockout: str, expected: Status
+) -> None:
+    """Palo Alto documents Lockout Time 0 both as "until unlocked" and "never locked out"."""
+    assert _panos(kb, management=lockout)["AAA-LOCKOUT-01"] is expected
+
+
+def test_panos_telnet_in_a_profile_counts_even_if_the_mgt_port_disables_it(
+    kb: KnowledgeBase,
+) -> None:
+    profile = (
+        "<profiles><interface-management-profile><entry name='OLD'><telnet>yes</telnet>"
+        "</entry></interface-management-profile></profiles>"
+    )
+    system = "<service><disable-telnet>yes</disable-telnet></service>"
+    assert _panos(kb, system=system, network=profile)["MGMT-TELNET-01"] is Status.FAIL
+    # With an interface read (and no profile on it), Telnet is known to be unreachable.
+    interface = (
+        "<interface><ethernet><entry name='ethernet1/1'><layer3/></entry></ethernet></interface>"
+    )
+    assert _panos(kb, system=system, network=interface)["MGMT-TELNET-01"] is Status.PASS
+
+
+@pytest.mark.parametrize(
+    ("auth", "expected"),
+    [
+        ("<none/>", Status.FAIL),
+        ("<symmetric-key><key-id>1</key-id></symmetric-key>", Status.PASS),
+        ("<autokey/>", Status.REVIEW),  # not mapped: Autokey isn't judged either way
+    ],
+)
+def test_panos_ntp_authentication(kb: KnowledgeBase, auth: str, expected: Status) -> None:
+    system = (
+        "<ntp-servers><primary-ntp-server><ntp-server-address>10.0.0.1</ntp-server-address>"
+        f"<authentication-type>{auth}</authentication-type></primary-ntp-server></ntp-servers>"
+    )
+    assert _panos(kb, system=system)["TIME-NTP-AUTH-01"] is expected

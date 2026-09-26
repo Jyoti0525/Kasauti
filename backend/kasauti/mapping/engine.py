@@ -28,14 +28,22 @@ from kasauti.mapping import effects as fx
 from kasauti.mapping.builder import EntityRef, FactAcc, RefRecord, SbmBuilder
 from kasauti.mapping.defaults import apply_defaults
 from kasauti.mapping.match import Captures, Compiled, tokenize_path
-from kasauti.mapping.model import BLOCK_LINE, ORDINAL, Mapping, RefEffect, Word
+from kasauti.mapping.model import (
+    BLOCK_LINE,
+    ORDINAL,
+    AssertEffect,
+    Mapping,
+    RefEffect,
+    SetEffect,
+    Word,
+)
 from kasauti.mapping.resolve import resolve_references
 from kasauti.packs.model import DefaultEntry
 from kasauti.packs.versions import Version, VersionRange
 from kasauti.rules.expr import attribute_type
 from kasauti.sbm.document import SecurityBaselineModel
 from kasauti.sbm.entities import SINGLETON_TYPES, Device
-from kasauti.sbm.facts import Evidence
+from kasauti.sbm.facts import Evidence, FactState
 from kasauti.shape.model import ConfigTree, Statement
 
 MIN_NEAR_MISS_TOKENS = 2
@@ -257,12 +265,16 @@ class _Engine:
                 kind = attribute_type(etype, attr)
                 if kind is None:  # pragma: no cover - rejected when the mapping is loaded
                     raise RuntimeError(f"{m.id}: unknown attribute {eff.attr}")
-                outcome = fx.evaluate(eff, hit.caps, kind, negated=hit.negated)
-                _record(self.builder.entity(ref).fact(attr), outcome, ev)
+                outcome: fx.Outcome | None = fx.evaluate(eff, hit.caps, kind, negated=hit.negated)
+                fact = self.builder.entity(ref).fact(attr)
+                if isinstance(eff, SetEffect | AssertEffect) and eff.combine == "any":
+                    outcome = _combined(outcome, fact)
+                _record(fact, outcome, ev)
                 if isinstance(eff, RefEffect) and isinstance(outcome, fx.SetValue | fx.AddItems):
                     names = outcome.items if isinstance(outcome, fx.AddItems) else {outcome.value}
                     self.builder.refs.extend(
-                        RefRecord(ref, eff.attr, eff.target, str(n), ev) for n in sorted(names)
+                        RefRecord(ref, eff.attr, eff.target, str(n), ev, eff.expand)
+                        for n in sorted(names)
                     )
 
     def _key(
@@ -342,7 +354,18 @@ class _Engine:
             self.builder.entity(ref).fact(attr).unknown(ev)
 
 
-def _record(fact: FactAcc, outcome: fx.Outcome, ev: Evidence) -> None:
+def _combined(outcome: fx.Outcome | None, fact: FactAcc) -> fx.Outcome | None:
+    """``combine: any``: a set gains items instead of being replaced, and a flag that another
+    statement made true stays true (None: nothing to record)."""
+    match outcome:
+        case fx.SetValue(value=frozenset() as items):
+            return fx.AddItems(items)
+        case fx.SetValue(value=False) if fact.state is FactState.EXPLICIT and fact.value is True:
+            return None
+    return outcome
+
+
+def _record(fact: FactAcc, outcome: fx.Outcome | None, ev: Evidence) -> None:
     match outcome:
         case fx.SetValue(value=value):
             fact.set(value, ev)

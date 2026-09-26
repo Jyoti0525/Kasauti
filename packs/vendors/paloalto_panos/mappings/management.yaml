@@ -1,0 +1,315 @@
+# Management plane: idle timeout, MGT port services and permitted IPs, profile services, banner.
+# Seed mappings: reviewed in docs/reviews/paloalto_panos.md.
+mappings:
+- id: paloalto_panos/idle-timeout
+  vendor: paloalto_panos
+  context:
+  - setting
+  - management
+  entity:
+    type: MgmtSession
+    key: admin
+  match: idle-timeout <INT:m>
+  effect:
+  - assert: MgmtSession.kind
+    value: cli
+  - set: MgmtSession.idle_timeout_s
+    from: m
+    transform:
+    - unit: minutes
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/mgt-telnet
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  - service
+  entity:
+    type: MgmtService
+    key: telnet
+  match: disable-telnet <STR:v>
+  effect:
+    set: MgmtService.enabled
+    from: v
+    map:
+      'yes': false
+      'no': true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/mgt-http
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  - service
+  entity:
+    type: MgmtService
+    key: http
+  match: disable-http <STR:v>
+  effect:
+    set: MgmtService.enabled
+    from: v
+    map:
+      'yes': false
+      'no': true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/mgt-https
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  - service
+  entity:
+    type: MgmtService
+    key: https
+  match: disable-https <STR:v>
+  effect:
+    set: MgmtService.enabled
+    from: v
+    map:
+      'yes': false
+      'no': true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/mgt-ssh
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  - service
+  entity:
+    type: MgmtService
+    key: ssh
+  match: disable-ssh <STR:v>
+  effect:
+    set: MgmtService.enabled
+    from: v
+    map:
+      'yes': false
+      'no': true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/mgt-permitted-ip-ssh
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  - permitted-ip
+  entity:
+    type: MgmtService
+    key: ssh
+  match: entry <STR:a>
+  effect:
+    members: MgmtService.permitted_sources
+    from: a
+    map:
+      0.0.0.0/0: any
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/mgt-permitted-ip-http
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  - permitted-ip
+  entity:
+    type: MgmtService
+    key: http
+  match: entry <STR:a>
+  effect:
+    members: MgmtService.permitted_sources
+    from: a
+    map:
+      0.0.0.0/0: any
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/mgt-permitted-ip-https
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  - permitted-ip
+  entity:
+    type: MgmtService
+    key: https
+  match: entry <STR:a>
+  effect:
+    members: MgmtService.permitted_sources
+    from: a
+    map:
+      0.0.0.0/0: any
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/login-banner
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  entity:
+    type: Banner
+    key: login
+  match: login-banner <LIST>
+  effect:
+    assert: Banner.present
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/profile-telnet
+  vendor: paloalto_panos
+  context:
+  - interface-management-profile
+  - entry <STR:p>
+  entity:
+    type: MgmtService
+    key: telnet
+  match: telnet yes
+  effect:
+  - assert: MgmtService.enabled
+    value: true
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/profile-http
+  vendor: paloalto_panos
+  context:
+  - interface-management-profile
+  - entry <STR:p>
+  entity:
+    type: MgmtService
+    key: http
+  match: http yes
+  effect:
+  - assert: MgmtService.enabled
+    value: true
+    combine: any
+  - assert: MgmtService.permitted_sources
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/profile-https
+  vendor: paloalto_panos
+  context:
+  - interface-management-profile
+  - entry <STR:p>
+  entity:
+    type: MgmtService
+    key: https
+  match: https yes
+  effect:
+  - assert: MgmtService.enabled
+    value: true
+    combine: any
+  - assert: MgmtService.permitted_sources
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/profile-ssh
+  vendor: paloalto_panos
+  context:
+  - interface-management-profile
+  - entry <STR:p>
+  entity:
+    type: MgmtService
+    key: ssh
+  match: ssh yes
+  effect:
+  - assert: MgmtService.enabled
+    value: true
+    combine: any
+  - assert: MgmtService.permitted_sources
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

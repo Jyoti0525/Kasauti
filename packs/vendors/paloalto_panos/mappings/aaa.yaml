@@ -1,0 +1,179 @@
+# AAA: administrator accounts and password hashes, password complexity, lockout, server profiles.
+# Seed mappings: reviewed in docs/reviews/paloalto_panos.md.
+mappings:
+- id: paloalto_panos/admin
+  vendor: paloalto_panos
+  context:
+  - mgt-config
+  - users
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: entry <STR:u>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/admin-phash
+  vendor: paloalto_panos
+  context:
+  - mgt-config
+  - users
+  - entry <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: phash <STR:h>
+  effect:
+    set: LocalUser.hash_type
+    from: h
+    transform:
+    - prefix:
+        $6$: sha512-crypt
+        $5$: sha256-crypt
+        $1$: md5-crypt
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/password-complexity-enabled
+  vendor: paloalto_panos
+  context:
+  - mgt-config
+  - password-complexity
+  match: enabled <STR:v>
+  effect:
+    set: PasswordPolicy.enforced
+    from: v
+    map:
+      'yes': true
+      'no': false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/password-complexity-minimum-length
+  vendor: paloalto_panos
+  context:
+  - mgt-config
+  - password-complexity
+  match: minimum-length <INT:n>
+  effect:
+    set: PasswordPolicy.min_length
+    from: n
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/failed-attempts
+  vendor: paloalto_panos
+  context:
+  - setting
+  - management
+  - admin-lockout
+  match: failed-attempts <INT:n>
+  effect:
+    set: LockoutPolicy.max_attempts
+    from: n
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/lockout-time
+  vendor: paloalto_panos
+  context:
+  - setting
+  - management
+  - admin-lockout
+  match: lockout-time <INT:t>
+  effect:
+    set: LockoutPolicy.lockout_s
+    from: t
+    transform:
+    - unit: minutes
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/server-profile-address
+  vendor: paloalto_panos
+  context:
+  - server-profile
+  - <STR:k>
+  - entry <STR:p>
+  - server
+  - entry <STR:s>
+  entity:
+    type: AuthServer
+    key: '{k}:{p}/{s}'
+  match: address <STR:h>
+  effect:
+  - set: AuthServer.host
+    from: h
+  - set: AuthServer.kind
+    from: k
+    map:
+      tacplus: tacacs
+      radius: radius
+      ldap: ldap
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/server-profile-ip-address
+  vendor: paloalto_panos
+  context:
+  - server-profile
+  - <STR:k>
+  - entry <STR:p>
+  - server
+  - entry <STR:s>
+  entity:
+    type: AuthServer
+    key: '{k}:{p}/{s}'
+  match: ip-address <STR:h>
+  effect:
+  - set: AuthServer.host
+    from: h
+  - set: AuthServer.kind
+    from: k
+    map:
+      tacplus: tacacs
+      radius: radius
+      ldap: ldap
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

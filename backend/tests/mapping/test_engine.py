@@ -601,6 +601,108 @@ def test_set_with_a_template_replaces_a_set_with_one_item() -> None:
         )
 
 
+def test_combine_any_keeps_a_service_on_whatever_the_order() -> None:
+    """PAN-OS: HTTP is on if the MGT port *or* an interface profile turns it on."""
+    mgt = m(
+        id="v/mgt-http",
+        entity={"type": "MgmtService", "key": "http"},
+        match="disable-http <STR:v>",
+        effect={
+            "set": "MgmtService.enabled",
+            "from": "v",
+            "map": {"yes": False, "no": True},
+            "combine": "any",
+        },
+        negation=None,
+    )
+    profile = m(
+        id="v/profile-http",
+        entity={"type": "MgmtService", "key": "http"},
+        match="profile http yes",
+        effect=[
+            {"assert": "MgmtService.enabled", "value": True, "combine": "any"},
+            {"assert": "MgmtService.permitted_sources", "value": ["any"], "combine": "any"},
+        ],
+        negation=None,
+    )
+    sources = m(
+        id="v/permitted",
+        entity={"type": "MgmtService", "key": "http"},
+        match="permitted-ip <STR:a>",
+        effect={"members": "MgmtService.permitted_sources", "from": "a"},
+        negation=None,
+    )
+    for config in (
+        "profile http yes\ndisable-http yes\npermitted-ip 10.0.0.0/8\n",
+        "permitted-ip 10.0.0.0/8\ndisable-http yes\nprofile http yes\n",
+    ):
+        http = entity(run(config, [mgt, profile, sources]), "MgmtService", "http")
+        assert http.enabled.value is True  # type: ignore[attr-defined]
+        assert http.permitted_sources.value == {"any", "10.0.0.0/8"}  # type: ignore[attr-defined]
+    off = entity(run("disable-http yes\n", [mgt]), "MgmtService", "http")
+    assert off.enabled.value is False  # type: ignore[attr-defined]
+    with pytest.raises(ValueError, match="flag or a set"):
+        m(
+            id="v/x",
+            entity={"type": "MgmtSession", "key": "a"},
+            match="timeout <INT:t>",
+            effect={"set": "MgmtSession.idle_timeout_s", "from": "t", "combine": "any"},
+        )
+
+
+PROFILE = [
+    m(
+        id="v/profile",
+        entity={"type": "ObjectDef", "key": "mgmt_profile:{p}"},
+        match="profile <STR:p>",
+        effect={"assert": "ObjectDef.kind", "value": "mgmt_profile"},
+        negation=None,
+    ),
+    m(
+        id="v/profile-svc",
+        context=["profile <STR:p>"],
+        entity={"type": "ObjectDef", "key": "mgmt_profile:{p}"},
+        match="<STR:s> yes",
+        effect={"members": "ObjectDef.members", "from": "s"},
+        negation=None,
+    ),
+    m(
+        id="v/if-profile",
+        context=["interface <STR:i>"],
+        entity={"type": "Interface", "key": "{i}"},
+        match="management-profile <STR:p>",
+        effect={
+            "ref": "Interface.mgmt_protocols",
+            "from": "p",
+            "target": "mgmt_profile",
+            "expand": True,
+        },
+        negation=None,
+    ),
+]
+
+
+def test_an_expanding_reference_takes_the_target_members() -> None:
+    r = run(
+        "profile WEB\n https yes\n telnet no\nprofile NONE\n"
+        "interface e1\n management-profile WEB\ninterface e2\n management-profile NONE\n"
+        "interface e3\n management-profile MISSING\n",
+        PROFILE,
+    )
+    assert entity(r, "Interface", "e1").mgmt_protocols.value == {"https"}  # type: ignore[attr-defined]
+    assert entity(r, "Interface", "e2").mgmt_protocols.value == frozenset()  # type: ignore[attr-defined]
+    missing = entity(r, "Interface", "e3").mgmt_protocols  # type: ignore[attr-defined]
+    assert missing.state is FactState.UNKNOWN  # a dangling profile: REVIEW, never "nothing"
+    with pytest.raises(ValueError, match="set-valued"):
+        m(
+            id="v/x",
+            context=["interface <STR:i>"],
+            entity={"type": "Interface", "key": "{i}"},
+            match="management-profile <STR:p>",
+            effect={"ref": "Interface.zone", "from": "p", "target": "mgmt_profile", "expand": True},
+        )
+
+
 @pytest.mark.parametrize(
     ("pattern", "message"),
     [

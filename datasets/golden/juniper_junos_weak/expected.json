@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "dd6a386d4dff9d56909bb164",
+  "audit_id": "99d2739425f377dc756bce0c",
   "input": {
     "file": "weak.conf",
     "sha256": "f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "6e9188739236a6c400956af638e0002508c00846d7500eb6eee57a67c957fdca",
-    "ruleset_version": "c0136460e71b069fa79978e1fc0c33bc0585614cb0771413bc2f54bc81b6f0ea",
+    "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
+    "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -709,9 +709,11 @@
       "actual": [
         "filtering.permit_all_present = true",
         "FilterRule[ALLOW-ALL:ANY].action = permit",
+        "FilterRule[ALLOW-ALL:ANY].enabled: missing",
         "FilterRule[ALLOW-ALL:ANY].service = {ip} (vendor default)",
         "FilterRule[ALLOW-ALL:ANY].src = {any} (vendor default)",
-        "FilterRule[ALLOW-ALL:ANY].dst = {any} (vendor default)"
+        "FilterRule[ALLOW-ALL:ANY].dst = {any} (vendor default)",
+        "FilterRule[ALLOW-ALL:ANY].applications: missing"
       ],
       "defaults_used": [
         "juniper_junos/defaults.yaml#term-matches-every-destination",
@@ -1454,7 +1456,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.6",
+    "sbm_version": "0.7",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1734,6 +1736,12 @@
           "default_source": null
         },
         "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2112,6 +2120,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2160,6 +2174,12 @@
           "default_source": null
         },
         "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2218,6 +2238,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2254,6 +2280,12 @@
           "default_source": null
         },
         "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2312,6 +2344,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2348,6 +2386,12 @@
           "default_source": null
         },
         "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2406,6 +2450,12 @@
           "evidence": [],
           "default_source": null
         },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "ciphers": {
           "value": null,
           "state": "absent",
@@ -2442,6 +2492,12 @@
           "default_source": null
         },
         "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
           "value": null,
           "state": "absent",
           "evidence": [],

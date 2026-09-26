@@ -51,6 +51,13 @@ def _v05_to_v06(data: RawSBM) -> RawSBM:
     return data
 
 
+def _v06_to_v07(data: RawSBM) -> RawSBM:
+    """0.6 -> 0.7 (M2, PAN-OS): new optional attributes ``MgmtService.permitted_sources`` and
+    ``FilterRule.applications``. Absent in older documents: no earlier platform restricted a
+    service by source list or matched traffic by application."""
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
 MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.1": ("0.2", _v01_to_v02),
@@ -58,6 +65,7 @@ MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.3": ("0.4", _v03_to_v04),
     "0.4": ("0.5", _v04_to_v05),
     "0.5": ("0.6", _v05_to_v06),
+    "0.6": ("0.7", _v06_to_v07),
 }
 
 

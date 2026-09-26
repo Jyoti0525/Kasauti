@@ -93,6 +93,8 @@ class RefRecord:
     target_kind: str
     name: str
     evidence: Evidence
+    expand: bool = False
+    """The source attribute takes the target's members (``ref`` with ``expand``)."""
 
 
 @dataclass

@@ -19,3 +19,16 @@ inferences:
       all(LocalUser: exists(permitted_sources) and not permitted_sources contains 'any'
           and (not exists(permitted_sources_v6) or not permitted_sources_v6 contains 'any'))
     set: {access_filter: per-account-sources}
+
+  # --- Sources restricted per service --------------------------------------------------------
+  # PAN-OS lists the addresses the management port accepts (`permitted-ip`); an empty list, the
+  # default, means any address. An interface management profile that offers the service adds
+  # `any` (its own permitted-ip list isn't read yet), so it never looks restricted.
+  - id: mgmt_service.access_filter.permitted_sources
+    version: 1
+    description: >
+      A management service that accepts connections only from listed sources is restricted,
+      as an access filter would restrict it.
+    for_each: MgmtService where key in [ssh, http, https]
+    when: "exists(permitted_sources) and not permitted_sources contains 'any'"
+    set: {access_filter: permitted-sources}

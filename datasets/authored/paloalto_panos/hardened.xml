@@ -1,0 +1,269 @@
+<?xml version="1.0"?>
+<config version="11.1.0" urldb="paloaltonetworks" detail-version="11.1.2">
+  <mgt-config>
+    <users>
+      <entry name="netadmin">
+        <phash>$5$PLACEHOLDERSALT$PLACEHOLDERHASH</phash>
+        <permissions>
+          <role-based>
+            <superuser>yes</superuser>
+          </role-based>
+        </permissions>
+      </entry>
+    </users>
+    <password-complexity>
+      <enabled>yes</enabled>
+      <minimum-length>15</minimum-length>
+      <minimum-uppercase-letters>1</minimum-uppercase-letters>
+      <minimum-lowercase-letters>1</minimum-lowercase-letters>
+      <minimum-numeric-letters>1</minimum-numeric-letters>
+      <minimum-special-characters>1</minimum-special-characters>
+    </password-complexity>
+  </mgt-config>
+  <shared>
+    <server-profile>
+      <tacplus>
+        <entry name="TACACS">
+          <server>
+            <entry name="tacacs-1">
+              <address>10.30.10.40</address>
+              <secret>-AQ==PLACEHOLDERSECRET</secret>
+            </entry>
+          </server>
+        </entry>
+      </tacplus>
+    </server-profile>
+    <log-settings>
+      <syslog>
+        <entry name="SIEM">
+          <server>
+            <entry name="siem-1">
+              <server>10.30.10.50</server>
+              <transport>SSL</transport>
+              <port>6514</port>
+              <format>IETF</format>
+              <facility>LOG_USER</facility>
+            </entry>
+          </server>
+        </entry>
+      </syslog>
+      <system>
+        <match-list>
+          <entry name="system-to-siem">
+            <filter>All Logs</filter>
+            <send-syslog>
+              <member>SIEM</member>
+            </send-syslog>
+          </entry>
+        </match-list>
+      </system>
+      <config>
+        <match-list>
+          <entry name="config-to-siem">
+            <filter>All Logs</filter>
+            <send-syslog>
+              <member>SIEM</member>
+            </send-syslog>
+          </entry>
+        </match-list>
+      </config>
+    </log-settings>
+  </shared>
+  <devices>
+    <entry name="localhost.localdomain">
+      <network>
+        <interface>
+          <ethernet>
+            <entry name="ethernet1/1">
+              <layer3>
+                <ip>
+                  <entry name="198.51.100.2/30"/>
+                </ip>
+                <interface-management-profile>PING-ONLY</interface-management-profile>
+              </layer3>
+              <comment>WAN uplink to ISP</comment>
+            </entry>
+            <entry name="ethernet1/2">
+              <layer3>
+                <ip>
+                  <entry name="10.20.0.1/24"/>
+                </ip>
+                <interface-management-profile>PING-ONLY</interface-management-profile>
+              </layer3>
+              <comment>LAN server segment</comment>
+            </entry>
+          </ethernet>
+        </interface>
+        <profiles>
+          <interface-management-profile>
+            <entry name="PING-ONLY">
+              <ping>yes</ping>
+            </entry>
+          </interface-management-profile>
+        </profiles>
+      </network>
+      <deviceconfig>
+        <system>
+          <hostname>PA-EDGE</hostname>
+          <ip-address>10.30.10.2</ip-address>
+          <netmask>255.255.255.0</netmask>
+          <default-gateway>10.30.10.1</default-gateway>
+          <permitted-ip>
+            <entry name="10.30.10.0/24"/>
+          </permitted-ip>
+          <service>
+            <disable-telnet>yes</disable-telnet>
+            <disable-http>yes</disable-http>
+            <disable-https>no</disable-https>
+            <disable-ssh>no</disable-ssh>
+          </service>
+          <login-banner>Authorised access only. Activity is logged and monitored.</login-banner>
+          <ntp-servers>
+            <primary-ntp-server>
+              <ntp-server-address>10.30.10.70</ntp-server-address>
+              <authentication-type>
+                <symmetric-key>
+                  <algorithm>
+                    <sha1>
+                      <authentication-key>-AQ==PLACEHOLDERNTPKEY</authentication-key>
+                    </sha1>
+                  </algorithm>
+                  <key-id>1</key-id>
+                </symmetric-key>
+              </authentication-type>
+            </primary-ntp-server>
+          </ntp-servers>
+          <snmp-setting>
+            <access-setting>
+              <version>
+                <v2c>
+                  <snmp-community-string>PLACEHOLDER-COMMUNITY</snmp-community-string>
+                </v2c>
+              </version>
+            </access-setting>
+          </snmp-setting>
+          <timezone>Asia/Kolkata</timezone>
+        </system>
+        <setting>
+          <management>
+            <idle-timeout>10</idle-timeout>
+            <admin-lockout>
+              <failed-attempts>5</failed-attempts>
+              <lockout-time>30</lockout-time>
+            </admin-lockout>
+          </management>
+        </setting>
+      </deviceconfig>
+      <vsys>
+        <entry name="vsys1">
+          <zone>
+            <entry name="untrust">
+              <network>
+                <layer3>
+                  <member>ethernet1/1</member>
+                </layer3>
+              </network>
+            </entry>
+            <entry name="trust">
+              <network>
+                <layer3>
+                  <member>ethernet1/2</member>
+                </layer3>
+              </network>
+            </entry>
+          </zone>
+          <address>
+            <entry name="LAN-NET">
+              <ip-netmask>10.20.0.0/24</ip-netmask>
+            </entry>
+            <entry name="WEB-SRV">
+              <ip-netmask>10.20.0.10/32</ip-netmask>
+            </entry>
+          </address>
+          <rulebase>
+            <security>
+              <rules>
+                <entry name="lan-to-internet">
+                  <from>
+                    <member>trust</member>
+                  </from>
+                  <to>
+                    <member>untrust</member>
+                  </to>
+                  <source>
+                    <member>LAN-NET</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <application>
+                    <member>dns</member>
+                    <member>ssl</member>
+                    <member>web-browsing</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <action>allow</action>
+                  <log-end>yes</log-end>
+                </entry>
+                <entry name="web-in">
+                  <from>
+                    <member>untrust</member>
+                  </from>
+                  <to>
+                    <member>trust</member>
+                  </to>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>WEB-SRV</member>
+                  </destination>
+                  <application>
+                    <member>ssl</member>
+                  </application>
+                  <service>
+                    <member>application-default</member>
+                  </service>
+                  <action>allow</action>
+                  <log-end>yes</log-end>
+                </entry>
+                <entry name="deny-and-log">
+                  <from>
+                    <member>any</member>
+                  </from>
+                  <to>
+                    <member>any</member>
+                  </to>
+                  <source>
+                    <member>any</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <application>
+                    <member>any</member>
+                  </application>
+                  <service>
+                    <member>any</member>
+                  </service>
+                  <action>deny</action>
+                  <log-end>yes</log-end>
+                </entry>
+              </rules>
+            </security>
+          </rulebase>
+          <import>
+            <network>
+              <interface>
+                <member>ethernet1/1</member>
+                <member>ethernet1/2</member>
+              </interface>
+            </network>
+          </import>
+        </entry>
+      </vsys>
+    </entry>
+  </devices>
+</config>

@@ -1,0 +1,169 @@
+# What PAN-OS does when the configuration says nothing (PLAN §8.2, §9.4). Vendor defaults quote
+# Palo Alto Networks' PAN-OS 11.1 web interface help and administrator's guide, read 2026-09-26
+# (docs/reviews/paloalto_panos.md).
+# Not stated in the pages checked, so no entry (the rule says REVIEW or, where absence is the
+# violation, FAIL): whether the MGT port's Telnet/HTTP/HTTPS/SSH are on when `service` doesn't
+# say; whether minimum password complexity is on and its minimum length; the SSH protocol
+# versions offered; whether an interface answers proxy ARP.
+defaults:
+  # --- management plane ----------------------------------------------------------------------
+  - id: admin-session-kind
+    attr: MgmtSession.kind
+    entity_key: admin
+    value: cli
+    source: curated
+    reference: >-
+      Model default: PAN-OS has one administrator Idle Timeout for the web interface and the
+      CLI, modelled as one session of kind `cli`.
+
+  - id: idle-timeout-60-minutes
+    attr: MgmtSession.idle_timeout_s
+    entity_key: admin
+    value: 3600
+    source: vendor_doc
+    reference: >-
+      Device > Setup > Management, Idle Timeout: "Enter the maximum time (in minutes) without
+      any activity on the web interface or CLI before an administrator is automatically logged
+      out (range is 0 to 1,440; default is 60)."
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-web-interface-help/device/device-setup-management.html
+
+  - id: permitted-ip-empty-means-any
+    attr: MgmtService.permitted_sources
+    value: [any]
+    source: vendor_doc
+    reference: >-
+      Permitted IP Addresses: "Enter the IP addresses from which administrators can access the
+      firewall through the interface. An empty list (default) specifies that access is
+      available from any IP address."
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-web-interface-help/device/device-setup-interfaces.html
+
+  - id: no-profile-no-management
+    attr: Interface.mgmt_protocols
+    value: []
+    source: vendor_doc
+    reference: >-
+      Use Interface Management Profiles to Restrict Access: "If you do not assign an Interface
+      Management profile to an interface, it denies access for all IP addresses, protocols,
+      and services by default."
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-networking-admin/configure-interfaces/use-interface-management-profiles-to-restrict-access.html
+
+  - id: no-legacy-pad
+    attr: MgmtService.enabled
+    entity_key: pad
+    value: false
+    source: curated
+    reference: "Model default: PAN-OS has no X.25 PAD service."
+
+  - id: no-legacy-finger
+    attr: MgmtService.enabled
+    entity_key: finger
+    value: false
+    source: curated
+    reference: "Model default: PAN-OS has no finger service."
+
+  - id: no-legacy-bootp
+    attr: MgmtService.enabled
+    entity_key: bootp
+    value: false
+    source: curated
+    reference: "Model default: PAN-OS runs no BOOTP server; its DHCP server is configured per interface."
+
+  - id: no-tcp-small-servers
+    attr: MgmtService.enabled
+    entity_key: tcp-small-servers
+    value: false
+    source: curated
+    reference: "Model default: PAN-OS has no TCP small servers."
+
+  - id: no-udp-small-servers
+    attr: MgmtService.enabled
+    entity_key: udp-small-servers
+    value: false
+    source: curated
+    reference: "Model default: PAN-OS has no UDP small servers."
+
+  # --- AAA -----------------------------------------------------------------------------------
+  - id: failed-attempts-unlimited
+    attr: LockoutPolicy.max_attempts
+    value: 0
+    source: vendor_doc
+    reference: >-
+      Device > Setup > Management, Failed Attempts: "A value of 0 specifies unlimited login
+      attempts. The default value is 0 for firewalls in normal operational mode and 10 for
+      firewalls in FIPS-CC mode." (Normal mode assumed; FIPS-CC configurations aren't seeded.)
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-web-interface-help/device/device-setup-management.html
+
+  - id: lockout-time-zero
+    attr: LockoutPolicy.lockout_s
+    value: 0
+    source: vendor_doc
+    reference: >-
+      Device > Setup > Management, Lockout Time: "A value of 0 (default) means the lockout
+      applies until another administrator manually unlocks the account." The same page also
+      says that with Lockout Time 0 "the Failed Attempts is ignored and the user is never
+      locked out"; AAA-LOCKOUT-01 therefore doesn't count a zero duration as protection.
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-web-interface-help/device/device-setup-management.html
+
+  - id: passwords-stored-hashed
+    attr: PasswordPolicy.cleartext_passwords_encrypted
+    value: true
+    source: curated
+    reference: >-
+      Model default: a PAN-OS administrator account holds its password only as a hash
+      (`mgt-config/users/entry/phash`); the configuration has no element for a clear-text
+      password. The hash's strength is judged by AAA-LOCAL-PASSWORD-HASH-01.
+
+  - id: no-auth-servers
+    none_of: AuthServer
+    source: curated
+    reference: >-
+      Model default: every TACACS+, RADIUS and LDAP server appears in a server profile under
+      `server-profile`; none there means none exist.
+
+  # --- logging, SNMP, time -------------------------------------------------------------------
+  - id: syslog-profile-sends-nothing-until-assigned
+    attr: LogTarget.enabled
+    value: false
+    source: vendor_doc
+    reference: >-
+      Configure Syslog Monitoring: "create a Syslog server profile and assign it to the log
+      settings for each log type." A profile that no log setting names receives nothing; the
+      mappings read the System and Config log settings (`send-syslog`).
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-admin/monitoring/use-syslog-for-monitoring/configure-syslog-monitoring.html
+
+  - id: syslog-udp
+    attr: LogTarget.transport
+    value: udp
+    source: vendor_doc
+    reference: >-
+      Configure Syslog Monitoring, Port: "The port number on which to send syslog messages
+      (default is UDP on port 514)".
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-admin/monitoring/use-syslog-for-monitoring/configure-syslog-monitoring.html
+
+  - id: config-changes-logged
+    attr: LoggingPolicy.config_change_logged
+    value: true
+    source: vendor_doc
+    reference: >-
+      Log Types: "Config logs display entries for changes to the firewall configuration. Each
+      entry includes the date and time, the administrator username, the IP address from where
+      the administrator made the change, ..." No switch turns them off.
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/10-2/pan-os-admin/monitoring/view-and-manage-logs/log-types-and-severity-levels/config-logs.html
+
+  - id: logs-timestamped
+    attr: LoggingPolicy.timestamps
+    value: true
+    source: vendor_doc
+    reference: >-
+      Log Types: Config and System log entries each include "the date and time".
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/10-2/pan-os-admin/monitoring/view-and-manage-logs/log-types-and-severity-levels/config-logs.html
+
+  - id: snmp-read-only
+    attr: SnmpCommunity.access
+    value: ro
+    source: vendor_doc
+    reference: >-
+      Monitor Statistics Using SNMP: "You can't configure an SNMP manager to control Palo Alto
+      Networks firewalls (using SET messages), only to collect statistics from them (using GET
+      messages)."
+      https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/10-2/pan-os-admin/monitoring/snmp-monitoring-and-traps/monitor-statistics-using-snmp.html

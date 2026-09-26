@@ -1,44 +1,43 @@
 {
   "format_version": 1,
-  "audit_id": "b626f3ead681c91ebcd149e9",
+  "audit_id": "a62861b4db82e38c2ce082ee",
   "input": {
-    "file": "hardened.conf",
-    "sha256": "632bf2b38d66d4175395ee2a478f9e4f84c22fe27e0c2c95abcf07eb7871ff23",
+    "file": "hardened.xml",
+    "sha256": "f77dcd5a5c0be2df005feda67974a134c144e0d803b948e93f917c85831c907c",
     "encoding": "utf-8",
-    "shape_family": "block_edit",
+    "shape_family": "xml",
     "parse_warnings": []
   },
   "detection": {
-    "pack_id": "fortinet_fortios",
+    "pack_id": "paloalto_panos",
     "pack_version": 1,
     "chosen_by": "fingerprint",
-    "score": 1.4,
+    "score": 1.3,
     "min_score": 0.7,
     "signatures": [
-      "config-version-header",
-      "system-global",
-      "firewall-policy",
-      "system-interface",
-      "allowaccess",
-      "edit-next"
+      "config-root",
+      "localhost-device",
+      "deviceconfig",
+      "rulebase",
+      "vsys1"
     ]
   },
   "identity": {
     "hostname": {
-      "value": "FGT-EDGE",
-      "source": "config line 11"
+      "value": "PA-EDGE",
+      "source": "config line 107"
     },
     "vendor": {
-      "value": "Fortinet",
-      "source": "fingerprint (6 signatures)"
+      "value": "Palo Alto Networks",
+      "source": "fingerprint (5 signatures)"
     },
     "os_version": {
-      "value": "7.4.8",
-      "source": "config line 1"
+      "value": "11.1.2",
+      "source": "config line 2"
     },
     "model": {
-      "value": "FGT60F",
-      "source": "config line 1"
+      "value": null,
+      "source": "Model: not present in supplied artefacts; upload `show version` to populate"
     },
     "serial": {
       "value": null,
@@ -53,7 +52,7 @@
     "kasauti_version": "0.1.0",
     "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
     "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
-    "vendor_pack": "fortinet_fortios@1",
+    "vendor_pack": "paloalto_panos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
     }
@@ -65,12 +64,12 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 20,
+      "passed": 19,
       "failed": 0,
-      "review": 0,
-      "not_applicable": 3,
+      "review": 2,
+      "not_applicable": 2,
       "compliance_pct": 100.0,
-      "coverage_pct": 100.0
+      "coverage_pct": 90.5
     }
   ],
   "rules": [
@@ -230,7 +229,7 @@
       "rule_id": "MGMT-SSH-V2-01",
       "title": "SSH management uses protocol version 2 only",
       "domain": "management_plane",
-      "status": "PASS",
+      "status": "REVIEW",
       "severity": "high",
       "nist_800_53r5": [
         "AC-17(2)",
@@ -292,7 +291,7 @@
       "rule_id": "REF-DANGLING-01",
       "title": "Every reference points at something that exists",
       "domain": "filtering",
-      "status": "N/A",
+      "status": "PASS",
       "severity": "medium",
       "nist_800_53r5": [
         "CM-6",
@@ -327,7 +326,7 @@
       "rule_id": "SVC-PROXY-ARP-01",
       "title": "Interfaces do not answer ARP for other hosts",
       "domain": "services",
-      "status": "PASS",
+      "status": "REVIEW",
       "severity": "low",
       "nist_800_53r5": [
         "CM-7",
@@ -413,7 +412,7 @@
     {
       "control": "AC-17(2)",
       "title": "Protection of Confidentiality and Integrity Using Encryption",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
@@ -488,7 +487,7 @@
     {
       "control": "CM-7",
       "title": "Least Functionality",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-TELNET-01",
@@ -533,7 +532,7 @@
     {
       "control": "SC-7",
       "title": "Boundary Protection",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
@@ -550,7 +549,7 @@
     {
       "control": "SC-8",
       "title": "Transmission Confidentiality and Integrity",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
@@ -568,7 +567,7 @@
     {
       "control": "SC-13",
       "title": "Cryptographic Protection",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "MGMT-SSH-V2-01"
       ]
@@ -592,16 +591,16 @@
       "reason": "Administrators authenticate against a central AAA server: holds for the device.",
       "actual": [
         "aaa.central_server_configured = true",
-        "AuthServer[tacacs:TACACS-1].host = 10.30.10.40"
+        "AuthServer[tacplus:TACACS/tacacs-1].host = 10.30.10.40"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 56,
-          "line_end": 56,
-          "raw": "set server \"10.30.10.40\"",
-          "mapping_id": "fortinet_fortios/tacacs-server",
+          "file": "hardened.xml",
+          "line_start": 29,
+          "line_end": 29,
+          "raw": "address 10.30.10.40",
+          "mapping_id": "paloalto_panos/server-profile-address",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -617,16 +616,16 @@
       "severity_reason": null,
       "reason": "Local passwords are stored with a strong one-way hash: holds for LocalUser[netadmin].",
       "actual": [
-        "LocalUser[netadmin].hash_type = pbkdf2-sha256"
+        "LocalUser[netadmin].hash_type = sha256-crypt"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 51,
-          "line_end": 51,
-          "raw": "set password ENC ****",
-          "mapping_id": "fortinet_fortios/admin-password",
+          "file": "hardened.xml",
+          "line_start": 6,
+          "line_end": 6,
+          "raw": "phash ****",
+          "mapping_id": "paloalto_panos/admin-phash",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -642,28 +641,28 @@
       "severity_reason": null,
       "reason": "Repeated failed logins are blocked: holds for LockoutPolicy[lockout-policy].",
       "actual": [
-        "LockoutPolicy[lockout-policy].max_attempts = 3",
-        "LockoutPolicy[lockout-policy].lockout_s = 900"
+        "LockoutPolicy[lockout-policy].max_attempts = 5",
+        "LockoutPolicy[lockout-policy].lockout_s = 1800"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 6,
-          "line_end": 6,
-          "raw": "set admin-lockout-duration 900",
-          "mapping_id": "fortinet_fortios/lockout-duration",
+          "file": "hardened.xml",
+          "line_start": 151,
+          "line_end": 151,
+          "raw": "failed-attempts 5",
+          "mapping_id": "paloalto_panos/failed-attempts",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 7,
-          "line_end": 7,
-          "raw": "set admin-lockout-threshold 3",
-          "mapping_id": "fortinet_fortios/lockout-threshold",
+          "file": "hardened.xml",
+          "line_start": 152,
+          "line_end": 152,
+          "raw": "lockout-time 30",
+          "mapping_id": "paloalto_panos/lockout-time",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -682,7 +681,7 @@
         "PasswordPolicy[password-policy].cleartext_passwords_encrypted = true (vendor default)"
       ],
       "defaults_used": [
-        "fortinet_fortios/defaults.yaml#passwords-stored-encoded"
+        "paloalto_panos/defaults.yaml#passwords-stored-hashed"
       ],
       "evidence": []
     },
@@ -700,22 +699,22 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 16,
-          "line_end": 16,
-          "raw": "set status enable",
-          "mapping_id": "fortinet_fortios/password-policy-status",
+          "file": "hardened.xml",
+          "line_start": 15,
+          "line_end": 15,
+          "raw": "enabled yes",
+          "mapping_id": "paloalto_panos/password-complexity-enabled",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 17,
-          "line_end": 17,
-          "raw": "set minimum-length 15",
-          "mapping_id": "fortinet_fortios/password-minimum-length",
+          "file": "hardened.xml",
+          "line_start": 16,
+          "line_end": 16,
+          "raw": "minimum-length 15",
+          "mapping_id": "paloalto_panos/password-complexity-minimum-length",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -729,34 +728,89 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "No filter entry permits all traffic from anywhere to anywhere: holds for the device (using the vendor default for this OS version).",
+      "reason": "No filter entry permits all traffic from anywhere to anywhere: holds for the device.",
       "actual": [
         "filtering.permit_all_present = false",
-        "FilterRule[policy:1].service = {DNS, HTTPS}",
-        "FilterRule[policy:1].src = {LAN-NET}",
-        "FilterRule[policy:2].action = deny (vendor default)"
+        "FilterRule[security:deny-and-log].action = deny",
+        "FilterRule[security:lan-to-internet].src = {LAN-NET}",
+        "FilterRule[security:lan-to-internet].applications = {dns, ssl, web-browsing}",
+        "FilterRule[security:web-in].dst = {WEB-SRV}",
+        "FilterRule[security:web-in].applications = {ssl}"
       ],
-      "defaults_used": [
-        "fortinet_fortios/defaults.yaml#policy-action-deny"
-      ],
+      "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 109,
-          "line_end": 109,
-          "raw": "set srcaddr \"LAN-NET\"",
-          "mapping_id": "fortinet_fortios/policy-srcaddr",
+          "file": "hardened.xml",
+          "line_start": 194,
+          "line_end": 194,
+          "raw": "member LAN-NET",
+          "mapping_id": "paloalto_panos/rule-source",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 112,
-          "line_end": 112,
-          "raw": "set service \"HTTPS\" \"DNS\"",
-          "mapping_id": "fortinet_fortios/policy-service",
+          "file": "hardened.xml",
+          "line_start": 200,
+          "line_end": 200,
+          "raw": "member dns",
+          "mapping_id": "paloalto_panos/rule-application",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 201,
+          "line_end": 201,
+          "raw": "member ssl",
+          "mapping_id": "paloalto_panos/rule-application",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 202,
+          "line_end": 202,
+          "raw": "member web-browsing",
+          "mapping_id": "paloalto_panos/rule-application",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 221,
+          "line_end": 221,
+          "raw": "member WEB-SRV",
+          "mapping_id": "paloalto_panos/rule-destination",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 224,
+          "line_end": 224,
+          "raw": "member ssl",
+          "mapping_id": "paloalto_panos/rule-application",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 251,
+          "line_end": 251,
+          "raw": "action deny",
+          "mapping_id": "paloalto_panos/rule-action",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -766,34 +820,34 @@
     },
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
-      "entity_id": "Interface[wan1]",
+      "entity_id": "Interface[ethernet1/1]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Untrusted interfaces filter inbound traffic: holds for Interface[wan1].",
+      "reason": "Untrusted interfaces filter inbound traffic: holds for Interface[ethernet1/1].",
       "actual": [
-        "Interface[wan1].role = untrusted",
-        "Interface[wan1].zone = wan1"
+        "Interface[ethernet1/1].role = untrusted",
+        "Interface[ethernet1/1].zone = untrust"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 20,
-          "line_end": 20,
-          "raw": "edit \"wan1\"",
-          "mapping_id": "fortinet_fortios/interface",
+          "file": "hardened.xml",
+          "line_start": 163,
+          "line_end": 163,
+          "raw": "member ethernet1/1",
+          "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 25,
-          "line_end": 25,
-          "raw": "set role wan",
-          "mapping_id": "fortinet_fortios/interface-role-wan",
+          "file": "hardened.xml",
+          "line_start": 163,
+          "line_end": 163,
+          "raw": "member ethernet1/1",
+          "mapping_id": "paloalto_panos/zone-member",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -812,7 +866,7 @@
         "LoggingPolicy[logging-policy].config_change_logged = true (vendor default)"
       ],
       "defaults_used": [
-        "fortinet_fortios/defaults.yaml#config-changes-logged"
+        "paloalto_panos/defaults.yaml#config-changes-logged"
       ],
       "evidence": []
     },
@@ -825,28 +879,28 @@
       "reason": "Logs are sent to a remote log server: holds for the device.",
       "actual": [
         "logging.remote_configured = true",
-        "LogTarget[syslogd].host = 10.30.10.50",
-        "LogTarget[syslogd].enabled = true"
+        "LogTarget[SIEM].host = 10.30.10.50",
+        "LogTarget[SIEM].enabled = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 61,
-          "line_end": 61,
-          "raw": "set status enable",
-          "mapping_id": "fortinet_fortios/syslogd-status",
+          "file": "hardened.xml",
+          "line_start": 41,
+          "line_end": 41,
+          "raw": "server 10.30.10.50",
+          "mapping_id": "paloalto_panos/syslog-server",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 62,
-          "line_end": 62,
-          "raw": "set server \"10.30.10.50\"",
-          "mapping_id": "fortinet_fortios/syslogd-server",
+          "file": "hardened.xml",
+          "line_start": 65,
+          "line_end": 65,
+          "raw": "member SIEM",
+          "mapping_id": "paloalto_panos/send-syslog-config",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -865,7 +919,7 @@
         "LoggingPolicy[logging-policy].timestamps = true (vendor default)"
       ],
       "defaults_used": [
-        "fortinet_fortios/defaults.yaml#logs-timestamped"
+        "paloalto_panos/defaults.yaml#logs-timestamped"
       ],
       "evidence": []
     },
@@ -883,11 +937,11 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 12,
-          "line_end": 12,
-          "raw": "set pre-login-banner enable",
-          "mapping_id": "fortinet_fortios/pre-login-banner",
+          "file": "hardened.xml",
+          "line_start": 120,
+          "line_end": 120,
+          "raw": "login-banner \"Authorised access only. Activity is logged and monitored.\"",
+          "mapping_id": "paloalto_panos/login-banner",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -901,15 +955,25 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Unencrypted HTTP management is disabled: holds for the device (using the vendor default for this OS version).",
+      "reason": "Unencrypted HTTP management is disabled: holds for the device.",
       "actual": [
         "management.http_enabled = false",
-        "MgmtService[http].enabled = false (vendor default)"
+        "MgmtService[http].enabled = false"
       ],
-      "defaults_used": [
-        "fortinet_fortios/defaults.yaml#http-redirected-to-https"
-      ],
-      "evidence": []
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 116,
+          "line_end": 116,
+          "raw": "disable-http yes",
+          "mapping_id": "paloalto_panos/mgt-http",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
@@ -925,11 +989,11 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 9,
-          "line_end": 9,
-          "raw": "set admintimeout 10",
-          "mapping_id": "fortinet_fortios/admintimeout",
+          "file": "hardened.xml",
+          "line_start": 149,
+          "line_end": 149,
+          "raw": "idle-timeout 10",
+          "mapping_id": "paloalto_panos/idle-timeout",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -940,17 +1004,14 @@
     {
       "rule_id": "MGMT-SSH-V2-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "SSH management uses protocol version 2 only: holds for the device (using the vendor default for this OS version).",
+      "status": "REVIEW",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "Cannot judge the rule for the device (missing: MgmtService[ssh].version). No vendor default is known for this OS version.",
       "actual": [
-        "management.ssh_v1_negotiable = false",
-        "MgmtService[ssh].version = 2 (vendor default)"
+        "MgmtService[ssh].version: missing"
       ],
-      "defaults_used": [
-        "fortinet_fortios/defaults.yaml#ssh-v1-off"
-      ],
+      "defaults_used": [],
       "evidence": []
     },
     {
@@ -964,62 +1025,61 @@
         "management.telnet_reachable = false",
         "MgmtService[telnet].enabled = false",
         "MgmtSession[admin].kind = cli",
-        "Interface[internal].mgmt_protocols = {ping}",
-        "Interface[mgmt].mgmt_protocols = {https, ping, ssh}",
-        "Interface[wan1].mgmt_protocols = {ping}"
+        "Interface[ethernet1/1].mgmt_protocols = {ping}",
+        "Interface[ethernet1/2].mgmt_protocols = {ping}"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 8,
-          "line_end": 8,
-          "raw": "set admin-telnet disable",
-          "mapping_id": "fortinet_fortios/admin-telnet-disable",
+          "file": "hardened.xml",
+          "line_start": 82,
+          "line_end": 82,
+          "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 9,
-          "line_end": 9,
-          "raw": "set admintimeout 10",
-          "mapping_id": "fortinet_fortios/admintimeout",
+          "file": "hardened.xml",
+          "line_start": 91,
+          "line_end": 91,
+          "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 23,
-          "line_end": 23,
-          "raw": "set allowaccess ping",
-          "mapping_id": "fortinet_fortios/interface-allowaccess",
+          "file": "hardened.xml",
+          "line_start": 100,
+          "line_end": 100,
+          "raw": "ping yes",
+          "mapping_id": "paloalto_panos/mgmt-profile-service",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 31,
-          "line_end": 31,
-          "raw": "set allowaccess ping",
-          "mapping_id": "fortinet_fortios/interface-allowaccess",
+          "file": "hardened.xml",
+          "line_start": 115,
+          "line_end": 115,
+          "raw": "disable-telnet yes",
+          "mapping_id": "paloalto_panos/mgt-telnet",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 39,
-          "line_end": 39,
-          "raw": "set allowaccess ping https ssh",
-          "mapping_id": "fortinet_fortios/interface-allowaccess",
+          "file": "hardened.xml",
+          "line_start": 149,
+          "line_end": 149,
+          "raw": "idle-timeout 10",
+          "mapping_id": "paloalto_panos/idle-timeout",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1055,32 +1115,30 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Web management accepts only permitted sources: holds for MgmtService[https] (using the vendor default for this OS version).",
+      "reason": "Web management accepts only permitted sources: holds for MgmtService[https].",
       "actual": [
-        "MgmtService[https].enabled = true (vendor default)",
-        "MgmtService[https].access_filter = per-account-sources"
+        "MgmtService[https].enabled = true",
+        "MgmtService[https].access_filter = permitted-sources"
       ],
-      "defaults_used": [
-        "fortinet_fortios/defaults.yaml#https-available"
-      ],
+      "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 49,
-          "line_end": 49,
-          "raw": "set trusthost1 10.30.10.0 255.255.255.0",
-          "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+          "file": "hardened.xml",
+          "line_start": 112,
+          "line_end": 112,
+          "raw": "entry 10.30.10.0/24",
+          "mapping_id": "inference/mgmt_service.access_filter.permitted_sources",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 50,
-          "line_end": 50,
-          "raw": "set ip6-trusthost1 fd00:30:10::/64",
-          "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+          "file": "hardened.xml",
+          "line_start": 117,
+          "line_end": 117,
+          "raw": "disable-https no",
+          "mapping_id": "paloalto_panos/mgt-https",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1090,14 +1148,53 @@
     },
     {
       "rule_id": "REF-DANGLING-01",
-      "entity_id": "Device[device]",
-      "status": "N/A",
+      "entity_id": "Reference[Interface[ethernet1/1].mgmt_protocols -> PING-ONLY]",
+      "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Not applicable: nothing matches `Reference` on this device.",
-      "actual": [],
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[ethernet1/1].mgmt_protocols -> PING-ONLY].",
+      "actual": [
+        "Reference[Interface[ethernet1/1].mgmt_protocols -> PING-ONLY].resolved = true"
+      ],
       "defaults_used": [],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 82,
+          "line_end": 82,
+          "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[ethernet1/2].mgmt_protocols -> PING-ONLY]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[ethernet1/2].mgmt_protocols -> PING-ONLY].",
+      "actual": [
+        "Reference[Interface[ethernet1/2].mgmt_protocols -> PING-ONLY].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 91,
+          "line_end": 91,
+          "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -1108,12 +1205,25 @@
       "reason": "No SNMP community is well known or writable: holds for the device (using the vendor default for this OS version).",
       "actual": [
         "snmp.weak_community_present = false",
-        "SnmpCommunity: none configured = none (vendor default)"
+        "SnmpCommunity[v2c].is_well_known = false",
+        "SnmpCommunity[v2c].access = ro (vendor default)"
       ],
       "defaults_used": [
-        "fortinet_fortios/defaults.yaml#no-snmp-communities"
+        "paloalto_panos/defaults.yaml#snmp-read-only"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 140,
+          "line_end": 140,
+          "raw": "snmp-community-string ****",
+          "mapping_id": "paloalto_panos/snmp-v2c-community",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "SVC-LEGACY-01",
@@ -1131,101 +1241,59 @@
         "MgmtService[udp-small-servers].enabled = false (vendor default)"
       ],
       "defaults_used": [
-        "fortinet_fortios/defaults.yaml#no-legacy-bootp",
-        "fortinet_fortios/defaults.yaml#no-legacy-finger",
-        "fortinet_fortios/defaults.yaml#no-legacy-pad",
-        "fortinet_fortios/defaults.yaml#no-tcp-small-servers",
-        "fortinet_fortios/defaults.yaml#no-udp-small-servers"
+        "paloalto_panos/defaults.yaml#no-legacy-bootp",
+        "paloalto_panos/defaults.yaml#no-legacy-finger",
+        "paloalto_panos/defaults.yaml#no-legacy-pad",
+        "paloalto_panos/defaults.yaml#no-tcp-small-servers",
+        "paloalto_panos/defaults.yaml#no-udp-small-servers"
       ],
       "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[internal]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[internal] (using the vendor default for this OS version).",
+      "entity_id": "Interface[ethernet1/1]",
+      "status": "REVIEW",
+      "severity": "low",
+      "severity_reason": "Low (base)",
+      "reason": "Cannot judge the rule for Interface[ethernet1/1] (missing: Interface[ethernet1/1].proxy_arp). No vendor default is known for this OS version.",
       "actual": [
-        "Interface[internal].proxy_arp = false (vendor default)"
+        "Interface[ethernet1/1].proxy_arp: missing"
       ],
-      "defaults_used": [
-        "fortinet_fortios/defaults.yaml#proxy-arp-off"
-      ],
+      "defaults_used": [],
       "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[mgmt]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[mgmt] (using the vendor default for this OS version).",
+      "entity_id": "Interface[ethernet1/2]",
+      "status": "REVIEW",
+      "severity": "low",
+      "severity_reason": "Low (base)",
+      "reason": "Cannot judge the rule for Interface[ethernet1/2] (missing: Interface[ethernet1/2].proxy_arp). No vendor default is known for this OS version.",
       "actual": [
-        "Interface[mgmt].proxy_arp = false (vendor default)"
+        "Interface[ethernet1/2].proxy_arp: missing"
       ],
-      "defaults_used": [
-        "fortinet_fortios/defaults.yaml#proxy-arp-off"
-      ],
-      "evidence": []
-    },
-    {
-      "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[wan1]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[wan1] (using the vendor default for this OS version).",
-      "actual": [
-        "Interface[wan1].proxy_arp = false (vendor default)"
-      ],
-      "defaults_used": [
-        "fortinet_fortios/defaults.yaml#proxy-arp-off"
-      ],
+      "defaults_used": [],
       "evidence": []
     },
     {
       "rule_id": "TIME-NTP-AUTH-01",
-      "entity_id": "TimeSource[ntp-1]",
+      "entity_id": "TimeSource[primary-ntp-server]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Time sources are authenticated: holds for TimeSource[ntp-1].",
+      "reason": "Time sources are authenticated: holds for TimeSource[primary-ntp-server].",
       "actual": [
-        "TimePolicy[time-policy].sync_enabled = true",
-        "TimeSource[ntp-1].authenticated = true",
+        "TimeSource[primary-ntp-server].authenticated = true",
         "TimePolicy[time-policy].auth_enforced = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 66,
-          "line_end": 66,
-          "raw": "set ntpsync enable",
-          "mapping_id": "fortinet_fortios/ntp-sync",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 71,
-          "line_end": 71,
-          "raw": "set authentication enable",
-          "mapping_id": "fortinet_fortios/ntpserver-authentication-enforced",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 71,
-          "line_end": 71,
-          "raw": "set authentication enable",
-          "mapping_id": "fortinet_fortios/ntpserver-authentication",
+          "file": "hardened.xml",
+          "line_start": 125,
+          "line_end": 132,
+          "raw": "symmetric-key",
+          "mapping_id": "paloalto_panos/ntp-auth-symmetric-key",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1235,474 +1303,774 @@
     }
   ],
   "assurance": {
-    "statements": 97,
-    "understood": 62,
-    "unmapped": 36,
+    "statements": 172,
+    "understood": 66,
+    "unmapped": 106,
     "near_miss": 0,
-    "understood_pct": 63.9,
+    "understood_pct": 38.4,
     "unmapped_patterns": [
       {
-        "pattern_key": "set vdom <STR>",
+        "pattern_key": "network",
         "count": 4,
-        "first_line": 21,
-        "example": "set vdom \"root\""
+        "first_line": 74,
+        "example": "network"
       },
       {
-        "pattern_key": "set ip <IP> <IP>",
+        "pattern_key": "layer3",
+        "count": 4,
+        "first_line": 78,
+        "example": "layer3"
+      },
+      {
+        "pattern_key": "service",
+        "count": 4,
+        "first_line": 114,
+        "example": "service"
+      },
+      {
+        "pattern_key": "from",
         "count": 3,
-        "first_line": 22,
-        "example": "set ip 198.51.100.2 255.255.255.252"
+        "first_line": 187,
+        "example": "from"
       },
       {
-        "pattern_key": "set category <STR>",
+        "pattern_key": "to",
         "count": 3,
-        "first_line": 90,
-        "example": "set category \"General\""
+        "first_line": 190,
+        "example": "to"
       },
       {
-        "pattern_key": "set type physical",
+        "pattern_key": "source",
+        "count": 3,
+        "first_line": 193,
+        "example": "source"
+      },
+      {
+        "pattern_key": "destination",
+        "count": 3,
+        "first_line": 196,
+        "example": "destination"
+      },
+      {
+        "pattern_key": "application",
+        "count": 3,
+        "first_line": 199,
+        "example": "application"
+      },
+      {
+        "pattern_key": "server",
         "count": 2,
-        "first_line": 24,
-        "example": "set type physical"
+        "first_line": 27,
+        "example": "server"
       },
       {
-        "pattern_key": "set key ENC ****",
+        "pattern_key": "system",
         "count": 2,
-        "first_line": 57,
-        "example": "set key ENC ****"
+        "first_line": 50,
+        "example": "system"
       },
       {
-        "pattern_key": "set schedule <STR>",
+        "pattern_key": "match-list",
         "count": 2,
-        "first_line": 111,
-        "example": "set schedule \"always\""
+        "first_line": 51,
+        "example": "match-list"
       },
       {
-        "pattern_key": "config system global",
+        "pattern_key": "filter <STR>",
+        "count": 2,
+        "first_line": 53,
+        "example": "filter \"All Logs\""
+      },
+      {
+        "pattern_key": "send-syslog",
+        "count": 2,
+        "first_line": 54,
+        "example": "send-syslog"
+      },
+      {
+        "pattern_key": "interface",
+        "count": 2,
+        "first_line": 75,
+        "example": "interface"
+      },
+      {
+        "pattern_key": "ip",
+        "count": 2,
+        "first_line": 79,
+        "example": "ip"
+      },
+      {
+        "pattern_key": "entry <IP>",
+        "count": 2,
+        "first_line": 80,
+        "example": "entry 198.51.100.2/30"
+      },
+      {
+        "pattern_key": "member <IFNAME>",
+        "count": 2,
+        "first_line": 260,
+        "example": "member ethernet1/1"
+      },
+      {
+        "pattern_key": "mgt-config",
         "count": 1,
-        "first_line": 5,
-        "example": "config system global"
+        "first_line": 3,
+        "example": "mgt-config"
       },
       {
-        "pattern_key": "set alias <STR>",
+        "pattern_key": "users",
         "count": 1,
-        "first_line": 10,
-        "example": "set alias \"FGT-EDGE\""
+        "first_line": 4,
+        "example": "users"
       },
       {
-        "pattern_key": "set timezone <STR>",
+        "pattern_key": "permissions",
         "count": 1,
-        "first_line": 13,
-        "example": "set timezone \"Asia/Kolkata\""
+        "first_line": 7,
+        "example": "permissions"
       },
       {
-        "pattern_key": "config system password-policy",
+        "pattern_key": "role-based",
         "count": 1,
-        "first_line": 15,
-        "example": "config system password-policy"
+        "first_line": 8,
+        "example": "role-based"
       },
       {
-        "pattern_key": "config system interface",
+        "pattern_key": "superuser yes",
+        "count": 1,
+        "first_line": 9,
+        "example": "superuser yes"
+      },
+      {
+        "pattern_key": "password-complexity",
+        "count": 1,
+        "first_line": 14,
+        "example": "password-complexity"
+      },
+      {
+        "pattern_key": "minimum-uppercase-letters <INT>",
+        "count": 1,
+        "first_line": 17,
+        "example": "minimum-uppercase-letters 1"
+      },
+      {
+        "pattern_key": "minimum-lowercase-letters <INT>",
+        "count": 1,
+        "first_line": 18,
+        "example": "minimum-lowercase-letters 1"
+      },
+      {
+        "pattern_key": "minimum-numeric-letters <INT>",
         "count": 1,
         "first_line": 19,
-        "example": "config system interface"
+        "example": "minimum-numeric-letters 1"
       },
       {
-        "pattern_key": "set type hard-switch",
+        "pattern_key": "minimum-special-characters <INT>",
         "count": 1,
-        "first_line": 32,
-        "example": "set type hard-switch"
+        "first_line": 20,
+        "example": "minimum-special-characters 1"
       },
       {
-        "pattern_key": "config system admin",
+        "pattern_key": "shared",
+        "count": 1,
+        "first_line": 23,
+        "example": "shared"
+      },
+      {
+        "pattern_key": "server-profile",
+        "count": 1,
+        "first_line": 24,
+        "example": "server-profile"
+      },
+      {
+        "pattern_key": "tacplus",
+        "count": 1,
+        "first_line": 25,
+        "example": "tacplus"
+      },
+      {
+        "pattern_key": "entry TACACS",
+        "count": 1,
+        "first_line": 26,
+        "example": "entry TACACS"
+      },
+      {
+        "pattern_key": "entry tacacs-1",
+        "count": 1,
+        "first_line": 28,
+        "example": "entry tacacs-1"
+      },
+      {
+        "pattern_key": "secret ****",
+        "count": 1,
+        "first_line": 30,
+        "example": "secret ****"
+      },
+      {
+        "pattern_key": "log-settings",
+        "count": 1,
+        "first_line": 36,
+        "example": "log-settings"
+      },
+      {
+        "pattern_key": "syslog",
+        "count": 1,
+        "first_line": 37,
+        "example": "syslog"
+      },
+      {
+        "pattern_key": "entry SIEM",
+        "count": 1,
+        "first_line": 38,
+        "example": "entry SIEM"
+      },
+      {
+        "pattern_key": "entry siem-1",
+        "count": 1,
+        "first_line": 40,
+        "example": "entry siem-1"
+      },
+      {
+        "pattern_key": "port <INT>",
+        "count": 1,
+        "first_line": 43,
+        "example": "port 6514"
+      },
+      {
+        "pattern_key": "format IETF",
+        "count": 1,
+        "first_line": 44,
+        "example": "format IETF"
+      },
+      {
+        "pattern_key": "facility LOG_USER",
         "count": 1,
         "first_line": 45,
-        "example": "config system admin"
+        "example": "facility LOG_USER"
       },
       {
-        "pattern_key": "set accprofile <STR>",
+        "pattern_key": "entry system-to-siem",
         "count": 1,
-        "first_line": 47,
-        "example": "set accprofile \"super_admin\""
+        "first_line": 52,
+        "example": "entry system-to-siem"
       },
       {
-        "pattern_key": "config user tacacs+",
-        "count": 1,
-        "first_line": 54,
-        "example": "config user tacacs+"
-      },
-      {
-        "pattern_key": "edit <STR>",
-        "count": 1,
-        "first_line": 55,
-        "example": "edit \"TACACS-1\""
-      },
-      {
-        "pattern_key": "config log syslogd setting",
+        "pattern_key": "config",
         "count": 1,
         "first_line": 60,
-        "example": "config log syslogd setting"
+        "example": "config"
       },
       {
-        "pattern_key": "config system ntp",
+        "pattern_key": "entry config-to-siem",
         "count": 1,
-        "first_line": 65,
-        "example": "config system ntp"
+        "first_line": 62,
+        "example": "entry config-to-siem"
       },
       {
-        "pattern_key": "config ntpserver",
-        "count": 1,
-        "first_line": 68,
-        "example": "config ntpserver"
-      },
-      {
-        "pattern_key": "edit <INT>",
-        "count": 1,
-        "first_line": 69,
-        "example": "edit 1"
-      },
-      {
-        "pattern_key": "set key-type SHA256",
+        "pattern_key": "devices",
         "count": 1,
         "first_line": 72,
-        "example": "set key-type SHA256"
+        "example": "devices"
       },
       {
-        "pattern_key": "set key-id <INT>",
+        "pattern_key": "entry localhost.localdomain",
         "count": 1,
-        "first_line": 74,
-        "example": "set key-id 1"
+        "first_line": 73,
+        "example": "entry localhost.localdomain"
       },
       {
-        "pattern_key": "config firewall address",
+        "pattern_key": "ethernet",
         "count": 1,
-        "first_line": 78,
-        "example": "config firewall address"
+        "first_line": 76,
+        "example": "ethernet"
       },
       {
-        "pattern_key": "config firewall service custom",
+        "pattern_key": "profiles",
         "count": 1,
-        "first_line": 88,
-        "example": "config firewall service custom"
+        "first_line": 97,
+        "example": "profiles"
       },
       {
-        "pattern_key": "config firewall policy",
+        "pattern_key": "interface-management-profile",
         "count": 1,
-        "first_line": 103,
-        "example": "config firewall policy"
+        "first_line": 98,
+        "example": "interface-management-profile"
       },
       {
-        "pattern_key": "set nat enable",
+        "pattern_key": "deviceconfig",
         "count": 1,
-        "first_line": 114,
-        "example": "set nat enable"
+        "first_line": 105,
+        "example": "deviceconfig"
+      },
+      {
+        "pattern_key": "ip-address <IP>",
+        "count": 1,
+        "first_line": 108,
+        "example": "ip-address 10.30.10.2"
+      },
+      {
+        "pattern_key": "netmask <IP>",
+        "count": 1,
+        "first_line": 109,
+        "example": "netmask 255.255.255.0"
+      },
+      {
+        "pattern_key": "default-gateway <IP>",
+        "count": 1,
+        "first_line": 110,
+        "example": "default-gateway 10.30.10.1"
+      },
+      {
+        "pattern_key": "permitted-ip",
+        "count": 1,
+        "first_line": 111,
+        "example": "permitted-ip"
+      },
+      {
+        "pattern_key": "ntp-servers",
+        "count": 1,
+        "first_line": 121,
+        "example": "ntp-servers"
+      },
+      {
+        "pattern_key": "primary-ntp-server",
+        "count": 1,
+        "first_line": 122,
+        "example": "primary-ntp-server"
+      },
+      {
+        "pattern_key": "authentication-type",
+        "count": 1,
+        "first_line": 124,
+        "example": "authentication-type"
+      },
+      {
+        "pattern_key": "algorithm",
+        "count": 1,
+        "first_line": 126,
+        "example": "algorithm"
+      },
+      {
+        "pattern_key": "sha1",
+        "count": 1,
+        "first_line": 127,
+        "example": "sha1"
+      },
+      {
+        "pattern_key": "authentication-key ****",
+        "count": 1,
+        "first_line": 128,
+        "example": "authentication-key ****"
+      },
+      {
+        "pattern_key": "key-id <INT>",
+        "count": 1,
+        "first_line": 131,
+        "example": "key-id 1"
+      },
+      {
+        "pattern_key": "snmp-setting",
+        "count": 1,
+        "first_line": 136,
+        "example": "snmp-setting"
+      },
+      {
+        "pattern_key": "access-setting",
+        "count": 1,
+        "first_line": 137,
+        "example": "access-setting"
+      },
+      {
+        "pattern_key": "version",
+        "count": 1,
+        "first_line": 138,
+        "example": "version"
+      },
+      {
+        "pattern_key": "v2c",
+        "count": 1,
+        "first_line": 139,
+        "example": "v2c"
+      },
+      {
+        "pattern_key": "timezone Asia/Kolkata",
+        "count": 1,
+        "first_line": 145,
+        "example": "timezone Asia/Kolkata"
+      },
+      {
+        "pattern_key": "setting",
+        "count": 1,
+        "first_line": 147,
+        "example": "setting"
+      },
+      {
+        "pattern_key": "management",
+        "count": 1,
+        "first_line": 148,
+        "example": "management"
+      },
+      {
+        "pattern_key": "admin-lockout",
+        "count": 1,
+        "first_line": 150,
+        "example": "admin-lockout"
+      },
+      {
+        "pattern_key": "vsys",
+        "count": 1,
+        "first_line": 157,
+        "example": "vsys"
+      },
+      {
+        "pattern_key": "entry vsys1",
+        "count": 1,
+        "first_line": 158,
+        "example": "entry vsys1"
+      },
+      {
+        "pattern_key": "zone",
+        "count": 1,
+        "first_line": 159,
+        "example": "zone"
+      },
+      {
+        "pattern_key": "entry untrust",
+        "count": 1,
+        "first_line": 160,
+        "example": "entry untrust"
+      },
+      {
+        "pattern_key": "entry trust",
+        "count": 1,
+        "first_line": 167,
+        "example": "entry trust"
+      },
+      {
+        "pattern_key": "address",
+        "count": 1,
+        "first_line": 175,
+        "example": "address"
+      },
+      {
+        "pattern_key": "rulebase",
+        "count": 1,
+        "first_line": 183,
+        "example": "rulebase"
+      },
+      {
+        "pattern_key": "security",
+        "count": 1,
+        "first_line": 184,
+        "example": "security"
+      },
+      {
+        "pattern_key": "rules",
+        "count": 1,
+        "first_line": 185,
+        "example": "rules"
+      },
+      {
+        "pattern_key": "import",
+        "count": 1,
+        "first_line": 257,
+        "example": "import"
       }
     ],
-    "review_findings": 0,
+    "review_findings": 3,
     "mappings_used": [
-      {
-        "mapping": "fortinet_fortios/address-subnet@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/address@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 3
-      },
-      {
-        "mapping": "fortinet_fortios/admin-ip6-trusthost1@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/admin-password@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/admin-telnet-disable@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/admin-trusthost1@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/admintimeout@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/interface-alias@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 3
-      },
-      {
-        "mapping": "fortinet_fortios/interface-allowaccess@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 3
-      },
-      {
-        "mapping": "fortinet_fortios/interface-role-lan@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/interface-role-wan@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/interface@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 3
-      },
-      {
-        "mapping": "fortinet_fortios/lockout-duration@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/lockout-threshold@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/ntp-sync@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/ntp-type@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/ntpserver-authentication-enforced@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/ntpserver-authentication@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/ntpserver-server@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/password-minimum-length@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/password-policy-status@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/policy-action@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/policy-dstaddr@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/policy-dstintf@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/policy-logtraffic@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/policy-name@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/policy-service@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/policy-srcaddr@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/policy-srcintf@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/policy@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 4
-      },
-      {
-        "mapping": "fortinet_fortios/pre-login-banner@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/service-protocol-ip@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/service-tcp-portrange@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "fortinet_fortios/service-udp-portrange@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/service@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 3
-      },
-      {
-        "mapping": "fortinet_fortios/syslogd-mode@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/syslogd-server@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/syslogd-status@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "fortinet_fortios/tacacs-server@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
       {
         "mapping": "inference/device.role.firewall_by_zones@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 4
+        "facts": 6
       },
       {
-        "mapping": "inference/mgmt_service.access_filter.per_account_sources@1",
+        "mapping": "inference/interface.role.untrusted_by_zone@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 6
+        "facts": 1
+      },
+      {
+        "mapping": "inference/mgmt_service.access_filter.permitted_sources@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/address-ip-netmask@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "paloalto_panos/address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "paloalto_panos/admin-phash@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/ethernet-comment@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "paloalto_panos/ethernet-layer3-mgmt-profile@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 14
+      },
+      {
+        "mapping": "paloalto_panos/failed-attempts@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/idle-timeout@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "paloalto_panos/lockout-time@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/login-banner@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/mgmt-profile-service@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/mgmt-profile@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/mgt-http@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/mgt-https@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/mgt-permitted-ip-http@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/mgt-permitted-ip-https@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/mgt-permitted-ip-ssh@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/mgt-ssh@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/mgt-telnet@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/ntp-auth-symmetric-key@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "paloalto_panos/ntp-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/password-complexity-enabled@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/password-complexity-minimum-length@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/rule-action@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/rule-application@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 5
+      },
+      {
+        "mapping": "paloalto_panos/rule-destination@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/rule-from@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/rule-log-end@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/rule-service@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/rule-source@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/rule-to@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/rule@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "paloalto_panos/send-syslog-config@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/server-profile-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "paloalto_panos/snmp-v2c-community@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/syslog-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/syslog-transport@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/zone-member@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
       }
     ],
     "defaults_used": [
-      "fortinet_fortios/defaults.yaml#config-changes-logged",
-      "fortinet_fortios/defaults.yaml#http-redirected-to-https",
-      "fortinet_fortios/defaults.yaml#https-available",
-      "fortinet_fortios/defaults.yaml#logs-timestamped",
-      "fortinet_fortios/defaults.yaml#no-legacy-bootp",
-      "fortinet_fortios/defaults.yaml#no-legacy-finger",
-      "fortinet_fortios/defaults.yaml#no-legacy-pad",
-      "fortinet_fortios/defaults.yaml#no-snmp-communities",
-      "fortinet_fortios/defaults.yaml#no-tcp-small-servers",
-      "fortinet_fortios/defaults.yaml#no-udp-small-servers",
-      "fortinet_fortios/defaults.yaml#passwords-stored-encoded",
-      "fortinet_fortios/defaults.yaml#policy-action-deny",
-      "fortinet_fortios/defaults.yaml#proxy-arp-off",
-      "fortinet_fortios/defaults.yaml#ssh-v1-off"
+      "paloalto_panos/defaults.yaml#config-changes-logged",
+      "paloalto_panos/defaults.yaml#logs-timestamped",
+      "paloalto_panos/defaults.yaml#no-legacy-bootp",
+      "paloalto_panos/defaults.yaml#no-legacy-finger",
+      "paloalto_panos/defaults.yaml#no-legacy-pad",
+      "paloalto_panos/defaults.yaml#no-tcp-small-servers",
+      "paloalto_panos/defaults.yaml#no-udp-small-servers",
+      "paloalto_panos/defaults.yaml#passwords-stored-hashed",
+      "paloalto_panos/defaults.yaml#snmp-read-only"
     ],
     "mappings_skipped_for_version": []
   },
@@ -1713,14 +2081,14 @@
       "evidence": [],
       "type": "Device",
       "hostname": {
-        "value": "FGT-EDGE",
+        "value": "PA-EDGE",
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 11,
-            "line_end": 11,
-            "raw": "set hostname \"FGT-EDGE\"",
+            "file": "hardened.xml",
+            "line_start": 107,
+            "line_end": 107,
+            "raw": "hostname PA-EDGE",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1729,59 +2097,50 @@
         "default_source": null
       },
       "vendor": {
-        "value": "Fortinet",
+        "value": "Palo Alto Networks",
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 1,
-            "line_end": 1,
-            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=netadmin",
+            "file": "hardened.xml",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "<config version=\"11.1.0\" urldb=\"paloaltonetworks\" detail-version=\"11.1.2\">",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 5,
-            "line_end": 5,
-            "raw": "config system global",
+            "file": "hardened.xml",
+            "line_start": 73,
+            "line_end": 73,
+            "raw": "<entry name=\"localhost.localdomain\">",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 19,
-            "line_end": 19,
-            "raw": "config system interface",
+            "file": "hardened.xml",
+            "line_start": 105,
+            "line_end": 105,
+            "raw": "<deviceconfig>",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 23,
-            "line_end": 23,
-            "raw": "set allowaccess ping",
+            "file": "hardened.xml",
+            "line_start": 158,
+            "line_end": 158,
+            "raw": "<entry name=\"vsys1\">",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 27,
-            "line_end": 27,
-            "raw": "next",
-            "mapping_id": null,
-            "mapping_version": null,
-            "approved_by": []
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 103,
-            "line_end": 103,
-            "raw": "config firewall policy",
+            "file": "hardened.xml",
+            "line_start": 183,
+            "line_end": 183,
+            "raw": "<rulebase>",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1790,59 +2149,50 @@
         "default_source": null
       },
       "os_family": {
-        "value": "FortiOS",
+        "value": "PAN-OS",
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 1,
-            "line_end": 1,
-            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=netadmin",
+            "file": "hardened.xml",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "<config version=\"11.1.0\" urldb=\"paloaltonetworks\" detail-version=\"11.1.2\">",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 5,
-            "line_end": 5,
-            "raw": "config system global",
+            "file": "hardened.xml",
+            "line_start": 73,
+            "line_end": 73,
+            "raw": "<entry name=\"localhost.localdomain\">",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 19,
-            "line_end": 19,
-            "raw": "config system interface",
+            "file": "hardened.xml",
+            "line_start": 105,
+            "line_end": 105,
+            "raw": "<deviceconfig>",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 23,
-            "line_end": 23,
-            "raw": "set allowaccess ping",
+            "file": "hardened.xml",
+            "line_start": 158,
+            "line_end": 158,
+            "raw": "<entry name=\"vsys1\">",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 27,
-            "line_end": 27,
-            "raw": "next",
-            "mapping_id": null,
-            "mapping_version": null,
-            "approved_by": []
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 103,
-            "line_end": 103,
-            "raw": "config firewall policy",
+            "file": "hardened.xml",
+            "line_start": 183,
+            "line_end": 183,
+            "raw": "<rulebase>",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1851,14 +2201,14 @@
         "default_source": null
       },
       "os_version": {
-        "value": "7.4.8",
+        "value": "11.1.2",
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 1,
-            "line_end": 1,
-            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=netadmin",
+            "file": "hardened.xml",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "<config version=\"11.1.0\" urldb=\"paloaltonetworks\" detail-version=\"11.1.2\">",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1867,19 +2217,9 @@
         "default_source": null
       },
       "model": {
-        "value": "FGT60F",
-        "state": "explicit",
-        "evidence": [
-          {
-            "file": "hardened.conf",
-            "line_start": 1,
-            "line_end": 1,
-            "raw": "#config-version=FGT60F-7.4.8-FW-build2795-250523:opmode=0:vdom=0:user=netadmin",
-            "mapping_id": null,
-            "mapping_version": null,
-            "approved_by": []
-          }
-        ],
+        "value": null,
+        "state": "absent",
+        "evidence": [],
         "default_source": null
       },
       "serial": {
@@ -1899,10 +2239,10 @@
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 106,
-            "line_end": 106,
-            "raw": "set srcintf \"internal\"",
+            "file": "hardened.xml",
+            "line_start": 188,
+            "line_end": 188,
+            "raw": "member trust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
             "approved_by": [
@@ -1910,10 +2250,10 @@
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 107,
-            "line_end": 107,
-            "raw": "set dstintf \"wan1\"",
+            "file": "hardened.xml",
+            "line_start": 191,
+            "line_end": 191,
+            "raw": "member untrust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
             "approved_by": [
@@ -1921,10 +2261,10 @@
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 118,
-            "line_end": 118,
-            "raw": "set srcintf \"wan1\"",
+            "file": "hardened.xml",
+            "line_start": 212,
+            "line_end": 212,
+            "raw": "member untrust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
             "approved_by": [
@@ -1932,10 +2272,32 @@
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 119,
-            "line_end": 119,
-            "raw": "set dstintf \"internal\"",
+            "file": "hardened.xml",
+            "line_start": 215,
+            "line_end": 215,
+            "raw": "member trust",
+            "mapping_id": "inference/device.role.firewall_by_zones",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 234,
+            "line_end": 234,
+            "raw": "member any",
+            "mapping_id": "inference/device.role.firewall_by_zones",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 237,
+            "line_end": 237,
+            "raw": "member any",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
             "approved_by": [
@@ -1948,7 +2310,7 @@
     },
     "entities": [
       {
-        "key": "tacacs:TACACS-1",
+        "key": "tacplus:TACACS/tacacs-1",
         "evidence": [],
         "type": "AuthServer",
         "kind": {
@@ -1956,11 +2318,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 56,
-              "line_end": 56,
-              "raw": "set server \"10.30.10.40\"",
-              "mapping_id": "fortinet_fortios/tacacs-server",
+              "file": "hardened.xml",
+              "line_start": 29,
+              "line_end": 29,
+              "raw": "address 10.30.10.40",
+              "mapping_id": "paloalto_panos/server-profile-address",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1974,11 +2336,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 56,
-              "line_end": 56,
-              "raw": "set server \"10.30.10.40\"",
-              "mapping_id": "fortinet_fortios/tacacs-server",
+              "file": "hardened.xml",
+              "line_start": 29,
+              "line_end": 29,
+              "raw": "address 10.30.10.40",
+              "mapping_id": "paloalto_panos/server-profile-address",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2003,11 +2365,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 12,
-              "line_end": 12,
-              "raw": "set pre-login-banner enable",
-              "mapping_id": "fortinet_fortios/pre-login-banner",
+              "file": "hardened.xml",
+              "line_start": 120,
+              "line_end": 120,
+              "raw": "login-banner \"Authorised access only. Activity is logged and monitored.\"",
+              "mapping_id": "paloalto_panos/login-banner",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2024,19 +2386,19 @@
         }
       },
       {
-        "key": "policy:1",
+        "key": "security:deny-and-log",
         "evidence": [],
         "type": "FilterRule",
         "ruleset": {
-          "value": "policy",
+          "value": "security",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 104,
-              "line_end": 104,
-              "raw": "edit 1",
-              "mapping_id": "fortinet_fortios/policy",
+              "file": "hardened.xml",
+              "line_start": 232,
+              "line_end": 253,
+              "raw": "entry deny-and-log",
+              "mapping_id": "paloalto_panos/rule",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2046,53 +2408,29 @@
           "default_source": null
         },
         "position": {
-          "value": 1,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 104,
-              "line_end": 104,
-              "raw": "edit 1",
-              "mapping_id": "fortinet_fortios/policy",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         },
         "name": {
-          "value": "LAN-to-internet",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 105,
-              "line_end": 105,
-              "raw": "set name \"LAN-to-internet\"",
-              "mapping_id": "fortinet_fortios/policy-name",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         },
         "src": {
           "value": [
-            "LAN-NET"
+            "any"
           ],
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 109,
-              "line_end": 109,
-              "raw": "set srcaddr \"LAN-NET\"",
-              "mapping_id": "fortinet_fortios/policy-srcaddr",
+              "file": "hardened.xml",
+              "line_start": 240,
+              "line_end": 240,
+              "raw": "member any",
+              "mapping_id": "paloalto_panos/rule-source",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2108,215 +2446,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 110,
-              "line_end": 110,
-              "raw": "set dstaddr \"all\"",
-              "mapping_id": "fortinet_fortios/policy-dstaddr",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "service": {
-          "value": [
-            "DNS",
-            "HTTPS"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 112,
-              "line_end": 112,
-              "raw": "set service \"HTTPS\" \"DNS\"",
-              "mapping_id": "fortinet_fortios/policy-service",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "action": {
-          "value": "permit",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 108,
-              "line_end": 108,
-              "raw": "set action accept",
-              "mapping_id": "fortinet_fortios/policy-action",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "log": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 113,
-              "line_end": 113,
-              "raw": "set logtraffic all",
-              "mapping_id": "fortinet_fortios/policy-logtraffic",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "enabled": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone_from": {
-          "value": "internal",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 106,
-              "line_end": 106,
-              "raw": "set srcintf \"internal\"",
-              "mapping_id": "fortinet_fortios/policy-srcintf",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "zone_to": {
-          "value": "wan1",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 107,
-              "line_end": 107,
-              "raw": "set dstintf \"wan1\"",
-              "mapping_id": "fortinet_fortios/policy-dstintf",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "applications": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "policy:2",
-        "evidence": [],
-        "type": "FilterRule",
-        "ruleset": {
-          "value": "policy",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 116,
-              "line_end": 116,
-              "raw": "edit 2",
-              "mapping_id": "fortinet_fortios/policy",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "position": {
-          "value": 2,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 116,
-              "line_end": 116,
-              "raw": "edit 2",
-              "mapping_id": "fortinet_fortios/policy",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "name": {
-          "value": "deny-and-log",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 117,
-              "line_end": 117,
-              "raw": "set name \"deny-and-log\"",
-              "mapping_id": "fortinet_fortios/policy-name",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "src": {
-          "value": [
-            "any"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 120,
-              "line_end": 120,
-              "raw": "set srcaddr \"all\"",
-              "mapping_id": "fortinet_fortios/policy-srcaddr",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "dst": {
-          "value": [
-            "any"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 121,
-              "line_end": 121,
-              "raw": "set dstaddr \"all\"",
-              "mapping_id": "fortinet_fortios/policy-dstaddr",
+              "file": "hardened.xml",
+              "line_start": 243,
+              "line_end": 243,
+              "raw": "member any",
+              "mapping_id": "paloalto_panos/rule-destination",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2332,11 +2466,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 123,
-              "line_end": 123,
-              "raw": "set service \"ALL\"",
-              "mapping_id": "fortinet_fortios/policy-service",
+              "file": "hardened.xml",
+              "line_start": 249,
+              "line_end": 249,
+              "raw": "member any",
+              "mapping_id": "paloalto_panos/rule-service",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2347,20 +2481,32 @@
         },
         "action": {
           "value": "deny",
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#policy-action-deny"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 251,
+              "line_end": 251,
+              "raw": "action deny",
+              "mapping_id": "paloalto_panos/rule-action",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "log": {
           "value": true,
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 124,
-              "line_end": 124,
-              "raw": "set logtraffic all",
-              "mapping_id": "fortinet_fortios/policy-logtraffic",
+              "file": "hardened.xml",
+              "line_start": 252,
+              "line_end": 252,
+              "raw": "log-end yes",
+              "mapping_id": "paloalto_panos/rule-log-end",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2376,15 +2522,15 @@
           "default_source": null
         },
         "zone_from": {
-          "value": "wan1",
+          "value": "any",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 118,
-              "line_end": 118,
-              "raw": "set srcintf \"wan1\"",
-              "mapping_id": "fortinet_fortios/policy-srcintf",
+              "file": "hardened.xml",
+              "line_start": 234,
+              "line_end": 234,
+              "raw": "member any",
+              "mapping_id": "paloalto_panos/rule-from",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2394,15 +2540,15 @@
           "default_source": null
         },
         "zone_to": {
-          "value": "internal",
+          "value": "any",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 119,
-              "line_end": 119,
-              "raw": "set dstintf \"internal\"",
-              "mapping_id": "fortinet_fortios/policy-dstintf",
+              "file": "hardened.xml",
+              "line_start": 237,
+              "line_end": 237,
+              "raw": "member any",
+              "mapping_id": "paloalto_panos/rule-to",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2412,88 +2558,17 @@
           "default_source": null
         },
         "applications": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "internal",
-        "evidence": [],
-        "type": "Interface",
-        "description": {
-          "value": "LAN server segment",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 34,
-              "line_end": 34,
-              "raw": "set alias \"LAN server segment\"",
-              "mapping_id": "fortinet_fortios/interface-alias",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "zone": {
-          "value": "internal",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 28,
-              "line_end": 28,
-              "raw": "edit \"internal\"",
-              "mapping_id": "fortinet_fortios/interface",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "role": {
-          "value": "trusted",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 33,
-              "line_end": 33,
-              "raw": "set role lan",
-              "mapping_id": "fortinet_fortios/interface-role-lan",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "admin_up": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_protocols": {
           "value": [
-            "ping"
+            "any"
           ],
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 31,
-              "line_end": 31,
-              "raw": "set allowaccess ping",
-              "mapping_id": "fortinet_fortios/interface-allowaccess",
+              "file": "hardened.xml",
+              "line_start": 246,
+              "line_end": 246,
+              "raw": "member any",
+              "mapping_id": "paloalto_panos/rule-application",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2501,40 +2576,22 @@
             }
           ],
           "default_source": null
-        },
-        "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#proxy-arp-off"
-        },
-        "filters_in": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "filters_out": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
         }
       },
       {
-        "key": "mgmt",
+        "key": "security:lan-to-internet",
         "evidence": [],
-        "type": "Interface",
-        "description": {
-          "value": "OOB management",
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "security",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 42,
-              "line_end": 42,
-              "raw": "set alias \"OOB management\"",
-              "mapping_id": "fortinet_fortios/interface-alias",
+              "file": "hardened.xml",
+              "line_start": 186,
+              "line_end": 209,
+              "raw": "entry lan-to-internet",
+              "mapping_id": "paloalto_panos/rule",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2543,62 +2600,30 @@
           ],
           "default_source": null
         },
-        "zone": {
-          "value": "mgmt",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 36,
-              "line_end": 36,
-              "raw": "edit \"mgmt\"",
-              "mapping_id": "fortinet_fortios/interface",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "role": {
-          "value": "trusted",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 41,
-              "line_end": 41,
-              "raw": "set role lan",
-              "mapping_id": "fortinet_fortios/interface-role-lan",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "admin_up": {
+        "position": {
           "value": null,
           "state": "absent",
           "evidence": [],
           "default_source": null
         },
-        "mgmt_protocols": {
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
           "value": [
-            "https",
-            "ping",
-            "ssh"
+            "LAN-NET"
           ],
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 39,
-              "line_end": 39,
-              "raw": "set allowaccess ping https ssh",
-              "mapping_id": "fortinet_fortios/interface-allowaccess",
+              "file": "hardened.xml",
+              "line_start": 194,
+              "line_end": 194,
+              "raw": "member LAN-NET",
+              "mapping_id": "paloalto_panos/rule-source",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2607,27 +2632,364 @@
           ],
           "default_source": null
         },
-        "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#proxy-arp-off"
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 197,
+              "line_end": 197,
+              "raw": "member any",
+              "mapping_id": "paloalto_panos/rule-destination",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
-        "filters_in": {
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 205,
+              "line_end": 205,
+              "raw": "member application-default",
+              "mapping_id": "paloalto_panos/rule-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 207,
+              "line_end": 207,
+              "raw": "action allow",
+              "mapping_id": "paloalto_panos/rule-action",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 208,
+              "line_end": 208,
+              "raw": "log-end yes",
+              "mapping_id": "paloalto_panos/rule-log-end",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "enabled": {
           "value": null,
           "state": "absent",
           "evidence": [],
           "default_source": null
         },
-        "filters_out": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+        "zone_from": {
+          "value": "trust",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 188,
+              "line_end": 188,
+              "raw": "member trust",
+              "mapping_id": "paloalto_panos/rule-from",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": "untrust",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 191,
+              "line_end": 191,
+              "raw": "member untrust",
+              "mapping_id": "paloalto_panos/rule-to",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "applications": {
+          "value": [
+            "dns",
+            "ssl",
+            "web-browsing"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 200,
+              "line_end": 200,
+              "raw": "member dns",
+              "mapping_id": "paloalto_panos/rule-application",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 201,
+              "line_end": 201,
+              "raw": "member ssl",
+              "mapping_id": "paloalto_panos/rule-application",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 202,
+              "line_end": 202,
+              "raw": "member web-browsing",
+              "mapping_id": "paloalto_panos/rule-application",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         }
       },
       {
-        "key": "wan1",
+        "key": "security:web-in",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "security",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 210,
+              "line_end": 231,
+              "raw": "entry web-in",
+              "mapping_id": "paloalto_panos/rule",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 218,
+              "line_end": 218,
+              "raw": "member any",
+              "mapping_id": "paloalto_panos/rule-source",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "WEB-SRV"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 221,
+              "line_end": 221,
+              "raw": "member WEB-SRV",
+              "mapping_id": "paloalto_panos/rule-destination",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 227,
+              "line_end": 227,
+              "raw": "member application-default",
+              "mapping_id": "paloalto_panos/rule-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 229,
+              "line_end": 229,
+              "raw": "action allow",
+              "mapping_id": "paloalto_panos/rule-action",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 230,
+              "line_end": 230,
+              "raw": "log-end yes",
+              "mapping_id": "paloalto_panos/rule-log-end",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": "untrust",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 212,
+              "line_end": 212,
+              "raw": "member untrust",
+              "mapping_id": "paloalto_panos/rule-from",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": "trust",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 215,
+              "line_end": 215,
+              "raw": "member trust",
+              "mapping_id": "paloalto_panos/rule-to",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "applications": {
+          "value": [
+            "ssl"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 224,
+              "line_end": 224,
+              "raw": "member ssl",
+              "mapping_id": "paloalto_panos/rule-application",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "ethernet1/1",
         "evidence": [],
         "type": "Interface",
         "description": {
@@ -2635,11 +2997,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 26,
-              "line_end": 26,
-              "raw": "set alias \"WAN uplink to ISP\"",
-              "mapping_id": "fortinet_fortios/interface-alias",
+              "file": "hardened.xml",
+              "line_start": 84,
+              "line_end": 84,
+              "raw": "comment \"WAN uplink to ISP\"",
+              "mapping_id": "paloalto_panos/ethernet-comment",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2649,15 +3011,15 @@
           "default_source": null
         },
         "zone": {
-          "value": "wan1",
+          "value": "untrust",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 20,
-              "line_end": 20,
-              "raw": "edit \"wan1\"",
-              "mapping_id": "fortinet_fortios/interface",
+              "file": "hardened.xml",
+              "line_start": 163,
+              "line_end": 163,
+              "raw": "member ethernet1/1",
+              "mapping_id": "paloalto_panos/zone-member",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2671,11 +3033,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 25,
-              "line_end": 25,
-              "raw": "set role wan",
-              "mapping_id": "fortinet_fortios/interface-role-wan",
+              "file": "hardened.xml",
+              "line_start": 163,
+              "line_end": 163,
+              "raw": "member ethernet1/1",
+              "mapping_id": "inference/interface.role.untrusted_by_zone",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2697,11 +3059,22 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 23,
-              "line_end": 23,
-              "raw": "set allowaccess ping",
-              "mapping_id": "fortinet_fortios/interface-allowaccess",
+              "file": "hardened.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 100,
+              "line_end": 100,
+              "raw": "ping yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2711,10 +3084,112 @@
           "default_source": null
         },
         "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
+          "value": null,
+          "state": "absent",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#proxy-arp-off"
+          "default_source": null
+        },
+        "filters_in": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "ethernet1/2",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
+          "value": "LAN server segment",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 93,
+              "line_end": 93,
+              "raw": "comment \"LAN server segment\"",
+              "mapping_id": "paloalto_panos/ethernet-comment",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
+          "value": "trust",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 170,
+              "line_end": 170,
+              "raw": "member ethernet1/2",
+              "mapping_id": "paloalto_panos/zone-member",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "role": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "admin_up": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols": {
+          "value": [
+            "ping"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 100,
+              "line_end": 100,
+              "raw": "ping yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "proxy_arp": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         },
         "filters_in": {
           "value": null,
@@ -2740,15 +3215,15 @@
           "default_source": null
         },
         "hash_type": {
-          "value": "pbkdf2-sha256",
+          "value": "sha256-crypt",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 51,
-              "line_end": 51,
-              "raw": "set password ENC ****",
-              "mapping_id": "fortinet_fortios/admin-password",
+              "file": "hardened.xml",
+              "line_start": 6,
+              "line_end": 6,
+              "raw": "phash ****",
+              "mapping_id": "paloalto_panos/admin-phash",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2758,43 +3233,15 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": [
-            "10.30.10.0/255.255.255.0"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 49,
-              "line_end": 49,
-              "raw": "set trusthost1 10.30.10.0 255.255.255.0",
-              "mapping_id": "fortinet_fortios/admin-trusthost1",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         },
         "permitted_sources_v6": {
-          "value": [
-            "fd00:30:10::/64"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 50,
-              "line_end": 50,
-              "raw": "set ip6-trusthost1 fd00:30:10::/64",
-              "mapping_id": "fortinet_fortios/admin-ip6-trusthost1",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -2803,15 +3250,15 @@
         "evidence": [],
         "type": "LockoutPolicy",
         "max_attempts": {
-          "value": 3,
+          "value": 5,
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 7,
-              "line_end": 7,
-              "raw": "set admin-lockout-threshold 3",
-              "mapping_id": "fortinet_fortios/lockout-threshold",
+              "file": "hardened.xml",
+              "line_start": 151,
+              "line_end": 151,
+              "raw": "failed-attempts 5",
+              "mapping_id": "paloalto_panos/failed-attempts",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2821,15 +3268,15 @@
           "default_source": null
         },
         "lockout_s": {
-          "value": 900,
+          "value": 1800,
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 6,
-              "line_end": 6,
-              "raw": "set admin-lockout-duration 900",
-              "mapping_id": "fortinet_fortios/lockout-duration",
+              "file": "hardened.xml",
+              "line_start": 152,
+              "line_end": 152,
+              "raw": "lockout-time 30",
+              "mapping_id": "paloalto_panos/lockout-time",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2840,7 +3287,7 @@
         }
       },
       {
-        "key": "syslogd",
+        "key": "SIEM",
         "evidence": [],
         "type": "LogTarget",
         "host": {
@@ -2848,11 +3295,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 62,
-              "line_end": 62,
-              "raw": "set server \"10.30.10.50\"",
-              "mapping_id": "fortinet_fortios/syslogd-server",
+              "file": "hardened.xml",
+              "line_start": 41,
+              "line_end": 41,
+              "raw": "server 10.30.10.50",
+              "mapping_id": "paloalto_panos/syslog-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2862,15 +3309,15 @@
           "default_source": null
         },
         "transport": {
-          "value": "tcp",
+          "value": "tls",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 63,
-              "line_end": 63,
-              "raw": "set mode reliable",
-              "mapping_id": "fortinet_fortios/syslogd-mode",
+              "file": "hardened.xml",
+              "line_start": 42,
+              "line_end": 42,
+              "raw": "transport SSL",
+              "mapping_id": "paloalto_panos/syslog-transport",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2890,11 +3337,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 61,
-              "line_end": 61,
-              "raw": "set status enable",
-              "mapping_id": "fortinet_fortios/syslogd-status",
+              "file": "hardened.xml",
+              "line_start": 65,
+              "line_end": 65,
+              "raw": "member SIEM",
+              "mapping_id": "paloalto_panos/send-syslog-config",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2912,7 +3359,7 @@
           "value": true,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#logs-timestamped"
+          "default_source": "paloalto_panos/defaults.yaml#logs-timestamped"
         },
         "admin_logged": {
           "value": null,
@@ -2924,7 +3371,7 @@
           "value": true,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#config-changes-logged"
+          "default_source": "paloalto_panos/defaults.yaml#config-changes-logged"
         }
       },
       {
@@ -2935,7 +3382,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-bootp"
+          "default_source": "paloalto_panos/defaults.yaml#no-legacy-bootp"
         },
         "version": {
           "value": null,
@@ -2950,10 +3397,12 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
           "evidence": [],
-          "default_source": null
+          "default_source": "paloalto_panos/defaults.yaml#permitted-ip-empty-means-any"
         },
         "ciphers": {
           "value": null,
@@ -2982,7 +3431,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-finger"
+          "default_source": "paloalto_panos/defaults.yaml#no-legacy-finger"
         },
         "version": {
           "value": null,
@@ -2997,10 +3446,12 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
           "evidence": [],
-          "default_source": null
+          "default_source": "paloalto_panos/defaults.yaml#permitted-ip-empty-means-any"
         },
         "ciphers": {
           "value": null,
@@ -3027,9 +3478,21 @@
         "type": "MgmtService",
         "enabled": {
           "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#http-redirected-to-https"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "disable-http yes",
+              "mapping_id": "paloalto_panos/mgt-http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "version": {
           "value": null,
@@ -3038,26 +3501,15 @@
           "default_source": null
         },
         "access_filter": {
-          "value": "per-account-sources",
+          "value": "permitted-sources",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 49,
-              "line_end": 49,
-              "raw": "set trusthost1 10.30.10.0 255.255.255.0",
-              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            },
-            {
-              "file": "hardened.conf",
-              "line_start": 50,
-              "line_end": 50,
-              "raw": "set ip6-trusthost1 fd00:30:10::/64",
-              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "file": "hardened.xml",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3067,9 +3519,23 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": [
+            "10.30.10.0/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "paloalto_panos/mgt-permitted-ip-http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "ciphers": {
@@ -3097,9 +3563,21 @@
         "type": "MgmtService",
         "enabled": {
           "value": true,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#https-available"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 117,
+              "line_end": 117,
+              "raw": "disable-https no",
+              "mapping_id": "paloalto_panos/mgt-https",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "version": {
           "value": null,
@@ -3108,26 +3586,15 @@
           "default_source": null
         },
         "access_filter": {
-          "value": "per-account-sources",
+          "value": "permitted-sources",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 49,
-              "line_end": 49,
-              "raw": "set trusthost1 10.30.10.0 255.255.255.0",
-              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            },
-            {
-              "file": "hardened.conf",
-              "line_start": 50,
-              "line_end": 50,
-              "raw": "set ip6-trusthost1 fd00:30:10::/64",
-              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "file": "hardened.xml",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3137,9 +3604,23 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": [
+            "10.30.10.0/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "paloalto_panos/mgt-permitted-ip-https",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "ciphers": {
@@ -3169,7 +3650,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#no-legacy-pad"
+          "default_source": "paloalto_panos/defaults.yaml#no-legacy-pad"
         },
         "version": {
           "value": null,
@@ -3184,10 +3665,12 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
           "evidence": [],
-          "default_source": null
+          "default_source": "paloalto_panos/defaults.yaml#permitted-ip-empty-means-any"
         },
         "ciphers": {
           "value": null,
@@ -3214,37 +3697,38 @@
         "type": "MgmtService",
         "enabled": {
           "value": true,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#ssh-available"
-        },
-        "version": {
-          "value": "2",
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#ssh-v1-off"
-        },
-        "access_filter": {
-          "value": "per-account-sources",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 49,
-              "line_end": 49,
-              "raw": "set trusthost1 10.30.10.0 255.255.255.0",
-              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "file": "hardened.xml",
+              "line_start": 118,
+              "line_end": 118,
+              "raw": "disable-ssh no",
+              "mapping_id": "paloalto_panos/mgt-ssh",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
               ]
-            },
+            }
+          ],
+          "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": "permitted-sources",
+          "state": "explicit",
+          "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 50,
-              "line_end": 50,
-              "raw": "set ip6-trusthost1 fd00:30:10::/64",
-              "mapping_id": "inference/mgmt_service.access_filter.per_account_sources",
+              "file": "hardened.xml",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3254,9 +3738,23 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": [
+            "10.30.10.0/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 112,
+              "line_end": 112,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "paloalto_panos/mgt-permitted-ip-ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "ciphers": {
@@ -3286,7 +3784,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#no-tcp-small-servers"
+          "default_source": "paloalto_panos/defaults.yaml#no-tcp-small-servers"
         },
         "version": {
           "value": null,
@@ -3301,10 +3799,12 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
           "evidence": [],
-          "default_source": null
+          "default_source": "paloalto_panos/defaults.yaml#permitted-ip-empty-means-any"
         },
         "ciphers": {
           "value": null,
@@ -3334,11 +3834,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 8,
-              "line_end": 8,
-              "raw": "set admin-telnet disable",
-              "mapping_id": "fortinet_fortios/admin-telnet-disable",
+              "file": "hardened.xml",
+              "line_start": 115,
+              "line_end": 115,
+              "raw": "disable-telnet yes",
+              "mapping_id": "paloalto_panos/mgt-telnet",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3360,10 +3860,12 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
           "evidence": [],
-          "default_source": null
+          "default_source": "paloalto_panos/defaults.yaml#permitted-ip-empty-means-any"
         },
         "ciphers": {
           "value": null,
@@ -3392,7 +3894,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#no-udp-small-servers"
+          "default_source": "paloalto_panos/defaults.yaml#no-udp-small-servers"
         },
         "version": {
           "value": null,
@@ -3407,10 +3909,12 @@
           "default_source": null
         },
         "permitted_sources": {
-          "value": null,
-          "state": "absent",
+          "value": [
+            "any"
+          ],
+          "state": "vendor_default",
           "evidence": [],
-          "default_source": null
+          "default_source": "paloalto_panos/defaults.yaml#permitted-ip-empty-means-any"
         },
         "ciphers": {
           "value": null,
@@ -3440,11 +3944,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 9,
-              "line_end": 9,
-              "raw": "set admintimeout 10",
-              "mapping_id": "fortinet_fortios/admintimeout",
+              "file": "hardened.xml",
+              "line_start": 149,
+              "line_end": 149,
+              "raw": "idle-timeout 10",
+              "mapping_id": "paloalto_panos/idle-timeout",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3476,11 +3980,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 9,
-              "line_end": 9,
-              "raw": "set admintimeout 10",
-              "mapping_id": "fortinet_fortios/admintimeout",
+              "file": "hardened.xml",
+              "line_start": 149,
+              "line_end": 149,
+              "raw": "idle-timeout 10",
+              "mapping_id": "paloalto_panos/idle-timeout",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3505,11 +4009,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 81,
-              "line_end": 81,
-              "raw": "edit \"LAN-NET\"",
-              "mapping_id": "fortinet_fortios/address",
+              "file": "hardened.xml",
+              "line_start": 176,
+              "line_end": 178,
+              "raw": "entry LAN-NET",
+              "mapping_id": "paloalto_panos/address",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3520,16 +4024,16 @@
         },
         "members": {
           "value": [
-            "10.20.0.0/255.255.255.0"
+            "10.20.0.0/24"
           ],
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 82,
-              "line_end": 82,
-              "raw": "set subnet 10.20.0.0 255.255.255.0",
-              "mapping_id": "fortinet_fortios/address-subnet",
+              "file": "hardened.xml",
+              "line_start": 177,
+              "line_end": 177,
+              "raw": "ip-netmask 10.20.0.0/24",
+              "mapping_id": "paloalto_panos/address-ip-netmask",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3554,11 +4058,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 84,
-              "line_end": 84,
-              "raw": "edit \"WEB-SRV\"",
-              "mapping_id": "fortinet_fortios/address",
+              "file": "hardened.xml",
+              "line_start": 179,
+              "line_end": 181,
+              "raw": "entry WEB-SRV",
+              "mapping_id": "paloalto_panos/address",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3569,16 +4073,16 @@
         },
         "members": {
           "value": [
-            "10.20.0.10/255.255.255.255"
+            "10.20.0.10/32"
           ],
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 85,
-              "line_end": 85,
-              "raw": "set subnet 10.20.0.10 255.255.255.255",
-              "mapping_id": "fortinet_fortios/address-subnet",
+              "file": "hardened.xml",
+              "line_start": 180,
+              "line_end": 180,
+              "raw": "ip-netmask 10.20.0.10/32",
+              "mapping_id": "paloalto_panos/address-ip-netmask",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3595,54 +4099,19 @@
         }
       },
       {
-        "key": "address:all",
+        "key": "mgmt_profile:PING-ONLY",
         "evidence": [],
         "type": "ObjectDef",
         "kind": {
-          "value": "address",
+          "value": "mgmt_profile",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 79,
-              "line_end": 79,
-              "raw": "edit \"all\"",
-              "mapping_id": "fortinet_fortios/address",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "members": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "expanded": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "service:ALL",
-        "evidence": [],
-        "type": "ObjectDef",
-        "kind": {
-          "value": "service",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 89,
-              "line_end": 89,
-              "raw": "edit \"ALL\"",
-              "mapping_id": "fortinet_fortios/service",
+              "file": "hardened.xml",
+              "line_start": 99,
+              "line_end": 101,
+              "raw": "entry PING-ONLY",
+              "mapping_id": "paloalto_panos/mgmt-profile",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3653,125 +4122,16 @@
         },
         "members": {
           "value": [
-            "ip"
+            "ping"
           ],
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 91,
-              "line_end": 91,
-              "raw": "set protocol IP",
-              "mapping_id": "fortinet_fortios/service-protocol-ip",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "expanded": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "service:DNS",
-        "evidence": [],
-        "type": "ObjectDef",
-        "kind": {
-          "value": "service",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 93,
-              "line_end": 93,
-              "raw": "edit \"DNS\"",
-              "mapping_id": "fortinet_fortios/service",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "members": {
-          "value": [
-            "53"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 95,
-              "line_end": 95,
-              "raw": "set tcp-portrange 53",
-              "mapping_id": "fortinet_fortios/service-tcp-portrange",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            },
-            {
-              "file": "hardened.conf",
-              "line_start": 96,
-              "line_end": 96,
-              "raw": "set udp-portrange 53",
-              "mapping_id": "fortinet_fortios/service-udp-portrange",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "expanded": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "service:HTTPS",
-        "evidence": [],
-        "type": "ObjectDef",
-        "kind": {
-          "value": "service",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 98,
-              "line_end": 98,
-              "raw": "edit \"HTTPS\"",
-              "mapping_id": "fortinet_fortios/service",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "members": {
-          "value": [
-            "443"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
+              "file": "hardened.xml",
               "line_start": 100,
               "line_end": 100,
-              "raw": "set tcp-portrange 443",
-              "mapping_id": "fortinet_fortios/service-tcp-portrange",
+              "raw": "ping yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3796,11 +4156,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 17,
-              "line_end": 17,
-              "raw": "set minimum-length 15",
-              "mapping_id": "fortinet_fortios/password-minimum-length",
+              "file": "hardened.xml",
+              "line_start": 16,
+              "line_end": 16,
+              "raw": "minimum-length 15",
+              "mapping_id": "paloalto_panos/password-complexity-minimum-length",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3825,7 +4185,7 @@
           "value": true,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "fortinet_fortios/defaults.yaml#passwords-stored-encoded"
+          "default_source": "paloalto_panos/defaults.yaml#passwords-stored-hashed"
         },
         "max_age_days": {
           "value": null,
@@ -3838,11 +4198,308 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 16,
-              "line_end": 16,
-              "raw": "set status enable",
-              "mapping_id": "fortinet_fortios/password-policy-status",
+              "file": "hardened.xml",
+              "line_start": 15,
+              "line_end": 15,
+              "raw": "enabled yes",
+              "mapping_id": "paloalto_panos/password-complexity-enabled",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/1].mgmt_protocols -> PING-ONLY",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 82,
+            "line_end": 82,
+            "raw": "interface-management-profile PING-ONLY",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[ethernet1/1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.mgmt_protocols",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "PING-ONLY",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[mgmt_profile:PING-ONLY]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/2].mgmt_protocols -> PING-ONLY",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 91,
+            "line_end": 91,
+            "raw": "interface-management-profile PING-ONLY",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[ethernet1/2]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.mgmt_protocols",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "PING-ONLY",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[mgmt_profile:PING-ONLY]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 91,
+              "line_end": 91,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "v2c",
+        "evidence": [],
+        "type": "SnmpCommunity",
+        "access": {
+          "value": "ro",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "paloalto_panos/defaults.yaml#snmp-read-only"
+        },
+        "filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "is_well_known": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 140,
+              "line_end": 140,
+              "raw": "snmp-community-string ****",
+              "mapping_id": "paloalto_panos/snmp-v2c-community",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3861,11 +4518,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 71,
-              "line_end": 71,
-              "raw": "set authentication enable",
-              "mapping_id": "fortinet_fortios/ntpserver-authentication-enforced",
+              "file": "hardened.xml",
+              "line_start": 125,
+              "line_end": 132,
+              "raw": "symmetric-key",
+              "mapping_id": "paloalto_panos/ntp-auth-symmetric-key",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3875,61 +4532,14 @@
           "default_source": null
         },
         "sync_enabled": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 66,
-              "line_end": 66,
-              "raw": "set ntpsync enable",
-              "mapping_id": "fortinet_fortios/ntp-sync",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "fortiguard",
-        "evidence": [],
-        "type": "TimeSource",
-        "host": {
           "value": null,
           "state": "absent",
           "evidence": [],
           "default_source": null
-        },
-        "authenticated": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "enabled": {
-          "value": false,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 67,
-              "line_end": 67,
-              "raw": "set type custom",
-              "mapping_id": "fortinet_fortios/ntp-type",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
         }
       },
       {
-        "key": "ntp-1",
+        "key": "primary-ntp-server",
         "evidence": [],
         "type": "TimeSource",
         "host": {
@@ -3937,11 +4547,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 70,
-              "line_end": 70,
-              "raw": "set server \"10.30.10.70\"",
-              "mapping_id": "fortinet_fortios/ntpserver-server",
+              "file": "hardened.xml",
+              "line_start": 123,
+              "line_end": 123,
+              "raw": "ntp-server-address 10.30.10.70",
+              "mapping_id": "paloalto_panos/ntp-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3955,11 +4565,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 71,
-              "line_end": 71,
-              "raw": "set authentication enable",
-              "mapping_id": "fortinet_fortios/ntpserver-authentication",
+              "file": "hardened.xml",
+              "line_start": 125,
+              "line_end": 132,
+              "raw": "symmetric-key",
+              "mapping_id": "paloalto_panos/ntp-auth-symmetric-key",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3982,11 +4592,11 @@
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 56,
-            "line_end": 56,
-            "raw": "set server \"10.30.10.40\"",
-            "mapping_id": "fortinet_fortios/tacacs-server",
+            "file": "hardened.xml",
+            "line_start": 29,
+            "line_end": 29,
+            "raw": "address 10.30.10.40",
+            "mapping_id": "paloalto_panos/server-profile-address",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -3997,54 +4607,109 @@
       },
       "filtering.permit_all_present": {
         "value": false,
-        "state": "vendor_default",
+        "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 109,
-            "line_end": 109,
-            "raw": "set srcaddr \"LAN-NET\"",
-            "mapping_id": "fortinet_fortios/policy-srcaddr",
+            "file": "hardened.xml",
+            "line_start": 194,
+            "line_end": 194,
+            "raw": "member LAN-NET",
+            "mapping_id": "paloalto_panos/rule-source",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 112,
-            "line_end": 112,
-            "raw": "set service \"HTTPS\" \"DNS\"",
-            "mapping_id": "fortinet_fortios/policy-service",
+            "file": "hardened.xml",
+            "line_start": 200,
+            "line_end": 200,
+            "raw": "member dns",
+            "mapping_id": "paloalto_panos/rule-application",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 201,
+            "line_end": 201,
+            "raw": "member ssl",
+            "mapping_id": "paloalto_panos/rule-application",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 202,
+            "line_end": 202,
+            "raw": "member web-browsing",
+            "mapping_id": "paloalto_panos/rule-application",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 221,
+            "line_end": 221,
+            "raw": "member WEB-SRV",
+            "mapping_id": "paloalto_panos/rule-destination",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 224,
+            "line_end": 224,
+            "raw": "member ssl",
+            "mapping_id": "paloalto_panos/rule-application",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 251,
+            "line_end": 251,
+            "raw": "action deny",
+            "mapping_id": "paloalto_panos/rule-action",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
-        "default_source": "fortinet_fortios/defaults.yaml#policy-action-deny"
+        "default_source": null
       },
       "logging.remote_configured": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 61,
-            "line_end": 61,
-            "raw": "set status enable",
-            "mapping_id": "fortinet_fortios/syslogd-status",
+            "file": "hardened.xml",
+            "line_start": 41,
+            "line_end": 41,
+            "raw": "server 10.30.10.50",
+            "mapping_id": "paloalto_panos/syslog-server",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 62,
-            "line_end": 62,
-            "raw": "set server \"10.30.10.50\"",
-            "mapping_id": "fortinet_fortios/syslogd-server",
+            "file": "hardened.xml",
+            "line_start": 65,
+            "line_end": 65,
+            "raw": "member SIEM",
+            "mapping_id": "paloalto_panos/send-syslog-config",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -4055,20 +4720,32 @@
       },
       "management.http_enabled": {
         "value": false,
-        "state": "vendor_default",
-        "evidence": [],
-        "default_source": "fortinet_fortios/defaults.yaml#http-redirected-to-https"
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 116,
+            "line_end": 116,
+            "raw": "disable-http yes",
+            "mapping_id": "paloalto_panos/mgt-http",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
       },
       "management.login_banner_present": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 12,
-            "line_end": 12,
-            "raw": "set pre-login-banner enable",
-            "mapping_id": "fortinet_fortios/pre-login-banner",
+            "file": "hardened.xml",
+            "line_start": 120,
+            "line_end": 120,
+            "raw": "login-banner \"Authorised access only. Activity is logged and monitored.\"",
+            "mapping_id": "paloalto_panos/login-banner",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -4079,70 +4756,82 @@
       },
       "management.ssh_reachable": {
         "value": true,
-        "state": "vendor_default",
-        "evidence": [],
-        "default_source": "fortinet_fortios/defaults.yaml#ssh-available"
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 118,
+            "line_end": 118,
+            "raw": "disable-ssh no",
+            "mapping_id": "paloalto_panos/mgt-ssh",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
       },
       "management.ssh_v1_negotiable": {
-        "value": false,
-        "state": "vendor_default",
+        "value": null,
+        "state": "absent",
         "evidence": [],
-        "default_source": "fortinet_fortios/defaults.yaml#ssh-v1-off"
+        "default_source": null
       },
       "management.telnet_reachable": {
         "value": false,
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 8,
-            "line_end": 8,
-            "raw": "set admin-telnet disable",
-            "mapping_id": "fortinet_fortios/admin-telnet-disable",
+            "file": "hardened.xml",
+            "line_start": 82,
+            "line_end": 82,
+            "raw": "interface-management-profile PING-ONLY",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 9,
-            "line_end": 9,
-            "raw": "set admintimeout 10",
-            "mapping_id": "fortinet_fortios/admintimeout",
+            "file": "hardened.xml",
+            "line_start": 91,
+            "line_end": 91,
+            "raw": "interface-management-profile PING-ONLY",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 23,
-            "line_end": 23,
-            "raw": "set allowaccess ping",
-            "mapping_id": "fortinet_fortios/interface-allowaccess",
+            "file": "hardened.xml",
+            "line_start": 100,
+            "line_end": 100,
+            "raw": "ping yes",
+            "mapping_id": "paloalto_panos/mgmt-profile-service",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 31,
-            "line_end": 31,
-            "raw": "set allowaccess ping",
-            "mapping_id": "fortinet_fortios/interface-allowaccess",
+            "file": "hardened.xml",
+            "line_start": 115,
+            "line_end": 115,
+            "raw": "disable-telnet yes",
+            "mapping_id": "paloalto_panos/mgt-telnet",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           },
           {
-            "file": "hardened.conf",
-            "line_start": 39,
-            "line_end": 39,
-            "raw": "set allowaccess ping https ssh",
-            "mapping_id": "fortinet_fortios/interface-allowaccess",
+            "file": "hardened.xml",
+            "line_start": 149,
+            "line_end": 149,
+            "raw": "idle-timeout 10",
+            "mapping_id": "paloalto_panos/idle-timeout",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -4155,18 +4844,28 @@
         "value": false,
         "state": "vendor_default",
         "evidence": [],
-        "default_source": "fortinet_fortios/defaults.yaml#no-legacy-bootp, fortinet_fortios/defaults.yaml#no-legacy-finger, fortinet_fortios/defaults.yaml#no-legacy-pad, fortinet_fortios/defaults.yaml#no-tcp-small-servers, fortinet_fortios/defaults.yaml#no-udp-small-servers"
+        "default_source": "paloalto_panos/defaults.yaml#no-legacy-bootp, paloalto_panos/defaults.yaml#no-legacy-finger, paloalto_panos/defaults.yaml#no-legacy-pad, paloalto_panos/defaults.yaml#no-tcp-small-servers, paloalto_panos/defaults.yaml#no-udp-small-servers"
       },
       "snmp.weak_community_present": {
         "value": false,
         "state": "vendor_default",
-        "evidence": [],
-        "default_source": "fortinet_fortios/defaults.yaml#no-snmp-communities"
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 140,
+            "line_end": 140,
+            "raw": "snmp-community-string ****",
+            "mapping_id": "paloalto_panos/snmp-v2c-community",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": "paloalto_panos/defaults.yaml#snmp-read-only"
       }
     },
-    "known_empty": {
-      "SnmpCommunity": "fortinet_fortios/defaults.yaml#no-snmp-communities"
-    },
+    "known_empty": {},
     "unread": {}
   },
   "warnings": []

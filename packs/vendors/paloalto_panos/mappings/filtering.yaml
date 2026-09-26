@@ -1,0 +1,816 @@
+# Interfaces, zones, management profiles, security rules, address and service objects.
+# Seed mappings: reviewed in docs/reviews/paloalto_panos.md.
+mappings:
+- id: paloalto_panos/mgmt-profile
+  vendor: paloalto_panos
+  context:
+  - interface-management-profile
+  entity:
+    type: ObjectDef
+    key: mgmt_profile:{p}
+  match: entry <STR:p>
+  effect:
+    assert: ObjectDef.kind
+    value: mgmt_profile
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/mgmt-profile-service
+  vendor: paloalto_panos
+  context:
+  - interface-management-profile
+  - entry <STR:p>
+  entity:
+    type: ObjectDef
+    key: mgmt_profile:{p}
+  match: <STR:s> yes
+  effect:
+    members: ObjectDef.members
+    from: s
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/ethernet-interface
+  vendor: paloalto_panos
+  context:
+  - ethernet
+  entity:
+    type: Interface
+    key: '{i}'
+  match: entry <STR:i>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/ethernet-comment
+  vendor: paloalto_panos
+  context:
+  - ethernet
+  - entry <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: comment <STR:d>
+  effect:
+    set: Interface.description
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/ethernet-mgmt-profile
+  vendor: paloalto_panos
+  context:
+  - ethernet
+  - entry <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: interface-management-profile <STR:p>
+  effect:
+    ref: Interface.mgmt_protocols
+    from: p
+    target: mgmt_profile
+    expand: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/ethernet-layer3-mgmt-profile
+  vendor: paloalto_panos
+  context:
+  - ethernet
+  - entry <STR:i>
+  - layer3
+  entity:
+    type: Interface
+    key: '{i}'
+  match: interface-management-profile <STR:p>
+  effect:
+    ref: Interface.mgmt_protocols
+    from: p
+    target: mgmt_profile
+    expand: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/aggregate-ethernet-interface
+  vendor: paloalto_panos
+  context:
+  - aggregate-ethernet
+  entity:
+    type: Interface
+    key: '{i}'
+  match: entry <STR:i>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/aggregate-ethernet-comment
+  vendor: paloalto_panos
+  context:
+  - aggregate-ethernet
+  - entry <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: comment <STR:d>
+  effect:
+    set: Interface.description
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/aggregate-ethernet-mgmt-profile
+  vendor: paloalto_panos
+  context:
+  - aggregate-ethernet
+  - entry <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: interface-management-profile <STR:p>
+  effect:
+    ref: Interface.mgmt_protocols
+    from: p
+    target: mgmt_profile
+    expand: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/aggregate-ethernet-layer3-mgmt-profile
+  vendor: paloalto_panos
+  context:
+  - aggregate-ethernet
+  - entry <STR:i>
+  - layer3
+  entity:
+    type: Interface
+    key: '{i}'
+  match: interface-management-profile <STR:p>
+  effect:
+    ref: Interface.mgmt_protocols
+    from: p
+    target: mgmt_profile
+    expand: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/units-interface
+  vendor: paloalto_panos
+  context:
+  - units
+  entity:
+    type: Interface
+    key: '{i}'
+  match: entry <STR:i>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/units-comment
+  vendor: paloalto_panos
+  context:
+  - units
+  - entry <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: comment <STR:d>
+  effect:
+    set: Interface.description
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/units-mgmt-profile
+  vendor: paloalto_panos
+  context:
+  - units
+  - entry <STR:i>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: interface-management-profile <STR:p>
+  effect:
+    ref: Interface.mgmt_protocols
+    from: p
+    target: mgmt_profile
+    expand: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/units-layer3-mgmt-profile
+  vendor: paloalto_panos
+  context:
+  - units
+  - entry <STR:i>
+  - layer3
+  entity:
+    type: Interface
+    key: '{i}'
+  match: interface-management-profile <STR:p>
+  effect:
+    ref: Interface.mgmt_protocols
+    from: p
+    target: mgmt_profile
+    expand: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/zone-member
+  vendor: paloalto_panos
+  context:
+  - zone
+  - entry <STR:z>
+  - network
+  - <STR>
+  entity:
+    type: Interface
+    key: '{i}'
+  match: member <STR:i>
+  effect:
+    set: Interface.zone
+    template: '{z}'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: entry <STR:r>
+  effect:
+    assert: FilterRule.ruleset
+    value: security
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-from
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  - from
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: member <STR:z>
+  effect:
+    set: FilterRule.zone_from
+    from: z
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-to
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  - to
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: member <STR:z>
+  effect:
+    set: FilterRule.zone_to
+    from: z
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-source
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  - source
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: member <STR:a>
+  effect:
+    members: FilterRule.src
+    from: a
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-negate-source
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: negate-source yes
+  effect:
+    assert: FilterRule.src
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-destination
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  - destination
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: member <STR:a>
+  effect:
+    members: FilterRule.dst
+    from: a
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-negate-destination
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: negate-destination yes
+  effect:
+    assert: FilterRule.dst
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-application
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  - application
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: member <STR:a>
+  effect:
+    members: FilterRule.applications
+    from: a
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-service
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  - service
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: member <STR:s>
+  effect:
+    members: FilterRule.service
+    from: s
+    map:
+      any: ip
+      application-default: ip
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-action
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: action <STR:a>
+  effect:
+    set: FilterRule.action
+    from: a
+    map:
+      allow: permit
+      deny: deny
+      drop: drop
+      reset-client: reject
+      reset-server: reject
+      reset-both: reject
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-disabled
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: disabled <STR:d>
+  effect:
+    set: FilterRule.enabled
+    from: d
+    map:
+      'yes': false
+      'no': true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/rule-log-end
+  vendor: paloalto_panos
+  context:
+  - security
+  - rules
+  - entry <STR:r>
+  entity:
+    type: FilterRule
+    key: security:{r}
+  match: log-end <STR:l>
+  effect:
+    set: FilterRule.log
+    from: l
+    map:
+      'yes': true
+      'no': false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/address
+  vendor: paloalto_panos
+  context:
+  - address
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: entry <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: address
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/address-ip-netmask
+  vendor: paloalto_panos
+  context:
+  - address
+  - entry <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: ip-netmask <STR:a>
+  effect:
+    members: ObjectDef.members
+    from: a
+    map:
+      0.0.0.0/0: any
+      ::/0: any
+      0.0.0.0-255.255.255.255: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/address-ip-range
+  vendor: paloalto_panos
+  context:
+  - address
+  - entry <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: ip-range <STR:a>
+  effect:
+    members: ObjectDef.members
+    from: a
+    map:
+      0.0.0.0/0: any
+      ::/0: any
+      0.0.0.0-255.255.255.255: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/address-ip-wildcard
+  vendor: paloalto_panos
+  context:
+  - address
+  - entry <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: ip-wildcard <STR:a>
+  effect:
+    members: ObjectDef.members
+    from: a
+    map:
+      0.0.0.0/0: any
+      ::/0: any
+      0.0.0.0-255.255.255.255: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/address-fqdn
+  vendor: paloalto_panos
+  context:
+  - address
+  - entry <STR:n>
+  entity:
+    type: ObjectDef
+    key: address:{n}
+  match: fqdn <STR:f>
+  effect:
+    members: ObjectDef.members
+    template: fqdn:{f}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/address-group
+  vendor: paloalto_panos
+  context:
+  - address-group
+  entity:
+    type: ObjectDef
+    key: address_group:{n}
+  match: entry <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: address_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/address-group-static
+  vendor: paloalto_panos
+  context:
+  - address-group
+  - entry <STR:n>
+  - static
+  entity:
+    type: ObjectDef
+    key: address_group:{n}
+  match: member <STR:m>
+  effect:
+    members: ObjectDef.members
+    from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/service
+  vendor: paloalto_panos
+  context:
+  - service
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: entry <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: service
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/service-port
+  vendor: paloalto_panos
+  context:
+  - service
+  - entry <STR:n>
+  - protocol
+  - <STR:proto>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: port <STR:p>
+  effect:
+    members: ObjectDef.members
+    template: '{proto}/{p}'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/service-group
+  vendor: paloalto_panos
+  context:
+  - service-group
+  entity:
+    type: ObjectDef
+    key: service_group:{n}
+  match: entry <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: service_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/service-group-member
+  vendor: paloalto_panos
+  context:
+  - service-group
+  - entry <STR:n>
+  - members
+  entity:
+    type: ObjectDef
+    key: service_group:{n}
+  match: member <STR:m>
+  effect:
+    members: ObjectDef.members
+    from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

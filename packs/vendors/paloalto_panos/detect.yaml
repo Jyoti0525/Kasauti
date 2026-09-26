@@ -1,0 +1,8 @@
+# Fingerprint for PAN-OS XML running configurations (PLAN §7).
+min_score: 0.7
+signatures:
+  - {id: config-root, kind: regex, pattern: '^\s*<config version="\d+\.\d+\.\d+" urldb=', weight: 0.5}
+  - {id: localhost-device, kind: regex, pattern: '<entry name="localhost\.localdomain">', weight: 0.3}
+  - {id: deviceconfig, kind: regex, pattern: '^\s*<deviceconfig>', weight: 0.2}
+  - {id: rulebase, kind: regex, pattern: '^\s*<rulebase>', weight: 0.2}
+  - {id: vsys1, kind: regex, pattern: '<entry name="vsys1">', weight: 0.1}

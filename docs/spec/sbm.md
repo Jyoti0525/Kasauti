@@ -1,4 +1,4 @@
-# Security Baseline Model (v0.6)
+# Security Baseline Model (v0.7)
 
 Implements PLAN §8 (requirement R-01). Source of truth: `backend/kasauti/sbm/`; JSON Schema:
 `schemas/sbm.schema.json`; OpenConfig alignment: `backend/kasauti/sbm/openconfig.yaml`.
@@ -67,7 +67,7 @@ rely on (PLAN §3.1, principle 5).
 
 ## Versioning
 
-`sbm_version` is `"0.6"`. Loading a document with another version fails with a pointer to
+`sbm_version` is `"0.7"`. Loading a document with another version fails with a pointer to
 `kasauti.sbm.migrations`, which upgrades stored documents step by step (one pure function per
 version change, never edited after release). 0.1 → 0.2 adds the empty sets above; 0.2 → 0.3
 adds four optional attributes (`MgmtService.access_filter`, `Interface.description`,
@@ -79,7 +79,9 @@ syslog server can be configured while the feature is off); 0.5 → 0.6 adds
 `LocalUser.permitted_sources` and `permitted_sources_v6` (the addresses an account may log in
 from, FortiOS trusted hosts), `TimeSource.enabled` (a known source may be unused: FortiGuard's
 servers unless `set type custom`) and `TimePolicy.sync_enabled` (FortiOS `ntpsync`, OpenConfig
-`ntp/config/enabled`). Everything an older document says is kept (tested).
+`ntp/config/enabled`); 0.6 → 0.7 adds `MgmtService.permitted_sources` (PAN-OS `permitted-ip`)
+and `FilterRule.applications` (PAN-OS matches by application as well as port). Everything an
+older document says is kept (tested).
 
 ## OpenConfig alignment
 

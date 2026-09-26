@@ -1,0 +1,204 @@
+# Syslog server profiles and log settings, SNMP v2c community, NTP servers.
+# Seed mappings: reviewed in docs/reviews/paloalto_panos.md.
+mappings:
+- id: paloalto_panos/syslog-server
+  vendor: paloalto_panos
+  context:
+  - syslog
+  - entry <STR:p>
+  - server
+  - entry <STR>
+  entity:
+    type: LogTarget
+    key: '{p}'
+  match: server <STR:h>
+  effect:
+    set: LogTarget.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/syslog-transport
+  vendor: paloalto_panos
+  context:
+  - syslog
+  - entry <STR:p>
+  - server
+  - entry <STR>
+  entity:
+    type: LogTarget
+    key: '{p}'
+  match: transport <STR:t>
+  effect:
+    set: LogTarget.transport
+    from: t
+    map:
+      UDP: udp
+      TCP: tcp
+      SSL: tls
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/send-syslog-system
+  vendor: paloalto_panos
+  context:
+  - log-settings
+  - system
+  - match-list
+  - entry <STR>
+  - send-syslog
+  entity:
+    type: LogTarget
+    key: '{p}'
+  match: member <STR:p>
+  effect:
+    assert: LogTarget.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/send-syslog-config
+  vendor: paloalto_panos
+  context:
+  - log-settings
+  - config
+  - match-list
+  - entry <STR>
+  - send-syslog
+  entity:
+    type: LogTarget
+    key: '{p}'
+  match: member <STR:p>
+  effect:
+    assert: LogTarget.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/snmp-v2c-community
+  vendor: paloalto_panos
+  context:
+  - snmp-setting
+  - access-setting
+  - version
+  - v2c
+  entity:
+    type: SnmpCommunity
+    key: v2c
+  match: snmp-community-string <STR:c>
+  effect:
+    set: SnmpCommunity.is_well_known
+    from: c
+    map:
+      public: true
+      private: true
+      cisco: true
+      community: true
+      admin: true
+      default: true
+      secret: true
+      manager: true
+      monitor: true
+      snmp: true
+      snmpd: true
+      read: true
+      write: true
+      all: true
+      security: true
+      test: true
+      password: true
+      paloalto: true
+      panorama: true
+    otherwise: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/ntp-server
+  vendor: paloalto_panos
+  context:
+  - ntp-servers
+  - <STR:which>
+  entity:
+    type: TimeSource
+    key: '{which}'
+  match: ntp-server-address <STR:h>
+  effect:
+    set: TimeSource.host
+    from: h
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/ntp-auth-none
+  vendor: paloalto_panos
+  context:
+  - ntp-servers
+  - <STR:which>
+  - authentication-type
+  entity:
+    type: TimeSource
+    key: '{which}'
+  match: none
+  effect:
+    assert: TimeSource.authenticated
+    value: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/ntp-auth-symmetric-key
+  vendor: paloalto_panos
+  context:
+  - ntp-servers
+  - <STR:which>
+  - authentication-type
+  entity:
+    type: TimeSource
+    key: '{which}'
+  match: symmetric-key
+  effect:
+  - assert: TimeSource.authenticated
+    value: true
+  - assert: TimePolicy.auth_enforced
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

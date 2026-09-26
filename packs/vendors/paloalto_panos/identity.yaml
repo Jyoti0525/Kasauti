@@ -1,0 +1,14 @@
+# Where identity appears (PLAN §7). The root element carries the release:
+#   <config version="11.1.0" urldb="paloaltonetworks" detail-version="11.1.2">
+# (`version` is the configuration schema, `detail-version` the running release). The host
+# name is in deviceconfig/system.
+fields:
+  hostname:
+    - {source: config, context: ["deviceconfig", "system"], pattern: "hostname <STR:value>"}
+  os_version:
+    - {source: config, regex: 'detail-version="(?P<value>[0-9]+\.[0-9]+\.[0-9]+)"'}
+    - {source: show_version, pattern: "sw-version: <STR:value>"}
+  model:
+    - {source: show_version, pattern: "model: <STR:value>"}
+  serial:
+    - {source: show_version, pattern: "serial: <STR:value>"}

@@ -26,12 +26,15 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 | `arista_eos/weak.cfg` | Arista EOS 4.30, weak twin | 53 | `05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
 | `fortinet_fortios/hardened.conf` | FortiOS 7.4.8, edge FortiGate 60F | 126 | `632bf2b38d66d4175395ee2a478f9e4f84c22fe27e0c2c95abcf07eb7871ff23` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
 | `fortinet_fortios/weak.conf` | FortiOS 7.4.8, weak twin | 82 | `3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
+| `paloalto_panos/hardened.xml` | PAN-OS 11.1.2, edge firewall (XML running config) | 269 | `f77dcd5a5c0be2df005feda67974a134c144e0d803b948e93f917c85831c907c` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06, `docs/reviews/paloalto_panos.md`) |
+| `paloalto_panos/weak.xml` | PAN-OS 11.1.2, weak twin | 164 | `d7aad8397621ac42c0c313c3d53c939b85a04f89b41d7bd11b13bd092b1699eb` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06, `docs/reviews/paloalto_panos.md`) |
 
 References used: Cisco IOS XE 17 configuration guides (security, SSH, AAA, SNMP, NTP, system
 management); Juniper Junos OS user guides (system basics, login classes, SSH, syslog, NTP,
 firewall filters, security zones); Arista EOS user manual (connection management, user
 security, system clock and time protocols, system event logging, ACLs); Fortinet FortiOS 7.4 CLI reference,
-administration guide and log message reference.
+administration guide and log message reference; Palo Alto Networks PAN-OS 11.1 web interface
+help and administrator's guide, and element names from pan-os-python (ISC).
 
 ### Planted weaknesses in `cisco_ios_xe/weak.cfg`
 
@@ -136,6 +139,25 @@ a weak default (F7, F14) or a value set without its on switch (F10).
 | F15 | `config system proxy-arp` entry on `wan1` | none |
 | F16 | policy 1 `wan1 -> internal`, `srcaddr "all"`, `dstaddr "ANY-NET"` (0.0.0.0/0), `service "ALL"`, accept | explicit sources and services only |
 
+### Planted weaknesses in `paloalto_panos/weak.xml`
+
+| # | Weakness | Hardened twin |
+|---|---|---|
+| P1 | `idle-timeout 0`: administrators are never logged out | `idle-timeout 10` |
+| P2 | no `admin-lockout`: Failed Attempts defaults to 0 (unlimited) | `failed-attempts 5`, `lockout-time 30` |
+| P3 | `password-complexity` with `minimum-length 8` | `minimum-length 15` |
+| P4 | admin `phash` `$1$…` (MD5-crypt) | `$5$…` (SHA-256-crypt) |
+| P5 | no TACACS+/RADIUS/LDAP server profile | `server-profile/tacplus` |
+| P6 | `disable-telnet no` on the MGT port | `yes` |
+| P7 | `disable-http no` on the MGT port | `yes` |
+| P8 | no `permitted-ip` on the MGT port (any address) | `permitted-ip 10.30.10.0/24` |
+| P9 | interface management profile `ALLOW-MGMT` (HTTPS, SSH) on the WAN interface | profile `PING-ONLY` |
+| P10 | no login banner | `login-banner` |
+| P11 | syslog profile `SIEM` defined but no System/Config log setting sends to it | `send-syslog SIEM` for System and Config logs, over SSL |
+| P12 | SNMP v2c community `public` | a site-specific community |
+| P13 | primary NTP server with `authentication-type none` | `symmetric-key` (SHA-1, key id 1) |
+| P14 | security rule `allow-all`: untrust → trust, any source, destination, application and service | rules naming sources, applications and `application-default`; an explicit deny-and-log |
+
 ## Golden cases (`datasets/golden/`, E1)
 
 Each case holds a `case.yaml` (the input path and SHA-256, and hand-labelled verdicts for every
@@ -152,6 +174,8 @@ above, never from the engine's output.
 | `arista_eos_hardened` | `authored/arista_eos/hardened.cfg` | 21 rules PASS; MGMT-SSH-V2-01 REVIEW (EOS has no SSH version setting and the version isn't documented in the pages checked); MGMT-WEB-ACL-01 N/A (eAPI off) |
 | `fortinet_fortios_weak` | `authored/fortinet_fortios/weak.conf` | 16 rules FAIL (F1–F16), 4 PASS by documented or model defaults (and zone-style filtering), 3 N/A (no vty lines, no references) |
 | `fortinet_fortios_hardened` | `authored/fortinet_fortios/hardened.conf` | 20 rules PASS, 3 N/A (no vty lines, no references) |
+| `paloalto_panos_weak` | `authored/paloalto_panos/weak.xml` | 13 rules FAIL (P1–P14; P8 and P9 both under MGMT-WEB-ACL-01), 6 PASS by documented or model defaults, zones and a resolved reference, 2 REVIEW (SSH version, proxy ARP), 2 N/A (no vty lines) |
+| `paloalto_panos_hardened` | `authored/paloalto_panos/hardened.xml` | 19 rules PASS, 2 REVIEW (SSH version, proxy ARP), 2 N/A (no vty lines) |
 | `juniper_junos_hardened` | `authored/juniper_junos/hardened.conf` | 20 rules PASS, 3 N/A (no vty lines, no web management) |
 
 History: on 2026-09-26 the Junos hardened config gained a login class with `idle-timeout 10` and `minimum-length 15`, and the Cisco hardened twin changed to `security passwords min-length 15` (NIST SP

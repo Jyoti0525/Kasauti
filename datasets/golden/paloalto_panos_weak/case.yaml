@@ -1,0 +1,31 @@
+# E1 golden case (PLAN §21.1). Labels are ground truth from the weakness catalogue in
+# datasets/SOURCES.md, not engine output.
+description: PAN-OS 11.1.2 branch firewall with 14 planted weaknesses (P1-P14)
+input: authored/paloalto_panos/weak.xml
+input_sha256: d7aad8397621ac42c0c313c3d53c939b85a04f89b41d7bd11b13bd092b1699eb
+vendor: null
+frameworks: [nist_800_53r5]
+expected_statuses:
+  AAA-CENTRAL-AUTH-01: FAIL     # P5 no TACACS+/RADIUS/LDAP server profile
+  AAA-LOCAL-PASSWORD-HASH-01: FAIL     # P4 admin phash $1$ (MD5-crypt)
+  AAA-LOCKOUT-01: FAIL     # P2 no admin lockout: Failed Attempts defaults to 0 (unlimited)
+  AAA-PASSWORD-ENCRYPTION-01: PASS     # administrator passwords are held only as phash (model default)
+  AAA-PASSWORD-MIN-LENGTH-01: FAIL     # P3 password-complexity minimum-length 8
+  FILTER-PERMIT-ANY-01: FAIL     # P14 rule allow-all: any source, destination, application and service
+  FILTER-UNTRUSTED-INGRESS-01: PASS     # every interface is in a zone; traffic between zones needs a rule
+  LOG-CONFIG-CHANGE-01: PASS     # PAN-OS always keeps Config logs (vendor default)
+  LOG-REMOTE-01: FAIL     # P11 syslog profile SIEM exists but no log setting sends to it
+  LOG-TIMESTAMPS-01: PASS     # every log entry carries the date and time (vendor default)
+  MGMT-BANNER-01: FAIL     # P10 no login banner
+  MGMT-HTTP-01: FAIL     # P7 disable-http no on the MGT port
+  MGMT-SESSION-TIMEOUT-01: FAIL     # P1 idle-timeout 0 (never logs out)
+  MGMT-SSH-V2-01: REVIEW   # PAN-OS documents no SSH protocol version for the management server
+  MGMT-TELNET-01: FAIL     # P6 disable-telnet no on the MGT port
+  MGMT-VTY-ACL-01: N/A      # PAN-OS has no vty lines
+  MGMT-VTY-ACL-02: N/A      # PAN-OS has no vty lines
+  MGMT-WEB-ACL-01: FAIL     # P8 no permitted IPs on the MGT port; P9 profile ALLOW-MGMT offers HTTPS on the WAN
+  REF-DANGLING-01: PASS     # the management profile the interfaces name exists
+  SNMP-COMMUNITY-01: FAIL     # P12 SNMP v2c community public
+  SVC-LEGACY-01: PASS     # PAN-OS has no PAD, finger, BOOTP or small servers (model default)
+  SVC-PROXY-ARP-01: REVIEW   # proxy ARP (NAT pools, 12.2.2+ interfaces) isn't read yet
+  TIME-NTP-AUTH-01: FAIL     # P13 primary NTP server with authentication-type none

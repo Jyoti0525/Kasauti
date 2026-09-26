@@ -8,6 +8,15 @@
           "title": "Assert",
           "type": "string"
         },
+        "combine": {
+          "default": "last",
+          "enum": [
+            "last",
+            "any"
+          ],
+          "title": "Combine",
+          "type": "string"
+        },
         "value": {
           "anyOf": [
             {
@@ -315,6 +324,11 @@
     "RefEffect": {
       "additionalProperties": false,
       "properties": {
+        "expand": {
+          "default": false,
+          "title": "Expand",
+          "type": "boolean"
+        },
         "from": {
           "pattern": "^[a-z][a-z0-9_]*$",
           "title": "From",
@@ -332,6 +346,7 @@
             "address_group",
             "service",
             "service_group",
+            "mgmt_profile",
             "any_object"
           ],
           "title": "Target",
@@ -349,6 +364,15 @@
     "SetEffect": {
       "additionalProperties": false,
       "properties": {
+        "combine": {
+          "default": "last",
+          "enum": [
+            "last",
+            "any"
+          ],
+          "title": "Combine",
+          "type": "string"
+        },
         "from": {
           "anyOf": [
             {

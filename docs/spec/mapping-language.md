@@ -80,6 +80,8 @@ Family conventions that make one language serve all shapes (fixed by the shape p
 | `{assert: Entity.attr, value: v}` | assert | the statement's presence means attr = v |
 | `{members: Entity.attr, from: slot, map?}` | members | each LIST item joins a set attribute |
 | `{ref: Entity.attr, from: slot, target: acl}` | ref | the attribute names another entity; the resolver links it (M2.23) |
+| `{ref: …, target: mgmt_profile, expand: true}` | ref | the attribute takes the target's members once linked (a PAN-OS interface gets its management profile's protocols); unknown if the target is missing or unread |
+| `combine: any` on `set`/`assert` | set / assert | the statement adds to what others said instead of replacing it: a flag once true stays true, a set gains items (PAN-OS: a service on at the MGT port *or* in any profile is on, whatever the file order) |
 | `entity: {type, key}` | entity | the statement opens/names an entity |
 | `negation:` | negation | the negated form inverts the fact |
 | `defaults.yaml` | default | what holds when nothing is stated, per OS version (see pack format) |

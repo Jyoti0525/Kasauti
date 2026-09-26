@@ -62,6 +62,8 @@ x-sbm:
   - LocalUser.permitted_sources  # OC users have no per-account source list
   - LocalUser.permitted_sources_v6  # likewise
   - TimeSource.enabled  # OC lists only servers in use; FortiGuard's implicit source is ours
+  - MgmtService.permitted_sources  # OC has no per-service source list (ACLs only)
+  - FilterRule.applications  # OC ACLs match protocols and ports, not applications
   - LockoutPolicy.max_attempts
   - LockoutPolicy.lockout_s
   - LoggingPolicy.timestamps
