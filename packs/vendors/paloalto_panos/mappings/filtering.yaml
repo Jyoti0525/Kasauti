@@ -40,6 +40,30 @@ mappings:
     - maintainer
     signals:
     - manual
+- id: paloalto_panos/mgmt-profile-permitted-ip
+  vendor: paloalto_panos
+  context:
+  - interface-management-profile
+  - entry <STR:p>
+  - permitted-ip
+  entity:
+    type: ObjectDef
+    key: mgmt_profile:{p}
+  match: entry <STR:a>
+  effect:
+    members: ObjectDef.permitted_sources
+    from: a
+    map:
+      0.0.0.0/0: any
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
 - id: paloalto_panos/ethernet-interface
   vendor: paloalto_panos
   context:
@@ -86,10 +110,17 @@ mappings:
     key: '{i}'
   match: interface-management-profile <STR:p>
   effect:
-    ref: Interface.mgmt_protocols
+  - ref: Interface.mgmt_protocols
     from: p
     target: mgmt_profile
     expand: true
+  - ref: Interface.mgmt_permitted_sources
+    from: p
+    target: mgmt_profile
+    expand: true
+    take: permitted_sources
+    if_empty:
+    - any
   negation: null
   provenance:
     version: 1
@@ -109,10 +140,17 @@ mappings:
     key: '{i}'
   match: interface-management-profile <STR:p>
   effect:
-    ref: Interface.mgmt_protocols
+  - ref: Interface.mgmt_protocols
     from: p
     target: mgmt_profile
     expand: true
+  - ref: Interface.mgmt_permitted_sources
+    from: p
+    target: mgmt_profile
+    expand: true
+    take: permitted_sources
+    if_empty:
+    - any
   negation: null
   provenance:
     version: 1
@@ -167,10 +205,17 @@ mappings:
     key: '{i}'
   match: interface-management-profile <STR:p>
   effect:
-    ref: Interface.mgmt_protocols
+  - ref: Interface.mgmt_protocols
     from: p
     target: mgmt_profile
     expand: true
+  - ref: Interface.mgmt_permitted_sources
+    from: p
+    target: mgmt_profile
+    expand: true
+    take: permitted_sources
+    if_empty:
+    - any
   negation: null
   provenance:
     version: 1
@@ -190,10 +235,17 @@ mappings:
     key: '{i}'
   match: interface-management-profile <STR:p>
   effect:
-    ref: Interface.mgmt_protocols
+  - ref: Interface.mgmt_protocols
     from: p
     target: mgmt_profile
     expand: true
+  - ref: Interface.mgmt_permitted_sources
+    from: p
+    target: mgmt_profile
+    expand: true
+    take: permitted_sources
+    if_empty:
+    - any
   negation: null
   provenance:
     version: 1
@@ -248,10 +300,17 @@ mappings:
     key: '{i}'
   match: interface-management-profile <STR:p>
   effect:
-    ref: Interface.mgmt_protocols
+  - ref: Interface.mgmt_protocols
     from: p
     target: mgmt_profile
     expand: true
+  - ref: Interface.mgmt_permitted_sources
+    from: p
+    target: mgmt_profile
+    expand: true
+    take: permitted_sources
+    if_empty:
+    - any
   negation: null
   provenance:
     version: 1
@@ -271,10 +330,17 @@ mappings:
     key: '{i}'
   match: interface-management-profile <STR:p>
   effect:
-    ref: Interface.mgmt_protocols
+  - ref: Interface.mgmt_protocols
     from: p
     target: mgmt_profile
     expand: true
+  - ref: Interface.mgmt_permitted_sources
+    from: p
+    target: mgmt_profile
+    expand: true
+    take: permitted_sources
+    if_empty:
+    - any
   negation: null
   provenance:
     version: 1

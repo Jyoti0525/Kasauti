@@ -33,6 +33,22 @@
         </entry>
       </tacplus>
     </server-profile>
+    <authentication-profile>
+      <entry name="TACACS-AUTH">
+        <method>
+          <tacplus>
+            <server-profile>TACACS</server-profile>
+          </tacplus>
+        </method>
+        <lockout>
+          <failed-attempts>5</failed-attempts>
+          <lockout-time>30</lockout-time>
+        </lockout>
+        <allow-list>
+          <member>all</member>
+        </allow-list>
+      </entry>
+    </authentication-profile>
     <log-settings>
       <syslog>
         <entry name="SIEM">
@@ -92,12 +108,29 @@
               </layer3>
               <comment>LAN server segment</comment>
             </entry>
+            <entry name="ethernet1/3">
+              <layer3>
+                <ip>
+                  <entry name="10.30.20.1/24"/>
+                </ip>
+                <interface-management-profile>MGMT-FROM-NOC</interface-management-profile>
+              </layer3>
+              <comment>In-band management VLAN</comment>
+            </entry>
           </ethernet>
         </interface>
         <profiles>
           <interface-management-profile>
             <entry name="PING-ONLY">
               <ping>yes</ping>
+            </entry>
+            <entry name="MGMT-FROM-NOC">
+              <https>yes</https>
+              <ssh>yes</ssh>
+              <ping>yes</ping>
+              <permitted-ip>
+                <entry name="10.30.10.0/24"/>
+              </permitted-ip>
             </entry>
           </interface-management-profile>
         </profiles>
@@ -108,6 +141,7 @@
           <ip-address>10.30.10.2</ip-address>
           <netmask>255.255.255.0</netmask>
           <default-gateway>10.30.10.1</default-gateway>
+          <authentication-profile>TACACS-AUTH</authentication-profile>
           <permitted-ip>
             <entry name="10.30.10.0/24"/>
           </permitted-ip>
@@ -168,6 +202,13 @@
               <network>
                 <layer3>
                   <member>ethernet1/2</member>
+                </layer3>
+              </network>
+            </entry>
+            <entry name="mgmt">
+              <network>
+                <layer3>
+                  <member>ethernet1/3</member>
                 </layer3>
               </network>
             </entry>
@@ -259,6 +300,7 @@
               <interface>
                 <member>ethernet1/1</member>
                 <member>ethernet1/2</member>
+                <member>ethernet1/3</member>
               </interface>
             </network>
           </import>

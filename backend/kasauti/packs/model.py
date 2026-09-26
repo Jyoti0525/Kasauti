@@ -66,16 +66,31 @@ class VendorManifest(_Strict):
 # --- detect.yaml -------------------------------------------------------------------------------
 
 
+PatternKind = Literal["contains", "line_prefix", "regex", "json_key", "xml_path"]
+
+
 class Signature(_Strict):
     id: EntryId
-    kind: Literal["contains", "line_prefix", "regex", "json_key", "xml_path"]
+    kind: PatternKind
     pattern: str = Field(min_length=1)
     weight: float = Field(gt=0, le=1)
+
+
+class InputWarning(_Strict):
+    """A pattern that says the file isn't what the audit expects (a PAN-OS Panorama export
+    rather than a firewall's configuration). A match adds ``message`` to the audit's warnings;
+    it never changes a verdict."""
+
+    id: EntryId
+    kind: PatternKind
+    pattern: str = Field(min_length=1)
+    message: str = Field(min_length=20)
 
 
 class DetectSpec(_Strict):
     signatures: tuple[Signature, ...] = Field(min_length=1)
     min_score: float = Field(default=0.5, gt=0, le=10)
+    warnings: tuple[InputWarning, ...] = ()
 
 
 # --- identity.yaml (PLAN §7) -------------------------------------------------------------------

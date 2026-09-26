@@ -200,3 +200,93 @@ mappings:
     effect: {set: LocalUser.hash_type, from: type, map: {"0": plaintext, "7": cisco-type-7}}
     negation: null
     provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Which methods administrator logins use ---------------------------------------------------
+  # `aaa authentication login default <methods>` decides how every line without its own list
+  # authenticates. A named server group (`aaa group server tacacs+ TACACS-GRP`) counts as the
+  # kind of server it holds, so `group TACACS-GRP` means `tacacs`. A TACACS+ server that no
+  # method list names is not central authentication (aaa.central_login_in_use).
+
+  - id: cisco_ios_xe/server-group-tacacs
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "server_group:{g}"}
+    match: "aaa group server tacacs+ <STR:g>"
+    effect: [{assert: ObjectDef.kind, value: server_group}, {assert: ObjectDef.members, value: [tacacs]}]
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/server-group-radius
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "server_group:{g}"}
+    match: "aaa group server radius <STR:g>"
+    effect: [{assert: ObjectDef.kind, value: server_group}, {assert: ObjectDef.members, value: [radius]}]
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/server-group-ldap
+    vendor: cisco_ios_xe
+    entity: {type: ObjectDef, key: "server_group:{g}"}
+    match: "aaa group server ldap <STR:g>"
+    effect: [{assert: ObjectDef.kind, value: server_group}, {assert: ObjectDef.members, value: [ldap]}]
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-default-group-tacacs
+    vendor: cisco_ios_xe
+    match: "aaa authentication login default group tacacs+ [<LIST>]"
+    effect: {assert: AuthPolicy.login_methods, value: [tacacs]}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-default-group-radius
+    vendor: cisco_ios_xe
+    match: "aaa authentication login default group radius [<LIST>]"
+    effect: {assert: AuthPolicy.login_methods, value: [radius]}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-default-group-ldap
+    vendor: cisco_ios_xe
+    match: "aaa authentication login default group ldap [<LIST>]"
+    effect: {assert: AuthPolicy.login_methods, value: [ldap]}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-default-group-named
+    vendor: cisco_ios_xe
+    match: "aaa authentication login default group <STR:g> [<LIST>]"
+    effect: {ref: AuthPolicy.login_methods, from: g, target: server_group, expand: true}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/login-default-first-method
+    vendor: cisco_ios_xe
+    match: "aaa authentication login default <STR:m> [<LIST>]"
+    effect: {set: AuthPolicy.login_methods, template: "{m}", map: {local-case: local}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+
+  # `login authentication <list>` on a line: `default` is the list read above. Another named
+  # list on a vty line isn't resolved yet, so the login methods become unknown (REVIEW).
+  # Console lines may keep a local list for break-glass access.
+
+  - id: cisco_ios_xe/vty-range-login-authentication
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:first> <INT:last>"]
+    entity: {type: MgmtSession, key: "vty {first}-{last}"}
+    match: "login authentication <STR:n>"
+    effect:
+      - {set: MgmtSession.auth_method, from: n}
+      - {unknown: AuthPolicy.login_methods, from: n, unless: [default], why: "a vty line names its own login method list, which is not resolved yet"}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/vty-single-login-authentication
+    vendor: cisco_ios_xe
+    context: ["line vty <INT:n>"]
+    entity: {type: MgmtSession, key: "vty {n}"}
+    match: "login authentication <STR:n>"
+    effect:
+      - {set: MgmtSession.auth_method, from: n}
+      - {unknown: AuthPolicy.login_methods, from: n, unless: [default], why: "a vty line names its own login method list, which is not resolved yet"}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/con-login-authentication
+    vendor: cisco_ios_xe
+    context: ["line con <INT:n>"]
+    entity: {type: MgmtSession, key: "con {n}"}
+    match: "login authentication <STR:n>"
+    effect: {set: MgmtSession.auth_method, from: n}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

@@ -75,3 +75,11 @@ predefined class can't time out) and `minimum-length 15` (NIST SP 800-63B-4).
 | The Telnet derivation only looked at vty sessions | on a platform without vty lines the answer was "nothing seen" (REVIEW) instead of "no" | every session is judged; derivation version 2 |
 | MGMT-WEB-ACL-01 used the strict view | a documented "web management is off" default couldn't take the device out of scope (REVIEW noise) | the rule uses the defaults view |
 | The YAML generator emitted aliases, and one duplicate mapping id | the pack loader refused the file (its billion-laughs guard) | generator writes plain YAML; ids fixed |
+
+## Addendum, 2026-09-26: which methods logins use
+
+AAA-CENTRAL-AUTH-01 now asks whether administrator logins *use* a central server
+(`AuthPolicy.login_methods`, derivation `aaa.central_login_in_use`), not only whether one is
+configured. `system authentication-order` is read; its first method
+decides (`tacplus` → tacacs, `radius`, `password` → local). With no `authentication-order`,
+the rule fails, as before. The hardened twin was already compliant (`[ tacplus password ]`).

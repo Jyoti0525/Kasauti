@@ -165,3 +165,132 @@ mappings:
     - maintainer
     signals:
     - manual
+# Which methods administrator logins use: `aaa authentication login default <methods>`. A
+# named server group counts as the kind of server it holds (`group TACACS-GROUP` -> tacacs).
+- id: arista_eos/server-group-tacacs
+  vendor: arista_eos
+  entity:
+    type: ObjectDef
+    key: server_group:{g}
+  match: aaa group server tacacs+ <STR:g>
+  effect:
+  - assert: ObjectDef.kind
+    value: server_group
+  - assert: ObjectDef.members
+    value:
+    - tacacs
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/server-group-radius
+  vendor: arista_eos
+  entity:
+    type: ObjectDef
+    key: server_group:{g}
+  match: aaa group server radius <STR:g>
+  effect:
+  - assert: ObjectDef.kind
+    value: server_group
+  - assert: ObjectDef.members
+    value:
+    - radius
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/server-group-ldap
+  vendor: arista_eos
+  entity:
+    type: ObjectDef
+    key: server_group:{g}
+  match: aaa group server ldap <STR:g>
+  effect:
+  - assert: ObjectDef.kind
+    value: server_group
+  - assert: ObjectDef.members
+    value:
+    - ldap
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/login-default-group-tacacs
+  vendor: arista_eos
+  match: aaa authentication login default group tacacs+ [<LIST>]
+  effect:
+    assert: AuthPolicy.login_methods
+    value:
+    - tacacs
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/login-default-group-radius
+  vendor: arista_eos
+  match: aaa authentication login default group radius [<LIST>]
+  effect:
+    assert: AuthPolicy.login_methods
+    value:
+    - radius
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/login-default-group-ldap
+  vendor: arista_eos
+  match: aaa authentication login default group ldap [<LIST>]
+  effect:
+    assert: AuthPolicy.login_methods
+    value:
+    - ldap
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/login-default-group-named
+  vendor: arista_eos
+  match: aaa authentication login default group <STR:g> [<LIST>]
+  effect:
+    ref: AuthPolicy.login_methods
+    from: g
+    target: server_group
+    expand: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/login-default-first-method
+  vendor: arista_eos
+  match: aaa authentication login default <STR:m> [<LIST>]
+  effect:
+    set: AuthPolicy.login_methods
+    template: '{m}'
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

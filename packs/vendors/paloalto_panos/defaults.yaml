@@ -4,7 +4,7 @@
 # Not stated in the pages checked, so no entry (the rule says REVIEW or, where absence is the
 # violation, FAIL): whether the MGT port's Telnet/HTTP/HTTPS/SSH are on when `service` doesn't
 # say; whether minimum password complexity is on and its minimum length; the SSH protocol
-# versions offered; whether an interface answers proxy ARP.
+# versions offered; whether an interface answers proxy ARP on PAN-OS 12.2.2 and later.
 defaults:
   # --- management plane ----------------------------------------------------------------------
   - id: admin-session-kind
@@ -34,7 +34,10 @@ defaults:
     reference: >-
       Permitted IP Addresses: "Enter the IP addresses from which administrators can access the
       firewall through the interface. An empty list (default) specifies that access is
-      available from any IP address."
+      available from any IP address." (The MGT port. For an interface management profile,
+      Use Interface Management Profiles to Restrict Access says "If you don't add entries to
+      the list, the interface has no IP address restrictions"; the profile mappings apply that
+      as `if_empty: [any]`.)
       https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-web-interface-help/device/device-setup-interfaces.html
 
   - id: no-profile-no-management
@@ -46,6 +49,19 @@ defaults:
       Management profile to an interface, it denies access for all IP addresses, protocols,
       and services by default."
       https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-networking-admin/configure-interfaces/use-interface-management-profiles-to-restrict-access.html
+
+  - id: no-interface-proxy-arp-before-12-2-2
+    attr: Interface.proxy_arp
+    os_versions: "<12.2.2"
+    value: false
+    source: vendor_doc
+    reference: >-
+      Configure Proxy ARP on a Layer 3 Interface, "Where Can I Use This? What Do I Need? NGFW
+      PAN-OS 12.2.2 or a later release": earlier releases have no proxy ARP setting for
+      interfaces. The firewall still answers ARP for its own NAT pool addresses in an
+      interface's subnet (Proxy ARP for NAT Address Pools); those are the firewall's
+      addresses, not other hosts'.
+      https://docs.paloaltonetworks.com/ngfw/networking/using-proxy-arp-dhcp-relay-overwrite/configure-proxy-arp
 
   - id: no-legacy-pad
     attr: MgmtService.enabled

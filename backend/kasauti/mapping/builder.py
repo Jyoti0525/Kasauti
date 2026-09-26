@@ -95,6 +95,10 @@ class RefRecord:
     evidence: Evidence
     expand: bool = False
     """The source attribute takes the target's members (``ref`` with ``expand``)."""
+    take: str = "members"
+    """Which of the target's attributes ``expand`` takes."""
+    if_empty: frozenset[str] | None = None
+    """What a target listing nothing contributes (``None``: nothing)."""
 
 
 @dataclass

@@ -21,14 +21,47 @@ inferences:
     set: {access_filter: per-account-sources}
 
   # --- Sources restricted per service --------------------------------------------------------
-  # PAN-OS lists the addresses the management port accepts (`permitted-ip`); an empty list, the
-  # default, means any address. An interface management profile that offers the service adds
-  # `any` (its own permitted-ip list isn't read yet), so it never looks restricted.
-  - id: mgmt_service.access_filter.permitted_sources
+  # PAN-OS lists the addresses the MGT port accepts (`permitted-ip`; empty, the default, means
+  # any address), and each interface management profile has its own list (empty: "no IP
+  # address restrictions"), which the interfaces using the profile inherit. A service is
+  # restricted only if the MGT port's list is, and so is every interface that offers the
+  # service. The expression language has no way to name the outer service inside `all(...)`,
+  # so there is one inference per service.
+  - id: mgmt_service.access_filter.permitted_sources.ssh
     version: 1
     description: >
-      A management service that accepts connections only from listed sources is restricted,
-      as an access filter would restrict it.
-    for_each: MgmtService where key in [ssh, http, https]
-    when: "exists(permitted_sources) and not permitted_sources contains 'any'"
+      SSH management that accepts connections only from listed sources, on the
+      management port and on every interface offering it, is restricted as an access filter
+      would restrict it.
+    for_each: MgmtService where key == 'ssh'
+    when: >
+      exists(permitted_sources) and not permitted_sources contains 'any'
+      and all(Interface: not exists(mgmt_protocols) or not mgmt_protocols contains 'ssh'
+              or (exists(mgmt_permitted_sources) and not mgmt_permitted_sources contains 'any'))
+    set: {access_filter: permitted-sources}
+
+  - id: mgmt_service.access_filter.permitted_sources.http
+    version: 1
+    description: >
+      HTTP management that accepts connections only from listed sources, on the
+      management port and on every interface offering it, is restricted as an access filter
+      would restrict it.
+    for_each: MgmtService where key == 'http'
+    when: >
+      exists(permitted_sources) and not permitted_sources contains 'any'
+      and all(Interface: not exists(mgmt_protocols) or not mgmt_protocols contains 'http'
+              or (exists(mgmt_permitted_sources) and not mgmt_permitted_sources contains 'any'))
+    set: {access_filter: permitted-sources}
+
+  - id: mgmt_service.access_filter.permitted_sources.https
+    version: 1
+    description: >
+      HTTPS management that accepts connections only from listed sources, on the
+      management port and on every interface offering it, is restricted as an access filter
+      would restrict it.
+    for_each: MgmtService where key == 'https'
+    when: >
+      exists(permitted_sources) and not permitted_sources contains 'any'
+      and all(Interface: not exists(mgmt_protocols) or not mgmt_protocols contains 'https'
+              or (exists(mgmt_permitted_sources) and not mgmt_permitted_sources contains 'any'))
     set: {access_filter: permitted-sources}

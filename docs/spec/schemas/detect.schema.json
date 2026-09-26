@@ -1,5 +1,45 @@
 {
   "$defs": {
+    "InputWarning": {
+      "additionalProperties": false,
+      "description": "A pattern that says the file isn't what the audit expects (a PAN-OS Panorama export\nrather than a firewall's configuration). A match adds ``message`` to the audit's warnings;\nit never changes a verdict.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "contains",
+            "line_prefix",
+            "regex",
+            "json_key",
+            "xml_path"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 20,
+          "title": "Message",
+          "type": "string"
+        },
+        "pattern": {
+          "minLength": 1,
+          "title": "Pattern",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "pattern",
+        "message"
+      ],
+      "title": "InputWarning",
+      "type": "object"
+    },
     "Signature": {
       "additionalProperties": false,
       "properties": {
@@ -56,6 +96,14 @@
       },
       "minItems": 1,
       "title": "Signatures",
+      "type": "array"
+    },
+    "warnings": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/InputWarning"
+      },
+      "title": "Warnings",
       "type": "array"
     }
   },

@@ -111,3 +111,14 @@ Beyond the fixes below, the notable judgements:
 | Logging mappings didn't accept `vrf` together with `transport` | `logging host X vrf V transport tcp` was an unreadable line | optional groups |
 
 Changed mappings carry `provenance.version: 2`, so reports show which revision decided a fact.
+
+## Addendum, 2026-09-26: which methods logins use
+
+AAA-CENTRAL-AUTH-01 now asks whether administrator logins *use* a central server
+(`AuthPolicy.login_methods`, derivation `aaa.central_login_in_use`), not only whether one is
+configured. `aaa authentication login default <methods>` is read; its first method decides (`group
+tacacs+`/`radius`/`ldap`, a named group through `aaa group server <kind> <name>`, else
+`local`, `enable`, `line`, `none`). `local` first is not central authentication. A vty line
+naming a list other than `default` (`login authentication VTY`) makes the methods unknown,
+since named lists aren't resolved yet (REVIEW); a console list is left alone for break-glass
+access. The hardened twin was already compliant (`group TACACS-GRP local`).

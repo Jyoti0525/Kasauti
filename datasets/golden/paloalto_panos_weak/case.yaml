@@ -27,5 +27,5 @@ expected_statuses:
   REF-DANGLING-01: PASS     # the management profile the interfaces name exists
   SNMP-COMMUNITY-01: FAIL     # P12 SNMP v2c community public
   SVC-LEGACY-01: PASS     # PAN-OS has no PAD, finger, BOOTP or small servers (model default)
-  SVC-PROXY-ARP-01: REVIEW   # proxy ARP (NAT pools, 12.2.2+ interfaces) isn't read yet
+  SVC-PROXY-ARP-01: PASS   # interface proxy ARP exists only from PAN-OS 12.2.2; this is 11.1.2
   TIME-NTP-AUTH-01: FAIL     # P13 primary NTP server with authentication-type none

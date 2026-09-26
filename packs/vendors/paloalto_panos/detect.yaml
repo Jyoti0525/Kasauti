@@ -6,3 +6,22 @@ signatures:
   - {id: deviceconfig, kind: regex, pattern: '^\s*<deviceconfig>', weight: 0.2}
   - {id: rulebase, kind: regex, pattern: '^\s*<rulebase>', weight: 0.2}
   - {id: vsys1, kind: regex, pattern: '<entry name="vsys1">', weight: 0.1}
+
+# The file isn't a firewall's full configuration (docs/reviews/paloalto_panos.md, Panorama).
+# "show config merged" shows "templates from Panorama combined with local running config"
+# (Palo Alto knowledge base kA10g000000CmAYCA0).
+warnings:
+  - id: panorama-configuration
+    kind: regex
+    pattern: '^\s*<(device-group|template|template-stack)>'
+    message: >-
+      This looks like a Panorama configuration (device groups or templates), not a firewall's.
+      Kasauti judges one firewall: audit each firewall's `show config merged` output, which
+      combines Panorama's templates and policy with the firewall's local configuration.
+  - id: panorama-managed
+    kind: regex
+    pattern: '<panorama-server>'
+    message: >-
+      This firewall is managed by Panorama. Settings pushed from Panorama appear only in
+      `show config merged`; if this file is the local running configuration, they are missing
+      and the verdicts cover the local settings alone.

@@ -24,6 +24,7 @@ from kasauti.mapping.model import (
     SplitTransform,
     Transform,
     UnitTransform,
+    UnknownEffect,
     template_slots,
 )
 from kasauti.rules.expr import Type
@@ -74,6 +75,8 @@ def evaluate(effect: Effect, caps: Captures, kind: Type, *, negated: bool) -> Ou
                 return _members(effect, caps, negated=negated)
             case RefEffect():
                 return _ref(effect, caps, kind, negated=negated)
+            case UnknownEffect():
+                return Clear() if negated else Unknown(effect.why)
     except _UnreadableError as err:
         return Unknown(str(err))
     raise AssertionError(f"unhandled effect {effect!r}")  # pragma: no cover

@@ -1,4 +1,4 @@
-# Security Baseline Model (v0.7)
+# Security Baseline Model (v0.8)
 
 Implements PLAN §8 (requirement R-01). Source of truth: `backend/kasauti/sbm/`; JSON Schema:
 `schemas/sbm.schema.json`; OpenConfig alignment: `backend/kasauti/sbm/openconfig.yaml`.
@@ -31,6 +31,11 @@ Twenty-two entity types: the eighteen in PLAN §8.1 plus four additions it needs
   for ACL targets `permits_any` (the chain vty line → ACL → permitted sources). It is *unknown*
   if a permit entry's sources, or any line inside the ACL, weren't understood. Dangling
   references are ordinary facts that rules judge (REF-DANGLING-01).
+- `AuthPolicy` (singleton, 0.8) holds `login_methods`: what administrator logins are checked
+  against (`tacacs`, `radius`, `ldap`, `local`; OpenConfig `authentication-method`). A named
+  server group, FortiOS user group or PAN-OS authentication profile counts as the kinds of
+  server it holds, so a TACACS+ server that no login uses is not in the set, and
+  AAA-CENTRAL-AUTH-01 (derivation `aaa.central_login_in_use`) doesn't pass on it.
 - `TimePolicy` (singleton, 0.2) holds `auth_enforced`: whether the device rejects time from
   unauthenticated sources (`ntp authenticate`; OpenConfig `enable-ntp-auth`).
   `TimeSource.authenticated` only says a key is configured for that server, which isn't
@@ -40,7 +45,8 @@ Every entity also has `evidence` (0.2): the statements that opened or named it
 (`line vty 0 4`), so a finding can point at the entity even when the attribute in question was
 never set.
 
-Singletons: `Device`, `PasswordPolicy`, `LockoutPolicy`, `LoggingPolicy`, `TimePolicy`. Every entity has a
+Singletons: `Device`, `PasswordPolicy`, `AuthPolicy`, `LockoutPolicy`, `LoggingPolicy`,
+`TimePolicy`. Every entity has a
 `key` unique within its type; findings name entities as `Type[key]`, e.g. `MgmtSession[vty 0-4]`.
 Secrets are never keys: an SNMP community is `community-1`, with `is_well_known` recorded
 before masking.
@@ -67,7 +73,7 @@ rely on (PLAN §3.1, principle 5).
 
 ## Versioning
 
-`sbm_version` is `"0.7"`. Loading a document with another version fails with a pointer to
+`sbm_version` is `"0.8"`. Loading a document with another version fails with a pointer to
 `kasauti.sbm.migrations`, which upgrades stored documents step by step (one pure function per
 version change, never edited after release). 0.1 → 0.2 adds the empty sets above; 0.2 → 0.3
 adds four optional attributes (`MgmtService.access_filter`, `Interface.description`,
@@ -80,8 +86,12 @@ syslog server can be configured while the feature is off); 0.5 → 0.6 adds
 from, FortiOS trusted hosts), `TimeSource.enabled` (a known source may be unused: FortiGuard's
 servers unless `set type custom`) and `TimePolicy.sync_enabled` (FortiOS `ntpsync`, OpenConfig
 `ntp/config/enabled`); 0.6 → 0.7 adds `MgmtService.permitted_sources` (PAN-OS `permitted-ip`)
-and `FilterRule.applications` (PAN-OS matches by application as well as port). Everything an
-older document says is kept (tested).
+and `FilterRule.applications` (PAN-OS matches by application as well as port); 0.7 → 0.8 adds
+the `AuthPolicy` singleton, `Interface.mgmt_permitted_sources` and
+`ObjectDef.permitted_sources` (a PAN-OS interface management profile's `permitted-ip`, which
+the interfaces using it inherit) and `ObjectDef.destinations` (a FortiOS service limited to
+some destinations by `iprange`/`fqdn`, so it doesn't cover all traffic). Everything an older
+document says is kept (tested).
 
 ## OpenConfig alignment
 

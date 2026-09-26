@@ -548,6 +548,154 @@ mappings:
     - maintainer
     signals:
     - manual
+- id: fortinet_fortios/tacacs-server-object
+  vendor: fortinet_fortios
+  context:
+  - config user tacacs+
+  entity:
+    type: ObjectDef
+    key: auth_server:{n}
+  match: edit <STR:n>
+  effect:
+  - assert: ObjectDef.kind
+    value: auth_server
+  - assert: ObjectDef.members
+    value:
+    - tacacs
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/radius-server-object
+  vendor: fortinet_fortios
+  context:
+  - config user radius
+  entity:
+    type: ObjectDef
+    key: auth_server:{n}
+  match: edit <STR:n>
+  effect:
+  - assert: ObjectDef.kind
+    value: auth_server
+  - assert: ObjectDef.members
+    value:
+    - radius
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/ldap-server-object
+  vendor: fortinet_fortios
+  context:
+  - config user ldap
+  entity:
+    type: ObjectDef
+    key: auth_server:{n}
+  match: edit <STR:n>
+  effect:
+  - assert: ObjectDef.kind
+    value: auth_server
+  - assert: ObjectDef.members
+    value:
+    - ldap
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/user-group
+  vendor: fortinet_fortios
+  context:
+  - config user group
+  entity:
+    type: ObjectDef
+    key: user_group:{g}
+  match: edit <STR:g>
+  effect:
+    assert: ObjectDef.kind
+    value: user_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/user-group-member
+  vendor: fortinet_fortios
+  context:
+  - config user group
+  - edit <STR:g>
+  entity:
+    type: ObjectDef
+    key: user_group:{g}
+  match: set member <LIST:m>
+  effect:
+    members: ObjectDef.members
+    from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-remote-auth
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set remote-auth enable
+  effect:
+    assert: LocalUser.hash_type
+    value: remote
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/admin-remote-group
+  vendor: fortinet_fortios
+  context:
+  - config system admin
+  - edit <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: set remote-group <STR:g>
+  effect:
+    ref: AuthPolicy.login_methods
+    from: g
+    target: user_group
+    expand: true
+    take: expanded
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
 - id: fortinet_fortios/lockout-threshold
   vendor: fortinet_fortios
   context:

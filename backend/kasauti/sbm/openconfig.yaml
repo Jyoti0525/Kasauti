@@ -20,6 +20,7 @@ openconfig:
   Interface.proxy_arp: /interfaces/interface/subinterfaces/subinterface/ipv4/proxy-arp/config/mode
   LocalUser.privilege: /system/aaa/authentication/users/user/config/role
   LocalUser.hash_type: /system/aaa/authentication/users/user/config/password-hashed
+  AuthPolicy.login_methods: /system/aaa/authentication/config/authentication-method
   AuthServer.host: /system/aaa/server-groups/server-group/servers/server/config/address
   LogTarget.host: /system/logging/remote-servers/remote-server/config/host
   LogTarget.severity: /system/logging/remote-servers/remote-server/selectors/selector/config/severity
@@ -64,6 +65,9 @@ x-sbm:
   - TimeSource.enabled  # OC lists only servers in use; FortiGuard's implicit source is ours
   - MgmtService.permitted_sources  # OC has no per-service source list (ACLs only)
   - FilterRule.applications  # OC ACLs match protocols and ports, not applications
+  - Interface.mgmt_permitted_sources  # OC has no per-interface management source list
+  - ObjectDef.permitted_sources  # likewise (PAN-OS interface management profiles)
+  - ObjectDef.destinations  # OC service definitions have no destination limit
   - LockoutPolicy.max_attempts
   - LockoutPolicy.lockout_s
   - LoggingPolicy.timestamps

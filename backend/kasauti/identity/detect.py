@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 from kasauti.ingest.mask import mask_secrets
 from kasauti.packs.loader import VendorPack
-from kasauti.packs.model import Signature
+from kasauti.packs.model import InputWarning, Signature
 from kasauti.rules import regex
 from kasauti.sbm.facts import Evidence
 from kasauti.shape.model import ConfigTree
@@ -67,6 +67,17 @@ def choose(detections: Sequence[Detection]) -> Detection | None:
     return detections[0]
 
 
+def input_warnings(text: str, pack: VendorPack, tree: ConfigTree | None = None) -> list[str]:
+    """The pack's ``warnings`` whose pattern matches, each with the line that matched."""
+    lines = split_lines(text)
+    out = []
+    for warning in pack.detect.warnings:
+        line = _match(warning, text, lines, tree)
+        if line is not None:
+            out.append(f"{warning.message} (line {line})")
+    return out
+
+
 def detection_evidence(detection: Detection, text: str, source_file: str) -> tuple[Evidence, ...]:
     lines = split_lines(text)
     return tuple(
@@ -80,7 +91,9 @@ def detection_evidence(detection: Detection, text: str, source_file: str) -> tup
     )
 
 
-def _match(sig: Signature, text: str, lines: list[str], tree: ConfigTree | None) -> int | None:
+def _match(
+    sig: Signature | InputWarning, text: str, lines: list[str], tree: ConfigTree | None
+) -> int | None:
     match sig.kind:
         case "contains":
             pos = text.find(sig.pattern)

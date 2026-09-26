@@ -19,7 +19,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict
 
 from kasauti import __version__
-from kasauti.identity.detect import Detection, choose, detect_vendor, score_pack
+from kasauti.identity.detect import Detection, choose, detect_vendor, input_warnings, score_pack
 from kasauti.identity.resolve import resolve_identity
 from kasauti.ingest.mask import mask_secrets
 from kasauti.ingest.model import Artifact
@@ -237,6 +237,7 @@ def audit(
         family=pack.manifest.shape_family,
         sha256=artifact.sha256,
     )
+    warnings.extend(input_warnings(artifact.text, pack, tree))
     ident = resolve_identity(tree, pack, detection if detection.matched else None, artifact.text)
     mapped = apply_mappings(
         tree,

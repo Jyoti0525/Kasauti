@@ -741,3 +741,186 @@ def test_optional_groups_are_refused_in_contexts() -> None:
             match="x",
             effect={"assert": "MgmtService.enabled", "value": True},
         )
+
+
+SOURCES = [
+    *PROFILE,
+    m(
+        id="v/profile-permit",
+        context=["profile <STR:p>"],
+        entity={"type": "ObjectDef", "key": "mgmt_profile:{p}"},
+        match="permit <STR:a>",
+        effect={"members": "ObjectDef.permitted_sources", "from": "a"},
+        negation=None,
+    ),
+    m(
+        id="v/if-profile-sources",
+        context=["interface <STR:i>"],
+        entity={"type": "Interface", "key": "{i}"},
+        match="management-profile <STR:p>",
+        effect={
+            "ref": "Interface.mgmt_permitted_sources",
+            "from": "p",
+            "target": "mgmt_profile",
+            "expand": True,
+            "take": "permitted_sources",
+            "if_empty": ["any"],
+        },
+        negation=None,
+    ),
+]
+
+
+def test_an_expanding_reference_can_take_another_attribute_and_fill_an_empty_list() -> None:
+    r = run(
+        "profile NOC\n https yes\n permit 10.0.0.0/8\nprofile OPEN\n https yes\n"
+        "interface e1\n management-profile NOC\ninterface e2\n management-profile OPEN\n",
+        SOURCES,
+    )
+    e1, e2 = entity(r, "Interface", "e1"), entity(r, "Interface", "e2")
+    assert e1.mgmt_permitted_sources.value == {"10.0.0.0/8"}  # type: ignore[attr-defined]
+    assert e2.mgmt_permitted_sources.value == {"any"}  # type: ignore[attr-defined]
+    assert e1.mgmt_protocols.value == {"https"}  # type: ignore[attr-defined]
+    with pytest.raises(ValueError, match="only apply with `expand"):
+        m(
+            id="v/x",
+            context=["interface <STR:i>"],
+            entity={"type": "Interface", "key": "{i}"},
+            match="management-profile <STR:p>",
+            effect={
+                "ref": "Interface.mgmt_protocols",
+                "from": "p",
+                "target": "mgmt_profile",
+                "if_empty": ["any"],
+            },
+        )
+
+
+LOGIN = [
+    m(
+        id="v/server-group",
+        entity={"type": "ObjectDef", "key": "server_group:{g}"},
+        match="group tacacs <STR:g>",
+        effect=[
+            {"assert": "ObjectDef.kind", "value": "server_group"},
+            {"assert": "ObjectDef.members", "value": ["tacacs"]},
+        ],
+        negation=None,
+    ),
+    m(
+        id="v/login-local",
+        match="login local",
+        effect={"assert": "AuthPolicy.login_methods", "value": ["local"], "combine": "any"},
+        negation=None,
+    ),
+    m(
+        id="v/login-group",
+        match="login group <STR:g>",
+        effect={
+            "ref": "AuthPolicy.login_methods",
+            "from": "g",
+            "target": "server_group",
+            "expand": True,
+        },
+        negation=None,
+    ),
+]
+
+
+def test_expansion_replaces_the_names_and_keeps_items_from_other_lines() -> None:
+    r = run("group tacacs TG\nlogin local\nlogin group TG\n", LOGIN)
+    policy = entity(r, "AuthPolicy", "auth-policy")
+    assert policy.login_methods.value == {"local", "tacacs"}  # type: ignore[attr-defined]
+
+
+USER_GROUPS = [
+    m(
+        id="v/server",
+        entity={"type": "ObjectDef", "key": "auth_server:{s}"},
+        match="tacacs <STR:s>",
+        effect=[
+            {"assert": "ObjectDef.kind", "value": "auth_server"},
+            {"assert": "ObjectDef.members", "value": ["tacacs"]},
+        ],
+        negation=None,
+    ),
+    m(
+        id="v/user-group",
+        entity={"type": "ObjectDef", "key": "user_group:{g}"},
+        match="user-group <STR:g> <LIST:m>",
+        effect=[
+            {"assert": "ObjectDef.kind", "value": "user_group"},
+            {"members": "ObjectDef.members", "from": "m"},
+        ],
+        negation=None,
+    ),
+    m(
+        id="v/admin",
+        entity={"type": "LocalUser", "key": "{u}"},
+        match="admin <STR:u> remote-group <STR:g>",
+        effect={
+            "ref": "AuthPolicy.login_methods",
+            "from": "g",
+            "target": "user_group",
+            "expand": True,
+            "take": "expanded",
+        },
+        negation=None,
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ("members", "state", "value"),
+    [
+        ("T1", FactState.EXPLICIT, {"tacacs"}),  # the group resolves to its servers' kind
+        ("T1 bob", FactState.UNKNOWN, None),  # a local user isn't a server: can't say
+    ],
+)
+def test_a_user_group_expands_to_the_kinds_of_its_servers(
+    members: str, state: FactState, value: set[str] | None
+) -> None:
+    r = run(f"tacacs T1\nuser-group G {members}\nadmin a remote-group G\n", USER_GROUPS)
+    methods = entity(r, "AuthPolicy", "auth-policy").login_methods  # type: ignore[attr-defined]
+    assert (methods.state, methods.value) == (state, value)
+
+
+NAMED_LIST = m(
+    id="v/vty-list",
+    context=["line vty <INT:a> <INT:b>"],
+    entity={"type": "MgmtSession", "key": "vty {a}-{b}"},
+    match="login authentication <STR:n>",
+    effect=[
+        {"set": "MgmtSession.auth_method", "from": "n"},
+        {
+            "unknown": "AuthPolicy.login_methods",
+            "from": "n",
+            "unless": ["default"],
+            "why": "a named list isn't resolved",
+        },
+    ],
+    negation=None,
+)
+
+
+@pytest.mark.parametrize(
+    ("name", "state"), [("default", FactState.EXPLICIT), ("VTY", FactState.UNKNOWN)]
+)
+def test_an_unknown_effect_marks_the_fact_unless_the_value_is_read_elsewhere(
+    name: str, state: FactState
+) -> None:
+    r = run(
+        f"login group TG\ngroup tacacs TG\nline vty 0 4\n login authentication {name}\n",
+        [*LOGIN, NAMED_LIST],
+    )
+    assert entity(r, "AuthPolicy", "auth-policy").login_methods.state is state  # type: ignore[attr-defined]
+    with pytest.raises(ValueError, match="go together"):
+        m(
+            id="v/x",
+            match="x <STR:n>",
+            effect={
+                "unknown": "AuthPolicy.login_methods",
+                "unless": ["a"],
+                "why": "not read at all",
+            },
+        )

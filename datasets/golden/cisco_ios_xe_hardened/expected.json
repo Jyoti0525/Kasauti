@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "b0cc7035dd147f863fdcfbd6",
+  "audit_id": "7381e5e2f41d2233524722f1",
   "input": {
     "file": "hardened.cfg",
     "sha256": "aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2",
@@ -52,8 +52,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
-    "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
+    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
+    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -592,11 +592,24 @@
       "severity_reason": null,
       "reason": "Administrators authenticate against a central AAA server: holds for the device.",
       "actual": [
-        "aaa.central_server_configured = true",
+        "aaa.central_login_in_use = true",
+        "AuthPolicy[auth-policy].login_methods = {tacacs}",
+        "AuthServer[tacacs:TAC1].kind = tacacs",
         "AuthServer[tacacs:TAC1].host = 10.10.10.40"
       ],
       "defaults_used": [],
       "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "aaa authentication login default group TACACS-GRP local",
+          "mapping_id": "cisco_ios_xe/login-default-group-named",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
         {
           "file": "hardened.cfg",
           "line_start": 83,
@@ -614,6 +627,17 @@
           "line_end": 84,
           "raw": "address ipv4 10.10.10.40",
           "mapping_id": "cisco_ios_xe/tacacs-server-address",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.cfg",
+          "line_start": 87,
+          "line_end": 87,
+          "raw": "aaa group server tacacs+ TACACS-GRP",
+          "mapping_id": "cisco_ios_xe/server-group-tacacs",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1437,6 +1461,31 @@
     },
     {
       "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[AuthPolicy[auth-policy].login_methods -> TACACS-GRP]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[AuthPolicy[auth-policy].login_methods -> TACACS-GRP].",
+      "actual": [
+        "Reference[AuthPolicy[auth-policy].login_methods -> TACACS-GRP].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "aaa authentication login default group TACACS-GRP local",
+          "mapping_id": "cisco_ios_xe/login-default-group-named",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
       "entity_id": "Reference[Interface[GigabitEthernet1].filters_in -> EDGE-IN]",
       "status": "PASS",
       "severity": null,
@@ -1748,10 +1797,10 @@
   ],
   "assurance": {
     "statements": 92,
-    "understood": 55,
-    "unmapped": 37,
+    "understood": 57,
+    "unmapped": 35,
     "near_miss": 0,
-    "understood_pct": 59.8,
+    "understood_pct": 62.0,
     "unmapped_patterns": [
       {
         "pattern_key": "ip address <IP> <IP>",
@@ -1788,12 +1837,6 @@
         "count": 1,
         "first_line": 21,
         "example": "aaa new-model"
-      },
-      {
-        "pattern_key": "aaa authentication login default group TACACS-GRP local",
-        "count": 1,
-        "first_line": 22,
-        "example": "aaa authentication login default group TACACS-GRP local"
       },
       {
         "pattern_key": "aaa authorization exec default group TACACS-GRP local",
@@ -1884,12 +1927,6 @@
         "count": 1,
         "first_line": 59,
         "example": "no cdp enable"
-      },
-      {
-        "pattern_key": "aaa group server tacacs+ TACACS-GRP",
-        "count": 1,
-        "first_line": 87,
-        "example": "aaa group server tacacs+ TACACS-GRP"
       },
       {
         "pattern_key": "server name TAC1",
@@ -2143,6 +2180,13 @@
         "facts": 2
       },
       {
+        "mapping": "cisco_ios_xe/login-default-group-named@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 7
+      },
+      {
         "mapping": "cisco_ios_xe/ntp-authenticate@1",
         "approved_by": [
           "maintainer"
@@ -2162,6 +2206,13 @@
           "maintainer"
         ],
         "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/server-group-tacacs@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
       },
       {
         "mapping": "cisco_ios_xe/service-pad@1",
@@ -2270,7 +2321,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.7",
+    "sbm_version": "0.8",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2473,6 +2524,42 @@
       }
     },
     "entities": [
+      {
+        "key": "auth-policy",
+        "evidence": [],
+        "type": "AuthPolicy",
+        "login_methods": {
+          "value": [
+            "tacacs"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "aaa authentication login default group TACACS-GRP local",
+              "mapping_id": "cisco_ios_xe/login-default-group-named",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.cfg",
+              "line_start": 87,
+              "line_end": 87,
+              "raw": "aaa group server tacacs+ TACACS-GRP",
+              "mapping_id": "cisco_ios_xe/server-group-tacacs",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
       {
         "key": "tacacs:TAC1",
         "evidence": [
@@ -3684,6 +3771,12 @@
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
         },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": false,
           "state": "explicit",
@@ -3787,6 +3880,12 @@
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
         },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": false,
           "state": "explicit",
@@ -3875,6 +3974,12 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
+        },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         },
         "proxy_arp": {
           "value": false,
@@ -5184,6 +5289,18 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -5227,6 +5344,91 @@
           "default_source": null
         },
         "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "server_group:TACACS-GRP",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 87,
+            "line_end": 87,
+            "raw": "aaa group server tacacs+ TACACS-GRP",
+            "mapping_id": "cisco_ios_xe/server-group-tacacs",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "server_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 87,
+              "line_end": 87,
+              "raw": "aaa group server tacacs+ TACACS-GRP",
+              "mapping_id": "cisco_ios_xe/server-group-tacacs",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "tacacs"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 87,
+              "line_end": 87,
+              "raw": "aaa group server tacacs+ TACACS-GRP",
+              "mapping_id": "cisco_ios_xe/server-group-tacacs",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -5292,6 +5494,137 @@
           "default_source": null
         },
         "enforced": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "AuthPolicy[auth-policy].login_methods -> TACACS-GRP",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 22,
+            "line_end": 22,
+            "raw": "aaa authentication login default group TACACS-GRP local",
+            "mapping_id": "cisco_ios_xe/login-default-group-named",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "AuthPolicy[auth-policy]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "aaa authentication login default group TACACS-GRP local",
+              "mapping_id": "cisco_ios_xe/login-default-group-named",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "AuthPolicy.login_methods",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "aaa authentication login default group TACACS-GRP local",
+              "mapping_id": "cisco_ios_xe/login-default-group-named",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "server_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "aaa authentication login default group TACACS-GRP local",
+              "mapping_id": "cisco_ios_xe/login-default-group-named",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "TACACS-GRP",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "aaa authentication login default group TACACS-GRP local",
+              "mapping_id": "cisco_ios_xe/login-default-group-named",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "aaa authentication login default group TACACS-GRP local",
+              "mapping_id": "cisco_ios_xe/login-default-group-named",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[server_group:TACACS-GRP]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "aaa authentication login default group TACACS-GRP local",
+              "mapping_id": "cisco_ios_xe/login-default-group-named",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -5817,10 +6150,21 @@
       }
     ],
     "derived": {
-      "aaa.central_server_configured": {
+      "aaa.central_login_in_use": {
         "value": true,
         "state": "explicit",
         "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 22,
+            "line_end": 22,
+            "raw": "aaa authentication login default group TACACS-GRP local",
+            "mapping_id": "cisco_ios_xe/login-default-group-named",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
           {
             "file": "hardened.cfg",
             "line_start": 83,
@@ -5838,6 +6182,17 @@
             "line_end": 84,
             "raw": "address ipv4 10.10.10.40",
             "mapping_id": "cisco_ios_xe/tacacs-server-address",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.cfg",
+            "line_start": 87,
+            "line_end": 87,
+            "raw": "aaa group server tacacs+ TACACS-GRP",
+            "mapping_id": "cisco_ios_xe/server-group-tacacs",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"

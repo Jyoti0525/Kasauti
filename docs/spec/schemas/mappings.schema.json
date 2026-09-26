@@ -101,6 +101,9 @@
               "$ref": "#/$defs/RefEffect"
             },
             {
+              "$ref": "#/$defs/UnknownEffect"
+            },
+            {
               "items": {
                 "anyOf": [
                   {
@@ -114,6 +117,9 @@
                   },
                   {
                     "$ref": "#/$defs/RefEffect"
+                  },
+                  {
+                    "$ref": "#/$defs/UnknownEffect"
                   }
                 ]
               },
@@ -334,9 +340,34 @@
           "title": "From",
           "type": "string"
         },
+        "if_empty": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "If Empty"
+        },
         "ref": {
           "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
           "title": "Ref",
+          "type": "string"
+        },
+        "take": {
+          "default": "members",
+          "enum": [
+            "members",
+            "expanded",
+            "permitted_sources"
+          ],
+          "title": "Take",
           "type": "string"
         },
         "target": {
@@ -347,6 +378,9 @@
             "service",
             "service_group",
             "mgmt_profile",
+            "server_group",
+            "user_group",
+            "auth_profile",
             "any_object"
           ],
           "title": "Target",
@@ -522,6 +556,49 @@
         "unit"
       ],
       "title": "UnitTransform",
+      "type": "object"
+    },
+    "UnknownEffect": {
+      "additionalProperties": false,
+      "description": "The statement decides this attribute in a way the pack doesn't read: the fact becomes\n*unknown* with this line as evidence (REVIEW, never a guessed PASS or FAIL).",
+      "properties": {
+        "from": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "From"
+        },
+        "unknown": {
+          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "title": "Unknown",
+          "type": "string"
+        },
+        "unless": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Unless",
+          "type": "array"
+        },
+        "why": {
+          "minLength": 10,
+          "title": "Why",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unknown",
+        "why"
+      ],
+      "title": "UnknownEffect",
       "type": "object"
     }
   },

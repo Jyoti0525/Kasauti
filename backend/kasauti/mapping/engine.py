@@ -35,6 +35,7 @@ from kasauti.mapping.model import (
     Mapping,
     RefEffect,
     SetEffect,
+    UnknownEffect,
     Word,
 )
 from kasauti.mapping.resolve import resolve_references
@@ -257,6 +258,8 @@ class _Engine:
                     opened.add(target)
                     self.builder.blocks.setdefault((*stmt.path, stmt.text), target)
             for eff in m.effects:
+                if isinstance(eff, UnknownEffect) and _read_elsewhere(eff, hit.caps):
+                    continue
                 etype, attr = eff.attr.split(".", 1)
                 ref = target if target and target[0] == etype else self.builder.singleton(etype)
                 if (ref, attr) in written:
@@ -273,7 +276,16 @@ class _Engine:
                 if isinstance(eff, RefEffect) and isinstance(outcome, fx.SetValue | fx.AddItems):
                     names = outcome.items if isinstance(outcome, fx.AddItems) else {outcome.value}
                     self.builder.refs.extend(
-                        RefRecord(ref, eff.attr, eff.target, str(n), ev, eff.expand)
+                        RefRecord(
+                            ref,
+                            eff.attr,
+                            eff.target,
+                            str(n),
+                            ev,
+                            eff.expand,
+                            eff.take,
+                            None if eff.if_empty is None else frozenset(eff.if_empty),
+                        )
                         for n in sorted(names)
                     )
 
@@ -363,6 +375,10 @@ def _combined(outcome: fx.Outcome | None, fact: FactAcc) -> fx.Outcome | None:
         case fx.SetValue(value=False) if fact.state is FactState.EXPLICIT and fact.value is True:
             return None
     return outcome
+
+
+def _read_elsewhere(eff: UnknownEffect, caps: Captures) -> bool:
+    return eff.from_ is not None and _text(caps.get(eff.from_)) in eff.unless
 
 
 def _record(fact: FactAcc, outcome: fx.Outcome | None, ev: Evidence) -> None:

@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "99d2739425f377dc756bce0c",
+  "audit_id": "28e2272ca4f043fc284bf098",
   "input": {
     "file": "weak.conf",
     "sha256": "f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
-    "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
+    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
+    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -589,8 +589,9 @@
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Administrators authenticate against a central AAA server: fails for the device; the rule treats absence as a violation (missing: any AuthServer).",
+      "reason": "Administrators authenticate against a central AAA server: fails for the device; the rule treats absence as a violation (missing: AuthPolicy[auth-policy].login_methods, any AuthServer).",
       "actual": [
+        "AuthPolicy[auth-policy].login_methods: missing",
         "any AuthServer: missing"
       ],
       "defaults_used": [],
@@ -1456,7 +1457,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.7",
+    "sbm_version": "0.8",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1806,6 +1807,12 @@
           "evidence": [],
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
         },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": true,
           "state": "explicit",
@@ -1895,6 +1902,12 @@
           "evidence": [],
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
         },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": false,
           "state": "vendor_default",
@@ -1947,6 +1960,12 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
+        },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         },
         "proxy_arp": {
           "value": false,
@@ -2608,6 +2627,18 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2906,7 +2937,7 @@
       }
     ],
     "derived": {
-      "aaa.central_server_configured": {
+      "aaa.central_login_in_use": {
         "value": null,
         "state": "absent",
         "evidence": [],

@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "6894b5504ecc924555b97fc9",
+  "audit_id": "82c6d88949b155812dad271a",
   "input": {
     "file": "hardened.conf",
     "sha256": "b6a504c35d9066a1b0da376dc94e82b7878c9f502fee8b7c0f159f08cdcc7cc9",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
-    "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
+    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
+    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -591,11 +591,24 @@
       "severity_reason": null,
       "reason": "Administrators authenticate against a central AAA server: holds for the device.",
       "actual": [
-        "aaa.central_server_configured = true",
+        "aaa.central_login_in_use = true",
+        "AuthPolicy[auth-policy].login_methods = {tacacs}",
+        "AuthServer[tacacs:10.20.10.40].kind = tacacs",
         "AuthServer[tacacs:10.20.10.40].host = 10.20.10.40"
       ],
       "defaults_used": [],
       "evidence": [
+        {
+          "file": "hardened.conf",
+          "line_start": 31,
+          "line_end": 31,
+          "raw": "authentication-order [ tacplus password ****",
+          "mapping_id": "juniper_junos/authentication-order-list",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
         {
           "file": "hardened.conf",
           "line_start": 33,
@@ -1247,10 +1260,10 @@
   ],
   "assurance": {
     "statements": 105,
-    "understood": 38,
-    "unmapped": 67,
+    "understood": 39,
+    "unmapped": 66,
     "near_miss": 0,
-    "understood_pct": 36.2,
+    "understood_pct": 37.1,
     "unmapped_patterns": [
       {
         "pattern_key": "family inet",
@@ -1365,12 +1378,6 @@
         "count": 1,
         "first_line": 25,
         "example": "authentication"
-      },
-      {
-        "pattern_key": "authentication-order [ tacplus password ****",
-        "count": 1,
-        "first_line": 31,
-        "example": "authentication-order [ tacplus password ****"
       },
       {
         "pattern_key": "tacplus-server",
@@ -1575,6 +1582,13 @@
         "facts": 1
       },
       {
+        "mapping": "juniper_junos/authentication-order-list@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
         "mapping": "juniper_junos/filter-inet@1",
         "approved_by": [
           "maintainer"
@@ -1767,7 +1781,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.7",
+    "sbm_version": "0.8",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1952,6 +1966,31 @@
       }
     },
     "entities": [
+      {
+        "key": "auth-policy",
+        "evidence": [],
+        "type": "AuthPolicy",
+        "login_methods": {
+          "value": [
+            "tacacs"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 31,
+              "line_end": 31,
+              "raw": "authentication-order [ tacplus password ****",
+              "mapping_id": "juniper_junos/authentication-order-list",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
       {
         "key": "tacacs:10.20.10.40",
         "evidence": [],
@@ -2467,6 +2506,12 @@
           "evidence": [],
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
         },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": false,
           "state": "vendor_default",
@@ -2546,6 +2591,12 @@
           ],
           "default_source": null
         },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": false,
           "state": "vendor_default",
@@ -2598,6 +2649,12 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
+        },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         },
         "proxy_arp": {
           "value": false,
@@ -3341,6 +3398,18 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -3617,10 +3686,21 @@
       }
     ],
     "derived": {
-      "aaa.central_server_configured": {
+      "aaa.central_login_in_use": {
         "value": true,
         "state": "explicit",
         "evidence": [
+          {
+            "file": "hardened.conf",
+            "line_start": 31,
+            "line_end": 31,
+            "raw": "authentication-order [ tacplus password ****",
+            "mapping_id": "juniper_junos/authentication-order-list",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
           {
             "file": "hardened.conf",
             "line_start": 33,

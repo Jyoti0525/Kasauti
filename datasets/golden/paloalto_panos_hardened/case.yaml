@@ -2,13 +2,14 @@
 # datasets/SOURCES.md, not engine output.
 description: PAN-OS 11.1.2 hardened edge firewall (twin of the weak case)
 input: authored/paloalto_panos/hardened.xml
-input_sha256: f77dcd5a5c0be2df005feda67974a134c144e0d803b948e93f917c85831c907c
+input_sha256: 37927308ce4b29ba19ad2edbcd17e2904bf06a6e0a5bdeefa85aa73f62b475f2
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:
   AAA-CENTRAL-AUTH-01: PASS
   AAA-LOCAL-PASSWORD-HASH-01: PASS
-  AAA-LOCKOUT-01: PASS
+  AAA-LOCKOUT-01: REVIEW   # admins log in through an authentication profile with its own lockout;
+                           # Palo Alto doesn't say which of it and the management lockout governs
   AAA-PASSWORD-ENCRYPTION-01: PASS
   AAA-PASSWORD-MIN-LENGTH-01: PASS
   FILTER-PERMIT-ANY-01: PASS
@@ -27,5 +28,5 @@ expected_statuses:
   REF-DANGLING-01: PASS
   SNMP-COMMUNITY-01: PASS
   SVC-LEGACY-01: PASS
-  SVC-PROXY-ARP-01: REVIEW   # proxy ARP (NAT pools, 12.2.2+ interfaces) isn't read yet
+  SVC-PROXY-ARP-01: PASS   # interface proxy ARP exists only from PAN-OS 12.2.2; this is 11.1.2
   TIME-NTP-AUTH-01: PASS

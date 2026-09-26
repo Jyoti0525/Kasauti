@@ -96,3 +96,11 @@ catalogue (E1–E20 in `datasets/SOURCES.md`), not from engine output. False-PAS
 six golden cases: 0/68. The weak twin is caught on 19 of its 20 planted weaknesses. The
 twentieth (E7, no command accounting) is REVIEW, because Arista's pages don't say what EOS logs
 without it.
+
+## Addendum, 2026-09-26: which methods logins use
+
+AAA-CENTRAL-AUTH-01 now asks whether administrator logins *use* a central server
+(`AuthPolicy.login_methods`, derivation `aaa.central_login_in_use`), not only whether one is
+configured. `aaa authentication login default <methods>` is read as on
+Cisco: the first method decides, and a named `aaa group server tacacs+ <name>` counts as
+`tacacs`. The hardened twin was already compliant (`group TACACS-GROUP local`).

@@ -34,7 +34,7 @@ PLAN_8_1 = {
     "L2Port",
     "Tunnel",
 }
-ADDITIONS = {"LoggingPolicy", "ObjectDef", "TimePolicy", "Reference"}
+ADDITIONS = {"LoggingPolicy", "ObjectDef", "TimePolicy", "Reference", "AuthPolicy"}
 
 
 def test_every_plan_entity_exists() -> None:

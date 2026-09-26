@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Pack | `packs/vendors/paloalto_panos` (pack_version 1), 67 mappings, XML shape family |
+| Pack | `packs/vendors/paloalto_panos` (pack_version 1), 73 mappings, XML shape family |
 | Date | 2026-09-26 |
 | Reviewer | Claude, delegated by the maintainer (as for the other seed packs) |
 | Tasks | TODO M2.30 (seed pack), C.06 (authored configs vs vendor docs), S.01 |
@@ -23,6 +23,8 @@ Same rule as every pack: **no quote, no default.** Palo Alto moved its documenta
 | `no-profile-no-management` | none | "If you do not assign an Interface Management profile to an interface, it denies access for all IP addresses, protocols, and services by default." | [Use Interface Management Profiles to Restrict Access](https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-networking-admin/configure-interfaces/use-interface-management-profiles-to-restrict-access.html) |
 | `syslog-profile-sends-nothing-until-assigned`, `syslog-udp` | off, UDP | "create a Syslog server profile and assign it to the log settings for each log type"; port "(default is UDP on port 514)" | [Configure Syslog Monitoring](https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-admin/monitoring/use-syslog-for-monitoring/configure-syslog-monitoring.html) |
 | `config-changes-logged`, `logs-timestamped` | true | "Config logs display entries for changes to the firewall configuration. Each entry includes the date and time, the administrator username, …" | [Config Logs](https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/10-2/pan-os-admin/monitoring/view-and-manage-logs/log-types-and-severity-levels/config-logs.html) |
+| `no-interface-proxy-arp-before-12-2-2` | off, `<12.2.2` | Configure Proxy ARP on a Layer 3 Interface: "Where Can I Use This? What Do I Need? NGFW PAN-OS 12.2.2 or a later release". Earlier releases answer ARP only for their own NAT pool addresses in an interface's subnet | [Configure Proxy ARP](https://docs.paloaltonetworks.com/ngfw/networking/using-proxy-arp-dhcp-relay-overwrite/configure-proxy-arp), [Proxy ARP for NAT Address Pools](https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/10-1/pan-os-networking-admin/nat/nat-policy-rules/proxy-arp-for-nat-address-pools.html) |
+| profile `permitted-ip` empty (mapping `if_empty: [any]`) | any | "(Optional) Add the Permitted IP Addresses that can access the interface. If you don't add entries to the list, the interface has no IP address restrictions." | [Use Interface Management Profiles to Restrict Access](https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/11-1/pan-os-networking-admin/configure-interfaces/use-interface-management-profiles-to-restrict-access.html) |
 | `snmp-read-only` | ro | "You can't configure an SNMP manager to control Palo Alto Networks firewalls (using SET messages), only to collect statistics from them (using GET messages)." | [Monitor Statistics Using SNMP](https://docs.paloaltonetworks.com/content/techdocs/en_US/pan-os/10-2/pan-os-admin/monitoring/snmp-monitoring-and-traps/monitor-statistics-using-snmp.html) |
 
 **Model defaults** (`curated`, each says what it models): one administrator session kind for
@@ -38,6 +40,12 @@ violation):
 - whether minimum password complexity is on, and its minimum length (range 1–16 in 11.1);
 - the SSH protocol versions the management server offers (MGMT-SSH-V2-01 stays REVIEW, as on
   EOS);
+- the element and default of the interface proxy ARP switch on 12.2.2 and later (it isn't in
+  the 12.2 CLI reference), so SVC-PROXY-ARP-01 is REVIEW there;
+- which lockout governs an administrator who logs in through an authentication profile: the
+  profile's own Failed Attempts and Lockout Time (Configure an Authentication Profile, same
+  defaults 0 and 0) or the management settings. AAA-LOCKOUT-01 is REVIEW when a profile is
+  used;
 - the SNMP v2c community when none is configured. The help says "Don't use the default community
   string public", but not when v2c answers with it. With no community seen, SNMP-COMMUNITY-01 is
   REVIEW.
@@ -63,15 +71,25 @@ violation):
   - `mgt-config password-complexity`.
 
   For RADIUS and TACACS+ the server kind is read from the profile's block name, not assumed.
+  Authentication profiles: `authentication-profile/entry/method/<kind>/server-profile` (the
+  kind from the element, `local-database` as local), `lockout/failed-attempts`,
+  `lockout-time`; the device-wide profile is `deviceconfig system authentication-profile` and
+  an administrator's is `mgt-config users <name> authentication-profile` (PAN-OS 11.1
+  configure CLI reference).
 - **Management is on at the MGT port or in a profile.** The MGT port's `disable-*` switches and
   every interface management profile that offers a service both decide `MgmtService.enabled`.
   They are combined (`combine: any`), so a service turned on anywhere stays on whatever the
   order of the file. A profile that isn't attached to any interface still counts, which can
   only give a FAIL.
 - **Who may reach management:** the MGT port's `permitted-ip` list becomes
-  `MgmtService.permitted_sources` (SBM 0.7). A vendor-neutral inference treats a service as
-  restricted only when that list is known and has no catch-all. A profile offering HTTPS, HTTP
-  or SSH adds `any`, because its own `permitted-ip` isn't read yet.
+  `MgmtService.permitted_sources` (SBM 0.7). Each interface management profile's own
+  `permitted-ip` list becomes `ObjectDef.permitted_sources`, and the interfaces using the
+  profile inherit it as `Interface.mgmt_permitted_sources` (SBM 0.8; an empty list is `any`,
+  as documented). A service counts as restricted only if the MGT port's list has no catch-all
+  *and* every interface offering the service has a known list with no catch-all (one
+  inference per service: SSH, HTTP, HTTPS). A profile no interface uses serves nothing, and an
+  interface naming a missing profile leaves the service unproven (FAIL, with REF-DANGLING-01
+  naming the profile).
 - **Interfaces inherit their profile's protocols** through an expanding reference
   (`ref … expand`), so the exposure "management protocols allowed on an untrusted interface"
   sees them. An interface with no profile allows nothing, as Palo Alto documents.
@@ -90,6 +108,11 @@ violation):
   the account". AAA-LOCKOUT-01 therefore doesn't count a zero duration as protection. Where a
   platform has no duration setting at all (Cisco), the account stays locked and the rule is
   unchanged.
+- **Which logins are central:** an administrator (or, for accounts defined on the server, the
+  device) naming an authentication profile logs in through the kinds of server that profile's
+  method uses: `TACACS-AUTH` with `method/tacplus` puts `tacacs` in
+  `AuthPolicy.login_methods`. A server profile that no authentication profile uses, or an
+  authentication profile that nobody names, isn't central authentication.
 - **Password hashes** are classified by crypt prefix: `$1$` → md5-crypt (fails
   AAA-LOCAL-PASSWORD-HASH-01), `$5$`/`$6$` → sha256/sha512-crypt.
 - **NTP:**
@@ -126,18 +149,29 @@ Checked against the pages and SDK above:
 | A disabled permit-all rule | a false FAIL on every platform | the same derivation now skips disabled entries |
 | "Failed attempts 5, lockout time 0" | PASS, although the vendor's help says it may never lock | AAA-LOCKOUT-01 requires a non-zero duration where one is configured or documented |
 | PAN-OS secret elements | `phash` and the SNMP community weren't masked | masking keywords added; tested |
+| A TACACS+ server profile no administrator uses | AAA-CENTRAL-AUTH-01 passed on the server alone: a false PASS, in the hardened twin too | the rule asks which methods logins use (`AuthPolicy`, derivation `aaa.central_login_in_use`); the twin gained an authentication profile |
+| A profile's own `permitted-ip` wasn't read | a profile offering HTTPS always added `any`: FAIL even when narrowed | profiles' lists flow to their interfaces (`take`, `if_empty`); unattached profiles no longer count |
+| Proxy ARP wasn't read | SVC-PROXY-ARP-01 REVIEW on every release | quoted release gate: off before 12.2.2, REVIEW from 12.2.2 |
+| Lockout through an authentication profile | the management lockout decided alone: a possible false PASS | REVIEW when any login goes through a profile (`unknown` effect) |
+| Panorama exports and Panorama-managed firewalls | audited as if complete | `detect.yaml` warnings: audit `show config merged` |
 
 ## 5. Known limits (none gives a false PASS)
 
-- **Interface management profiles' own `permitted-ip`** isn't read, so a profile that offers
-  HTTPS with a narrow list still gives FAIL on MGMT-WEB-ACL-01.
-- **Proxy ARP** (for NAT pools on every release; on layer-3 interfaces from 12.2.2) isn't read,
-  so SVC-PROXY-ARP-01 is REVIEW per interface.
-- **Authentication profiles** (their own lockout, and which server profile administrators
-  use) aren't read. AAA-CENTRAL-AUTH-01 checks that a server profile exists, as for the other
-  vendors.
-- **Panorama templates and device groups** (`template`, `pre-rulebase`, `post-rulebase`) aren't
-  read; the seed covers a firewall's own running configuration.
+The four limits of the first review are closed or decided (section 4):
+
+- **Interface management profiles' `permitted-ip`** is read (SBM 0.8).
+- **Proxy ARP** is off by the quoted release gate before 12.2.2. From 12.2.2 it is REVIEW until
+  Palo Alto publishes the setting's element and default. NAT-pool ARP answers are for the
+  firewall's own addresses and aren't what SVC-PROXY-ARP-01 is about.
+- **Authentication profiles** decide AAA-CENTRAL-AUTH-01. Their lockout gives REVIEW, because
+  Palo Alto doesn't say which of it and the management lockout governs such a login.
+- **Panorama:** Kasauti judges one firewall. Audit each firewall's `show config merged` output,
+  which "shows templates from Panorama combined with local running config" (Palo Alto
+  knowledge base [kA10g000000CmAYCA0](https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000CmAYCA0)).
+  A Panorama configuration (device groups, templates) or a Panorama-managed firewall's file
+  gets a warning saying so.
+
+Still conservative:
 - **Address ranges** other than `0.0.0.0-255.255.255.255` are treated as narrow.
 
 ## 6. Result
@@ -145,5 +179,5 @@ Checked against the pages and SDK above:
 Golden cases `paloalto_panos_weak` (P1–P14) and `paloalto_panos_hardened` are hand-labelled
 from the weakness catalogue in `datasets/SOURCES.md`. All 14 planted weaknesses are caught:
 13 rules FAIL, because P8 and P9 both fail MGMT-WEB-ACL-01. The hardened unit passes 19 rules;
-2 are REVIEW (SSH version, proxy ARP) and 2 N/A (no vty lines). False-PASS rate across all ten
-golden cases: 0/111.
+2 are REVIEW (SSH version; lockout through its TACACS+ authentication profile) and 2 N/A (no
+vty lines). False-PASS rate across all ten golden cases: 0/109.

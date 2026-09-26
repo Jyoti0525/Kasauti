@@ -1,5 +1,41 @@
 {
   "$defs": {
+    "AuthPolicy": {
+      "additionalProperties": false,
+      "description": "How administrator logins are checked, device-wide (0.8).",
+      "properties": {
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "key": {
+          "default": "auth-policy",
+          "title": "Key",
+          "type": "string"
+        },
+        "login_methods": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "AuthPolicy",
+          "default": "AuthPolicy",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "title": "AuthPolicy",
+      "type": "object"
+    },
     "AuthServer": {
       "additionalProperties": false,
       "properties": {
@@ -758,6 +794,15 @@
           "title": "Key",
           "type": "string"
         },
+        "mgmt_permitted_sources": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "mgmt_protocols": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
@@ -1289,6 +1334,15 @@
       "additionalProperties": false,
       "description": "A named object that other statements reference; ``key`` is ``<kind>:<name>``.",
       "properties": {
+        "destinations": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "evidence": {
           "default": [],
           "items": {
@@ -1321,6 +1375,15 @@
           }
         },
         "members": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "permitted_sources": {
           "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
           "default": {
             "default_source": null,
@@ -1851,6 +1914,7 @@
       "items": {
         "discriminator": {
           "mapping": {
+            "AuthPolicy": "#/$defs/AuthPolicy",
             "AuthServer": "#/$defs/AuthServer",
             "Banner": "#/$defs/Banner",
             "CryptoProfile": "#/$defs/CryptoProfile",
@@ -1897,6 +1961,9 @@
           },
           {
             "$ref": "#/$defs/PasswordPolicy"
+          },
+          {
+            "$ref": "#/$defs/AuthPolicy"
           },
           {
             "$ref": "#/$defs/LockoutPolicy"
@@ -1956,7 +2023,7 @@
       "type": "object"
     },
     "sbm_version": {
-      "default": "0.7",
+      "default": "0.8",
       "title": "Sbm Version",
       "type": "string"
     },

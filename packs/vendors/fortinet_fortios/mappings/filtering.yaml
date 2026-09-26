@@ -701,6 +701,49 @@ mappings:
     - maintainer
     signals:
     - manual
+- id: fortinet_fortios/service-iprange
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set iprange <STR:r>
+  effect:
+    members: ObjectDef.destinations
+    from: r
+    map:
+      0.0.0.0: any
+      0.0.0.0-255.255.255.255: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/service-fqdn
+  vendor: fortinet_fortios
+  context:
+  - config firewall service custom
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: service:{n}
+  match: set fqdn <STR:f>
+  effect:
+    members: ObjectDef.destinations
+    template: fqdn:{f}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
 - id: fortinet_fortios/service-group
   vendor: fortinet_fortios
   context:

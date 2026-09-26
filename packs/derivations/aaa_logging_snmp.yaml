@@ -1,11 +1,23 @@
 # Device-level meanings for AAA, logging and SNMP (PLAN §8.3).
 
 derivations:
-  - id: aaa.central_server_configured
+  # Replaces aaa.central_server_configured (v1), which asked only whether a server existed:
+  # a TACACS+ server that no login uses passed, a false PASS on FortiOS and PAN-OS.
+  - id: aaa.central_login_in_use
     version: 1
     type: bool
-    description: At least one TACACS+/RADIUS/LDAP server with an address is configured.
-    expr: "any(AuthServer: exists(host))"
+    description: >
+      Administrator logins are checked against a TACACS+, RADIUS or LDAP server that is
+      configured with an address. A server that no login method uses doesn't count. (A vty
+      line naming a method list other than `default` makes the login methods unknown: the
+      Cisco mappings don't resolve named lists yet.)
+    expr: >
+      ((any(AuthPolicy: login_methods contains 'tacacs')
+        and any(AuthServer: kind == 'tacacs' and exists(host)))
+       or (any(AuthPolicy: login_methods contains 'radius')
+        and any(AuthServer: kind == 'radius' and exists(host)))
+       or (any(AuthPolicy: login_methods contains 'ldap')
+        and any(AuthServer: kind == 'ldap' and exists(host))))
 
   - id: logging.remote_configured
     version: 2

@@ -81,6 +81,9 @@ Family conventions that make one language serve all shapes (fixed by the shape p
 | `{members: Entity.attr, from: slot, map?}` | members | each LIST item joins a set attribute |
 | `{ref: Entity.attr, from: slot, target: acl}` | ref | the attribute names another entity; the resolver links it (M2.23) |
 | `{ref: …, target: mgmt_profile, expand: true}` | ref | the attribute takes the target's members once linked (a PAN-OS interface gets its management profile's protocols); unknown if the target is missing or unread |
+| `{ref: …, expand: true, take: permitted_sources, if_empty: [any]}` | ref | `take` picks the target attribute to copy (`members`, `expanded`, `permitted_sources`); `if_empty` is what a target listing nothing contributes (a PAN-OS profile with no permitted IPs has "no IP address restrictions"). Items the attribute got from other lines are kept; the targets' names give way to their contents |
+| `{ref: …, target: user_group, expand: true, take: expanded}` | ref | a FortiOS user group expands to the *kinds* of the servers it names (`tacacs`); a member that is no server (a local user) makes it unknown |
+| `{unknown: Entity.attr, why: "…"}` / `{…, from: n, unless: [default]}` | unknown | the statement decides the attribute in a way the pack doesn't read: the fact becomes unknown (REVIEW) with this line as evidence. With `from`/`unless`, the listed slot values leave the fact alone (Cisco `login authentication default` names the list the pack reads; another name makes the login methods unknown) |
 | `combine: any` on `set`/`assert` | set / assert | the statement adds to what others said instead of replacing it: a flag once true stays true, a set gains items (PAN-OS: a service on at the MGT port *or* in any profile is on, whatever the file order) |
 | `entity: {type, key}` | entity | the statement opens/names an entity |
 | `negation:` | negation | the negated form inverts the fact |

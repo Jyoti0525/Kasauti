@@ -6,7 +6,7 @@ rules:
       A stolen configuration must not reveal passwords. Clear text and reversible encodings
       (Cisco type 0, 6 and 7) can be read back; MD5-crypt is too fast to resist cracking.
     domain: aaa
-    for_each: LocalUser
+    for_each: LocalUser where not exists(hash_type) or hash_type != 'remote'   # remote accounts store no password
     assert: hash_type in [scrypt, pbkdf2-sha256, sha512-crypt, sha256-crypt, bcrypt, yescrypt]
     on_absent: review
     on_unknown: review
@@ -24,15 +24,16 @@ rules:
     title: Administrators authenticate against a central AAA server
     intent: >
       Central authentication gives one place to revoke access and an audit trail per person;
-      shared local accounts give neither.
+      shared local accounts give neither. A server that is configured but that no login uses
+      gives neither.
     domain: aaa
     for_each: Device
-    assert: aaa.central_server_configured
-    on_absent: resolve_default   # a documented default decides; with none, no AAA server *is* the violation
+    assert: aaa.central_login_in_use
+    on_absent: resolve_default   # a documented default decides; with none, no central login *is* the violation
     on_no_default: fail
     on_unknown: review
     severity: {base: medium}
-    fix_intent: {make: aaa.central_server_configured, equal: true}
+    fix_intent: {make: aaa.central_login_in_use, equal: true}
     refs:
       nist_800_53r5: [AC-2(1), IA-2]
       disa_stig: auto
@@ -61,5 +62,5 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]

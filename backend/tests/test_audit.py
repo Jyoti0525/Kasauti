@@ -302,6 +302,17 @@ SERVICE_POLICY = (
         ("        set tcp-portrange 443\n", "GRP", Status.PASS),
         # A service whose extent wasn't read: REVIEW, never an assumed PASS.
         ('        set category "General"\n', "SVC", Status.REVIEW),
+        # A destination range or FQDN limits even all of IP, in either order; the full range
+        # (or 0.0.0.0) is no limit.
+        ("        set protocol IP\n        set iprange 10.0.0.5\n", "SVC", Status.PASS),
+        ("        set iprange 10.0.0.5-10.0.0.9\n        set protocol IP\n", "GRP", Status.PASS),
+        ('        set protocol IP\n        set fqdn "srv.example.com"\n', "SVC", Status.PASS),
+        (
+            "        set protocol IP\n        set iprange 0.0.0.0-255.255.255.255\n",
+            "SVC",
+            Status.FAIL,
+        ),
+        ("        set protocol IP\n        set iprange 0.0.0.0\n", "GRP", Status.FAIL),
     ],
 )
 def test_fortios_policies_see_through_service_objects(
@@ -488,37 +499,60 @@ def test_panos_permit_all_needs_every_application_and_an_enabled_rule(
     assert _panos(kb, vsys=_rule(**members))["FILTER-PERMIT-ANY-01"] is expected
 
 
-PROFILE_WEB = (
-    "<profiles><interface-management-profile><entry name='WEB'><https>yes</https>"
-    "</entry></interface-management-profile></profiles>"
+def _profile_web(permitted: str = "") -> str:
+    ips = f"<permitted-ip>{permitted}</permitted-ip>" if permitted else ""
+    return (
+        "<profiles><interface-management-profile><entry name='WEB'><https>yes</https>"
+        f"{ips}</entry></interface-management-profile></profiles>"
+    )
+
+
+def _interface(profile: str = "") -> str:
+    imp = (
+        f"<interface-management-profile>{profile}</interface-management-profile>" if profile else ""
+    )
+    return (
+        "<interface><ethernet><entry name='ethernet1/1'><layer3><ip>"
+        f"<entry name='10.20.0.1/24'/></ip>{imp}</layer3></entry></ethernet></interface>"
+    )
+
+
+MGT_NARROW = (
+    "<service><disable-https>yes</disable-https><disable-http>yes</disable-http></service>"
+    "<permitted-ip><entry name='10.30.10.0/24'/></permitted-ip>"
 )
+NOC = "<entry name='10.30.10.0/24'/>"
 
 
 @pytest.mark.parametrize(
     ("system", "network", "expected"),
     [
         # The MGT port accepts any address unless permitted IPs are listed.
-        ("<service><disable-https>no</disable-https></service>", "", Status.FAIL),
+        ("<service><disable-https>no</disable-https></service>", _interface(), Status.FAIL),
         (
             "<service><disable-https>no</disable-https><disable-http>yes</disable-http></service>"
             "<permitted-ip><entry name='10.30.10.0/24'/></permitted-ip>",
-            "",
+            _interface(),
             Status.PASS,
         ),
         (
             "<service><disable-https>no</disable-https></service>"
             "<permitted-ip><entry name='0.0.0.0/0'/></permitted-ip>",
-            "",
+            _interface(),
             Status.FAIL,
         ),
-        # A profile offering HTTPS on a data interface isn't covered by the MGT port's list,
-        # whichever comes first in the file.
-        (
-            "<service><disable-https>yes</disable-https></service>"
-            "<permitted-ip><entry name='10.30.10.0/24'/></permitted-ip>",
-            PROFILE_WEB,
-            Status.FAIL,
-        ),
+        # An interface whose profile offers HTTPS accepts the profile's permitted IPs, and a
+        # profile with none has "no IP address restrictions".
+        (MGT_NARROW, _profile_web() + _interface("WEB"), Status.FAIL),
+        (MGT_NARROW, _profile_web(NOC) + _interface("WEB"), Status.PASS),
+        (MGT_NARROW, _profile_web("<entry name='0.0.0.0/0'/>") + _interface("WEB"), Status.FAIL),
+        # Whichever comes first in the file.
+        (MGT_NARROW, _interface("WEB") + _profile_web(NOC), Status.PASS),
+        # A profile no interface uses serves nothing.
+        (MGT_NARROW, _profile_web() + _interface(), Status.PASS),
+        # An interface naming a profile that isn't there: its sources are unknown, so the
+        # service can't be shown to be restricted (and REF-DANGLING-01 names the profile).
+        (MGT_NARROW, _profile_web(NOC) + _interface("MISSING"), Status.FAIL),
     ],
 )
 def test_panos_web_management_sources(
@@ -577,3 +611,191 @@ def test_panos_ntp_authentication(kb: KnowledgeBase, auth: str, expected: Status
         f"<authentication-type>{auth}</authentication-type></primary-ntp-server></ntp-servers>"
     )
     assert _panos(kb, system=system)["TIME-NTP-AUTH-01"] is expected
+
+
+# --- Central authentication: a server counts only if logins use it ---------------------------
+
+CISCO_TACACS = (
+    "version 17.9\naaa new-model\ntacacs server TAC1\n address ipv4 10.0.0.40\n key 7 X\n"
+    "aaa group server tacacs+ TACACS-GRP\n server name TAC1\n"
+)
+
+
+@pytest.mark.parametrize(
+    ("lines", "expected"),
+    [
+        ("", Status.FAIL),  # a server no login uses is not central authentication
+        ("aaa authentication login default group TACACS-GRP local\n", Status.PASS),
+        ("aaa authentication login default group tacacs+ local\n", Status.PASS),
+        ("aaa authentication login default group radius local\n", Status.FAIL),  # no RADIUS server
+        ("aaa authentication login default local group TACACS-GRP\n", Status.FAIL),
+        ("aaa authentication login default group NO-SUCH-GROUP\n", Status.REVIEW),
+        # A vty line naming another list: not resolved yet, so REVIEW; `default` is the one read.
+        (
+            "aaa authentication login default group TACACS-GRP local\n"
+            "line vty 0 4\n login authentication VTY-LIST\n",
+            Status.REVIEW,
+        ),
+        (
+            "aaa authentication login default group TACACS-GRP local\n"
+            "line vty 0 4\n login authentication default\n",
+            Status.PASS,
+        ),
+        # A local list for break-glass console access is fine.
+        (
+            "aaa authentication login default group TACACS-GRP local\n"
+            "line con 0\n login authentication CONSOLE\n",
+            Status.PASS,
+        ),
+    ],
+)
+def test_cisco_central_auth_needs_a_login_list_that_uses_the_server(
+    kb: KnowledgeBase, lines: str, expected: Status
+) -> None:
+    result = audit(decode((CISCO_TACACS + lines).encode(), "aaa.cfg"), kb, vendor="cisco_ios_xe")
+    assert {r.rule_id: r.status for r in result.rules}["AAA-CENTRAL-AUTH-01"] is expected
+
+
+@pytest.mark.parametrize(
+    ("order", "expected"),
+    [
+        ("", Status.FAIL),
+        ("authentication-order [ tacplus password ];", Status.PASS),
+        ("authentication-order tacplus;", Status.PASS),
+        ("authentication-order [ password tacplus ];", Status.FAIL),
+        ("authentication-order radius;", Status.FAIL),  # no RADIUS server configured
+    ],
+)
+def test_junos_central_auth_follows_the_authentication_order(
+    kb: KnowledgeBase, order: str, expected: Status
+) -> None:
+    text = (
+        "version 23.4R1.9;\nsystem { host-name X; "
+        f'{order} tacplus-server {{ 10.0.0.40 secret "$9$x"; }} }}\n'
+    )
+    result = audit(decode(text.encode(), "aaa.conf"), kb, vendor="juniper_junos")
+    assert {r.rule_id: r.status for r in result.rules}["AAA-CENTRAL-AUTH-01"] is expected
+
+
+def test_eos_named_server_group_counts_as_its_kind(kb: KnowledgeBase) -> None:
+    text = (
+        "! device: L1 (DCS-7050SX3-48YC8, EOS-4.30.1F)\nhostname L1\n"
+        "tacacs-server host 10.0.0.40 key 7 X\naaa group server tacacs+ TG\n   server 10.0.0.40\n"
+        "aaa authentication login default group TG local\n"
+    )
+    result = audit(decode(text.encode(), "aaa.cfg"), kb, vendor="arista_eos")
+    assert {r.rule_id: r.status for r in result.rules}["AAA-CENTRAL-AUTH-01"] is Status.PASS
+
+
+FGT_REMOTE = (
+    'config system admin\n    edit "local"\n        set password ENC PB2x\n    next\n{admin}end\n'
+    'config user tacacs+\n    edit "TAC1"\n        set server "10.0.0.40"\n    next\nend\n'
+    'config user local\n    edit "bob"\n        set type password\n    next\nend\n'
+    'config user group\n    edit "G"\n        set member {members}\n    next\nend\n'
+)
+REMOTE_ADMIN = (
+    '    edit "tacacs-admins"\n        set remote-auth enable\n        set wildcard enable\n'
+    '        set remote-group "G"\n    next\n'
+)
+
+
+@pytest.mark.parametrize(
+    ("admin", "members", "expected"),
+    [
+        ("", '"TAC1"', Status.FAIL),  # a TACACS+ server and a group, but no admin uses them
+        (REMOTE_ADMIN, '"TAC1"', Status.PASS),
+        (REMOTE_ADMIN, '"bob"', Status.REVIEW),  # a local user: not a server kind
+        (REMOTE_ADMIN.replace('"G"', '"NOPE"'), '"TAC1"', Status.REVIEW),
+    ],
+)
+def test_fortios_central_auth_needs_a_remote_admin_whose_group_names_the_server(
+    kb: KnowledgeBase, admin: str, members: str, expected: Status
+) -> None:
+    body = FGT_REMOTE.format(admin=admin, members=members)
+    assert _fortios(kb, body)["AAA-CENTRAL-AUTH-01"] is expected
+
+
+def test_fortios_remote_admin_has_no_password_to_judge(kb: KnowledgeBase) -> None:
+    body = FGT_REMOTE.format(admin=REMOTE_ADMIN, members='"TAC1"')
+    result = audit(decode((FGT_HEADER + body).encode(), "f.conf"), kb, vendor="fortinet_fortios")
+    judged = {f.entity_id for f in result.findings if f.rule_id == "AAA-LOCAL-PASSWORD-HASH-01"}
+    assert judged == {"LocalUser[local]"}
+
+
+PAN_TACACS = (
+    "<server-profile><tacplus><entry name='TACACS'><server><entry name='t1'>"
+    "<address>10.0.0.40</address></entry></server></entry></tacplus></server-profile>"
+    "<authentication-profile><entry name='TAC-AUTH'><method><tacplus>"
+    "<server-profile>TACACS</server-profile></tacplus></method></entry>"
+    "<entry name='LOCAL-AUTH'><method><local-database/></method></entry>"
+    "</authentication-profile>"
+)
+PAN_LOCKOUT = (
+    "<admin-lockout><failed-attempts>5</failed-attempts><lockout-time>30</lockout-time>"
+    "</admin-lockout>"
+)
+PAN_SYSTEM_PROFILE = "<authentication-profile>{}</authentication-profile>"
+PAN_ADMIN_VIA_PROFILE = (
+    "<users><entry name='ops'><authentication-profile>TAC-AUTH</authentication-profile>"
+    "</entry></users>"
+)
+
+
+@pytest.mark.parametrize(
+    ("system", "mgt", "central", "lockout"),
+    [
+        # A server profile alone: no administrator logs in through it.
+        ("", "", Status.FAIL, Status.PASS),
+        # Accounts defined on the server log in through the device's authentication profile.
+        # That profile has its own lockout, and Palo Alto doesn't say which one governs: REVIEW.
+        (PAN_SYSTEM_PROFILE.format("TAC-AUTH"), "", Status.PASS, Status.REVIEW),
+        ("", PAN_ADMIN_VIA_PROFILE, Status.PASS, Status.REVIEW),
+        (PAN_SYSTEM_PROFILE.format("LOCAL-AUTH"), "", Status.FAIL, Status.REVIEW),
+    ],
+)
+def test_panos_central_auth_goes_through_an_authentication_profile(
+    kb: KnowledgeBase, system: str, mgt: str, central: Status, lockout: Status
+) -> None:
+    got = _panos(kb, system=system, mgt=mgt, vsys=PAN_TACACS, management=PAN_LOCKOUT)
+    assert (got["AAA-CENTRAL-AUTH-01"], got["AAA-LOCKOUT-01"]) == (central, lockout)
+
+
+@pytest.mark.parametrize(
+    ("version", "expected"),
+    [
+        ("11.1.2", Status.PASS),  # no interface proxy ARP setting before 12.2.2
+        ("12.2.1", Status.PASS),
+        ("12.2.2", Status.REVIEW),  # the setting exists; its element and default aren't known
+    ],
+)
+def test_panos_proxy_arp_depends_on_the_release(
+    kb: KnowledgeBase, version: str, expected: Status
+) -> None:
+    text = PANOS.format(mgt="", network=_interface(), system="", management="", vsys="")
+    text = text.replace('detail-version="11.1.2"', f'detail-version="{version}"')
+    result = audit(decode(text.encode(), "pa.xml"), kb)
+    assert {r.rule_id: r.status for r in result.rules}["SVC-PROXY-ARP-01"] is expected
+
+
+@pytest.mark.parametrize(
+    ("extra", "warning"),
+    [
+        ("", ""),
+        ("\n<device-group><entry name='BRANCHES'/></device-group>\n", "Panorama configuration"),
+        (
+            "<panorama><local-panorama><panorama-server>10.0.0.9</panorama-server>"
+            "</local-panorama></panorama>",
+            "managed by Panorama",
+        ),
+    ],
+)
+def test_panos_warns_when_the_file_is_not_a_whole_firewall_config(
+    kb: KnowledgeBase, extra: str, warning: str
+) -> None:
+    text = PANOS.format(mgt="", network=_interface(), system=extra, management="", vsys="")
+    got = [w for w in audit(decode(text.encode(), "pa.xml"), kb).warnings if "Panorama" in w]
+    if not warning:
+        assert got == []
+    else:
+        assert len(got) == 1
+        assert warning in got[0]

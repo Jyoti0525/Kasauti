@@ -7,7 +7,9 @@ Implements PLAN §4.4. Source of truth: `backend/kasauti/packs/model.py`; JSON S
 packs/
   vendors/<vendor_os>/          directory name == pack id (lower_snake)
     pack.yaml                   manifest: shape family, negation words, comment markers, time unit
-    detect.yaml                 fingerprint signatures (contains | line_prefix | regex | json_key | xml_path)
+    detect.yaml                 fingerprint signatures (contains | line_prefix | regex | json_key | xml_path),
+                                and `warnings`: patterns saying the file isn't what the audit
+                                expects (a Panorama export); a match adds a warning, never a verdict
     identity.yaml               where hostname / os_version / model / serial / hardware appear
     defaults.yaml               vendor defaults, each with os_versions and a documented reference
     mappings/*.yaml             statements -> facts (seeded, plus learned in the Studio)

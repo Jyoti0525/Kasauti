@@ -81,6 +81,122 @@ mappings:
     - maintainer
     signals:
     - manual
+- id: paloalto_panos/auth-profile
+  vendor: paloalto_panos
+  context:
+  - authentication-profile
+  entity:
+    type: ObjectDef
+    key: auth_profile:{p}
+  match: entry <STR:p>
+  effect:
+    assert: ObjectDef.kind
+    value: auth_profile
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/auth-profile-server
+  vendor: paloalto_panos
+  context:
+  - authentication-profile
+  - entry <STR:p>
+  - method
+  - <STR:k>
+  entity:
+    type: ObjectDef
+    key: auth_profile:{p}
+  match: server-profile <STR:s>
+  effect:
+    members: ObjectDef.members
+    from: k
+    map:
+      tacplus: tacacs
+      radius: radius
+      ldap: ldap
+      saml-idp: saml
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/auth-profile-local
+  vendor: paloalto_panos
+  context:
+  - authentication-profile
+  - entry <STR:p>
+  - method
+  entity:
+    type: ObjectDef
+    key: auth_profile:{p}
+  match: local-database
+  effect:
+    assert: ObjectDef.members
+    value:
+    - local
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/admin-authentication-profile
+  vendor: paloalto_panos
+  context:
+  - mgt-config
+  - users
+  - entry <STR:u>
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: authentication-profile <STR:p>
+  effect:
+  - ref: AuthPolicy.login_methods
+    from: p
+    target: auth_profile
+    expand: true
+  - unknown: LockoutPolicy.max_attempts
+    why: administrators log in through an authentication profile, which has its own Failed Attempts and
+      Lockout Time; which setting governs isn't documented
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/system-authentication-profile
+  vendor: paloalto_panos
+  context:
+  - deviceconfig
+  - system
+  match: authentication-profile <STR:p>
+  effect:
+  - ref: AuthPolicy.login_methods
+    from: p
+    target: auth_profile
+    expand: true
+  - unknown: LockoutPolicy.max_attempts
+    why: administrators log in through an authentication profile, which has its own Failed Attempts and
+      Lockout Time; which setting governs isn't documented
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
 - id: paloalto_panos/failed-attempts
   vendor: paloalto_panos
   context:

@@ -17,10 +17,14 @@ the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference`
   catch-all hidden behind a name is still a permit-any. If the object's extent wasn't read,
   the entry's fact becomes *unknown*: REVIEW, never an assumed-harmless PASS.
 
-* **expanding references** (``ref`` with ``expand``): the source attribute becomes the union
-  of its targets' members, so a PAN-OS interface naming its management profile gets the
-  protocols the profile allows. A missing target, or one whose members weren't read, makes
-  the attribute *unknown*.
+* **expanding references** (``ref`` with ``expand``): each target's name in the source
+  attribute is replaced by the target's members (or ``take``: its ``expanded`` members or
+  ``permitted_sources``), so a PAN-OS interface naming its management profile gets the
+  protocols the profile allows, and ``aaa authentication login default group TACACS-GRP``
+  gets ``tacacs``. A target that lists nothing contributes ``if_empty`` (default: nothing).
+  A missing target, or one whose list is unknown, makes the attribute *unknown*.
+* **user groups** (FortiOS ``config user group``) expand to the *kinds* of the servers they
+  name (``tacacs``), since what a login through the group is checked against is the question.
 
 A dangling reference is a finding of its own (rule REF-DANGLING-01): on many platforms a
 filter naming a missing ACL filters nothing.
@@ -33,7 +37,9 @@ from dataclasses import dataclass
 from kasauti.mapping.builder import EntityAcc, EntityRef, FactAcc, RefRecord, SbmBuilder
 from kasauti.sbm.facts import Evidence, FactState
 
-GROUP_KINDS = {"address_group": "address", "service_group": "service"}
+GROUP_KINDS = {"address_group": "address", "service_group": "service", "user_group": "auth_server"}
+LEAF_MEMBERS = frozenset({"user_group"})
+"""Groups whose ``expanded`` holds their leaves' members (a server's kind), not leaf names."""
 CATCH_ALL = frozenset({"any", "all", "0.0.0.0/0", "0.0.0.0/0.0.0.0", "::/0"})
 SERVICE_CATCH_ALL = frozenset({"ip", "any"})
 """A service object's members name what it covers; ``ip`` is every IP protocol."""
@@ -104,19 +110,26 @@ def _expand_references(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> No
         unknown: Evidence | None = None
         for record in sorted(records, key=lambda r: r.name):
             target = _target_key(objects, record.target_kind, record.name)
-            members = objects[target].facts.get("members") if target else None
+            members = objects[target].facts.get(record.take) if target else None
             if target is None or (members is not None and members.state is FactState.UNKNOWN):
                 unknown = unknown or record.evidence
                 continue
             evidence.append(record.evidence)
-            if members is not None and members.state is FactState.EXPLICIT:
-                items |= members.value
-                evidence.extend(members.evidence)  # a target listing nothing allows nothing
+            listed = members.value if members and members.state is FactState.EXPLICIT else None
+            if listed:
+                items |= listed
+                evidence.extend(members.evidence if members else [])
+            elif record.if_empty is not None:
+                items |= record.if_empty
         fact = builder.entity(source).fact(attr)
         if unknown is not None:
             fact.unknown(unknown)
             continue
-        fact.set(frozenset(items), evidence[0])
+        # Items the attribute got from other lines stay; the targets' names give way to what
+        # the targets contain.
+        names = {r.name for r in records}
+        own = fact.value - names if fact.state is FactState.EXPLICIT and fact.value else set()
+        fact.set(frozenset(items | own), evidence[0])
         fact.evidence.extend(evidence[1:])
 
 
@@ -181,11 +194,18 @@ def _expand(objects: dict[str, EntityAcc], key: str, trail: set[str]) -> tuple[s
     ok = True
     for name in sorted(members.value):
         nested = f"{kind}:{name}"
+        leaf = f"{leaf_kind}:{name}"
         if nested in objects:
             sub, sub_ok = _expand(objects, nested, trail | {key})
             out |= sub
             ok &= sub_ok
-        elif f"{leaf_kind}:{name}" in objects or name in ("any", "all"):
+        elif kind in LEAF_MEMBERS:
+            kinds = objects[leaf].facts.get("members") if leaf in objects else None
+            if kinds is None or kinds.state is not FactState.EXPLICIT:
+                ok = False  # a local user, or a server whose kind wasn't read
+            else:
+                out |= kinds.value
+        elif leaf in objects or name in ("any", "all"):
             out.add(name)
         else:
             ok = False
@@ -236,7 +256,10 @@ def _extent(
     members = obj.facts.get("members")
     if members is None or members.state is not FactState.EXPLICIT:
         return "unknown", _first(members, obj)
-    if members.value & family.catch_all:
+    # A service limited to some destinations (FortiOS `set iprange`) doesn't cover all traffic.
+    dests = obj.facts.get("destinations")
+    limited = dests is not None and dests.state is FactState.EXPLICIT and "any" not in dests.value
+    if members.value & family.catch_all and not limited:
         return "any", _first(members, obj)
     return "some", None
 

@@ -254,3 +254,45 @@ mappings:
     - maintainer
     signals:
     - manual
+# Which method administrator logins try first: `authentication-order [ tacplus password ]`.
+# The first method decides where a login goes; `password` is the local account.
+- id: juniper_junos/authentication-order-list
+  vendor: juniper_junos
+  context:
+  - system
+  match: authentication-order [ <STR:a> <LIST>
+  effect:
+    set: AuthPolicy.login_methods
+    template: '{a}'
+    map:
+      tacplus: tacacs
+      radius: radius
+      password: local
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: juniper_junos/authentication-order-single
+  vendor: juniper_junos
+  context:
+  - system
+  match: authentication-order <STR:a>
+  effect:
+    set: AuthPolicy.login_methods
+    template: '{a}'
+    map:
+      tacplus: tacacs
+      radius: radius
+      password: local
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

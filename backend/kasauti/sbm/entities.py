@@ -12,6 +12,8 @@ Deviations from the §8.1 table, each needed by other parts of the plan:
   config_change_logged) that §8.1 lists beside ``LogTarget``; they aren't per-target.
 * ``TimePolicy`` holds device-wide NTP settings. Whether authentication is *enforced* (Cisco
   ``ntp authenticate``, OpenConfig ``enable-ntp-auth``) is not a property of one server.
+* ``AuthPolicy`` holds which methods administrator logins use (OpenConfig
+  ``authentication-method``): a TACACS+ server that no login uses protects nothing (0.8).
 * ``ObjectDef`` holds named address/service objects, groups and ACLs, the targets of the
   ``ref`` primitive and the reference resolver (§9.1, v5.1).
 """
@@ -104,6 +106,11 @@ class Interface(Entity):
     """untrusted | trusted | mgmt (inferred + overridable; drives exposure, §12.7)."""
     admin_up: BoolFact = BoolFact()
     mgmt_protocols: SetFact = SetFact()
+    mgmt_permitted_sources: SetFact = SetFact()
+    """Addresses the interface accepts management connections from; ``any`` means anywhere
+    (a PAN-OS interface management profile's ``permitted-ip``, where an empty list means no
+    restriction). Absent where the platform restricts management per service or account
+    instead (0.8)."""
     proxy_arp: BoolFact = BoolFact()
     """The interface answers ARP on behalf of other hosts (0.3)."""
     filters_in: SetFact = SetFact()
@@ -117,7 +124,9 @@ class LocalUser(Entity):
     type: Literal["LocalUser"] = "LocalUser"
     privilege: IntFact = IntFact()
     hash_type: StrFact = StrFact()
-    """Kind of stored secret (e.g. cisco-type-7, cisco-type-9, sha512); never the secret."""
+    """Kind of stored secret (e.g. cisco-type-7, cisco-type-9, sha512); never the secret.
+    ``remote``: the account keeps no password on the device and logs in against a remote
+    server (FortiOS ``set remote-auth enable``)."""
     permitted_sources: SetFact = SetFact()
     """Addresses this account may log in from; ``any`` means anywhere (FortiOS ``trusthost1``
     to ``trusthost10``). Absent where the platform restricts sources per line or service
@@ -151,6 +160,18 @@ class PasswordPolicy(Entity):
     """The policy is switched on, on platforms where it has its own switch (FortiOS
     ``config system password-policy`` / ``set status enable``). Absent where stating a
     minimum is what enforces it (Cisco, Junos, EOS) (0.5)."""
+
+
+class AuthPolicy(Entity):
+    """How administrator logins are checked, device-wide (0.8)."""
+
+    type: Literal["AuthPolicy"] = "AuthPolicy"
+    key: str = "auth-policy"
+    login_methods: SetFact = SetFact()
+    """What administrator logins are checked against: ``tacacs``, ``radius``, ``ldap``,
+    ``local`` (OpenConfig ``authentication-method``). A server group, user group or
+    authentication profile counts as the kinds of server it contains, so a central server
+    that is configured but that no login uses isn't in this set."""
 
 
 class LockoutPolicy(Entity):
@@ -267,11 +288,18 @@ class ObjectDef(Entity):
 
     type: Literal["ObjectDef"] = "ObjectDef"
     kind: StrFact = StrFact()
-    """address | address_group | service | service_group | acl | mgmt_profile"""
+    """address | address_group | service | service_group | acl | mgmt_profile | server_group |
+    user_group | auth_server | auth_profile"""
     members: SetFact = SetFact()
     expanded: SetFact = SetFact()
     """Groups only: members after recursive expansion of nested groups (0.4). Unknown if the
-    nesting has a cycle or names an object that doesn't exist."""
+    nesting has a cycle or names an object that doesn't exist. A user group's leaves are
+    authentication servers, so it expands to their kinds (``tacacs``), not their names (0.8)."""
+    permitted_sources: SetFact = SetFact()
+    """Management profiles only: the addresses the profile accepts connections from (0.8)."""
+    destinations: SetFact = SetFact()
+    """Service objects only: the destinations the service is limited to (FortiOS ``set
+    iprange`` / ``set fqdn``); ``any`` or absent means no limit (0.8)."""
 
 
 class Reference(Entity):
@@ -343,6 +371,7 @@ AnyEntity = Annotated[
     | LocalUser
     | AuthServer
     | PasswordPolicy
+    | AuthPolicy
     | LockoutPolicy
     | LogTarget
     | LoggingPolicy
@@ -371,6 +400,7 @@ ENTITY_TYPES: dict[str, type[Entity]] = {
         LocalUser,
         AuthServer,
         PasswordPolicy,
+        AuthPolicy,
         LockoutPolicy,
         LogTarget,
         LoggingPolicy,
@@ -390,7 +420,7 @@ ENTITY_TYPES: dict[str, type[Entity]] = {
 }
 
 SINGLETON_TYPES = frozenset(
-    {"Device", "PasswordPolicy", "LockoutPolicy", "LoggingPolicy", "TimePolicy"}
+    {"Device", "PasswordPolicy", "AuthPolicy", "LockoutPolicy", "LoggingPolicy", "TimePolicy"}
 )
 
 

@@ -315,8 +315,18 @@ class MembersEffect(_Strict):
 
 
 RefTarget = Literal[
-    "acl", "address", "address_group", "service", "service_group", "mgmt_profile", "any_object"
+    "acl",
+    "address",
+    "address_group",
+    "service",
+    "service_group",
+    "mgmt_profile",
+    "server_group",
+    "user_group",
+    "auth_profile",
+    "any_object",
 ]
+ExpandFrom = Literal["members", "expanded", "permitted_sources"]
 
 
 class RefEffect(_Strict):
@@ -327,6 +337,19 @@ class RefEffect(_Strict):
     """The attribute takes the target's ``members`` (once the resolver has linked it) instead
     of its name: a PAN-OS interface naming its management profile gets the profile's
     protocols. Unknown if the target is missing or its members weren't read."""
+    take: ExpandFrom = "members"
+    """With ``expand``: which of the target's attributes to take. ``expanded`` is a group's
+    members after nesting is resolved (a FortiOS user group -> the kinds of its servers)."""
+    if_empty: tuple[str, ...] | None = None
+    """With ``expand``: what a target that lists nothing contributes. Unset, it contributes
+    nothing (a management profile with no services allows none); PAN-OS documents that a
+    profile with no permitted IPs has "no IP address restrictions", so there it is ``[any]``."""
+
+    @model_validator(mode="after")
+    def _expand_options(self) -> Self:
+        if not self.expand and (self.take != "members" or self.if_empty is not None):
+            raise ValueError("`take` and `if_empty` only apply with `expand: true`")
+        return self
 
     @property
     def attr(self) -> str:
@@ -336,7 +359,34 @@ class RefEffect(_Strict):
         return frozenset({self.from_})
 
 
-Effect = SetEffect | AssertEffect | MembersEffect | RefEffect
+class UnknownEffect(_Strict):
+    """The statement decides this attribute in a way the pack doesn't read: the fact becomes
+    *unknown* with this line as evidence (REVIEW, never a guessed PASS or FAIL)."""
+
+    unknown: AttrPath
+    why: str = Field(min_length=10)
+    """What decides the value and why it isn't read. Kept with the mapping: the finding's
+    evidence names the line and the mapping id, and the review record explains it."""
+    from_: SlotName | None = Field(default=None, alias="from")
+    unless: tuple[str, ...] = ()
+    """With ``from``: slot values that *are* read elsewhere, so they leave the fact alone
+    (Cisco ``login authentication default`` names the list the pack reads)."""
+
+    @model_validator(mode="after")
+    def _unless_needs_from(self) -> Self:
+        if bool(self.unless) != (self.from_ is not None):
+            raise ValueError("`unless` and `from` go together")
+        return self
+
+    @property
+    def attr(self) -> str:
+        return self.unknown
+
+    def slots(self) -> frozenset[str]:
+        return frozenset({self.from_}) if self.from_ else frozenset()
+
+
+Effect = SetEffect | AssertEffect | MembersEffect | RefEffect | UnknownEffect
 
 # --- Mapping ----------------------------------------------------------------------------------
 

@@ -58,6 +58,14 @@ def _v06_to_v07(data: RawSBM) -> RawSBM:
     return data
 
 
+def _v07_to_v08(data: RawSBM) -> RawSBM:
+    """0.7 -> 0.8 (M2, central login, management profiles, service destinations): new
+    singleton ``AuthPolicy`` (``login_methods``) and new optional attributes
+    ``Interface.mgmt_permitted_sources``, ``ObjectDef.permitted_sources`` and
+    ``ObjectDef.destinations``. Absent in older documents, which read none of them."""
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
 MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.1": ("0.2", _v01_to_v02),
@@ -66,6 +74,7 @@ MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.4": ("0.5", _v04_to_v05),
     "0.5": ("0.6", _v05_to_v06),
     "0.6": ("0.7", _v06_to_v07),
+    "0.7": ("0.8", _v07_to_v08),
 }
 
 

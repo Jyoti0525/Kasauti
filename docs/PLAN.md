@@ -951,6 +951,26 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.11 (2026-09-26, central login in use; PAN-OS and FortiOS gaps):**
+  - **False PASS closed on every vendor:** AAA-CENTRAL-AUTH-01 passed when a TACACS+/RADIUS/LDAP
+    server was merely configured. It now asks which methods administrator logins use (SBM 0.8
+    `AuthPolicy.login_methods`, derivation `aaa.central_login_in_use` replacing
+    `aaa.central_server_configured`): Cisco/EOS `aaa authentication login default`, Junos
+    `authentication-order`, FortiOS remote administrators and user groups, PAN-OS
+    authentication profiles. The FortiOS and PAN-OS hardened twins had this false PASS and were
+    fixed.
+  - **PAN-OS:** interface management profiles' `permitted-ip` read (an empty list is "no IP
+    address restrictions"); proxy ARP off before 12.2.2 by the quoted release gate; lockout
+    through an authentication profile is REVIEW (which lockout governs isn't documented);
+    Panorama exports and Panorama-managed firewalls get a warning pointing at `show config
+    merged`.
+  - **FortiOS:** services limited by `iprange`/`fqdn` aren't all traffic (SBM 0.8
+    `ObjectDef.destinations`); remote administrators store no password (`hash_type: remote`).
+    Local-in policies wait for the ordered first-match evaluator that AWS NACLs (M2.31) need.
+  - **Mapping language:** expanding references take any list attribute (`take`) and fill empty
+    targets (`if_empty`), keep items from other lines, and resolve user groups to their servers'
+    kinds; a new `unknown` effect (with `from`/`unless`) marks a fact the pack can't read.
+    Vendor packs can declare input `warnings` in `detect.yaml`.
 - **v5.1.10 (2026-09-26, fifth seed vendor: PAN-OS, first XML pack):**
   - **PAN-OS pack** (67 mappings over the XML shape family; 10 defaults quoted from Palo Alto's
     web interface help and admin guide, element names checked against pan-os-python), a weak

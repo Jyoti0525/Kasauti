@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "b6f664eda8b26bab253a9b16",
+  "audit_id": "9854289d2b53da0d7fab3339",
   "input": {
     "file": "weak.cfg",
     "sha256": "11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
-    "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
+    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
+    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -589,8 +589,9 @@
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Administrators authenticate against a central AAA server: fails for the device; the rule treats absence as a violation (missing: any AuthServer).",
+      "reason": "Administrators authenticate against a central AAA server: fails for the device; the rule treats absence as a violation (missing: AuthPolicy[auth-policy].login_methods, any AuthServer).",
       "actual": [
+        "AuthPolicy[auth-policy].login_methods: missing",
         "any AuthServer: missing"
       ],
       "defaults_used": [],
@@ -1788,7 +1789,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.7",
+    "sbm_version": "0.8",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2198,6 +2199,12 @@
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
         },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": true,
           "state": "explicit",
@@ -2287,6 +2294,12 @@
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
         },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
         "proxy_arp": {
           "value": true,
           "state": "vendor_default",
@@ -2363,6 +2376,12 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "cisco_ios_xe/defaults.yaml#no-interface-mgmt-protocol-list"
+        },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         },
         "proxy_arp": {
           "value": true,
@@ -3377,6 +3396,18 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -3616,7 +3647,7 @@
       }
     ],
     "derived": {
-      "aaa.central_server_configured": {
+      "aaa.central_login_in_use": {
         "value": null,
         "state": "absent",
         "evidence": [],

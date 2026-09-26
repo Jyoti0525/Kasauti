@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Pack | `packs/vendors/fortinet_fortios` (pack_version 1), 96 mappings |
+| Pack | `packs/vendors/fortinet_fortios` (pack_version 1), 105 mappings |
 | Date | 2026-09-26 |
 | Reviewer | Claude, delegated by the maintainer (as for the other seed packs) |
 | Tasks | TODO M2.29 (seed pack), C.06 (authored configs vs vendor docs), S.01 |
@@ -109,6 +109,9 @@ custom`, `ntpserver` … `authentication`, `key-type SHA256`, `key`, `key-id`),
 | Administrator trusted hosts weren't read | HTTPS administration had no access fact; MGMT-WEB-ACL-01 judged clear-text HTTP only | per-account sources (SBM 0.6) and a vendor-neutral inference; HTTPS is judged, and the hardened unit PASSes on its trusted hosts |
 | FortiGuard NTP (the default `type`) had no server entry | TIME-NTP-AUTH-01 was N/A for it | `TimeSource[fortiguard]` with its on switches; FAIL with authentication off, REVIEW with it on; `except_keys` keeps the per-server default off it |
 | Custom service objects weren't expanded | `set service "ANY-PROTO"` (protocol IP) wasn't a permit-all: a false PASS | the resolver widens services like addresses; `set` with a template narrows a set (`protocol-number`) |
+| A TACACS+ server that no administrator used | AAA-CENTRAL-AUTH-01 passed on the server alone: a false PASS, in the hardened twin too | the rule asks which methods logins use: a remote administrator (`set remote-auth enable`) whose `remote-group` names a user group that names the server. User groups expand to their servers' kinds; a local user in the group gives REVIEW. The twin gained that administrator |
+| A remote administrator has no password line | AAA-LOCAL-PASSWORD-HASH-01 was REVIEW for it | `hash_type: remote`; the rule skips accounts that store no password |
+| A service limited to some destinations (`set iprange`, `set fqdn`) | protocol IP with a destination range counted as all traffic: a false FAIL | `ObjectDef.destinations` (SBM 0.8); the resolver doesn't widen a destination-limited service. No default is documented ("Not Specified"), so `0.0.0.0` and the full range are taken as no limit |
 | "Management reachable from untrusted" meant "no inbound ACL" | on zone-based platforms (FortiOS, Junos) the explanation was wrong: zones don't guard the device's own services | the exposure now asks for no filter *and* no zone, or management protocols granted on the interface; only the wording of existing findings changed |
 
 ## 5. Known limits (none gives a false PASS)
@@ -118,9 +121,10 @@ closed (section 4). What remains is judged conservatively:
 
 - **Local-in policies** (`config firewall local-in-policy`) can also restrict administrator
   access. They aren't read, so a unit relying on them instead of trusted hosts gets FAIL on
-  MGMT-WEB-ACL-01, with the reason shown; an auditor can overrule it.
-- **Service objects narrowed by destination** (`set iprange`, `set fqdn` inside a service) are
-  judged by protocol alone, so at worst a FAIL.
+  MGMT-WEB-ACL-01, with the reason shown; an auditor can overrule it. Reading them needs
+  first-match evaluation of an ordered list per interface and service, with traffic no policy
+  matches allowed. AWS network ACLs (M2.31) need the same ordered evaluation, so it will be
+  built once, there.
 - **FortiGuard NTP with global authentication enabled** is REVIEW until Fortinet documents
   whether that key covers FortiGuard's servers.
 
@@ -128,5 +132,5 @@ closed (section 4). What remains is judged conservatively:
 
 Golden cases `fortinet_fortios_weak` (F1–F16) and `fortinet_fortios_hardened` are
 hand-labelled from the weakness catalogue in `datasets/SOURCES.md`. All 16 planted weaknesses
-are caught; the hardened unit passes 20 rules (3 N/A: no vty lines, no references). False-PASS
-rate across all eight golden cases: 0/90.
+are caught; the hardened unit passes 21 rules (2 N/A: no vty lines). False-PASS rate across all
+ten golden cases: 0/109.

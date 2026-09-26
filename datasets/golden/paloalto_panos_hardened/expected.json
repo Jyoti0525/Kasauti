@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "a62861b4db82e38c2ce082ee",
+  "audit_id": "9d6ad1fc82d758fde9717247",
   "input": {
     "file": "hardened.xml",
-    "sha256": "f77dcd5a5c0be2df005feda67974a134c144e0d803b948e93f917c85831c907c",
+    "sha256": "37927308ce4b29ba19ad2edbcd17e2904bf06a6e0a5bdeefa85aa73f62b475f2",
     "encoding": "utf-8",
     "shape_family": "xml",
     "parse_warnings": []
@@ -25,7 +25,7 @@
   "identity": {
     "hostname": {
       "value": "PA-EDGE",
-      "source": "config line 107"
+      "source": "config line 140"
     },
     "vendor": {
       "value": "Palo Alto Networks",
@@ -50,8 +50,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
-    "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
+    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
+    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -100,7 +100,7 @@
       "rule_id": "AAA-LOCKOUT-01",
       "title": "Repeated failed logins are blocked",
       "domain": "aaa",
-      "status": "PASS",
+      "status": "REVIEW",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-7"
@@ -326,7 +326,7 @@
       "rule_id": "SVC-PROXY-ARP-01",
       "title": "Interfaces do not answer ARP for other hosts",
       "domain": "services",
-      "status": "REVIEW",
+      "status": "PASS",
       "severity": "low",
       "nist_800_53r5": [
         "CM-7",
@@ -378,7 +378,7 @@
     {
       "control": "AC-7",
       "title": "Unsuccessful Logon Attempts",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "AAA-LOCKOUT-01"
       ]
@@ -487,7 +487,7 @@
     {
       "control": "CM-7",
       "title": "Least Functionality",
-      "status": "undetermined",
+      "status": "satisfied",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-TELNET-01",
@@ -532,7 +532,7 @@
     {
       "control": "SC-7",
       "title": "Boundary Protection",
-      "status": "undetermined",
+      "status": "satisfied",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
@@ -590,7 +590,9 @@
       "severity_reason": null,
       "reason": "Administrators authenticate against a central AAA server: holds for the device.",
       "actual": [
-        "aaa.central_server_configured = true",
+        "aaa.central_login_in_use = true",
+        "AuthPolicy[auth-policy].login_methods = {tacacs}",
+        "AuthServer[tacplus:TACACS/tacacs-1].kind = tacacs",
         "AuthServer[tacplus:TACACS/tacacs-1].host = 10.30.10.40"
       ],
       "defaults_used": [],
@@ -601,6 +603,28 @@
           "line_end": 29,
           "raw": "address 10.30.10.40",
           "mapping_id": "paloalto_panos/server-profile-address",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 40,
+          "line_end": 40,
+          "raw": "server-profile TACACS",
+          "mapping_id": "paloalto_panos/auth-profile-server",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 144,
+          "line_end": 144,
+          "raw": "authentication-profile TACACS-AUTH",
+          "mapping_id": "paloalto_panos/system-authentication-profile",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -636,22 +660,21 @@
     {
       "rule_id": "AAA-LOCKOUT-01",
       "entity_id": "LockoutPolicy[lockout-policy]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Repeated failed logins are blocked: holds for LockoutPolicy[lockout-policy].",
+      "status": "REVIEW",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Cannot judge the rule for LockoutPolicy[lockout-policy] (not understood: LockoutPolicy[lockout-policy].max_attempts).",
       "actual": [
-        "LockoutPolicy[lockout-policy].max_attempts = 5",
-        "LockoutPolicy[lockout-policy].lockout_s = 1800"
+        "LockoutPolicy[lockout-policy].max_attempts: present but not understood"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 151,
-          "line_end": 151,
-          "raw": "failed-attempts 5",
-          "mapping_id": "paloalto_panos/failed-attempts",
+          "line_start": 144,
+          "line_end": 144,
+          "raw": "authentication-profile TACACS-AUTH",
+          "mapping_id": "paloalto_panos/system-authentication-profile",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -659,10 +682,10 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 152,
-          "line_end": 152,
-          "raw": "lockout-time 30",
-          "mapping_id": "paloalto_panos/lockout-time",
+          "line_start": 185,
+          "line_end": 185,
+          "raw": "failed-attempts 5",
+          "mapping_id": "paloalto_panos/failed-attempts",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -741,8 +764,8 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 194,
-          "line_end": 194,
+          "line_start": 235,
+          "line_end": 235,
           "raw": "member LAN-NET",
           "mapping_id": "paloalto_panos/rule-source",
           "mapping_version": 1,
@@ -752,8 +775,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 200,
-          "line_end": 200,
+          "line_start": 241,
+          "line_end": 241,
           "raw": "member dns",
           "mapping_id": "paloalto_panos/rule-application",
           "mapping_version": 1,
@@ -763,8 +786,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 201,
-          "line_end": 201,
+          "line_start": 242,
+          "line_end": 242,
           "raw": "member ssl",
           "mapping_id": "paloalto_panos/rule-application",
           "mapping_version": 1,
@@ -774,8 +797,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 202,
-          "line_end": 202,
+          "line_start": 243,
+          "line_end": 243,
           "raw": "member web-browsing",
           "mapping_id": "paloalto_panos/rule-application",
           "mapping_version": 1,
@@ -785,8 +808,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 221,
-          "line_end": 221,
+          "line_start": 262,
+          "line_end": 262,
           "raw": "member WEB-SRV",
           "mapping_id": "paloalto_panos/rule-destination",
           "mapping_version": 1,
@@ -796,8 +819,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 224,
-          "line_end": 224,
+          "line_start": 265,
+          "line_end": 265,
           "raw": "member ssl",
           "mapping_id": "paloalto_panos/rule-application",
           "mapping_version": 1,
@@ -807,8 +830,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 251,
-          "line_end": 251,
+          "line_start": 292,
+          "line_end": 292,
           "raw": "action deny",
           "mapping_id": "paloalto_panos/rule-action",
           "mapping_version": 1,
@@ -833,8 +856,8 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 163,
-          "line_end": 163,
+          "line_start": 197,
+          "line_end": 197,
           "raw": "member ethernet1/1",
           "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
@@ -844,8 +867,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 163,
-          "line_end": 163,
+          "line_start": 197,
+          "line_end": 197,
           "raw": "member ethernet1/1",
           "mapping_id": "paloalto_panos/zone-member",
           "mapping_version": 1,
@@ -886,8 +909,8 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 41,
-          "line_end": 41,
+          "line_start": 57,
+          "line_end": 57,
           "raw": "server 10.30.10.50",
           "mapping_id": "paloalto_panos/syslog-server",
           "mapping_version": 1,
@@ -897,8 +920,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 65,
-          "line_end": 65,
+          "line_start": 81,
+          "line_end": 81,
           "raw": "member SIEM",
           "mapping_id": "paloalto_panos/send-syslog-config",
           "mapping_version": 1,
@@ -938,8 +961,8 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 120,
-          "line_end": 120,
+          "line_start": 154,
+          "line_end": 154,
           "raw": "login-banner \"Authorised access only. Activity is logged and monitored.\"",
           "mapping_id": "paloalto_panos/login-banner",
           "mapping_version": 1,
@@ -964,8 +987,8 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 116,
-          "line_end": 116,
+          "line_start": 150,
+          "line_end": 150,
           "raw": "disable-http yes",
           "mapping_id": "paloalto_panos/mgt-http",
           "mapping_version": 1,
@@ -990,8 +1013,8 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 149,
-          "line_end": 149,
+          "line_start": 183,
+          "line_end": 183,
           "raw": "idle-timeout 10",
           "mapping_id": "paloalto_panos/idle-timeout",
           "mapping_version": 1,
@@ -1026,14 +1049,15 @@
         "MgmtService[telnet].enabled = false",
         "MgmtSession[admin].kind = cli",
         "Interface[ethernet1/1].mgmt_protocols = {ping}",
-        "Interface[ethernet1/2].mgmt_protocols = {ping}"
+        "Interface[ethernet1/2].mgmt_protocols = {ping}",
+        "Interface[ethernet1/3].mgmt_protocols = {https, ping, ssh}"
       ],
       "defaults_used": [],
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 82,
-          "line_end": 82,
+          "line_start": 98,
+          "line_end": 98,
           "raw": "interface-management-profile PING-ONLY",
           "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
           "mapping_version": 1,
@@ -1043,8 +1067,8 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 91,
-          "line_end": 91,
+          "line_start": 107,
+          "line_end": 107,
           "raw": "interface-management-profile PING-ONLY",
           "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
           "mapping_version": 1,
@@ -1054,8 +1078,19 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 100,
-          "line_end": 100,
+          "line_start": 116,
+          "line_end": 116,
+          "raw": "interface-management-profile MGMT-FROM-NOC",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 125,
+          "line_end": 125,
           "raw": "ping yes",
           "mapping_id": "paloalto_panos/mgmt-profile-service",
           "mapping_version": 1,
@@ -1065,10 +1100,32 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 115,
-          "line_end": 115,
-          "raw": "disable-telnet yes",
-          "mapping_id": "paloalto_panos/mgt-telnet",
+          "line_start": 128,
+          "line_end": 128,
+          "raw": "https yes",
+          "mapping_id": "paloalto_panos/mgmt-profile-service",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 129,
+          "line_end": 129,
+          "raw": "ssh yes",
+          "mapping_id": "paloalto_panos/mgmt-profile-service",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 130,
+          "line_end": 130,
+          "raw": "ping yes",
+          "mapping_id": "paloalto_panos/mgmt-profile-service",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1078,6 +1135,17 @@
           "file": "hardened.xml",
           "line_start": 149,
           "line_end": 149,
+          "raw": "disable-telnet yes",
+          "mapping_id": "paloalto_panos/mgt-telnet",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 183,
+          "line_end": 183,
           "raw": "idle-timeout 10",
           "mapping_id": "paloalto_panos/idle-timeout",
           "mapping_version": 1,
@@ -1124,10 +1192,10 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 112,
-          "line_end": 112,
-          "raw": "entry 10.30.10.0/24",
-          "mapping_id": "inference/mgmt_service.access_filter.permitted_sources",
+          "line_start": 98,
+          "line_end": 98,
+          "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1135,10 +1203,115 @@
         },
         {
           "file": "hardened.xml",
-          "line_start": 117,
-          "line_end": 117,
+          "line_start": 107,
+          "line_end": 107,
+          "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 116,
+          "line_end": 116,
+          "raw": "interface-management-profile MGMT-FROM-NOC",
+          "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 125,
+          "line_end": 125,
+          "raw": "ping yes",
+          "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 132,
+          "line_end": 132,
+          "raw": "entry 10.30.10.0/24",
+          "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 146,
+          "line_end": 146,
+          "raw": "entry 10.30.10.0/24",
+          "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "hardened.xml",
+          "line_start": 151,
+          "line_end": 151,
           "raw": "disable-https no",
           "mapping_id": "paloalto_panos/mgt-https",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[AuthPolicy[auth-policy].login_methods -> TACACS-AUTH]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[AuthPolicy[auth-policy].login_methods -> TACACS-AUTH].",
+      "actual": [
+        "Reference[AuthPolicy[auth-policy].login_methods -> TACACS-AUTH].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 144,
+          "line_end": 144,
+          "raw": "authentication-profile TACACS-AUTH",
+          "mapping_id": "paloalto_panos/system-authentication-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[ethernet1/1].mgmt_permitted_sources -> PING-ONLY]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[ethernet1/1].mgmt_permitted_sources -> PING-ONLY].",
+      "actual": [
+        "Reference[Interface[ethernet1/1].mgmt_permitted_sources -> PING-ONLY].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 98,
+          "line_end": 98,
+          "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1160,8 +1333,33 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 82,
-          "line_end": 82,
+          "line_start": 98,
+          "line_end": 98,
+          "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[ethernet1/2].mgmt_permitted_sources -> PING-ONLY]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[ethernet1/2].mgmt_permitted_sources -> PING-ONLY].",
+      "actual": [
+        "Reference[Interface[ethernet1/2].mgmt_permitted_sources -> PING-ONLY].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 107,
+          "line_end": 107,
           "raw": "interface-management-profile PING-ONLY",
           "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
           "mapping_version": 1,
@@ -1185,9 +1383,59 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 91,
-          "line_end": 91,
+          "line_start": 107,
+          "line_end": 107,
           "raw": "interface-management-profile PING-ONLY",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[ethernet1/3].mgmt_permitted_sources -> MGMT-FROM-NOC]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[ethernet1/3].mgmt_permitted_sources -> MGMT-FROM-NOC].",
+      "actual": [
+        "Reference[Interface[ethernet1/3].mgmt_permitted_sources -> MGMT-FROM-NOC].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 116,
+          "line_end": 116,
+          "raw": "interface-management-profile MGMT-FROM-NOC",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[ethernet1/3].mgmt_protocols -> MGMT-FROM-NOC]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[ethernet1/3].mgmt_protocols -> MGMT-FROM-NOC].",
+      "actual": [
+        "Reference[Interface[ethernet1/3].mgmt_protocols -> MGMT-FROM-NOC].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 116,
+          "line_end": 116,
+          "raw": "interface-management-profile MGMT-FROM-NOC",
           "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
           "mapping_version": 1,
           "approved_by": [
@@ -1214,8 +1462,8 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 140,
-          "line_end": 140,
+          "line_start": 174,
+          "line_end": 174,
           "raw": "snmp-community-string ****",
           "mapping_id": "paloalto_panos/snmp-v2c-community",
           "mapping_version": 1,
@@ -1252,27 +1500,46 @@
     {
       "rule_id": "SVC-PROXY-ARP-01",
       "entity_id": "Interface[ethernet1/1]",
-      "status": "REVIEW",
-      "severity": "low",
-      "severity_reason": "Low (base)",
-      "reason": "Cannot judge the rule for Interface[ethernet1/1] (missing: Interface[ethernet1/1].proxy_arp). No vendor default is known for this OS version.",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ethernet1/1] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[ethernet1/1].proxy_arp: missing"
+        "Interface[ethernet1/1].proxy_arp = false (vendor default)"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
+      ],
       "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
       "entity_id": "Interface[ethernet1/2]",
-      "status": "REVIEW",
-      "severity": "low",
-      "severity_reason": "Low (base)",
-      "reason": "Cannot judge the rule for Interface[ethernet1/2] (missing: Interface[ethernet1/2].proxy_arp). No vendor default is known for this OS version.",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ethernet1/2] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[ethernet1/2].proxy_arp: missing"
+        "Interface[ethernet1/2].proxy_arp = false (vendor default)"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
+      ],
+      "evidence": []
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Interface[ethernet1/3]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ethernet1/3] (using the vendor default for this OS version).",
+      "actual": [
+        "Interface[ethernet1/3].proxy_arp = false (vendor default)"
+      ],
+      "defaults_used": [
+        "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
+      ],
       "evidence": []
     },
     {
@@ -1290,8 +1557,8 @@
       "evidence": [
         {
           "file": "hardened.xml",
-          "line_start": 125,
-          "line_end": 132,
+          "line_start": 159,
+          "line_end": 166,
           "raw": "symmetric-key",
           "mapping_id": "paloalto_panos/ntp-auth-symmetric-key",
           "mapping_version": 1,
@@ -1303,59 +1570,83 @@
     }
   ],
   "assurance": {
-    "statements": 172,
-    "understood": 66,
-    "unmapped": 106,
+    "statements": 200,
+    "understood": 78,
+    "unmapped": 122,
     "near_miss": 0,
-    "understood_pct": 38.4,
+    "understood_pct": 39.0,
     "unmapped_patterns": [
       {
-        "pattern_key": "network",
-        "count": 4,
-        "first_line": 74,
-        "example": "network"
+        "pattern_key": "layer3",
+        "count": 6,
+        "first_line": 94,
+        "example": "layer3"
       },
       {
-        "pattern_key": "layer3",
-        "count": 4,
-        "first_line": 78,
-        "example": "layer3"
+        "pattern_key": "network",
+        "count": 5,
+        "first_line": 90,
+        "example": "network"
       },
       {
         "pattern_key": "service",
         "count": 4,
-        "first_line": 114,
+        "first_line": 148,
         "example": "service"
+      },
+      {
+        "pattern_key": "ip",
+        "count": 3,
+        "first_line": 95,
+        "example": "ip"
+      },
+      {
+        "pattern_key": "entry <IP>",
+        "count": 3,
+        "first_line": 96,
+        "example": "entry 198.51.100.2/30"
       },
       {
         "pattern_key": "from",
         "count": 3,
-        "first_line": 187,
+        "first_line": 228,
         "example": "from"
       },
       {
         "pattern_key": "to",
         "count": 3,
-        "first_line": 190,
+        "first_line": 231,
         "example": "to"
       },
       {
         "pattern_key": "source",
         "count": 3,
-        "first_line": 193,
+        "first_line": 234,
         "example": "source"
       },
       {
         "pattern_key": "destination",
         "count": 3,
-        "first_line": 196,
+        "first_line": 237,
         "example": "destination"
       },
       {
         "pattern_key": "application",
         "count": 3,
-        "first_line": 199,
+        "first_line": 240,
         "example": "application"
+      },
+      {
+        "pattern_key": "member <IFNAME>",
+        "count": 3,
+        "first_line": 301,
+        "example": "member ethernet1/1"
+      },
+      {
+        "pattern_key": "tacplus",
+        "count": 2,
+        "first_line": 25,
+        "example": "tacplus"
       },
       {
         "pattern_key": "server",
@@ -1366,50 +1657,38 @@
       {
         "pattern_key": "system",
         "count": 2,
-        "first_line": 50,
+        "first_line": 66,
         "example": "system"
       },
       {
         "pattern_key": "match-list",
         "count": 2,
-        "first_line": 51,
+        "first_line": 67,
         "example": "match-list"
       },
       {
         "pattern_key": "filter <STR>",
         "count": 2,
-        "first_line": 53,
+        "first_line": 69,
         "example": "filter \"All Logs\""
       },
       {
         "pattern_key": "send-syslog",
         "count": 2,
-        "first_line": 54,
+        "first_line": 70,
         "example": "send-syslog"
       },
       {
         "pattern_key": "interface",
         "count": 2,
-        "first_line": 75,
+        "first_line": 91,
         "example": "interface"
       },
       {
-        "pattern_key": "ip",
+        "pattern_key": "permitted-ip",
         "count": 2,
-        "first_line": 79,
-        "example": "ip"
-      },
-      {
-        "pattern_key": "entry <IP>",
-        "count": 2,
-        "first_line": 80,
-        "example": "entry 198.51.100.2/30"
-      },
-      {
-        "pattern_key": "member <IFNAME>",
-        "count": 2,
-        "first_line": 260,
-        "example": "member ethernet1/1"
+        "first_line": 131,
+        "example": "permitted-ip"
       },
       {
         "pattern_key": "mgt-config",
@@ -1484,12 +1763,6 @@
         "example": "server-profile"
       },
       {
-        "pattern_key": "tacplus",
-        "count": 1,
-        "first_line": 25,
-        "example": "tacplus"
-      },
-      {
         "pattern_key": "entry TACACS",
         "count": 1,
         "first_line": 26,
@@ -1508,277 +1781,319 @@
         "example": "secret ****"
       },
       {
-        "pattern_key": "log-settings",
+        "pattern_key": "authentication-profile",
         "count": 1,
         "first_line": 36,
+        "example": "authentication-profile"
+      },
+      {
+        "pattern_key": "method",
+        "count": 1,
+        "first_line": 38,
+        "example": "method"
+      },
+      {
+        "pattern_key": "lockout",
+        "count": 1,
+        "first_line": 43,
+        "example": "lockout"
+      },
+      {
+        "pattern_key": "failed-attempts <INT>",
+        "count": 1,
+        "first_line": 44,
+        "example": "failed-attempts 5"
+      },
+      {
+        "pattern_key": "lockout-time <INT>",
+        "count": 1,
+        "first_line": 45,
+        "example": "lockout-time 30"
+      },
+      {
+        "pattern_key": "allow-list",
+        "count": 1,
+        "first_line": 47,
+        "example": "allow-list"
+      },
+      {
+        "pattern_key": "member all",
+        "count": 1,
+        "first_line": 48,
+        "example": "member all"
+      },
+      {
+        "pattern_key": "log-settings",
+        "count": 1,
+        "first_line": 52,
         "example": "log-settings"
       },
       {
         "pattern_key": "syslog",
         "count": 1,
-        "first_line": 37,
+        "first_line": 53,
         "example": "syslog"
       },
       {
         "pattern_key": "entry SIEM",
         "count": 1,
-        "first_line": 38,
+        "first_line": 54,
         "example": "entry SIEM"
       },
       {
         "pattern_key": "entry siem-1",
         "count": 1,
-        "first_line": 40,
+        "first_line": 56,
         "example": "entry siem-1"
       },
       {
         "pattern_key": "port <INT>",
         "count": 1,
-        "first_line": 43,
+        "first_line": 59,
         "example": "port 6514"
       },
       {
         "pattern_key": "format IETF",
         "count": 1,
-        "first_line": 44,
+        "first_line": 60,
         "example": "format IETF"
       },
       {
         "pattern_key": "facility LOG_USER",
         "count": 1,
-        "first_line": 45,
+        "first_line": 61,
         "example": "facility LOG_USER"
       },
       {
         "pattern_key": "entry system-to-siem",
         "count": 1,
-        "first_line": 52,
+        "first_line": 68,
         "example": "entry system-to-siem"
       },
       {
         "pattern_key": "config",
         "count": 1,
-        "first_line": 60,
+        "first_line": 76,
         "example": "config"
       },
       {
         "pattern_key": "entry config-to-siem",
         "count": 1,
-        "first_line": 62,
+        "first_line": 78,
         "example": "entry config-to-siem"
       },
       {
         "pattern_key": "devices",
         "count": 1,
-        "first_line": 72,
+        "first_line": 88,
         "example": "devices"
       },
       {
         "pattern_key": "entry localhost.localdomain",
         "count": 1,
-        "first_line": 73,
+        "first_line": 89,
         "example": "entry localhost.localdomain"
       },
       {
         "pattern_key": "ethernet",
         "count": 1,
-        "first_line": 76,
+        "first_line": 92,
         "example": "ethernet"
       },
       {
         "pattern_key": "profiles",
         "count": 1,
-        "first_line": 97,
+        "first_line": 122,
         "example": "profiles"
       },
       {
         "pattern_key": "interface-management-profile",
         "count": 1,
-        "first_line": 98,
+        "first_line": 123,
         "example": "interface-management-profile"
       },
       {
         "pattern_key": "deviceconfig",
         "count": 1,
-        "first_line": 105,
+        "first_line": 138,
         "example": "deviceconfig"
       },
       {
         "pattern_key": "ip-address <IP>",
         "count": 1,
-        "first_line": 108,
+        "first_line": 141,
         "example": "ip-address 10.30.10.2"
       },
       {
         "pattern_key": "netmask <IP>",
         "count": 1,
-        "first_line": 109,
+        "first_line": 142,
         "example": "netmask 255.255.255.0"
       },
       {
         "pattern_key": "default-gateway <IP>",
         "count": 1,
-        "first_line": 110,
+        "first_line": 143,
         "example": "default-gateway 10.30.10.1"
-      },
-      {
-        "pattern_key": "permitted-ip",
-        "count": 1,
-        "first_line": 111,
-        "example": "permitted-ip"
       },
       {
         "pattern_key": "ntp-servers",
         "count": 1,
-        "first_line": 121,
+        "first_line": 155,
         "example": "ntp-servers"
       },
       {
         "pattern_key": "primary-ntp-server",
         "count": 1,
-        "first_line": 122,
+        "first_line": 156,
         "example": "primary-ntp-server"
       },
       {
         "pattern_key": "authentication-type",
         "count": 1,
-        "first_line": 124,
+        "first_line": 158,
         "example": "authentication-type"
       },
       {
         "pattern_key": "algorithm",
         "count": 1,
-        "first_line": 126,
+        "first_line": 160,
         "example": "algorithm"
       },
       {
         "pattern_key": "sha1",
         "count": 1,
-        "first_line": 127,
+        "first_line": 161,
         "example": "sha1"
       },
       {
         "pattern_key": "authentication-key ****",
         "count": 1,
-        "first_line": 128,
+        "first_line": 162,
         "example": "authentication-key ****"
       },
       {
         "pattern_key": "key-id <INT>",
         "count": 1,
-        "first_line": 131,
+        "first_line": 165,
         "example": "key-id 1"
       },
       {
         "pattern_key": "snmp-setting",
         "count": 1,
-        "first_line": 136,
+        "first_line": 170,
         "example": "snmp-setting"
       },
       {
         "pattern_key": "access-setting",
         "count": 1,
-        "first_line": 137,
+        "first_line": 171,
         "example": "access-setting"
       },
       {
         "pattern_key": "version",
         "count": 1,
-        "first_line": 138,
+        "first_line": 172,
         "example": "version"
       },
       {
         "pattern_key": "v2c",
         "count": 1,
-        "first_line": 139,
+        "first_line": 173,
         "example": "v2c"
       },
       {
         "pattern_key": "timezone Asia/Kolkata",
         "count": 1,
-        "first_line": 145,
+        "first_line": 179,
         "example": "timezone Asia/Kolkata"
       },
       {
         "pattern_key": "setting",
         "count": 1,
-        "first_line": 147,
+        "first_line": 181,
         "example": "setting"
       },
       {
         "pattern_key": "management",
         "count": 1,
-        "first_line": 148,
+        "first_line": 182,
         "example": "management"
       },
       {
         "pattern_key": "admin-lockout",
         "count": 1,
-        "first_line": 150,
+        "first_line": 184,
         "example": "admin-lockout"
       },
       {
         "pattern_key": "vsys",
         "count": 1,
-        "first_line": 157,
+        "first_line": 191,
         "example": "vsys"
       },
       {
         "pattern_key": "entry vsys1",
         "count": 1,
-        "first_line": 158,
+        "first_line": 192,
         "example": "entry vsys1"
       },
       {
         "pattern_key": "zone",
         "count": 1,
-        "first_line": 159,
+        "first_line": 193,
         "example": "zone"
       },
       {
         "pattern_key": "entry untrust",
         "count": 1,
-        "first_line": 160,
+        "first_line": 194,
         "example": "entry untrust"
       },
       {
         "pattern_key": "entry trust",
         "count": 1,
-        "first_line": 167,
+        "first_line": 201,
         "example": "entry trust"
+      },
+      {
+        "pattern_key": "entry mgmt",
+        "count": 1,
+        "first_line": 208,
+        "example": "entry mgmt"
       },
       {
         "pattern_key": "address",
         "count": 1,
-        "first_line": 175,
+        "first_line": 216,
         "example": "address"
       },
       {
         "pattern_key": "rulebase",
         "count": 1,
-        "first_line": 183,
+        "first_line": 224,
         "example": "rulebase"
       },
       {
         "pattern_key": "security",
         "count": 1,
-        "first_line": 184,
+        "first_line": 225,
         "example": "security"
       },
       {
         "pattern_key": "rules",
         "count": 1,
-        "first_line": 185,
+        "first_line": 226,
         "example": "rules"
       },
       {
         "pattern_key": "import",
         "count": 1,
-        "first_line": 257,
+        "first_line": 298,
         "example": "import"
       }
     ],
-    "review_findings": 3,
+    "review_findings": 2,
     "mappings_used": [
       {
         "mapping": "inference/device.role.firewall_by_zones@1",
@@ -1795,11 +2110,25 @@
         "facts": 1
       },
       {
-        "mapping": "inference/mgmt_service.access_filter.permitted_sources@1",
+        "mapping": "inference/mgmt_service.access_filter.permitted_sources.http@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 3
+        "facts": 9
+      },
+      {
+        "mapping": "inference/mgmt_service.access_filter.permitted_sources.https@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 6
+      },
+      {
+        "mapping": "inference/mgmt_service.access_filter.permitted_sources.ssh@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 6
       },
       {
         "mapping": "paloalto_panos/address-ip-netmask@1",
@@ -1823,18 +2152,32 @@
         "facts": 1
       },
       {
-        "mapping": "paloalto_panos/ethernet-comment@1",
+        "mapping": "paloalto_panos/auth-profile-server@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
+        "mapping": "paloalto_panos/auth-profile@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/ethernet-comment@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
         "mapping": "paloalto_panos/ethernet-layer3-mgmt-profile@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 14
+        "facts": 42
       },
       {
         "mapping": "paloalto_panos/failed-attempts@1",
@@ -1865,18 +2208,25 @@
         "facts": 1
       },
       {
+        "mapping": "paloalto_panos/mgmt-profile-permitted-ip@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
         "mapping": "paloalto_panos/mgmt-profile-service@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 3
+        "facts": 9
       },
       {
         "mapping": "paloalto_panos/mgmt-profile@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 2
       },
       {
         "mapping": "paloalto_panos/mgt-http@1",
@@ -2054,16 +2404,24 @@
         "facts": 1
       },
       {
+        "mapping": "paloalto_panos/system-authentication-profile@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 8
+      },
+      {
         "mapping": "paloalto_panos/zone-member@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 2
+        "facts": 3
       }
     ],
     "defaults_used": [
       "paloalto_panos/defaults.yaml#config-changes-logged",
       "paloalto_panos/defaults.yaml#logs-timestamped",
+      "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2",
       "paloalto_panos/defaults.yaml#no-legacy-bootp",
       "paloalto_panos/defaults.yaml#no-legacy-finger",
       "paloalto_panos/defaults.yaml#no-legacy-pad",
@@ -2075,7 +2433,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.7",
+    "sbm_version": "0.8",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2086,8 +2444,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 107,
-            "line_end": 107,
+            "line_start": 140,
+            "line_end": 140,
             "raw": "hostname PA-EDGE",
             "mapping_id": null,
             "mapping_version": null,
@@ -2111,8 +2469,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 73,
-            "line_end": 73,
+            "line_start": 89,
+            "line_end": 89,
             "raw": "<entry name=\"localhost.localdomain\">",
             "mapping_id": null,
             "mapping_version": null,
@@ -2120,8 +2478,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 105,
-            "line_end": 105,
+            "line_start": 138,
+            "line_end": 138,
             "raw": "<deviceconfig>",
             "mapping_id": null,
             "mapping_version": null,
@@ -2129,8 +2487,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 158,
-            "line_end": 158,
+            "line_start": 192,
+            "line_end": 192,
             "raw": "<entry name=\"vsys1\">",
             "mapping_id": null,
             "mapping_version": null,
@@ -2138,8 +2496,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 183,
-            "line_end": 183,
+            "line_start": 224,
+            "line_end": 224,
             "raw": "<rulebase>",
             "mapping_id": null,
             "mapping_version": null,
@@ -2163,8 +2521,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 73,
-            "line_end": 73,
+            "line_start": 89,
+            "line_end": 89,
             "raw": "<entry name=\"localhost.localdomain\">",
             "mapping_id": null,
             "mapping_version": null,
@@ -2172,8 +2530,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 105,
-            "line_end": 105,
+            "line_start": 138,
+            "line_end": 138,
             "raw": "<deviceconfig>",
             "mapping_id": null,
             "mapping_version": null,
@@ -2181,8 +2539,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 158,
-            "line_end": 158,
+            "line_start": 192,
+            "line_end": 192,
             "raw": "<entry name=\"vsys1\">",
             "mapping_id": null,
             "mapping_version": null,
@@ -2190,8 +2548,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 183,
-            "line_end": 183,
+            "line_start": 224,
+            "line_end": 224,
             "raw": "<rulebase>",
             "mapping_id": null,
             "mapping_version": null,
@@ -2240,8 +2598,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 188,
-            "line_end": 188,
+            "line_start": 229,
+            "line_end": 229,
             "raw": "member trust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -2251,8 +2609,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 191,
-            "line_end": 191,
+            "line_start": 232,
+            "line_end": 232,
             "raw": "member untrust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -2262,8 +2620,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 212,
-            "line_end": 212,
+            "line_start": 253,
+            "line_end": 253,
             "raw": "member untrust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -2273,8 +2631,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 215,
-            "line_end": 215,
+            "line_start": 256,
+            "line_end": 256,
             "raw": "member trust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -2284,8 +2642,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 234,
-            "line_end": 234,
+            "line_start": 275,
+            "line_end": 275,
             "raw": "member any",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -2295,8 +2653,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 237,
-            "line_end": 237,
+            "line_start": 278,
+            "line_end": 278,
             "raw": "member any",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -2309,6 +2667,42 @@
       }
     },
     "entities": [
+      {
+        "key": "auth-policy",
+        "evidence": [],
+        "type": "AuthPolicy",
+        "login_methods": {
+          "value": [
+            "tacacs"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 40,
+              "line_end": 40,
+              "raw": "server-profile TACACS",
+              "mapping_id": "paloalto_panos/auth-profile-server",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 144,
+              "line_end": 144,
+              "raw": "authentication-profile TACACS-AUTH",
+              "mapping_id": "paloalto_panos/system-authentication-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
       {
         "key": "tacplus:TACACS/tacacs-1",
         "evidence": [],
@@ -2366,8 +2760,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 120,
-              "line_end": 120,
+              "line_start": 154,
+              "line_end": 154,
               "raw": "login-banner \"Authorised access only. Activity is logged and monitored.\"",
               "mapping_id": "paloalto_panos/login-banner",
               "mapping_version": 1,
@@ -2395,8 +2789,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 232,
-              "line_end": 253,
+              "line_start": 273,
+              "line_end": 294,
               "raw": "entry deny-and-log",
               "mapping_id": "paloalto_panos/rule",
               "mapping_version": 1,
@@ -2427,8 +2821,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 240,
-              "line_end": 240,
+              "line_start": 281,
+              "line_end": 281,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-source",
               "mapping_version": 1,
@@ -2447,8 +2841,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 243,
-              "line_end": 243,
+              "line_start": 284,
+              "line_end": 284,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-destination",
               "mapping_version": 1,
@@ -2467,8 +2861,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 249,
-              "line_end": 249,
+              "line_start": 290,
+              "line_end": 290,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-service",
               "mapping_version": 1,
@@ -2485,8 +2879,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 251,
-              "line_end": 251,
+              "line_start": 292,
+              "line_end": 292,
               "raw": "action deny",
               "mapping_id": "paloalto_panos/rule-action",
               "mapping_version": 1,
@@ -2503,8 +2897,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 252,
-              "line_end": 252,
+              "line_start": 293,
+              "line_end": 293,
               "raw": "log-end yes",
               "mapping_id": "paloalto_panos/rule-log-end",
               "mapping_version": 1,
@@ -2527,8 +2921,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 234,
-              "line_end": 234,
+              "line_start": 275,
+              "line_end": 275,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-from",
               "mapping_version": 1,
@@ -2545,8 +2939,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 237,
-              "line_end": 237,
+              "line_start": 278,
+              "line_end": 278,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-to",
               "mapping_version": 1,
@@ -2565,8 +2959,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 246,
-              "line_end": 246,
+              "line_start": 287,
+              "line_end": 287,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-application",
               "mapping_version": 1,
@@ -2588,8 +2982,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 186,
-              "line_end": 209,
+              "line_start": 227,
+              "line_end": 250,
               "raw": "entry lan-to-internet",
               "mapping_id": "paloalto_panos/rule",
               "mapping_version": 1,
@@ -2620,8 +3014,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 194,
-              "line_end": 194,
+              "line_start": 235,
+              "line_end": 235,
               "raw": "member LAN-NET",
               "mapping_id": "paloalto_panos/rule-source",
               "mapping_version": 1,
@@ -2640,8 +3034,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 197,
-              "line_end": 197,
+              "line_start": 238,
+              "line_end": 238,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-destination",
               "mapping_version": 1,
@@ -2660,8 +3054,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 205,
-              "line_end": 205,
+              "line_start": 246,
+              "line_end": 246,
               "raw": "member application-default",
               "mapping_id": "paloalto_panos/rule-service",
               "mapping_version": 1,
@@ -2678,8 +3072,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 207,
-              "line_end": 207,
+              "line_start": 248,
+              "line_end": 248,
               "raw": "action allow",
               "mapping_id": "paloalto_panos/rule-action",
               "mapping_version": 1,
@@ -2696,8 +3090,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 208,
-              "line_end": 208,
+              "line_start": 249,
+              "line_end": 249,
               "raw": "log-end yes",
               "mapping_id": "paloalto_panos/rule-log-end",
               "mapping_version": 1,
@@ -2720,8 +3114,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 188,
-              "line_end": 188,
+              "line_start": 229,
+              "line_end": 229,
               "raw": "member trust",
               "mapping_id": "paloalto_panos/rule-from",
               "mapping_version": 1,
@@ -2738,8 +3132,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 191,
-              "line_end": 191,
+              "line_start": 232,
+              "line_end": 232,
               "raw": "member untrust",
               "mapping_id": "paloalto_panos/rule-to",
               "mapping_version": 1,
@@ -2760,8 +3154,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 200,
-              "line_end": 200,
+              "line_start": 241,
+              "line_end": 241,
               "raw": "member dns",
               "mapping_id": "paloalto_panos/rule-application",
               "mapping_version": 1,
@@ -2771,8 +3165,8 @@
             },
             {
               "file": "hardened.xml",
-              "line_start": 201,
-              "line_end": 201,
+              "line_start": 242,
+              "line_end": 242,
               "raw": "member ssl",
               "mapping_id": "paloalto_panos/rule-application",
               "mapping_version": 1,
@@ -2782,8 +3176,8 @@
             },
             {
               "file": "hardened.xml",
-              "line_start": 202,
-              "line_end": 202,
+              "line_start": 243,
+              "line_end": 243,
               "raw": "member web-browsing",
               "mapping_id": "paloalto_panos/rule-application",
               "mapping_version": 1,
@@ -2805,8 +3199,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 210,
-              "line_end": 231,
+              "line_start": 251,
+              "line_end": 272,
               "raw": "entry web-in",
               "mapping_id": "paloalto_panos/rule",
               "mapping_version": 1,
@@ -2837,8 +3231,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 218,
-              "line_end": 218,
+              "line_start": 259,
+              "line_end": 259,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-source",
               "mapping_version": 1,
@@ -2857,8 +3251,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 221,
-              "line_end": 221,
+              "line_start": 262,
+              "line_end": 262,
               "raw": "member WEB-SRV",
               "mapping_id": "paloalto_panos/rule-destination",
               "mapping_version": 1,
@@ -2877,8 +3271,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 227,
-              "line_end": 227,
+              "line_start": 268,
+              "line_end": 268,
               "raw": "member application-default",
               "mapping_id": "paloalto_panos/rule-service",
               "mapping_version": 1,
@@ -2895,8 +3289,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 229,
-              "line_end": 229,
+              "line_start": 270,
+              "line_end": 270,
               "raw": "action allow",
               "mapping_id": "paloalto_panos/rule-action",
               "mapping_version": 1,
@@ -2913,8 +3307,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 230,
-              "line_end": 230,
+              "line_start": 271,
+              "line_end": 271,
               "raw": "log-end yes",
               "mapping_id": "paloalto_panos/rule-log-end",
               "mapping_version": 1,
@@ -2937,8 +3331,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 212,
-              "line_end": 212,
+              "line_start": 253,
+              "line_end": 253,
               "raw": "member untrust",
               "mapping_id": "paloalto_panos/rule-from",
               "mapping_version": 1,
@@ -2955,8 +3349,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 215,
-              "line_end": 215,
+              "line_start": 256,
+              "line_end": 256,
               "raw": "member trust",
               "mapping_id": "paloalto_panos/rule-to",
               "mapping_version": 1,
@@ -2975,8 +3369,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 224,
-              "line_end": 224,
+              "line_start": 265,
+              "line_end": 265,
               "raw": "member ssl",
               "mapping_id": "paloalto_panos/rule-application",
               "mapping_version": 1,
@@ -2998,8 +3392,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 84,
-              "line_end": 84,
+              "line_start": 100,
+              "line_end": 100,
               "raw": "comment \"WAN uplink to ISP\"",
               "mapping_id": "paloalto_panos/ethernet-comment",
               "mapping_version": 1,
@@ -3016,8 +3410,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 163,
-              "line_end": 163,
+              "line_start": 197,
+              "line_end": 197,
               "raw": "member ethernet1/1",
               "mapping_id": "paloalto_panos/zone-member",
               "mapping_version": 1,
@@ -3034,8 +3428,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 163,
-              "line_end": 163,
+              "line_start": 197,
+              "line_end": 197,
               "raw": "member ethernet1/1",
               "mapping_id": "inference/interface.role.untrusted_by_zone",
               "mapping_version": 1,
@@ -3060,8 +3454,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 82,
-              "line_end": 82,
+              "line_start": 98,
+              "line_end": 98,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -3071,8 +3465,8 @@
             },
             {
               "file": "hardened.xml",
-              "line_start": 100,
-              "line_end": 100,
+              "line_start": 125,
+              "line_end": 125,
               "raw": "ping yes",
               "mapping_id": "paloalto_panos/mgmt-profile-service",
               "mapping_version": 1,
@@ -3083,11 +3477,31 @@
           ],
           "default_source": null
         },
-        "proxy_arp": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+        "mgmt_permitted_sources": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
         },
         "filters_in": {
           "value": null,
@@ -3112,8 +3526,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 93,
-              "line_end": 93,
+              "line_start": 109,
+              "line_end": 109,
               "raw": "comment \"LAN server segment\"",
               "mapping_id": "paloalto_panos/ethernet-comment",
               "mapping_version": 1,
@@ -3130,8 +3544,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 170,
-              "line_end": 170,
+              "line_start": 204,
+              "line_end": 204,
               "raw": "member ethernet1/2",
               "mapping_id": "paloalto_panos/zone-member",
               "mapping_version": 1,
@@ -3162,8 +3576,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 91,
-              "line_end": 91,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -3173,8 +3587,8 @@
             },
             {
               "file": "hardened.xml",
-              "line_start": 100,
-              "line_end": 100,
+              "line_start": 125,
+              "line_end": 125,
               "raw": "ping yes",
               "mapping_id": "paloalto_panos/mgmt-profile-service",
               "mapping_version": 1,
@@ -3185,11 +3599,188 @@
           ],
           "default_source": null
         },
+        "mgmt_permitted_sources": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
         "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
+        },
+        "filters_in": {
           "value": null,
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "ethernet1/3",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
+          "value": "In-band management VLAN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 118,
+              "line_end": 118,
+              "raw": "comment \"In-band management VLAN\"",
+              "mapping_id": "paloalto_panos/ethernet-comment",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
+          "value": "mgmt",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 211,
+              "line_end": 211,
+              "raw": "member ethernet1/3",
+              "mapping_id": "paloalto_panos/zone-member",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "role": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "admin_up": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols": {
+          "value": [
+            "https",
+            "ping",
+            "ssh"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 128,
+              "line_end": 128,
+              "raw": "https yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 129,
+              "line_end": 129,
+              "raw": "ssh yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 130,
+              "line_end": 130,
+              "raw": "ping yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "mgmt_permitted_sources": {
+          "value": [
+            "10.30.10.0/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 132,
+              "line_end": 132,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "paloalto_panos/mgmt-profile-permitted-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
         },
         "filters_in": {
           "value": null,
@@ -3250,13 +3841,24 @@
         "evidence": [],
         "type": "LockoutPolicy",
         "max_attempts": {
-          "value": 5,
-          "state": "explicit",
+          "value": null,
+          "state": "unknown",
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 151,
-              "line_end": 151,
+              "line_start": 144,
+              "line_end": 144,
+              "raw": "authentication-profile TACACS-AUTH",
+              "mapping_id": "paloalto_panos/system-authentication-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 185,
+              "line_end": 185,
               "raw": "failed-attempts 5",
               "mapping_id": "paloalto_panos/failed-attempts",
               "mapping_version": 1,
@@ -3273,8 +3875,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 152,
-              "line_end": 152,
+              "line_start": 186,
+              "line_end": 186,
               "raw": "lockout-time 30",
               "mapping_id": "paloalto_panos/lockout-time",
               "mapping_version": 1,
@@ -3296,8 +3898,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 41,
-              "line_end": 41,
+              "line_start": 57,
+              "line_end": 57,
               "raw": "server 10.30.10.50",
               "mapping_id": "paloalto_panos/syslog-server",
               "mapping_version": 1,
@@ -3314,8 +3916,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 42,
-              "line_end": 42,
+              "line_start": 58,
+              "line_end": 58,
               "raw": "transport SSL",
               "mapping_id": "paloalto_panos/syslog-transport",
               "mapping_version": 1,
@@ -3338,8 +3940,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 65,
-              "line_end": 65,
+              "line_start": 81,
+              "line_end": 81,
               "raw": "member SIEM",
               "mapping_id": "paloalto_panos/send-syslog-config",
               "mapping_version": 1,
@@ -3482,8 +4084,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 116,
-              "line_end": 116,
+              "line_start": 150,
+              "line_end": 150,
               "raw": "disable-http yes",
               "mapping_id": "paloalto_panos/mgt-http",
               "mapping_version": 1,
@@ -3506,10 +4108,98 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 112,
-              "line_end": 112,
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 125,
+              "line_end": 125,
+              "raw": "ping yes",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 128,
+              "line_end": 128,
+              "raw": "https yes",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 129,
+              "line_end": 129,
+              "raw": "ssh yes",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 130,
+              "line_end": 130,
+              "raw": "ping yes",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 132,
+              "line_end": 132,
               "raw": "entry 10.30.10.0/24",
-              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 146,
+              "line_end": 146,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.http",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3526,8 +4216,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 112,
-              "line_end": 112,
+              "line_start": 146,
+              "line_end": 146,
               "raw": "entry 10.30.10.0/24",
               "mapping_id": "paloalto_panos/mgt-permitted-ip-http",
               "mapping_version": 1,
@@ -3567,8 +4257,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 117,
-              "line_end": 117,
+              "line_start": 151,
+              "line_end": 151,
               "raw": "disable-https no",
               "mapping_id": "paloalto_panos/mgt-https",
               "mapping_version": 1,
@@ -3591,10 +4281,65 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 112,
-              "line_end": 112,
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 125,
+              "line_end": 125,
+              "raw": "ping yes",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 132,
+              "line_end": 132,
               "raw": "entry 10.30.10.0/24",
-              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 146,
+              "line_end": 146,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.https",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3611,8 +4356,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 112,
-              "line_end": 112,
+              "line_start": 146,
+              "line_end": 146,
               "raw": "entry 10.30.10.0/24",
               "mapping_id": "paloalto_panos/mgt-permitted-ip-https",
               "mapping_version": 1,
@@ -3701,8 +4446,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 118,
-              "line_end": 118,
+              "line_start": 152,
+              "line_end": 152,
               "raw": "disable-ssh no",
               "mapping_id": "paloalto_panos/mgt-ssh",
               "mapping_version": 1,
@@ -3725,10 +4470,65 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 112,
-              "line_end": 112,
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 125,
+              "line_end": 125,
+              "raw": "ping yes",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 132,
+              "line_end": 132,
               "raw": "entry 10.30.10.0/24",
-              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 146,
+              "line_end": 146,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "inference/mgmt_service.access_filter.permitted_sources.ssh",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -3745,8 +4545,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 112,
-              "line_end": 112,
+              "line_start": 146,
+              "line_end": 146,
               "raw": "entry 10.30.10.0/24",
               "mapping_id": "paloalto_panos/mgt-permitted-ip-ssh",
               "mapping_version": 1,
@@ -3835,8 +4635,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 115,
-              "line_end": 115,
+              "line_start": 149,
+              "line_end": 149,
               "raw": "disable-telnet yes",
               "mapping_id": "paloalto_panos/mgt-telnet",
               "mapping_version": 1,
@@ -3945,8 +4745,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 149,
-              "line_end": 149,
+              "line_start": 183,
+              "line_end": 183,
               "raw": "idle-timeout 10",
               "mapping_id": "paloalto_panos/idle-timeout",
               "mapping_version": 1,
@@ -3981,8 +4781,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 149,
-              "line_end": 149,
+              "line_start": 183,
+              "line_end": 183,
               "raw": "idle-timeout 10",
               "mapping_id": "paloalto_panos/idle-timeout",
               "mapping_version": 1,
@@ -4010,8 +4810,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 176,
-              "line_end": 178,
+              "line_start": 217,
+              "line_end": 219,
               "raw": "entry LAN-NET",
               "mapping_id": "paloalto_panos/address",
               "mapping_version": 1,
@@ -4030,8 +4830,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 177,
-              "line_end": 177,
+              "line_start": 218,
+              "line_end": 218,
               "raw": "ip-netmask 10.20.0.0/24",
               "mapping_id": "paloalto_panos/address-ip-netmask",
               "mapping_version": 1,
@@ -4043,6 +4843,18 @@
           "default_source": null
         },
         "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -4059,8 +4871,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 179,
-              "line_end": 181,
+              "line_start": 220,
+              "line_end": 222,
               "raw": "entry WEB-SRV",
               "mapping_id": "paloalto_panos/address",
               "mapping_version": 1,
@@ -4079,8 +4891,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 180,
-              "line_end": 180,
+              "line_start": 221,
+              "line_end": 221,
               "raw": "ip-netmask 10.20.0.10/32",
               "mapping_id": "paloalto_panos/address-ip-netmask",
               "mapping_version": 1,
@@ -4092,6 +4904,178 @@
           "default_source": null
         },
         "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "auth_profile:TACACS-AUTH",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "auth_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 37,
+              "line_end": 50,
+              "raw": "entry TACACS-AUTH",
+              "mapping_id": "paloalto_panos/auth-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "tacacs"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 40,
+              "line_end": 40,
+              "raw": "server-profile TACACS",
+              "mapping_id": "paloalto_panos/auth-profile-server",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "mgmt_profile:MGMT-FROM-NOC",
+        "evidence": [],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 127,
+              "line_end": 134,
+              "raw": "entry MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": [
+            "https",
+            "ping",
+            "ssh"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 128,
+              "line_end": 128,
+              "raw": "https yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 129,
+              "line_end": 129,
+              "raw": "ssh yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.xml",
+              "line_start": 130,
+              "line_end": 130,
+              "raw": "ping yes",
+              "mapping_id": "paloalto_panos/mgmt-profile-service",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": [
+            "10.30.10.0/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 132,
+              "line_end": 132,
+              "raw": "entry 10.30.10.0/24",
+              "mapping_id": "paloalto_panos/mgmt-profile-permitted-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "destinations": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -4108,8 +5092,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 99,
-              "line_end": 101,
+              "line_start": 124,
+              "line_end": 126,
               "raw": "entry PING-ONLY",
               "mapping_id": "paloalto_panos/mgmt-profile",
               "mapping_version": 1,
@@ -4128,8 +5112,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 100,
-              "line_end": 100,
+              "line_start": 125,
+              "line_end": 125,
               "raw": "ping yes",
               "mapping_id": "paloalto_panos/mgmt-profile-service",
               "mapping_version": 1,
@@ -4141,6 +5125,18 @@
           "default_source": null
         },
         "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -4213,12 +5209,143 @@
         }
       },
       {
-        "key": "Interface[ethernet1/1].mgmt_protocols -> PING-ONLY",
+        "key": "AuthPolicy[auth-policy].login_methods -> TACACS-AUTH",
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 82,
-            "line_end": 82,
+            "line_start": 144,
+            "line_end": 144,
+            "raw": "authentication-profile TACACS-AUTH",
+            "mapping_id": "paloalto_panos/system-authentication-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "AuthPolicy[auth-policy]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 144,
+              "line_end": 144,
+              "raw": "authentication-profile TACACS-AUTH",
+              "mapping_id": "paloalto_panos/system-authentication-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "AuthPolicy.login_methods",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 144,
+              "line_end": 144,
+              "raw": "authentication-profile TACACS-AUTH",
+              "mapping_id": "paloalto_panos/system-authentication-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "auth_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 144,
+              "line_end": 144,
+              "raw": "authentication-profile TACACS-AUTH",
+              "mapping_id": "paloalto_panos/system-authentication-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "TACACS-AUTH",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 144,
+              "line_end": 144,
+              "raw": "authentication-profile TACACS-AUTH",
+              "mapping_id": "paloalto_panos/system-authentication-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 144,
+              "line_end": 144,
+              "raw": "authentication-profile TACACS-AUTH",
+              "mapping_id": "paloalto_panos/system-authentication-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[auth_profile:TACACS-AUTH]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 144,
+              "line_end": 144,
+              "raw": "authentication-profile TACACS-AUTH",
+              "mapping_id": "paloalto_panos/system-authentication-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/1].mgmt_permitted_sources -> PING-ONLY",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 98,
+            "line_end": 98,
             "raw": "interface-management-profile PING-ONLY",
             "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
             "mapping_version": 1,
@@ -4234,8 +5361,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 82,
-              "line_end": 82,
+              "line_start": 98,
+              "line_end": 98,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4247,13 +5374,13 @@
           "default_source": null
         },
         "attribute": {
-          "value": "Interface.mgmt_protocols",
+          "value": "Interface.mgmt_permitted_sources",
           "state": "explicit",
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 82,
-              "line_end": 82,
+              "line_start": 98,
+              "line_end": 98,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4270,8 +5397,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 82,
-              "line_end": 82,
+              "line_start": 98,
+              "line_end": 98,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4288,8 +5415,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 82,
-              "line_end": 82,
+              "line_start": 98,
+              "line_end": 98,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4306,8 +5433,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 82,
-              "line_end": 82,
+              "line_start": 98,
+              "line_end": 98,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4324,8 +5451,270 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 82,
-              "line_end": 82,
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/1].mgmt_protocols -> PING-ONLY",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 98,
+            "line_end": 98,
+            "raw": "interface-management-profile PING-ONLY",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[ethernet1/1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.mgmt_protocols",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "PING-ONLY",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[mgmt_profile:PING-ONLY]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 98,
+              "line_end": 98,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/2].mgmt_permitted_sources -> PING-ONLY",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 107,
+            "line_end": 107,
+            "raw": "interface-management-profile PING-ONLY",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[ethernet1/2]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.mgmt_permitted_sources",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "PING-ONLY",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
+              "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[mgmt_profile:PING-ONLY]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 107,
+              "line_end": 107,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4348,8 +5737,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 91,
-            "line_end": 91,
+            "line_start": 107,
+            "line_end": 107,
             "raw": "interface-management-profile PING-ONLY",
             "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
             "mapping_version": 1,
@@ -4365,8 +5754,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 91,
-              "line_end": 91,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4383,8 +5772,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 91,
-              "line_end": 91,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4401,8 +5790,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 91,
-              "line_end": 91,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4419,8 +5808,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 91,
-              "line_end": 91,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4437,8 +5826,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 91,
-              "line_end": 91,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "interface-management-profile PING-ONLY",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -4455,9 +5844,271 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 91,
-              "line_end": 91,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "interface-management-profile PING-ONLY",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/3].mgmt_permitted_sources -> MGMT-FROM-NOC",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 116,
+            "line_end": 116,
+            "raw": "interface-management-profile MGMT-FROM-NOC",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[ethernet1/3]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.mgmt_permitted_sources",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "MGMT-FROM-NOC",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[mgmt_profile:MGMT-FROM-NOC]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/3].mgmt_protocols -> MGMT-FROM-NOC",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 116,
+            "line_end": 116,
+            "raw": "interface-management-profile MGMT-FROM-NOC",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[ethernet1/3]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.mgmt_protocols",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "MGMT-FROM-NOC",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[mgmt_profile:MGMT-FROM-NOC]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "interface-management-profile MGMT-FROM-NOC",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
               "approved_by": [
@@ -4496,8 +6147,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 140,
-              "line_end": 140,
+              "line_start": 174,
+              "line_end": 174,
               "raw": "snmp-community-string ****",
               "mapping_id": "paloalto_panos/snmp-v2c-community",
               "mapping_version": 1,
@@ -4519,8 +6170,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 125,
-              "line_end": 132,
+              "line_start": 159,
+              "line_end": 166,
               "raw": "symmetric-key",
               "mapping_id": "paloalto_panos/ntp-auth-symmetric-key",
               "mapping_version": 1,
@@ -4548,8 +6199,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 123,
-              "line_end": 123,
+              "line_start": 157,
+              "line_end": 157,
               "raw": "ntp-server-address 10.30.10.70",
               "mapping_id": "paloalto_panos/ntp-server",
               "mapping_version": 1,
@@ -4566,8 +6217,8 @@
           "evidence": [
             {
               "file": "hardened.xml",
-              "line_start": 125,
-              "line_end": 132,
+              "line_start": 159,
+              "line_end": 166,
               "raw": "symmetric-key",
               "mapping_id": "paloalto_panos/ntp-auth-symmetric-key",
               "mapping_version": 1,
@@ -4587,7 +6238,7 @@
       }
     ],
     "derived": {
-      "aaa.central_server_configured": {
+      "aaa.central_login_in_use": {
         "value": true,
         "state": "explicit",
         "evidence": [
@@ -4597,6 +6248,28 @@
             "line_end": 29,
             "raw": "address 10.30.10.40",
             "mapping_id": "paloalto_panos/server-profile-address",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 40,
+            "line_end": 40,
+            "raw": "server-profile TACACS",
+            "mapping_id": "paloalto_panos/auth-profile-server",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 144,
+            "line_end": 144,
+            "raw": "authentication-profile TACACS-AUTH",
+            "mapping_id": "paloalto_panos/system-authentication-profile",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -4611,8 +6284,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 194,
-            "line_end": 194,
+            "line_start": 235,
+            "line_end": 235,
             "raw": "member LAN-NET",
             "mapping_id": "paloalto_panos/rule-source",
             "mapping_version": 1,
@@ -4622,8 +6295,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 200,
-            "line_end": 200,
+            "line_start": 241,
+            "line_end": 241,
             "raw": "member dns",
             "mapping_id": "paloalto_panos/rule-application",
             "mapping_version": 1,
@@ -4633,8 +6306,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 201,
-            "line_end": 201,
+            "line_start": 242,
+            "line_end": 242,
             "raw": "member ssl",
             "mapping_id": "paloalto_panos/rule-application",
             "mapping_version": 1,
@@ -4644,8 +6317,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 202,
-            "line_end": 202,
+            "line_start": 243,
+            "line_end": 243,
             "raw": "member web-browsing",
             "mapping_id": "paloalto_panos/rule-application",
             "mapping_version": 1,
@@ -4655,8 +6328,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 221,
-            "line_end": 221,
+            "line_start": 262,
+            "line_end": 262,
             "raw": "member WEB-SRV",
             "mapping_id": "paloalto_panos/rule-destination",
             "mapping_version": 1,
@@ -4666,8 +6339,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 224,
-            "line_end": 224,
+            "line_start": 265,
+            "line_end": 265,
             "raw": "member ssl",
             "mapping_id": "paloalto_panos/rule-application",
             "mapping_version": 1,
@@ -4677,8 +6350,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 251,
-            "line_end": 251,
+            "line_start": 292,
+            "line_end": 292,
             "raw": "action deny",
             "mapping_id": "paloalto_panos/rule-action",
             "mapping_version": 1,
@@ -4695,8 +6368,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 41,
-            "line_end": 41,
+            "line_start": 57,
+            "line_end": 57,
             "raw": "server 10.30.10.50",
             "mapping_id": "paloalto_panos/syslog-server",
             "mapping_version": 1,
@@ -4706,8 +6379,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 65,
-            "line_end": 65,
+            "line_start": 81,
+            "line_end": 81,
             "raw": "member SIEM",
             "mapping_id": "paloalto_panos/send-syslog-config",
             "mapping_version": 1,
@@ -4724,8 +6397,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 116,
-            "line_end": 116,
+            "line_start": 150,
+            "line_end": 150,
             "raw": "disable-http yes",
             "mapping_id": "paloalto_panos/mgt-http",
             "mapping_version": 1,
@@ -4742,8 +6415,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 120,
-            "line_end": 120,
+            "line_start": 154,
+            "line_end": 154,
             "raw": "login-banner \"Authorised access only. Activity is logged and monitored.\"",
             "mapping_id": "paloalto_panos/login-banner",
             "mapping_version": 1,
@@ -4760,8 +6433,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 118,
-            "line_end": 118,
+            "line_start": 152,
+            "line_end": 152,
             "raw": "disable-ssh no",
             "mapping_id": "paloalto_panos/mgt-ssh",
             "mapping_version": 1,
@@ -4784,8 +6457,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 82,
-            "line_end": 82,
+            "line_start": 98,
+            "line_end": 98,
             "raw": "interface-management-profile PING-ONLY",
             "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
             "mapping_version": 1,
@@ -4795,8 +6468,8 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 91,
-            "line_end": 91,
+            "line_start": 107,
+            "line_end": 107,
             "raw": "interface-management-profile PING-ONLY",
             "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
             "mapping_version": 1,
@@ -4806,8 +6479,19 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 100,
-            "line_end": 100,
+            "line_start": 116,
+            "line_end": 116,
+            "raw": "interface-management-profile MGMT-FROM-NOC",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 125,
+            "line_end": 125,
             "raw": "ping yes",
             "mapping_id": "paloalto_panos/mgmt-profile-service",
             "mapping_version": 1,
@@ -4817,10 +6501,32 @@
           },
           {
             "file": "hardened.xml",
-            "line_start": 115,
-            "line_end": 115,
-            "raw": "disable-telnet yes",
-            "mapping_id": "paloalto_panos/mgt-telnet",
+            "line_start": 128,
+            "line_end": 128,
+            "raw": "https yes",
+            "mapping_id": "paloalto_panos/mgmt-profile-service",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 129,
+            "line_end": 129,
+            "raw": "ssh yes",
+            "mapping_id": "paloalto_panos/mgmt-profile-service",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 130,
+            "line_end": 130,
+            "raw": "ping yes",
+            "mapping_id": "paloalto_panos/mgmt-profile-service",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -4830,6 +6536,17 @@
             "file": "hardened.xml",
             "line_start": 149,
             "line_end": 149,
+            "raw": "disable-telnet yes",
+            "mapping_id": "paloalto_panos/mgt-telnet",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "hardened.xml",
+            "line_start": 183,
+            "line_end": 183,
             "raw": "idle-timeout 10",
             "mapping_id": "paloalto_panos/idle-timeout",
             "mapping_version": 1,
@@ -4852,8 +6569,8 @@
         "evidence": [
           {
             "file": "hardened.xml",
-            "line_start": 140,
-            "line_end": 140,
+            "line_start": 174,
+            "line_end": 174,
             "raw": "snmp-community-string ****",
             "mapping_id": "paloalto_panos/snmp-v2c-community",
             "mapping_version": 1,

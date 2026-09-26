@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "a5f956a95d92553cd07f64c3",
+  "audit_id": "4c8d09290e762482c030eaae",
   "input": {
     "file": "weak.xml",
     "sha256": "d7aad8397621ac42c0c313c3d53c939b85a04f89b41d7bd11b13bd092b1699eb",
@@ -50,8 +50,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "4a0510c104fba8d53b43a17cd9a3fb546ea696b01162966a5d342d938844a4a0",
-    "ruleset_version": "7ebad84320a7586712bcd1e9f1561b6265f90f5e9f37e1e3cc2cc19e871d6db4",
+    "kb_version": "e0d95139d4f107751fa1f62c71cd47639d5dae897278764089a2c1e183be2d2f",
+    "ruleset_version": "7b9a33d94beb7f3dc0594a67d3a72f3eebbc61f8b0f8bfbca60628c8cc89b598",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -64,12 +64,12 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 6,
+      "passed": 7,
       "failed": 13,
-      "review": 2,
+      "review": 1,
       "not_applicable": 2,
-      "compliance_pct": 31.6,
-      "coverage_pct": 90.5
+      "compliance_pct": 35.0,
+      "coverage_pct": 95.2
     }
   ],
   "rules": [
@@ -326,7 +326,7 @@
       "rule_id": "SVC-PROXY-ARP-01",
       "title": "Interfaces do not answer ARP for other hosts",
       "domain": "services",
-      "status": "REVIEW",
+      "status": "PASS",
       "severity": "low",
       "nist_800_53r5": [
         "CM-7",
@@ -532,7 +532,7 @@
     {
       "control": "SC-7",
       "title": "Boundary Protection",
-      "status": "undetermined",
+      "status": "satisfied",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
@@ -590,7 +590,7 @@
       "severity_reason": "Medium (base)",
       "reason": "Administrators authenticate against a central AAA server: is violated for the device (using the vendor default for this OS version).",
       "actual": [
-        "aaa.central_server_configured = false",
+        "aaa.central_login_in_use = false",
         "AuthServer: none configured = none (vendor default)"
       ],
       "defaults_used": [
@@ -1261,6 +1261,31 @@
     },
     {
       "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[ethernet1/1].mgmt_permitted_sources -> ALLOW-MGMT]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[ethernet1/1].mgmt_permitted_sources -> ALLOW-MGMT].",
+      "actual": [
+        "Reference[Interface[ethernet1/1].mgmt_permitted_sources -> ALLOW-MGMT].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.xml",
+          "line_start": 46,
+          "line_end": 46,
+          "raw": "interface-management-profile ALLOW-MGMT",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
       "entity_id": "Reference[Interface[ethernet1/1].mgmt_protocols -> ALLOW-MGMT]",
       "status": "PASS",
       "severity": null,
@@ -1275,6 +1300,31 @@
           "file": "weak.xml",
           "line_start": 46,
           "line_end": 46,
+          "raw": "interface-management-profile ALLOW-MGMT",
+          "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[ethernet1/2].mgmt_permitted_sources -> ALLOW-MGMT]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[Interface[ethernet1/2].mgmt_permitted_sources -> ALLOW-MGMT].",
+      "actual": [
+        "Reference[Interface[ethernet1/2].mgmt_permitted_sources -> ALLOW-MGMT].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.xml",
+          "line_start": 55,
+          "line_end": 55,
           "raw": "interface-management-profile ALLOW-MGMT",
           "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
           "mapping_version": 1,
@@ -1417,27 +1467,31 @@
     {
       "rule_id": "SVC-PROXY-ARP-01",
       "entity_id": "Interface[ethernet1/1]",
-      "status": "REVIEW",
-      "severity": "low",
-      "severity_reason": "Low (base)",
-      "reason": "Cannot judge the rule for Interface[ethernet1/1] (missing: Interface[ethernet1/1].proxy_arp). No vendor default is known for this OS version.",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ethernet1/1] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[ethernet1/1].proxy_arp: missing"
+        "Interface[ethernet1/1].proxy_arp = false (vendor default)"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
+      ],
       "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
       "entity_id": "Interface[ethernet1/2]",
-      "status": "REVIEW",
-      "severity": "low",
-      "severity_reason": "Low (base)",
-      "reason": "Cannot judge the rule for Interface[ethernet1/2] (missing: Interface[ethernet1/2].proxy_arp). No vendor default is known for this OS version.",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ethernet1/2] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[ethernet1/2].proxy_arp: missing"
+        "Interface[ethernet1/2].proxy_arp = false (vendor default)"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
+      ],
       "evidence": []
     },
     {
@@ -1810,7 +1864,7 @@
         "example": "import"
       }
     ],
-    "review_findings": 3,
+    "review_findings": 1,
     "mappings_used": [
       {
         "mapping": "inference/device.role.firewall_by_zones@1",
@@ -1845,7 +1899,7 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 14
+        "facts": 28
       },
       {
         "mapping": "paloalto_panos/idle-timeout@1",
@@ -1919,20 +1973,6 @@
       },
       {
         "mapping": "paloalto_panos/password-complexity-minimum-length@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "paloalto_panos/profile-https@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "paloalto_panos/profile-ssh@1",
         "approved_by": [
           "maintainer"
         ],
@@ -2029,6 +2069,7 @@
       "paloalto_panos/defaults.yaml#lockout-time-zero",
       "paloalto_panos/defaults.yaml#logs-timestamped",
       "paloalto_panos/defaults.yaml#no-auth-servers",
+      "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2",
       "paloalto_panos/defaults.yaml#no-legacy-bootp",
       "paloalto_panos/defaults.yaml#no-legacy-finger",
       "paloalto_panos/defaults.yaml#no-legacy-pad",
@@ -2040,7 +2081,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.7",
+    "sbm_version": "0.8",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2530,11 +2571,31 @@
           ],
           "default_source": null
         },
-        "proxy_arp": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+        "mgmt_permitted_sources": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
         },
         "filters_in": {
           "value": null,
@@ -2644,11 +2705,31 @@
           ],
           "default_source": null
         },
-        "proxy_arp": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+        "mgmt_permitted_sources": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "paloalto_panos/defaults.yaml#no-interface-proxy-arp-before-12-2-2"
         },
         "filters_in": {
           "value": null,
@@ -2994,21 +3075,9 @@
           "value": [
             "any"
           ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.xml",
-              "line_start": 64,
-              "line_end": 64,
-              "raw": "https yes",
-              "mapping_id": "paloalto_panos/profile-https",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "paloalto_panos/defaults.yaml#permitted-ip-empty-means-any"
         },
         "ciphers": {
           "value": null,
@@ -3116,21 +3185,9 @@
           "value": [
             "any"
           ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.xml",
-              "line_start": 65,
-              "line_end": 65,
-              "raw": "ssh yes",
-              "mapping_id": "paloalto_panos/profile-ssh",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "paloalto_panos/defaults.yaml#permitted-ip-empty-means-any"
         },
         "ciphers": {
           "value": null,
@@ -3446,6 +3503,18 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -3510,6 +3579,137 @@
               ]
             }
           ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/1].mgmt_permitted_sources -> ALLOW-MGMT",
+        "evidence": [
+          {
+            "file": "weak.xml",
+            "line_start": 46,
+            "line_end": 46,
+            "raw": "interface-management-profile ALLOW-MGMT",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[ethernet1/1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.mgmt_permitted_sources",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "ALLOW-MGMT",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[mgmt_profile:ALLOW-MGMT]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -3627,6 +3827,137 @@
               "file": "weak.xml",
               "line_start": 46,
               "line_end": 46,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "Interface[ethernet1/2].mgmt_permitted_sources -> ALLOW-MGMT",
+        "evidence": [
+          {
+            "file": "weak.xml",
+            "line_start": 55,
+            "line_end": 55,
+            "raw": "interface-management-profile ALLOW-MGMT",
+            "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "Interface[ethernet1/2]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "Interface.mgmt_permitted_sources",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "mgmt_profile",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "ALLOW-MGMT",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 55,
+              "line_end": 55,
+              "raw": "interface-management-profile ALLOW-MGMT",
+              "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[mgmt_profile:ALLOW-MGMT]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 55,
+              "line_end": 55,
               "raw": "interface-management-profile ALLOW-MGMT",
               "mapping_id": "paloalto_panos/ethernet-layer3-mgmt-profile",
               "mapping_version": 1,
@@ -3859,7 +4190,7 @@
       }
     ],
     "derived": {
-      "aaa.central_server_configured": {
+      "aaa.central_login_in_use": {
         "value": false,
         "state": "vendor_default",
         "evidence": [],
