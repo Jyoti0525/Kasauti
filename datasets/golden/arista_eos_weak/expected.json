@@ -1,59 +1,59 @@
 {
   "format_version": 1,
-  "audit_id": "7c6b82201a5336c0ae3ba590",
+  "audit_id": "1992367365aeb6118c200580",
   "input": {
-    "file": "weak.conf",
-    "sha256": "f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37",
+    "file": "weak.cfg",
+    "sha256": "05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48",
     "encoding": "utf-8",
-    "shape_family": "brace",
+    "shape_family": "indent",
     "parse_warnings": []
   },
   "detection": {
-    "pack_id": "juniper_junos",
+    "pack_id": "arista_eos",
     "pack_version": 1,
     "chosen_by": "fingerprint",
-    "score": 1.2,
+    "score": 1.5,
     "min_score": 0.7,
     "signatures": [
-      "version-statement",
-      "system-block",
-      "host-name",
-      "junos-interface",
-      "root-authentication",
-      "security-zones"
+      "device-header",
+      "command-header",
+      "management-block",
+      "eos-ethernet",
+      "username-role",
+      "spanning-tree-mode"
     ]
   },
   "identity": {
     "hostname": {
-      "value": "BR-SRX1",
-      "source": "config line 5"
+      "value": "LEAF-2",
+      "source": "config line 10"
     },
     "vendor": {
-      "value": "Juniper",
+      "value": "Arista",
       "source": "fingerprint (6 signatures)"
     },
     "os_version": {
-      "value": "23.4R1.9",
-      "source": "config line 3"
+      "value": "4.30.1F",
+      "source": "config line 2"
     },
     "model": {
-      "value": null,
-      "source": "Model: not present in supplied artefacts; upload `show version` to populate"
+      "value": "DCS-7050SX3-48YC8",
+      "source": "config line 2"
     },
     "serial": {
       "value": null,
-      "source": "Serial: not present in supplied artefacts; upload `show chassis hardware` to populate"
+      "source": "Serial: not present in supplied artefacts; upload `show version` to populate"
     },
     "hardware": {
       "value": null,
-      "source": "Hardware: not present in supplied artefacts; upload `show chassis hardware` to populate"
+      "source": "Hardware: not present in supplied artefacts; upload `show version` to populate"
     }
   },
   "kb": {
     "kasauti_version": "0.1.0",
     "kb_version": "098593c805aee6df528e9f8faf13d9485931011701cd412dafc70ad627578cbc",
     "ruleset_version": "fbf9088a6f0977cb60e9a2a110a5a34062e471cf5b47771795c0ab2bb02546cd",
-    "vendor_pack": "juniper_junos@1",
+    "vendor_pack": "arista_eos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
     }
@@ -65,12 +65,12 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 3,
+      "passed": 4,
       "failed": 17,
-      "review": 1,
-      "not_applicable": 2,
-      "compliance_pct": 15.0,
-      "coverage_pct": 95.2
+      "review": 2,
+      "not_applicable": 0,
+      "compliance_pct": 19.0,
+      "coverage_pct": 91.3
     }
   ],
   "rules": [
@@ -230,7 +230,7 @@
       "rule_id": "MGMT-SSH-V2-01",
       "title": "SSH management uses protocol version 2 only",
       "domain": "management_plane",
-      "status": "PASS",
+      "status": "REVIEW",
       "severity": "high",
       "nist_800_53r5": [
         "AC-17(2)",
@@ -256,7 +256,7 @@
       "rule_id": "MGMT-VTY-ACL-01",
       "title": "Remote management lines accept only permitted sources",
       "domain": "management_plane",
-      "status": "N/A",
+      "status": "PASS",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-3",
@@ -268,7 +268,7 @@
       "rule_id": "MGMT-VTY-ACL-02",
       "title": "The ACL guarding remote management exists and doesn't permit everyone",
       "domain": "management_plane",
-      "status": "N/A",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-3",
@@ -316,7 +316,7 @@
       "rule_id": "SVC-LEGACY-01",
       "title": "Legacy network services are disabled",
       "domain": "services",
-      "status": "FAIL",
+      "status": "PASS",
       "severity": "medium",
       "nist_800_53r5": [
         "CM-7"
@@ -360,7 +360,7 @@
     {
       "control": "AC-3",
       "title": "Access Enforcement",
-      "status": "not satisfied",
+      "status": "partially satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -403,7 +403,7 @@
     {
       "control": "AC-17",
       "title": "Remote Access",
-      "status": "not satisfied",
+      "status": "partially satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -413,7 +413,7 @@
     {
       "control": "AC-17(2)",
       "title": "Protection of Confidentiality and Integrity Using Encryption",
-      "status": "partially satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
@@ -488,7 +488,7 @@
     {
       "control": "CM-7",
       "title": "Least Functionality",
-      "status": "not satisfied",
+      "status": "partially satisfied",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-TELNET-01",
@@ -550,7 +550,7 @@
     {
       "control": "SC-8",
       "title": "Transmission Confidentiality and Integrity",
-      "status": "partially satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
@@ -568,7 +568,7 @@
     {
       "control": "SC-13",
       "title": "Cryptographic Protection",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "MGMT-SSH-V2-01"
       ]
@@ -598,22 +598,22 @@
     },
     {
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
-      "entity_id": "LocalUser[netadmin]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Local passwords are stored with a strong one-way hash: holds for LocalUser[netadmin].",
+      "entity_id": "LocalUser[admin]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "Local passwords are stored with a strong one-way hash: is violated for LocalUser[admin].",
       "actual": [
-        "LocalUser[netadmin].hash_type = sha512-crypt"
+        "LocalUser[admin].hash_type = none"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 16,
-          "line_end": 16,
-          "raw": "encrypted-password \"****\"",
-          "mapping_id": "juniper_junos/user-password",
+          "file": "weak.cfg",
+          "line_start": 7,
+          "line_end": 7,
+          "raw": "username admin privilege 15 role network-admin nopassword",
+          "mapping_id": "arista_eos/username-nopassword",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -623,22 +623,22 @@
     },
     {
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
-      "entity_id": "LocalUser[root]",
+      "entity_id": "LocalUser[netadmin]",
       "status": "FAIL",
       "severity": "high",
       "severity_reason": "High (base)",
-      "reason": "Local passwords are stored with a strong one-way hash: is violated for LocalUser[root].",
+      "reason": "Local passwords are stored with a strong one-way hash: is violated for LocalUser[netadmin].",
       "actual": [
-        "LocalUser[root].hash_type = md5-crypt"
+        "LocalUser[netadmin].hash_type = md5-crypt"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 7,
-          "line_end": 7,
-          "raw": "encrypted-password \"****\"",
-          "mapping_id": "juniper_junos/root-password",
+          "file": "weak.cfg",
+          "line_start": 8,
+          "line_end": 8,
+          "raw": "username netadmin privilege 15 role network-admin secret 5 ****",
+          "mapping_id": "arista_eos/username-secret",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -670,7 +670,7 @@
         "PasswordPolicy[password-policy].cleartext_passwords_encrypted = true (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#passwords-always-hashed"
+        "arista_eos/defaults.yaml#passwords-stored-encrypted"
       ],
       "evidence": []
     },
@@ -680,24 +680,12 @@
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Passwords must be at least 15 characters: is violated for PasswordPolicy[password-policy].",
+      "reason": "Passwords must be at least 15 characters: fails for PasswordPolicy[password-policy]; the rule treats absence as a violation (missing: PasswordPolicy[password-policy].min_length).",
       "actual": [
-        "PasswordPolicy[password-policy].min_length = 6"
+        "PasswordPolicy[password-policy].min_length: missing"
       ],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "weak.conf",
-          "line_start": 11,
-          "line_end": 11,
-          "raw": "minimum-length 6",
-          "mapping_id": "juniper_junos/password-minimum-length",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "FILTER-PERMIT-ANY-01",
@@ -705,26 +693,33 @@
       "status": "FAIL",
       "severity": "high",
       "severity_reason": "High (base)",
-      "reason": "No filter entry permits all traffic from anywhere to anywhere: is violated for the device (using the vendor default for this OS version).",
+      "reason": "No filter entry permits all traffic from anywhere to anywhere: is violated for the device.",
       "actual": [
         "filtering.permit_all_present = true",
-        "FilterRule[ALLOW-ALL:ANY].action = permit",
-        "FilterRule[ALLOW-ALL:ANY].service = {ip} (vendor default)",
-        "FilterRule[ALLOW-ALL:ANY].src = {any} (vendor default)",
-        "FilterRule[ALLOW-ALL:ANY].dst = {any} (vendor default)"
+        "FilterRule[EDGE-IN:10].action = permit",
+        "FilterRule[EDGE-IN:10].service = {ip}",
+        "FilterRule[EDGE-IN:10].src = {any}",
+        "FilterRule[EDGE-IN:10].dst = {any}"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#term-matches-every-destination",
-        "juniper_junos/defaults.yaml#term-matches-every-protocol",
-        "juniper_junos/defaults.yaml#term-matches-every-source"
-      ],
+      "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 77,
-          "line_end": 77,
-          "raw": "then accept",
-          "mapping_id": "juniper_junos/term-then-accept",
+          "file": "weak.cfg",
+          "line_start": 37,
+          "line_end": 37,
+          "raw": "10 permit ip any any",
+          "mapping_id": "arista_eos/acl-ext-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 37,
+          "line_end": 37,
+          "raw": "10 permit ip any any",
+          "mapping_id": "arista_eos/acl-ext-ip-any-any",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -734,23 +729,34 @@
     },
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
-      "entity_id": "Interface[ge-0/0/0.0]",
+      "entity_id": "Interface[Ethernet1]",
       "status": "FAIL",
       "severity": "high",
       "severity_reason": "High (base)",
-      "reason": "Untrusted interfaces filter inbound traffic: is violated for Interface[ge-0/0/0.0].",
+      "reason": "Untrusted interfaces filter inbound traffic: is violated for Interface[Ethernet1].",
       "actual": [
-        "Interface[ge-0/0/0.0].role = untrusted",
-        "Interface[ge-0/0/0.0].filters_in: missing",
-        "Interface[ge-0/0/0.0].zone: missing"
+        "Interface[Ethernet1].role = untrusted",
+        "Interface[Ethernet1].filters_in: missing",
+        "Interface[Ethernet1].zone: missing"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 42,
-          "line_end": 42,
-          "raw": "description \"WAN uplink\"",
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "description WAN uplink to ISP",
           "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
@@ -791,14 +797,24 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Log messages carry the date and time: holds for LoggingPolicy[logging-policy] (using the vendor default for this OS version).",
+      "reason": "Log messages carry the date and time: holds for LoggingPolicy[logging-policy].",
       "actual": [
-        "LoggingPolicy[logging-policy].timestamps = true (vendor default)"
+        "LoggingPolicy[logging-policy].timestamps = true"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#syslog-date-timestamps"
-      ],
-      "evidence": []
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 12,
+          "line_end": 12,
+          "raw": "logging format timestamp traditional",
+          "mapping_id": "arista_eos/logging-format-timestamp",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "MGMT-BANNER-01",
@@ -827,22 +843,33 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 25,
-          "line_end": 25,
-          "raw": "http",
-          "mapping_id": "juniper_junos/web-management-http",
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.conf",
-          "line_start": 42,
-          "line_end": 42,
-          "raw": "description \"WAN uplink\"",
+          "file": "weak.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "description WAN uplink to ISP",
           "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 40,
+          "line_end": 40,
+          "raw": "protocol http",
+          "mapping_id": "arista_eos/eapi-protocol-http",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -852,25 +879,71 @@
     },
     {
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
-      "entity_id": "MgmtSession[class:super-user]",
+      "entity_id": "MgmtSession[console]",
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Idle management sessions time out within 10 minutes: is violated for MgmtSession[class:super-user] (using the vendor default for this OS version).",
+      "reason": "Idle management sessions time out within 10 minutes: is violated for MgmtSession[console].",
       "actual": [
-        "MgmtSession[class:super-user].kind = cli",
-        "MgmtSession[class:super-user].idle_timeout_s = 0 (vendor default)"
+        "MgmtSession[console].kind = console",
+        "MgmtSession[console].idle_timeout_s = 0"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#class-never-times-out"
-      ],
+      "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 14,
-          "line_end": 14,
-          "raw": "class super-user",
-          "mapping_id": "juniper_junos/user-class",
+          "file": "weak.cfg",
+          "line_start": 43,
+          "line_end": 43,
+          "raw": "management console",
+          "mapping_id": "arista_eos/management-console",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 44,
+          "line_end": 44,
+          "raw": "idle-timeout 0",
+          "mapping_id": "arista_eos/console-idle-timeout",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "MGMT-SESSION-TIMEOUT-01",
+      "entity_id": "MgmtSession[ssh]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Idle management sessions time out within 10 minutes: is violated for MgmtSession[ssh].",
+      "actual": [
+        "MgmtSession[ssh].kind = vty",
+        "MgmtSession[ssh].idle_timeout_s = 0"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 46,
+          "line_end": 46,
+          "raw": "management ssh",
+          "mapping_id": "arista_eos/management-ssh",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 48,
+          "line_end": 48,
+          "raw": "idle-timeout 0",
+          "mapping_id": "arista_eos/ssh-idle-timeout",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -881,18 +954,38 @@
     {
       "rule_id": "MGMT-SSH-V2-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "SSH management uses protocol version 2 only: holds for the device (using the vendor default for this OS version).",
+      "status": "REVIEW",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "reason": "Cannot judge the rule for the device (missing: MgmtService[ssh].version). No vendor default is known for this OS version.",
       "actual": [
-        "management.ssh_v1_negotiable = false",
-        "MgmtService[ssh].version = 2 (vendor default)"
+        "MgmtService[ssh].version: missing"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#ssh-v2"
-      ],
-      "evidence": []
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "description WAN uplink to ISP",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "MGMT-TELNET-01",
@@ -908,22 +1001,44 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "telnet",
-          "mapping_id": "juniper_junos/service-telnet",
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.conf",
-          "line_start": 42,
-          "line_end": 42,
-          "raw": "description \"WAN uplink\"",
+          "file": "weak.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "description WAN uplink to ISP",
           "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 50,
+          "line_end": 50,
+          "raw": "management telnet",
+          "mapping_id": "arista_eos/management-telnet",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 51,
+          "line_end": 51,
+          "raw": "no shutdown",
+          "mapping_id": "arista_eos/telnet-shutdown",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -933,25 +1048,88 @@
     },
     {
       "rule_id": "MGMT-VTY-ACL-01",
-      "entity_id": "Device[device]",
-      "status": "N/A",
+      "entity_id": "MgmtSession[ssh]",
+      "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Not applicable: nothing matches `MgmtSession where kind == 'vty'` on this device.",
-      "actual": [],
+      "reason": "Remote management lines accept only permitted sources: holds for MgmtSession[ssh].",
+      "actual": [
+        "MgmtSession[ssh].kind = vty",
+        "MgmtSession[ssh].access_filter = MGMT-ACL"
+      ],
       "defaults_used": [],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 46,
+          "line_end": 46,
+          "raw": "management ssh",
+          "mapping_id": "arista_eos/management-ssh",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 47,
+          "line_end": 47,
+          "raw": "ip access-group MGMT-ACL in",
+          "mapping_id": "arista_eos/ssh-access-group",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "MGMT-VTY-ACL-02",
-      "entity_id": "Device[device]",
-      "status": "N/A",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Not applicable: nothing matches `Reference where attribute == 'MgmtSession.access_filter'` on this device.",
-      "actual": [],
+      "entity_id": "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface has no inbound filter, so the management plane is reachable from outside",
+      "reason": "The ACL guarding remote management exists and doesn't permit everyone: is violated for Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].",
+      "actual": [
+        "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].attribute = MgmtSession.access_filter",
+        "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].resolved = false"
+      ],
       "defaults_used": [],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "description WAN uplink to ISP",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 47,
+          "line_end": 47,
+          "raw": "ip access-group MGMT-ACL in",
+          "mapping_id": "arista_eos/ssh-access-group",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "MGMT-WEB-ACL-01",
@@ -967,22 +1145,33 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 25,
-          "line_end": 25,
-          "raw": "http",
-          "mapping_id": "juniper_junos/web-management-http",
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "weak.conf",
-          "line_start": 42,
-          "line_end": 42,
-          "raw": "description \"WAN uplink\"",
+          "file": "weak.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "description WAN uplink to ISP",
           "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 40,
+          "line_end": 40,
+          "raw": "protocol http",
+          "mapping_id": "arista_eos/eapi-protocol-http",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -992,22 +1181,22 @@
     },
     {
       "rule_id": "REF-DANGLING-01",
-      "entity_id": "Reference[Interface[lo0.0].filters_in -> PROTECT-RE]",
+      "entity_id": "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL]",
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Every reference points at something that exists: is violated for Reference[Interface[lo0.0].filters_in -> PROTECT-RE].",
+      "reason": "Every reference points at something that exists: is violated for Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].",
       "actual": [
-        "Reference[Interface[lo0.0].filters_in -> PROTECT-RE].resolved = false"
+        "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL].resolved = false"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 61,
-          "line_end": 61,
-          "raw": "input PROTECT-RE",
-          "mapping_id": "juniper_junos/unit-filter-input",
+          "file": "weak.cfg",
+          "line_start": 47,
+          "line_end": 47,
+          "raw": "ip access-group MGMT-ACL in",
+          "mapping_id": "arista_eos/ssh-access-group",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1024,39 +1213,51 @@
       "reason": "No SNMP community is well known or writable: is violated for the device.",
       "actual": [
         "snmp.weak_community_present = true",
-        "SnmpCommunity[community-68].is_well_known = true",
-        "SnmpCommunity[community-69].access = rw"
+        "SnmpCommunity[community-1].is_well_known = true",
+        "SnmpCommunity[community-2].is_well_known = true",
+        "SnmpCommunity[community-2].access = rw"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 42,
-          "line_end": 42,
-          "raw": "description \"WAN uplink\"",
+          "file": "weak.cfg",
+          "line_start": 16,
+          "line_end": 16,
+          "raw": "snmp-server community **** ro",
+          "mapping_id": "arista_eos/snmp-community",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 17,
+          "line_end": 17,
+          "raw": "snmp-server community **** rw",
+          "mapping_id": "arista_eos/snmp-community",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "description WAN uplink to ISP",
           "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.conf",
-          "line_start": 69,
-          "line_end": 69,
-          "raw": "community ****",
-          "mapping_id": "juniper_junos/snmp-community",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.conf",
-          "line_start": 70,
-          "line_end": 70,
-          "raw": "authorization read-write",
-          "mapping_id": "juniper_junos/snmp-community-authorization",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1067,47 +1268,56 @@
     {
       "rule_id": "SVC-LEGACY-01",
       "entity_id": "Device[device]",
-      "status": "FAIL",
-      "severity": "medium",
-      "severity_reason": "Medium (base)",
-      "reason": "Legacy network services are disabled: is violated for the device.",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Legacy network services are disabled: holds for the device (using the vendor default for this OS version).",
       "actual": [
-        "services.legacy_enabled = true",
-        "MgmtService[finger].enabled = true"
+        "services.legacy_enabled = false",
+        "MgmtService[pad].enabled = false (vendor default)",
+        "MgmtService[finger].enabled = false (vendor default)",
+        "MgmtService[bootp].enabled = false (vendor default)",
+        "MgmtService[tcp-small-servers].enabled = false (vendor default)",
+        "MgmtService[udp-small-servers].enabled = false (vendor default)"
       ],
-      "defaults_used": [],
-      "evidence": [
-        {
-          "file": "weak.conf",
-          "line_start": 23,
-          "line_end": 23,
-          "raw": "finger",
-          "mapping_id": "juniper_junos/service-finger",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "defaults_used": [
+        "arista_eos/defaults.yaml#no-legacy-bootp",
+        "arista_eos/defaults.yaml#no-legacy-finger",
+        "arista_eos/defaults.yaml#no-legacy-pad",
+        "arista_eos/defaults.yaml#no-tcp-small-servers",
+        "arista_eos/defaults.yaml#no-udp-small-servers"
+      ],
+      "evidence": []
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[ge-0/0/0.0]",
+      "entity_id": "Interface[Ethernet1]",
       "status": "FAIL",
       "severity": "low",
       "severity_reason": "Low (base)",
-      "reason": "Interfaces do not answer ARP for other hosts: is violated for Interface[ge-0/0/0.0].",
+      "reason": "Interfaces do not answer ARP for other hosts: is violated for Interface[Ethernet1].",
       "actual": [
-        "Interface[ge-0/0/0.0].proxy_arp = true"
+        "Interface[Ethernet1].proxy_arp = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "weak.conf",
-          "line_start": 44,
-          "line_end": 44,
-          "raw": "proxy-arp unrestricted",
-          "mapping_id": "juniper_junos/unit-proxy-arp",
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "ip proxy-arp",
+          "mapping_id": "arista_eos/interface-proxy-arp",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1117,322 +1327,256 @@
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[ge-0/0/1.0]",
+      "entity_id": "Interface[Ethernet2]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ge-0/0/1.0] (using the vendor default for this OS version).",
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[Ethernet2] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[ge-0/0/1.0].proxy_arp = false (vendor default)"
+        "Interface[Ethernet2].proxy_arp = false (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#proxy-arp-off"
+        "arista_eos/defaults.yaml#proxy-arp-off"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 27,
+          "line_end": 27,
+          "raw": "interface Ethernet2",
+          "mapping_id": "arista_eos/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
-      "entity_id": "Interface[lo0.0]",
+      "entity_id": "Interface[Management1]",
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[lo0.0] (using the vendor default for this OS version).",
+      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[Management1] (using the vendor default for this OS version).",
       "actual": [
-        "Interface[lo0.0].proxy_arp = false (vendor default)"
+        "Interface[Management1].proxy_arp = false (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#proxy-arp-off"
+        "arista_eos/defaults.yaml#proxy-arp-off"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 32,
+          "line_end": 32,
+          "raw": "interface Management1",
+          "mapping_id": "arista_eos/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "TIME-NTP-AUTH-01",
-      "entity_id": "TimeSource[10.20.10.70]",
+      "entity_id": "TimeSource[10.30.10.70]",
       "status": "FAIL",
       "severity": "medium",
       "severity_reason": "Medium (base)",
-      "reason": "Time sources are authenticated: is violated for TimeSource[10.20.10.70] (using the vendor default for this OS version).",
+      "reason": "Time sources are authenticated: is violated for TimeSource[10.30.10.70] (using the vendor default for this OS version).",
       "actual": [
-        "TimeSource[10.20.10.70].authenticated = false (vendor default)",
+        "TimeSource[10.30.10.70].authenticated = false (vendor default)",
         "TimePolicy[time-policy].auth_enforced = false (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#ntp-authentication-off",
-        "juniper_junos/defaults.yaml#ntp-server-without-key"
+        "arista_eos/defaults.yaml#ntp-authentication-off",
+        "arista_eos/defaults.yaml#ntp-server-without-key"
       ],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "weak.cfg",
+          "line_start": 14,
+          "line_end": 14,
+          "raw": "ntp server 10.30.10.70 iburst",
+          "mapping_id": "arista_eos/ntp-server",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     }
   ],
   "assurance": {
-    "statements": 55,
+    "statements": 32,
     "understood": 25,
-    "unmapped": 30,
+    "unmapped": 8,
     "near_miss": 0,
-    "understood_pct": 45.5,
+    "understood_pct": 78.1,
     "unmapped_patterns": [
       {
-        "pattern_key": "family inet",
-        "count": 4,
-        "first_line": 43,
-        "example": "family inet"
-      },
-      {
-        "pattern_key": "<IFNAME>",
+        "pattern_key": "ip address <IP>",
         "count": 3,
-        "first_line": 40,
-        "example": "ge-0/0/0"
-      },
-      {
-        "pattern_key": "address <IP>",
-        "count": 3,
-        "first_line": 45,
-        "example": "address 198.51.100.2/30"
-      },
-      {
-        "pattern_key": "interfaces",
-        "count": 2,
-        "first_line": 39,
-        "example": "interfaces"
-      },
-      {
-        "pattern_key": "system",
-        "count": 1,
-        "first_line": 4,
-        "example": "system"
-      },
-      {
-        "pattern_key": "root-authentication",
-        "count": 1,
-        "first_line": 6,
-        "example": "root-authentication"
-      },
-      {
-        "pattern_key": "login",
-        "count": 1,
-        "first_line": 9,
-        "example": "login"
-      },
-      {
-        "pattern_key": "password",
-        "count": 1,
-        "first_line": 10,
-        "example": "password"
-      },
-      {
-        "pattern_key": "authentication",
-        "count": 1,
-        "first_line": 15,
-        "example": "authentication"
-      },
-      {
-        "pattern_key": "services",
-        "count": 1,
-        "first_line": 20,
-        "example": "services"
-      },
-      {
-        "pattern_key": "web-management",
-        "count": 1,
         "first_line": 24,
-        "example": "web-management"
+        "example": "ip address 198.51.100.6/30"
       },
       {
-        "pattern_key": "interface <IFNAME>",
-        "count": 1,
-        "first_line": 26,
-        "example": "interface ge-0/0/0.0"
+        "pattern_key": "no switchport",
+        "count": 2,
+        "first_line": 23,
+        "example": "no switchport"
       },
       {
-        "pattern_key": "syslog",
+        "pattern_key": "spanning-tree mode mstp",
         "count": 1,
-        "first_line": 30,
-        "example": "syslog"
+        "first_line": 19,
+        "example": "spanning-tree mode mstp"
       },
       {
-        "pattern_key": "file messages",
+        "pattern_key": "management api http-commands",
         "count": 1,
-        "first_line": 31,
-        "example": "file messages"
+        "first_line": 39,
+        "example": "management api http-commands"
       },
       {
-        "pattern_key": "any notice",
+        "pattern_key": "no shutdown",
         "count": 1,
-        "first_line": 32,
-        "example": "any notice"
-      },
-      {
-        "pattern_key": "ntp",
-        "count": 1,
-        "first_line": 35,
-        "example": "ntp"
-      },
-      {
-        "pattern_key": "filter",
-        "count": 1,
-        "first_line": 60,
-        "example": "filter"
-      },
-      {
-        "pattern_key": "snmp",
-        "count": 1,
-        "first_line": 68,
-        "example": "snmp"
-      },
-      {
-        "pattern_key": "firewall",
-        "count": 1,
-        "first_line": 73,
-        "example": "firewall"
-      },
-      {
-        "pattern_key": "security",
-        "count": 1,
-        "first_line": 82,
-        "example": "security"
-      },
-      {
-        "pattern_key": "zones",
-        "count": 1,
-        "first_line": 83,
-        "example": "zones"
-      },
-      {
-        "pattern_key": "security-zone trust",
-        "count": 1,
-        "first_line": 84,
-        "example": "security-zone trust"
+        "first_line": 41,
+        "example": "no shutdown"
       }
     ],
-    "review_findings": 1,
+    "review_findings": 2,
     "mappings_used": [
       {
-        "mapping": "inference/interface.role.untrusted_by_description@1",
+        "mapping": "arista_eos/acl-ext-entry@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 4
       },
       {
-        "mapping": "juniper_junos/filter-inet@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/filter-term@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/ntp-server@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/password-minimum-length@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/root-password@1",
+        "mapping": "arista_eos/acl-ext-ip-any-any@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "juniper_junos/service-finger@1",
+        "mapping": "arista_eos/acl-extended@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/service-ssh@1",
+        "mapping": "arista_eos/console-idle-timeout@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/service-telnet@1",
+        "mapping": "arista_eos/eapi-protocol-http@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/snmp-community-authorization@1",
+        "mapping": "arista_eos/interface-description@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "arista_eos/interface-proxy-arp@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/snmp-community@1",
+        "mapping": "arista_eos/logging-format-timestamp@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/term-then-accept@1",
+        "mapping": "arista_eos/management-console@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/unit-description@1",
+        "mapping": "arista_eos/management-ssh@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
       },
       {
-        "mapping": "juniper_junos/unit-filter-input@1",
+        "mapping": "arista_eos/ntp-server@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "arista_eos/snmp-community@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 4
+      },
+      {
+        "mapping": "arista_eos/ssh-access-group@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 6
       },
       {
-        "mapping": "juniper_junos/unit-proxy-arp@1",
+        "mapping": "arista_eos/ssh-idle-timeout@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/user-class@1",
+        "mapping": "arista_eos/telnet-shutdown@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/user-password@1",
+        "mapping": "arista_eos/username-nopassword@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/web-management-http@1",
+        "mapping": "arista_eos/username-privilege@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "arista_eos/username-secret@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/zone-interface@1",
+        "mapping": "inference/interface.role.untrusted_by_description@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1440,16 +1584,15 @@
       }
     ],
     "defaults_used": [
-      "juniper_junos/defaults.yaml#class-never-times-out",
-      "juniper_junos/defaults.yaml#ntp-authentication-off",
-      "juniper_junos/defaults.yaml#ntp-server-without-key",
-      "juniper_junos/defaults.yaml#passwords-always-hashed",
-      "juniper_junos/defaults.yaml#proxy-arp-off",
-      "juniper_junos/defaults.yaml#ssh-v2",
-      "juniper_junos/defaults.yaml#syslog-date-timestamps",
-      "juniper_junos/defaults.yaml#term-matches-every-destination",
-      "juniper_junos/defaults.yaml#term-matches-every-protocol",
-      "juniper_junos/defaults.yaml#term-matches-every-source"
+      "arista_eos/defaults.yaml#no-legacy-bootp",
+      "arista_eos/defaults.yaml#no-legacy-finger",
+      "arista_eos/defaults.yaml#no-legacy-pad",
+      "arista_eos/defaults.yaml#no-tcp-small-servers",
+      "arista_eos/defaults.yaml#no-udp-small-servers",
+      "arista_eos/defaults.yaml#ntp-authentication-off",
+      "arista_eos/defaults.yaml#ntp-server-without-key",
+      "arista_eos/defaults.yaml#passwords-stored-encrypted",
+      "arista_eos/defaults.yaml#proxy-arp-off"
     ],
     "mappings_skipped_for_version": []
   },
@@ -1460,14 +1603,14 @@
       "evidence": [],
       "type": "Device",
       "hostname": {
-        "value": "BR-SRX1",
+        "value": "LEAF-2",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 5,
-            "line_end": 5,
-            "raw": "host-name BR-SRX1",
+            "file": "weak.cfg",
+            "line_start": 10,
+            "line_end": 10,
+            "raw": "hostname LEAF-2",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1476,59 +1619,59 @@
         "default_source": null
       },
       "vendor": {
-        "value": "Juniper",
+        "value": "Arista",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 3,
-            "line_end": 3,
-            "raw": "version 23.4R1.9;",
+            "file": "weak.cfg",
+            "line_start": 1,
+            "line_end": 1,
+            "raw": "! Command: show running-config",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 4,
-            "line_end": 4,
-            "raw": "system {",
+            "file": "weak.cfg",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "! device: LEAF-2 (DCS-7050SX3-48YC8, EOS-4.30.1F)",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 5,
-            "line_end": 5,
-            "raw": "host-name BR-SRX1;",
+            "file": "weak.cfg",
+            "line_start": 7,
+            "line_end": 7,
+            "raw": "username admin privilege 15 role network-admin nopassword",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 6,
-            "line_end": 6,
-            "raw": "root-authentication {",
+            "file": "weak.cfg",
+            "line_start": 19,
+            "line_end": 19,
+            "raw": "spanning-tree mode mstp",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 40,
-            "line_end": 40,
-            "raw": "ge-0/0/0 {",
+            "file": "weak.cfg",
+            "line_start": 21,
+            "line_end": 21,
+            "raw": "interface Ethernet1",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 84,
-            "line_end": 84,
-            "raw": "security-zone trust {",
+            "file": "weak.cfg",
+            "line_start": 39,
+            "line_end": 39,
+            "raw": "management api http-commands",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1537,59 +1680,59 @@
         "default_source": null
       },
       "os_family": {
-        "value": "Junos OS",
+        "value": "EOS",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 3,
-            "line_end": 3,
-            "raw": "version 23.4R1.9;",
+            "file": "weak.cfg",
+            "line_start": 1,
+            "line_end": 1,
+            "raw": "! Command: show running-config",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 4,
-            "line_end": 4,
-            "raw": "system {",
+            "file": "weak.cfg",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "! device: LEAF-2 (DCS-7050SX3-48YC8, EOS-4.30.1F)",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 5,
-            "line_end": 5,
-            "raw": "host-name BR-SRX1;",
+            "file": "weak.cfg",
+            "line_start": 7,
+            "line_end": 7,
+            "raw": "username admin privilege 15 role network-admin nopassword",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 6,
-            "line_end": 6,
-            "raw": "root-authentication {",
+            "file": "weak.cfg",
+            "line_start": 19,
+            "line_end": 19,
+            "raw": "spanning-tree mode mstp",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 40,
-            "line_end": 40,
-            "raw": "ge-0/0/0 {",
+            "file": "weak.cfg",
+            "line_start": 21,
+            "line_end": 21,
+            "raw": "interface Ethernet1",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "weak.conf",
-            "line_start": 84,
-            "line_end": 84,
-            "raw": "security-zone trust {",
+            "file": "weak.cfg",
+            "line_start": 39,
+            "line_end": 39,
+            "raw": "management api http-commands",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1598,14 +1741,14 @@
         "default_source": null
       },
       "os_version": {
-        "value": "23.4R1.9",
+        "value": "4.30.1F",
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 3,
-            "line_end": 3,
-            "raw": "version 23.4R1.9",
+            "file": "weak.cfg",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "! device: LEAF-2 (DCS-7050SX3-48YC8, EOS-4.30.1F)",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1614,9 +1757,19 @@
         "default_source": null
       },
       "model": {
-        "value": null,
-        "state": "absent",
-        "evidence": [],
+        "value": "DCS-7050SX3-48YC8",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "! device: LEAF-2 (DCS-7050SX3-48YC8, EOS-4.30.1F)",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
         "default_source": null
       },
       "serial": {
@@ -1632,27 +1785,27 @@
         "default_source": null
       },
       "role": {
-        "value": "router",
+        "value": "switch",
         "state": "vendor_default",
         "evidence": [],
-        "default_source": "juniper_junos/pack.yaml#default_role"
+        "default_source": "arista_eos/pack.yaml#default_role"
       }
     },
     "entities": [
       {
-        "key": "ALLOW-ALL:ANY",
+        "key": "EDGE-IN:10",
         "evidence": [],
         "type": "FilterRule",
         "ruleset": {
-          "value": "ALLOW-ALL",
+          "value": "EDGE-IN",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 76,
-              "line_end": 76,
-              "raw": "term ANY",
-              "mapping_id": "juniper_junos/filter-term",
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "10 permit ip any any",
+              "mapping_id": "arista_eos/acl-ext-entry",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1662,9 +1815,21 @@
           "default_source": null
         },
         "position": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": 10,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "10 permit ip any any",
+              "mapping_id": "arista_eos/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         },
         "name": {
@@ -1677,36 +1842,72 @@
           "value": [
             "any"
           ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-source"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "10 permit ip any any",
+              "mapping_id": "arista_eos/acl-ext-ip-any-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "dst": {
           "value": [
             "any"
           ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "10 permit ip any any",
+              "mapping_id": "arista_eos/acl-ext-ip-any-any",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "service": {
           "value": [
             "ip"
           ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-protocol"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "10 permit ip any any",
+              "mapping_id": "arista_eos/acl-ext-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "action": {
           "value": "permit",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 77,
-              "line_end": 77,
-              "raw": "then accept",
-              "mapping_id": "juniper_junos/term-then-accept",
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "10 permit ip any any",
+              "mapping_id": "arista_eos/acl-ext-entry",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1741,19 +1942,31 @@
         }
       },
       {
-        "key": "ge-0/0/0.0",
-        "evidence": [],
+        "key": "Ethernet1",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 21,
+            "line_end": 21,
+            "raw": "interface Ethernet1",
+            "mapping_id": "arista_eos/interface",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "Interface",
         "description": {
-          "value": "WAN uplink",
+          "value": "WAN uplink to ISP",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 42,
-              "line_end": 42,
-              "raw": "description \"WAN uplink\"",
-              "mapping_id": "juniper_junos/unit-description",
+              "file": "weak.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "description WAN uplink to ISP",
+              "mapping_id": "arista_eos/interface-description",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1773,10 +1986,10 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 42,
-              "line_end": 42,
-              "raw": "description \"WAN uplink\"",
+              "file": "weak.cfg",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "description WAN uplink to ISP",
               "mapping_id": "inference/interface.role.untrusted_by_description",
               "mapping_version": 1,
               "approved_by": [
@@ -1796,18 +2009,18 @@
           "value": [],
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
+          "default_source": "arista_eos/defaults.yaml#no-interface-mgmt-protocol-list"
         },
         "proxy_arp": {
           "value": true,
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 44,
-              "line_end": 44,
-              "raw": "proxy-arp unrestricted",
-              "mapping_id": "juniper_junos/unit-proxy-arp",
+              "file": "weak.cfg",
+              "line_start": 25,
+              "line_end": 25,
+              "raw": "ip proxy-arp",
+              "mapping_id": "arista_eos/interface-proxy-arp",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -1830,90 +2043,37 @@
         }
       },
       {
-        "key": "ge-0/0/1.0",
-        "evidence": [],
+        "key": "Ethernet2",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 27,
+            "line_end": 27,
+            "raw": "interface Ethernet2",
+            "mapping_id": "arista_eos/interface",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "Interface",
         "description": {
-          "value": "LAN",
+          "value": "LAN server segment",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 51,
-              "line_end": 51,
-              "raw": "description \"LAN\"",
-              "mapping_id": "juniper_junos/unit-description",
+              "file": "weak.cfg",
+              "line_start": 28,
+              "line_end": 28,
+              "raw": "description LAN server segment",
+              "mapping_id": "arista_eos/interface-description",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
               ]
             }
           ],
-          "default_source": null
-        },
-        "zone": {
-          "value": "trust",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.conf",
-              "line_start": 86,
-              "line_end": 86,
-              "raw": "ge-0/0/1.0",
-              "mapping_id": "juniper_junos/zone-interface",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "role": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "admin_up": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_protocols": {
-          "value": [],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
-        },
-        "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#proxy-arp-off"
-        },
-        "filters_in": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "filters_out": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "lo0.0",
-        "evidence": [],
-        "type": "Interface",
-        "description": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
           "default_source": null
         },
         "zone": {
@@ -1938,32 +2098,18 @@
           "value": [],
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
+          "default_source": "arista_eos/defaults.yaml#no-interface-mgmt-protocol-list"
         },
         "proxy_arp": {
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#proxy-arp-off"
+          "default_source": "arista_eos/defaults.yaml#proxy-arp-off"
         },
         "filters_in": {
-          "value": [
-            "PROTECT-RE"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.conf",
-              "line_start": 61,
-              "line_end": 61,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         },
         "filters_out": {
@@ -1974,25 +2120,31 @@
         }
       },
       {
-        "key": "netadmin",
-        "evidence": [],
-        "type": "LocalUser",
-        "privilege": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "hash_type": {
-          "value": "sha512-crypt",
+        "key": "Management1",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 32,
+            "line_end": 32,
+            "raw": "interface Management1",
+            "mapping_id": "arista_eos/interface",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Interface",
+        "description": {
+          "value": "OOB management",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 16,
-              "line_end": 16,
-              "raw": "encrypted-password \"****\"",
-              "mapping_id": "juniper_junos/user-password",
+              "file": "weak.cfg",
+              "line_start": 33,
+              "line_end": 33,
+              "raw": "description OOB management",
+              "mapping_id": "arista_eos/interface-description",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2000,22 +2152,129 @@
             }
           ],
           "default_source": null
+        },
+        "zone": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "role": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "admin_up": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols": {
+          "value": [],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "arista_eos/defaults.yaml#no-interface-mgmt-protocol-list"
+        },
+        "proxy_arp": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "arista_eos/defaults.yaml#proxy-arp-off"
+        },
+        "filters_in": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
-        "key": "root",
-        "evidence": [],
+        "key": "admin",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 7,
+            "line_end": 7,
+            "raw": "username admin privilege 15 role network-admin nopassword",
+            "mapping_id": "arista_eos/username-nopassword",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "LocalUser",
         "privilege": {
           "value": 15,
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
+              "file": "weak.cfg",
               "line_start": 7,
               "line_end": 7,
-              "raw": "encrypted-password \"****\"",
-              "mapping_id": "juniper_junos/root-password",
+              "raw": "username admin privilege 15 role network-admin nopassword",
+              "mapping_id": "arista_eos/username-privilege",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "hash_type": {
+          "value": "none",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "username admin privilege 15 role network-admin nopassword",
+              "mapping_id": "arista_eos/username-nopassword",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "netadmin",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 8,
+            "line_end": 8,
+            "raw": "username netadmin privilege 15 role network-admin secret 5 ****",
+            "mapping_id": "arista_eos/username-secret",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "LocalUser",
+        "privilege": {
+          "value": 15,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 8,
+              "line_end": 8,
+              "raw": "username netadmin privilege 15 role network-admin secret 5 ****",
+              "mapping_id": "arista_eos/username-privilege",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2029,11 +2288,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 7,
-              "line_end": 7,
-              "raw": "encrypted-password \"****\"",
-              "mapping_id": "juniper_junos/root-password",
+              "file": "weak.cfg",
+              "line_start": 8,
+              "line_end": 8,
+              "raw": "username netadmin privilege 15 role network-admin secret 5 ****",
+              "mapping_id": "arista_eos/username-secret",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2049,9 +2308,21 @@
         "type": "LoggingPolicy",
         "timestamps": {
           "value": true,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#syslog-date-timestamps"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 12,
+              "line_end": 12,
+              "raw": "logging format timestamp traditional",
+              "mapping_id": "arista_eos/logging-format-timestamp",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "admin_logged": {
           "value": null,
@@ -2074,7 +2345,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-bootp-server"
+          "default_source": "arista_eos/defaults.yaml#no-legacy-bootp"
         },
         "version": {
           "value": null,
@@ -2112,22 +2383,10 @@
         "evidence": [],
         "type": "MgmtService",
         "enabled": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.conf",
-              "line_start": 23,
-              "line_end": 23,
-              "raw": "finger",
-              "mapping_id": "juniper_junos/service-finger",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "arista_eos/defaults.yaml#no-legacy-finger"
         },
         "version": {
           "value": null,
@@ -2169,11 +2428,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 25,
-              "line_end": 25,
-              "raw": "http",
-              "mapping_id": "juniper_junos/web-management-http",
+              "file": "weak.cfg",
+              "line_start": 40,
+              "line_end": 40,
+              "raw": "protocol http",
+              "mapping_id": "arista_eos/eapi-protocol-http",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2181,6 +2440,47 @@
             }
           ],
           "default_source": null
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "ciphers": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "macs": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "kex": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "https",
+        "evidence": [],
+        "type": "MgmtService",
+        "enabled": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "arista_eos/defaults.yaml#eapi-https-off"
         },
         "version": {
           "value": null,
@@ -2221,7 +2521,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad"
+          "default_source": "arista_eos/defaults.yaml#no-legacy-pad"
         },
         "version": {
           "value": null,
@@ -2260,27 +2560,15 @@
         "type": "MgmtService",
         "enabled": {
           "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.conf",
-              "line_start": 21,
-              "line_end": 21,
-              "raw": "ssh",
-              "mapping_id": "juniper_junos/service-ssh",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "version": {
-          "value": "2",
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#ssh-v2"
+          "default_source": "arista_eos/defaults.yaml#ssh-on"
+        },
+        "version": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         },
         "access_filter": {
           "value": null,
@@ -2315,7 +2603,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-tcp-small-servers"
+          "default_source": "arista_eos/defaults.yaml#no-tcp-small-servers"
         },
         "version": {
           "value": null,
@@ -2350,18 +2638,30 @@
       },
       {
         "key": "telnet",
-        "evidence": [],
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 50,
+            "line_end": 50,
+            "raw": "management telnet",
+            "mapping_id": "arista_eos/management-telnet",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "MgmtService",
         "enabled": {
           "value": true,
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 22,
-              "line_end": 22,
-              "raw": "telnet",
-              "mapping_id": "juniper_junos/service-telnet",
+              "file": "weak.cfg",
+              "line_start": 51,
+              "line_end": 51,
+              "raw": "no shutdown",
+              "mapping_id": "arista_eos/telnet-shutdown",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2409,7 +2709,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#no-udp-small-servers"
+          "default_source": "arista_eos/defaults.yaml#no-udp-small-servers"
         },
         "version": {
           "value": null,
@@ -2443,19 +2743,31 @@
         }
       },
       {
-        "key": "class:super-user",
-        "evidence": [],
+        "key": "console",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 43,
+            "line_end": 43,
+            "raw": "management console",
+            "mapping_id": "arista_eos/management-console",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "MgmtSession",
         "kind": {
-          "value": "cli",
+          "value": "console",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 14,
-              "line_end": 14,
-              "raw": "class super-user",
-              "mapping_id": "juniper_junos/user-class",
+              "file": "weak.cfg",
+              "line_start": 43,
+              "line_end": 43,
+              "raw": "management console",
+              "mapping_id": "arista_eos/management-console",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2484,9 +2796,21 @@
         },
         "idle_timeout_s": {
           "value": 0,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#class-never-times-out"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 44,
+              "line_end": 44,
+              "raw": "idle-timeout 0",
+              "mapping_id": "arista_eos/console-idle-timeout",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "auth_method": {
           "value": null,
@@ -2496,19 +2820,134 @@
         }
       },
       {
-        "key": "acl:ALLOW-ALL",
-        "evidence": [],
+        "key": "ssh",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 46,
+            "line_end": 46,
+            "raw": "management ssh",
+            "mapping_id": "arista_eos/management-ssh",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "MgmtSession",
+        "kind": {
+          "value": "vty",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "management ssh",
+              "mapping_id": "arista_eos/management-ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "range": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "transport": {
+          "value": [
+            "ssh"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 46,
+              "line_end": 46,
+              "raw": "management ssh",
+              "mapping_id": "arista_eos/management-ssh",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "access_filter": {
+          "value": "MGMT-ACL",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 47,
+              "line_end": 47,
+              "raw": "ip access-group MGMT-ACL in",
+              "mapping_id": "arista_eos/ssh-access-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "idle_timeout_s": {
+          "value": 0,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 48,
+              "line_end": 48,
+              "raw": "idle-timeout 0",
+              "mapping_id": "arista_eos/ssh-idle-timeout",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "auth_method": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "acl:EDGE-IN",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 36,
+            "line_end": 36,
+            "raw": "ip access-list EDGE-IN",
+            "mapping_id": "arista_eos/acl-extended",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "ObjectDef",
         "kind": {
           "value": "acl",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 75,
-              "line_end": 75,
-              "raw": "filter ALLOW-ALL",
-              "mapping_id": "juniper_junos/filter-inet",
+              "file": "weak.cfg",
+              "line_start": 36,
+              "line_end": 36,
+              "raw": "ip access-list EDGE-IN",
+              "mapping_id": "arista_eos/acl-extended",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2535,21 +2974,9 @@
         "evidence": [],
         "type": "PasswordPolicy",
         "min_length": {
-          "value": 6,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "weak.conf",
-              "line_start": 11,
-              "line_end": 11,
-              "raw": "minimum-length 6",
-              "mapping_id": "juniper_junos/password-minimum-length",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         },
         "complexity_required": {
@@ -2568,7 +2995,7 @@
           "value": true,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#passwords-always-hashed"
+          "default_source": "arista_eos/defaults.yaml#passwords-stored-encrypted"
         },
         "max_age_days": {
           "value": null,
@@ -2578,14 +3005,14 @@
         }
       },
       {
-        "key": "Interface[lo0.0].filters_in -> PROTECT-RE",
+        "key": "MgmtSession[ssh].access_filter -> MGMT-ACL",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 61,
-            "line_end": 61,
-            "raw": "input PROTECT-RE",
-            "mapping_id": "juniper_junos/unit-filter-input",
+            "file": "weak.cfg",
+            "line_start": 47,
+            "line_end": 47,
+            "raw": "ip access-group MGMT-ACL in",
+            "mapping_id": "arista_eos/ssh-access-group",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -2594,15 +3021,15 @@
         ],
         "type": "Reference",
         "source": {
-          "value": "Interface[lo0.0]",
+          "value": "MgmtSession[ssh]",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 61,
-              "line_end": 61,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
+              "file": "weak.cfg",
+              "line_start": 47,
+              "line_end": 47,
+              "raw": "ip access-group MGMT-ACL in",
+              "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2612,15 +3039,15 @@
           "default_source": null
         },
         "attribute": {
-          "value": "Interface.filters_in",
+          "value": "MgmtSession.access_filter",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 61,
-              "line_end": 61,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
+              "file": "weak.cfg",
+              "line_start": 47,
+              "line_end": 47,
+              "raw": "ip access-group MGMT-ACL in",
+              "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2634,11 +3061,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 61,
-              "line_end": 61,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
+              "file": "weak.cfg",
+              "line_start": 47,
+              "line_end": 47,
+              "raw": "ip access-group MGMT-ACL in",
+              "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2648,15 +3075,15 @@
           "default_source": null
         },
         "name": {
-          "value": "PROTECT-RE",
+          "value": "MGMT-ACL",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 61,
-              "line_end": 61,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
+              "file": "weak.cfg",
+              "line_start": 47,
+              "line_end": 47,
+              "raw": "ip access-group MGMT-ACL in",
+              "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2670,11 +3097,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 61,
-              "line_end": 61,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
+              "file": "weak.cfg",
+              "line_start": 47,
+              "line_end": 47,
+              "raw": "ip access-group MGMT-ACL in",
+              "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2697,14 +3124,38 @@
         }
       },
       {
-        "key": "community-68",
-        "evidence": [],
+        "key": "community-1",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 16,
+            "line_end": 16,
+            "raw": "snmp-server community **** ro",
+            "mapping_id": "arista_eos/snmp-community",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "SnmpCommunity",
         "access": {
           "value": "ro",
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#community-read-only"
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 16,
+              "line_end": 16,
+              "raw": "snmp-server community **** ro",
+              "mapping_id": "arista_eos/snmp-community",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "filter": {
           "value": null,
@@ -2717,11 +3168,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 69,
-              "line_end": 69,
-              "raw": "community ****",
-              "mapping_id": "juniper_junos/snmp-community",
+              "file": "weak.cfg",
+              "line_start": 16,
+              "line_end": 16,
+              "raw": "snmp-server community **** ro",
+              "mapping_id": "arista_eos/snmp-community",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2732,19 +3183,31 @@
         }
       },
       {
-        "key": "community-69",
-        "evidence": [],
+        "key": "community-2",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 17,
+            "line_end": 17,
+            "raw": "snmp-server community **** rw",
+            "mapping_id": "arista_eos/snmp-community",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "SnmpCommunity",
         "access": {
           "value": "rw",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 70,
-              "line_end": 70,
-              "raw": "authorization read-write",
-              "mapping_id": "juniper_junos/snmp-community-authorization",
+              "file": "weak.cfg",
+              "line_start": 17,
+              "line_end": 17,
+              "raw": "snmp-server community **** rw",
+              "mapping_id": "arista_eos/snmp-community",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2760,9 +3223,21 @@
           "default_source": null
         },
         "is_well_known": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 17,
+              "line_end": 17,
+              "raw": "snmp-server community **** rw",
+              "mapping_id": "arista_eos/snmp-community",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         }
       },
@@ -2774,23 +3249,35 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#ntp-authentication-off"
+          "default_source": "arista_eos/defaults.yaml#ntp-authentication-off"
         }
       },
       {
-        "key": "10.20.10.70",
-        "evidence": [],
+        "key": "10.30.10.70",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 14,
+            "line_end": 14,
+            "raw": "ntp server 10.30.10.70 iburst",
+            "mapping_id": "arista_eos/ntp-server",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
         "type": "TimeSource",
         "host": {
-          "value": "10.20.10.70",
+          "value": "10.30.10.70",
           "state": "explicit",
           "evidence": [
             {
-              "file": "weak.conf",
-              "line_start": 36,
-              "line_end": 36,
-              "raw": "server 10.20.10.70",
-              "mapping_id": "juniper_junos/ntp-server",
+              "file": "weak.cfg",
+              "line_start": 14,
+              "line_end": 14,
+              "raw": "ntp server 10.30.10.70 iburst",
+              "mapping_id": "arista_eos/ntp-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2803,7 +3290,7 @@
           "value": false,
           "state": "vendor_default",
           "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#ntp-server-without-key"
+          "default_source": "arista_eos/defaults.yaml#ntp-server-without-key"
         }
       }
     ],
@@ -2816,21 +3303,32 @@
       },
       "filtering.permit_all_present": {
         "value": true,
-        "state": "vendor_default",
+        "state": "explicit",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 77,
-            "line_end": 77,
-            "raw": "then accept",
-            "mapping_id": "juniper_junos/term-then-accept",
+            "file": "weak.cfg",
+            "line_start": 37,
+            "line_end": 37,
+            "raw": "10 permit ip any any",
+            "mapping_id": "arista_eos/acl-ext-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.cfg",
+            "line_start": 37,
+            "line_end": 37,
+            "raw": "10 permit ip any any",
+            "mapping_id": "arista_eos/acl-ext-ip-any-any",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
-        "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination, juniper_junos/defaults.yaml#term-matches-every-protocol, juniper_junos/defaults.yaml#term-matches-every-source"
+        "default_source": null
       },
       "logging.remote_configured": {
         "value": null,
@@ -2843,11 +3341,11 @@
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 25,
-            "line_end": 25,
-            "raw": "http",
-            "mapping_id": "juniper_junos/web-management-http",
+            "file": "weak.cfg",
+            "line_start": 40,
+            "line_end": 40,
+            "raw": "protocol http",
+            "mapping_id": "arista_eos/eapi-protocol-http",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -2864,38 +3362,49 @@
       },
       "management.ssh_reachable": {
         "value": true,
-        "state": "explicit",
+        "state": "vendor_default",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 21,
-            "line_end": 21,
-            "raw": "ssh",
-            "mapping_id": "juniper_junos/service-ssh",
+            "file": "weak.cfg",
+            "line_start": 46,
+            "line_end": 46,
+            "raw": "management ssh",
+            "mapping_id": "arista_eos/management-ssh",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
-        "default_source": null
+        "default_source": "arista_eos/defaults.yaml#ssh-on"
       },
       "management.ssh_v1_negotiable": {
-        "value": false,
-        "state": "vendor_default",
+        "value": null,
+        "state": "absent",
         "evidence": [],
-        "default_source": "juniper_junos/defaults.yaml#ssh-v2"
+        "default_source": null
       },
       "management.telnet_reachable": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 22,
-            "line_end": 22,
-            "raw": "telnet",
-            "mapping_id": "juniper_junos/service-telnet",
+            "file": "weak.cfg",
+            "line_start": 50,
+            "line_end": 50,
+            "raw": "management telnet",
+            "mapping_id": "arista_eos/management-telnet",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.cfg",
+            "line_start": 51,
+            "line_end": 51,
+            "raw": "no shutdown",
+            "mapping_id": "arista_eos/telnet-shutdown",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -2905,44 +3414,32 @@
         "default_source": null
       },
       "services.legacy_enabled": {
-        "value": true,
-        "state": "explicit",
-        "evidence": [
-          {
-            "file": "weak.conf",
-            "line_start": 23,
-            "line_end": 23,
-            "raw": "finger",
-            "mapping_id": "juniper_junos/service-finger",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
-        "default_source": null
+        "value": false,
+        "state": "vendor_default",
+        "evidence": [],
+        "default_source": "arista_eos/defaults.yaml#no-legacy-bootp, arista_eos/defaults.yaml#no-legacy-finger, arista_eos/defaults.yaml#no-legacy-pad, arista_eos/defaults.yaml#no-tcp-small-servers, arista_eos/defaults.yaml#no-udp-small-servers"
       },
       "snmp.weak_community_present": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "weak.conf",
-            "line_start": 69,
-            "line_end": 69,
-            "raw": "community ****",
-            "mapping_id": "juniper_junos/snmp-community",
+            "file": "weak.cfg",
+            "line_start": 16,
+            "line_end": 16,
+            "raw": "snmp-server community **** ro",
+            "mapping_id": "arista_eos/snmp-community",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           },
           {
-            "file": "weak.conf",
-            "line_start": 70,
-            "line_end": 70,
-            "raw": "authorization read-write",
-            "mapping_id": "juniper_junos/snmp-community-authorization",
+            "file": "weak.cfg",
+            "line_start": 17,
+            "line_end": 17,
+            "raw": "snmp-server community **** rw",
+            "mapping_id": "arista_eos/snmp-community",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"

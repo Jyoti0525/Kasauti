@@ -1,0 +1,9 @@
+# Fingerprint for Arista EOS running-configs (PLAN §7).
+min_score: 0.7
+signatures:
+  - {id: device-header, kind: regex, pattern: '^! device: \S+ \(.*EOS-', weight: 0.5}
+  - {id: command-header, kind: line_prefix, pattern: "! Command: show running-config", weight: 0.2}
+  - {id: management-block, kind: regex, pattern: '^management (ssh|api http-commands|telnet|console|security)$', weight: 0.3}
+  - {id: eos-ethernet, kind: regex, pattern: '^interface (Ethernet|Management)\d', weight: 0.2}
+  - {id: username-role, kind: regex, pattern: '^username \S+ .*role \S+', weight: 0.2}
+  - {id: spanning-tree-mode, kind: line_prefix, pattern: "spanning-tree mode", weight: 0.1}

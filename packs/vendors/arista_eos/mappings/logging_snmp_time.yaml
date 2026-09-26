@@ -1,0 +1,177 @@
+# Syslog hosts and timestamp format, SNMP communities, NTP.
+# Seed mappings: reviewed in docs/reviews/arista_eos.md.
+mappings:
+- id: arista_eos/logging-host
+  vendor: arista_eos
+  entity:
+    type: LogTarget
+    key: '{h}'
+  match: logging [vrf <STR>] host <IP:h> [<INT>]
+  effect:
+  - set: LogTarget.host
+    from: h
+  - assert: LogTarget.transport
+    value: udp
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/logging-host-protocol
+  vendor: arista_eos
+  entity:
+    type: LogTarget
+    key: '{h}'
+  match: logging [vrf <STR>] host <IP:h> [<INT>] protocol <STR:p>
+  effect:
+  - set: LogTarget.host
+    from: h
+  - set: LogTarget.transport
+    from: p
+    map:
+      tcp: tcp
+      udp: udp
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/logging-format-timestamp
+  vendor: arista_eos
+  match: logging format timestamp <STR:f>
+  effect:
+    set: LoggingPolicy.timestamps
+    from: f
+    map:
+      high-resolution: true
+      traditional: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/accounting-commands-logging
+  vendor: arista_eos
+  match: aaa accounting commands all default <STR> logging
+  effect:
+    assert: LoggingPolicy.config_change_logged
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/accounting-commands-group
+  vendor: arista_eos
+  match: aaa accounting commands all default <STR> group <STR> [logging]
+  effect:
+    assert: LoggingPolicy.config_change_logged
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/snmp-community
+  vendor: arista_eos
+  entity:
+    type: SnmpCommunity
+    key: community-{#}
+  match: snmp-server community <STR:c> [view <STR>] <STR:access> [<STR>]
+  effect:
+  - set: SnmpCommunity.access
+    from: access
+    map:
+      ro: ro
+      rw: rw
+      RO: ro
+      RW: rw
+  - set: SnmpCommunity.is_well_known
+    from: c
+    map:
+      public: true
+      private: true
+      cisco: true
+      community: true
+      admin: true
+      default: true
+      secret: true
+      manager: true
+      monitor: true
+      snmp: true
+      snmpd: true
+      read: true
+      write: true
+      all: true
+      security: true
+      test: true
+      password: true
+      arista: true
+    otherwise: false
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/ntp-server
+  vendor: arista_eos
+  entity:
+    type: TimeSource
+    key: '{h}'
+  match: ntp server [vrf <STR>] <IP:h> [prefer] [iburst]
+  effect:
+    set: TimeSource.host
+    from: h
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/ntp-server-key
+  vendor: arista_eos
+  entity:
+    type: TimeSource
+    key: '{h}'
+  match: ntp server [vrf <STR>] <IP:h> [prefer] [iburst] key <INT>
+  effect:
+  - set: TimeSource.host
+    from: h
+  - assert: TimeSource.authenticated
+    value: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/ntp-authenticate
+  vendor: arista_eos
+  match: ntp authenticate
+  effect:
+    assert: TimePolicy.auth_enforced
+    value: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

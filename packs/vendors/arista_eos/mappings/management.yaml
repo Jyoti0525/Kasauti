@@ -1,0 +1,201 @@
+# Management plane: management ssh/telnet/console blocks, eAPI, banners.
+# Seed mappings: reviewed in docs/reviews/arista_eos.md.
+mappings:
+- id: arista_eos/management-ssh
+  vendor: arista_eos
+  entity:
+    type: MgmtSession
+    key: ssh
+  match: management ssh
+  effect:
+  - assert: MgmtSession.kind
+    value: vty
+  - assert: MgmtSession.transport
+    value:
+    - ssh
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/ssh-idle-timeout
+  vendor: arista_eos
+  context:
+  - management ssh
+  entity:
+    type: MgmtSession
+    key: ssh
+  match: idle-timeout <INT:m>
+  effect:
+    set: MgmtSession.idle_timeout_s
+    from: m
+    transform:
+    - unit: minutes
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/ssh-access-group
+  vendor: arista_eos
+  context:
+  - management ssh
+  entity:
+    type: MgmtSession
+    key: ssh
+  match: ip access-group <STR:acl> [vrf <STR>] in
+  effect:
+    ref: MgmtSession.access_filter
+    from: acl
+    target: acl
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/ssh-shutdown
+  vendor: arista_eos
+  context:
+  - management ssh
+  entity:
+    type: MgmtService
+    key: ssh
+  match: shutdown
+  effect:
+    assert: MgmtService.enabled
+    value: false
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/management-telnet
+  vendor: arista_eos
+  entity:
+    type: MgmtService
+    key: telnet
+  match: management telnet
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/telnet-shutdown
+  vendor: arista_eos
+  context:
+  - management telnet
+  entity:
+    type: MgmtService
+    key: telnet
+  match: shutdown
+  effect:
+    assert: MgmtService.enabled
+    value: false
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/management-console
+  vendor: arista_eos
+  entity:
+    type: MgmtSession
+    key: console
+  match: management console
+  effect:
+    assert: MgmtSession.kind
+    value: console
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/console-idle-timeout
+  vendor: arista_eos
+  context:
+  - management console
+  entity:
+    type: MgmtSession
+    key: console
+  match: idle-timeout <INT:m>
+  effect:
+    set: MgmtSession.idle_timeout_s
+    from: m
+    transform:
+    - unit: minutes
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/eapi-protocol-http
+  vendor: arista_eos
+  context:
+  - management api http-commands
+  entity:
+    type: MgmtService
+    key: http
+  match: protocol http [port <INT>]
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/eapi-protocol-https
+  vendor: arista_eos
+  context:
+  - management api http-commands
+  entity:
+    type: MgmtService
+    key: https
+  match: protocol https [port <INT>]
+  effect:
+    assert: MgmtService.enabled
+    value: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/banner
+  vendor: arista_eos
+  entity:
+    type: Banner
+    key: '{kind}'
+  match: banner <STR:kind>
+  effect:
+    assert: Banner.present
+    value: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

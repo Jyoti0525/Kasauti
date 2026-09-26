@@ -75,6 +75,10 @@ Rules (checked when the pack loads and when the defaults are applied):
 ## Identity and catalogs
 
 - An `identity.yaml` pattern must capture a slot named `value` (`hostname <STR:value>`).
+- A source gives either `pattern` or `regex`, never both. A `regex` is RE2 (linear time)
+  with a named group `(?P<value>…)`, matched against each raw line, comments included. It is for
+  identity that vendors print only in comments (EOS `! device: … EOS-4.30.1F)`); it takes no
+  `context`, and its evidence line is masked like any other.
 - A framework `catalog.json` may record `source_sha256`, the hash of the official file its IDs
   were extracted from. `tools/import_oscal.py` writes it for NIST SP 800-53 r5.
 

@@ -18,7 +18,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
       fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
 
   - id: AAA-PASSWORD-ENCRYPTION-01
@@ -39,7 +39,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: AAA-PASSWORD-MIN-LENGTH-01
@@ -59,8 +59,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
 
   - id: MGMT-WEB-ACL-01
     title: Web management accepts only permitted sources
@@ -81,7 +81,7 @@ rules:
       iso_27001_2022: derived
     fixtures:
       pass: [cisco_ios_xe/fixtures/web_mgmt_restricted.cfg]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
 
   - id: MGMT-SSH-V2-01
     title: SSH management uses protocol version 2 only
@@ -119,8 +119,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
 
   - id: SVC-PROXY-ARP-01
     title: Interfaces do not answer ARP for other hosts
@@ -139,8 +139,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
 
   - id: FILTER-PERMIT-ANY-01
     title: No filter entry permits all traffic from anywhere to anywhere
@@ -160,8 +160,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
 
   - id: FILTER-UNTRUSTED-INGRESS-01
     title: Untrusted interfaces filter inbound traffic
@@ -171,7 +171,9 @@ rules:
       zone-based firewall, membership of a security zone does this: traffic between zones is
       denied unless a policy permits it.
     domain: filtering
-    applies_to: [router, firewall]
+    # Every role: a switch with a routed uplink to an ISP faces the outside as much as a router.
+    # Only interfaces known to be untrusted are judged, so a plain access switch is N/A.
+    applies_to: [router, switch, firewall]
     # Untrusted: set by the admin, or inferred from zone or description (packs/inferences).
     for_each: Interface where exists(role) and role == 'untrusted'
     assert: exists(filters_in) or exists(zone)
@@ -185,8 +187,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
 
   - id: LOG-TIMESTAMPS-01
     title: Log messages carry the date and time
@@ -205,7 +207,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: LOG-CONFIG-CHANGE-01
@@ -225,5 +227,5 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg]
       fail: [cisco_ios_xe/weak.cfg]

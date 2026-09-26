@@ -1,0 +1,31 @@
+# E1 golden case (PLAN §21.1). Labels are ground truth from the weakness catalogue in
+# datasets/SOURCES.md, not engine output.
+description: Arista EOS 4.30 routed leaf with 20 planted weaknesses (E1-E20)
+input: authored/arista_eos/weak.cfg
+input_sha256: 05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48
+vendor: null
+frameworks: [nist_800_53r5]
+expected_statuses:
+  AAA-CENTRAL-AUTH-01: FAIL     # E3 no TACACS+/RADIUS server
+  AAA-LOCAL-PASSWORD-HASH-01: FAIL     # E1 admin with nopassword; E2 netadmin secret 5 ($1$ MD5-crypt)
+  AAA-LOCKOUT-01: FAIL     # E4 no aaa authentication policy lockout
+  AAA-PASSWORD-ENCRYPTION-01: PASS     # EOS never shows a clear-text password (vendor default)
+  AAA-PASSWORD-MIN-LENGTH-01: FAIL     # E5 no password minimum length
+  FILTER-PERMIT-ANY-01: FAIL     # E12 EDGE-IN 10 permit ip any any
+  FILTER-UNTRUSTED-INGRESS-01: FAIL     # E11 Ethernet1 (WAN uplink) has no inbound access-group
+  LOG-CONFIG-CHANGE-01: REVIEW   # E7 no command accounting; whether EOS syslogs config changes by default isn't documented in the pages checked
+  LOG-REMOTE-01: FAIL     # E6 no logging host
+  LOG-TIMESTAMPS-01: PASS     # traditional format is still timestamped (not a planted weakness)
+  MGMT-BANNER-01: FAIL     # E19 no login banner
+  MGMT-HTTP-01: FAIL     # E13 eAPI with protocol http
+  MGMT-SESSION-TIMEOUT-01: FAIL     # E15 console idle-timeout 0; E16 ssh idle-timeout 0
+  MGMT-SSH-V2-01: REVIEW   # EOS has no SSH version setting and Arista's pages checked don't state the version
+  MGMT-TELNET-01: FAIL     # E18 management telnet / no shutdown
+  MGMT-VTY-ACL-01: PASS     # ssh names an access-group (that it is missing is E17, judged by MGMT-VTY-ACL-02)
+  MGMT-VTY-ACL-02: FAIL     # E17 ssh access-group MGMT-ACL doesn't exist
+  MGMT-WEB-ACL-01: FAIL     # E14 eAPI runs with no access-group
+  REF-DANGLING-01: FAIL     # E17 MGMT-ACL referenced, never defined
+  SNMP-COMMUNITY-01: FAIL     # E9 community public ro; E10 community private rw
+  SVC-LEGACY-01: PASS     # EOS has no PAD, finger, BOOTP or small servers (model default)
+  SVC-PROXY-ARP-01: FAIL     # E20 ip proxy-arp on the WAN uplink
+  TIME-NTP-AUTH-01: FAIL     # E8 ntp server without key, no ntp authenticate

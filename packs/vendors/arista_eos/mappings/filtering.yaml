@@ -1,0 +1,546 @@
+# Interfaces, ACLs (addresses in prefix notation, e.g. 10.0.0.0/8), references.
+# Seed mappings: reviewed in docs/reviews/arista_eos.md.
+mappings:
+- id: arista_eos/interface
+  vendor: arista_eos
+  entity:
+    type: Interface
+    key: '{n}'
+  match: interface <IFNAME:n>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/interface-description
+  vendor: arista_eos
+  context:
+  - interface <IFNAME:n>
+  entity:
+    type: Interface
+    key: '{n}'
+  match: description <LIST:t>
+  effect:
+    set: Interface.description
+    template: '{t}'
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/interface-shutdown
+  vendor: arista_eos
+  context:
+  - interface <IFNAME:n>
+  entity:
+    type: Interface
+    key: '{n}'
+  match: shutdown
+  effect:
+    assert: Interface.admin_up
+    value: false
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/interface-proxy-arp
+  vendor: arista_eos
+  context:
+  - interface <IFNAME:n>
+  entity:
+    type: Interface
+    key: '{n}'
+  match: ip proxy-arp
+  effect:
+    assert: Interface.proxy_arp
+    value: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/interface-access-group-in
+  vendor: arista_eos
+  context:
+  - interface <IFNAME:n>
+  entity:
+    type: Interface
+    key: '{n}'
+  match: ip access-group <STR:acl> in
+  effect:
+    ref: Interface.filters_in
+    from: acl
+    target: acl
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/interface-access-group-out
+  vendor: arista_eos
+  context:
+  - interface <IFNAME:n>
+  entity:
+    type: Interface
+    key: '{n}'
+  match: ip access-group <STR:acl> out
+  effect:
+    ref: Interface.filters_out
+    from: acl
+    target: acl
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-extended
+  vendor: arista_eos
+  entity:
+    type: ObjectDef
+    key: acl:{acl}
+  match: ip access-list <STR:acl>
+  effect:
+    assert: ObjectDef.kind
+    value: acl
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-extended-remark
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: ObjectDef
+    key: acl:{acl}
+  match: '[<INT>] remark [<LIST>]'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-standard
+  vendor: arista_eos
+  entity:
+    type: ObjectDef
+    key: acl:{acl}
+  match: ip access-list standard <STR:acl>
+  effect:
+    assert: ObjectDef.kind
+    value: acl
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-standard-remark
+  vendor: arista_eos
+  context:
+  - ip access-list standard <STR:acl>
+  entity:
+    type: ObjectDef
+    key: acl:{acl}
+  match: '[<INT>] remark [<LIST>]'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-entry
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> <STR:proto> <LIST>
+  effect:
+  - set: FilterRule.ruleset
+    from: acl
+  - set: FilterRule.position
+    from: seq
+  - set: FilterRule.action
+    from: action
+    map:
+      permit: permit
+      deny: deny
+  - members: FilterRule.service
+    from: proto
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-any-any
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip any any [log]
+  effect:
+  - assert: FilterRule.src
+    value:
+    - any
+  - assert: FilterRule.dst
+    value:
+    - any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-any-host
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip any host <IP:d> [log]
+  effect:
+  - assert: FilterRule.src
+    value:
+    - any
+  - members: FilterRule.dst
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-any-net
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip any <IP:d> [log]
+  effect:
+  - assert: FilterRule.src
+    value:
+    - any
+  - members: FilterRule.dst
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-host-any
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip host <IP:s> any [log]
+  effect:
+  - members: FilterRule.src
+    from: s
+  - assert: FilterRule.dst
+    value:
+    - any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-host-host
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip host <IP:s> host <IP:d> [log]
+  effect:
+  - members: FilterRule.src
+    from: s
+  - members: FilterRule.dst
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-host-net
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip host <IP:s> <IP:d> [log]
+  effect:
+  - members: FilterRule.src
+    from: s
+  - members: FilterRule.dst
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-net-any
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip <IP:s> any [log]
+  effect:
+  - members: FilterRule.src
+    from: s
+  - assert: FilterRule.dst
+    value:
+    - any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-net-host
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip <IP:s> host <IP:d> [log]
+  effect:
+  - members: FilterRule.src
+    from: s
+  - members: FilterRule.dst
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-ip-net-net
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> ip <IP:s> <IP:d> [log]
+  effect:
+  - members: FilterRule.src
+    from: s
+  - members: FilterRule.dst
+    from: d
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-src-any
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> <STR:proto> any <LIST>
+  effect:
+    assert: FilterRule.src
+    value:
+    - any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-src-host
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> <STR:proto> host <IP:s> <LIST>
+  effect:
+    members: FilterRule.src
+    from: s
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-ext-src-net
+  vendor: arista_eos
+  context:
+  - ip access-list <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> <STR:proto> <IP:s> <LIST>
+  effect:
+    members: FilterRule.src
+    from: s
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-std-entry
+  vendor: arista_eos
+  context:
+  - ip access-list standard <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> <LIST>
+  effect:
+  - set: FilterRule.ruleset
+    from: acl
+  - set: FilterRule.position
+    from: seq
+  - set: FilterRule.action
+    from: action
+    map:
+      permit: permit
+      deny: deny
+  - assert: FilterRule.service
+    value:
+    - ip
+  - assert: FilterRule.dst
+    value:
+    - any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-std-any
+  vendor: arista_eos
+  context:
+  - ip access-list standard <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> any [log]
+  effect:
+    assert: FilterRule.src
+    value:
+    - any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-std-host
+  vendor: arista_eos
+  context:
+  - ip access-list standard <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> host <IP:s> [log]
+  effect:
+    members: FilterRule.src
+    from: s
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/acl-std-net
+  vendor: arista_eos
+  context:
+  - ip access-list standard <STR:acl>
+  entity:
+    type: FilterRule
+    key: '{acl}:{seq}'
+  match: <INT:seq> <STR:action> <IP:s> [log]
+  effect:
+    members: FilterRule.src
+    from: s
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

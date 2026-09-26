@@ -1,0 +1,167 @@
+# AAA: local users and hash types, TACACS+/RADIUS, lockout policy, password policy.
+# Seed mappings: reviewed in docs/reviews/arista_eos.md.
+mappings:
+- id: arista_eos/username-secret
+  vendor: arista_eos
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: username <STR:u> [privilege <INT>] [role <STR>] secret <STR:t> <STR>
+  effect:
+    set: LocalUser.hash_type
+    from: t
+    map:
+      sha512: sha512-crypt
+      '5': md5-crypt
+      '0': plaintext
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/username-privilege
+  vendor: arista_eos
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: username <STR:u> privilege <INT:p> <LIST>
+  effect:
+    set: LocalUser.privilege
+    from: p
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/username-nopassword
+  vendor: arista_eos
+  entity:
+    type: LocalUser
+    key: '{u}'
+  match: username <STR:u> [privilege <INT>] [role <STR>] nopassword
+  effect:
+    assert: LocalUser.hash_type
+    value: none
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/enable-password
+  vendor: arista_eos
+  entity:
+    type: LocalUser
+    key: enable
+  match: enable password <STR:t> <STR>
+  effect:
+  - assert: LocalUser.privilege
+    value: 15
+  - set: LocalUser.hash_type
+    from: t
+    map:
+      sha512: sha512-crypt
+      '5': md5-crypt
+      '0': plaintext
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/tacacs-server-host
+  vendor: arista_eos
+  entity:
+    type: AuthServer
+    key: tacacs:{h}
+  match: tacacs-server host <IP:h> [vrf <STR>] [port <INT>]
+  effect:
+  - assert: AuthServer.kind
+    value: tacacs
+  - set: AuthServer.host
+    from: h
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/tacacs-server-host-key
+  vendor: arista_eos
+  entity:
+    type: AuthServer
+    key: tacacs:{h}
+  match: tacacs-server host <IP:h> [vrf <STR>] key <INT> <STR>
+  effect:
+  - assert: AuthServer.kind
+    value: tacacs
+  - set: AuthServer.host
+    from: h
+  - assert: AuthServer.key_present
+    value: true
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/radius-server-host
+  vendor: arista_eos
+  entity:
+    type: AuthServer
+    key: radius:{h}
+  match: radius-server host <IP:h> [vrf <STR>] [key <INT> <STR>]
+  effect:
+  - assert: AuthServer.kind
+    value: radius
+  - set: AuthServer.host
+    from: h
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/lockout
+  vendor: arista_eos
+  match: aaa authentication policy lockout failure <INT:n> [window <INT>] duration <INT:d>
+  effect:
+  - set: LockoutPolicy.max_attempts
+    from: n
+  - set: LockoutPolicy.lockout_s
+    from: d
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: arista_eos/password-minimum-length
+  vendor: arista_eos
+  context:
+  - management security
+  match: password minimum length <INT:n>
+  effect:
+    set: PasswordPolicy.min_length
+    from: n
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

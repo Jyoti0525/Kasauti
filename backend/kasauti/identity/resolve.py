@@ -16,9 +16,11 @@ from kasauti.mapping.match import match_tokens, tokenize_path
 from kasauti.mapping.model import parse_pattern
 from kasauti.packs.loader import VendorPack
 from kasauti.packs.model import IdentityField, IdentitySource
+from kasauti.rules import regex
 from kasauti.sbm.entities import Device
 from kasauti.sbm.facts import Evidence, Fact
 from kasauti.shape.model import ConfigTree
+from kasauti.shape.tokens import split_lines
 
 FIELDS: tuple[IdentityField, ...] = (
     "hostname",
@@ -78,7 +80,11 @@ def resolve_identity(
         for source in pack.identity.fields.get(field, ()):
             if source.source != "config":
                 continue  # companion outputs: TODO M2.05/M2.19
-            found = _from_config(tree, source)
+            found = (
+                _from_raw_lines(tree.source_file, text, source.regex)
+                if source.regex is not None
+                else _from_config(tree, source)
+            )
             if found is not None:
                 value, ev = found
                 facts[field] = Fact.explicit(value, ev)
@@ -90,7 +96,20 @@ def resolve_identity(
     return Identity(Device(**facts), sources, missing, frozenset(lines))  # type: ignore[arg-type]
 
 
+def _from_raw_lines(file: str, text: str, pattern: str) -> tuple[str, Evidence] | None:
+    for lineno, line in enumerate(split_lines(text), start=1):
+        value = regex.group(pattern, line, "value")
+        if value:
+            ev = Evidence(
+                file=file, line_start=lineno, line_end=lineno, raw=mask_secrets(line.strip())
+            )
+            return value, ev
+    return None
+
+
 def _from_config(tree: ConfigTree, source: IdentitySource) -> tuple[str, Evidence] | None:
+    if source.pattern is None:  # pragma: no cover - the caller routes regex sources elsewhere
+        return None
     pattern = parse_pattern(source.pattern)
     context = tuple(parse_pattern(c) for c in source.context)
     for stmt in tree.statements:

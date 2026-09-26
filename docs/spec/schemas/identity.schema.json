@@ -12,8 +12,28 @@
           "type": "array"
         },
         "pattern": {
-          "title": "Pattern",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern"
+        },
+        "regex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regex"
         },
         "source": {
           "enum": [
@@ -31,8 +51,7 @@
         }
       },
       "required": [
-        "source",
-        "pattern"
+        "source"
       ],
       "title": "IdentitySource",
       "type": "object"

@@ -1,0 +1,31 @@
+# E1 golden case (PLAN §21.1). Labels are ground truth from the weakness catalogue in
+# datasets/SOURCES.md, not engine output.
+description: Arista EOS 4.30 hardened routed leaf (twin of the weak case)
+input: authored/arista_eos/hardened.cfg
+input_sha256: d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1
+vendor: null
+frameworks: [nist_800_53r5]
+expected_statuses:
+  AAA-CENTRAL-AUTH-01: PASS
+  AAA-LOCAL-PASSWORD-HASH-01: PASS
+  AAA-LOCKOUT-01: PASS
+  AAA-PASSWORD-ENCRYPTION-01: PASS
+  AAA-PASSWORD-MIN-LENGTH-01: PASS
+  FILTER-PERMIT-ANY-01: PASS
+  FILTER-UNTRUSTED-INGRESS-01: PASS
+  LOG-CONFIG-CHANGE-01: PASS
+  LOG-REMOTE-01: PASS
+  LOG-TIMESTAMPS-01: PASS
+  MGMT-BANNER-01: PASS
+  MGMT-HTTP-01: PASS
+  MGMT-SESSION-TIMEOUT-01: PASS
+  MGMT-SSH-V2-01: REVIEW   # EOS has no SSH version setting and Arista's pages checked don't state the version
+  MGMT-TELNET-01: PASS
+  MGMT-VTY-ACL-01: PASS
+  MGMT-VTY-ACL-02: PASS
+  MGMT-WEB-ACL-01: N/A      # eAPI isn't enabled
+  REF-DANGLING-01: PASS
+  SNMP-COMMUNITY-01: PASS
+  SVC-LEGACY-01: PASS
+  SVC-PROXY-ARP-01: PASS
+  TIME-NTP-AUTH-01: PASS

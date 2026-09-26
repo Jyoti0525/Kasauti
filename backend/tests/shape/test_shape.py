@@ -47,6 +47,16 @@ def test_banner_body_is_one_statement_not_configuration() -> None:
     )
 
 
+def test_eos_banner_runs_to_its_eof_line() -> None:
+    text = "banner login\nmanagement telnet\n   no shutdown\nEOF\nhostname L1\n"
+    assert _rows(text, F.INDENT) == [((), "banner login", 1, 4), ((), "hostname L1", 5, 5)]
+    # Without an EOF line nothing is swallowed: the rest is still read as configuration.
+    assert [r[1] for r in _rows("banner login\nhostname L1\n", F.INDENT)] == [
+        "banner login",
+        "hostname L1",
+    ]
+
+
 def test_crlf_and_tabs_keep_line_numbers() -> None:
     rows = _rows("interface Gi1\r\n\tshutdown\r\n", F.INDENT)
     assert rows == [((), "interface Gi1", 1, 1), (("interface Gi1",), "shutdown", 2, 2)]

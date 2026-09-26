@@ -174,6 +174,43 @@ def test_zone_wide_telnet_on_junos_is_seen(kb: KnowledgeBase) -> None:
     assert {r.rule_id: r.status for r in result.rules}["MGMT-TELNET-01"] is Status.FAIL
 
 
+def test_eos_identity_comes_from_the_running_config_header(kb: KnowledgeBase) -> None:
+    result = audit(read_file(REPO / "datasets" / "authored" / "arista_eos" / "hardened.cfg"), kb)
+    assert result.detection.pack_id == "arista_eos"
+    version, model = result.identity["os_version"], result.identity["model"]
+    assert (version.value, model.value) == ("4.30.1F", "DCS-7050SX3-48YC8")
+    assert version.source == "config line 2"  # the `! device:` comment, not a command
+
+
+@pytest.mark.parametrize(
+    ("line", "expected"),
+    [
+        ("aaa accounting commands all default start-stop logging", Status.PASS),
+        ("aaa accounting commands all default start-stop group TAC", Status.PASS),
+        # Console-only accounting misses every SSH session: not a record of all changes.
+        ("aaa accounting commands all console start-stop logging", Status.REVIEW),
+    ],
+)
+def test_eos_command_accounting_records_config_changes(
+    kb: KnowledgeBase, line: str, expected: Status
+) -> None:
+    text = f"! device: L1 (DCS-7050SX3-48YC8, EOS-4.30.1F)\nhostname L1\n{line}\n"
+    result = audit(decode(text.encode(), "acct.cfg"), kb, vendor="arista_eos")
+    assert {r.rule_id: r.status for r in result.rules}["LOG-CONFIG-CHANGE-01"] is expected
+
+
+def test_eos_banner_text_is_never_read_as_configuration(kb: KnowledgeBase) -> None:
+    text = (
+        "! device: L1 (DCS-7050SX3-48YC8, EOS-4.30.1F)\nhostname L1\n"
+        "interface Ethernet1\n   description LAN\nmanagement ssh\n   idle-timeout 10\n"
+        "banner login\nmanagement telnet\n   no shutdown\nEOF\n"
+    )
+    result = audit(decode(text.encode(), "banner.cfg"), kb, vendor="arista_eos")
+    statuses = {r.rule_id: r.status for r in result.rules}
+    assert statuses["MGMT-TELNET-01"] is Status.PASS  # Telnet off by default; the banner is text
+    assert statuses["MGMT-BANNER-01"] is Status.PASS
+
+
 def test_junos_predefined_classes_never_time_out(kb: KnowledgeBase) -> None:
     text = (
         "version 23.4R1.9;\nsystem { login { user a { class super-user; authentication "

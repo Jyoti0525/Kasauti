@@ -1,0 +1,15 @@
+# Where identity appears (PLAN §7). EOS prints model and release in the running-config header:
+#   ! device: leaf1 (DCS-7050SX3-48YC8, EOS-4.30.1F)
+fields:
+  hostname:
+    - {source: config, pattern: "hostname <STR:value>"}
+  os_version:
+    - {source: config, regex: '^! device: \S+ \([^,]*, EOS-(?P<value>[0-9][0-9A-Za-z.\-]*)\)'}
+    - {source: show_version, pattern: "Software image version: <STR:value>"}
+  model:
+    - {source: config, regex: '^! device: \S+ \((?P<value>[^,]+),'}
+    - {source: show_version, pattern: "Arista <STR:value> <LIST>"}
+  serial:
+    - {source: show_version, pattern: "Serial number: <STR:value>"}
+  hardware:
+    - {source: show_version, pattern: "Hardware version: <STR:value>"}

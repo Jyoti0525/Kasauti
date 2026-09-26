@@ -19,6 +19,7 @@ from pydantic import (
 
 from kasauti.mapping.model import AttrPath, Mapping, Pattern, slot_names
 from kasauti.packs.versions import validate_range
+from kasauti.rules import regex
 from kasauti.rules.derivation import Derivation
 from kasauti.rules.enrich import Exposure, Inference
 from kasauti.rules.expr import Scalar, attribute_type
@@ -94,15 +95,27 @@ IdentitySourceKind = Literal[
 
 class IdentitySource(_Strict):
     source: IdentitySourceKind
-    pattern: Pattern
+    pattern: Pattern | None = None
     """Mapping-language pattern whose ``value`` slot holds the field, e.g.
     ``hostname <STR:value>``."""
+    regex: str | None = None
+    """Instead of ``pattern``: an RE2 expression with a named group ``value``, matched against
+    each raw line, comments included. For identity that vendors print in comment headers:
+    EOS ``! device: leaf1 (DCS-7050SX3, EOS-4.30.1F)``, FortiGate ``#config-version=…``."""
     context: tuple[Pattern, ...] = ()
 
     @model_validator(mode="after")
     def _captures_value(self) -> Self:
-        if "value" not in slot_names(self.pattern):
+        if (self.pattern is None) == (self.regex is None):
+            raise ValueError("give exactly one of `pattern` and `regex`")
+        if self.pattern is not None and "value" not in slot_names(self.pattern):
             raise ValueError(f"identity pattern {self.pattern!r} must capture a `value` slot")
+        if self.regex is not None:
+            regex.validate(self.regex)
+            if "(?P<value>" not in self.regex:
+                raise ValueError("an identity regex needs a named group (?P<value>...)")
+            if self.context:
+                raise ValueError("`context` applies to patterns, not to raw-line regexes")
         return self
 
 

@@ -951,6 +951,15 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.7 (2026-09-26, third seed vendor: Arista EOS):**
+  - **Arista EOS pack** (56 mappings, 9 defaults quoted from Arista's documentation, 7 model defaults), a weak
+    twin with 20 catalogued weaknesses (19 caught, 1 honestly REVIEW), golden cases, fixtures
+    for three vendors on every applicable rule.
+  - **Identity from comment headers:** identity sources can be RE2 regexes over raw lines
+    (EOS `! device:`; FortiGate `#config-version` next).
+  - **EOS `EOF` banners** are parsed as one statement, so banner text is never configuration.
+  - **Rule generalised by the third vendor:** FILTER-UNTRUSTED-INGRESS-01 applies to switches
+    with untrusted interfaces (a routed ISP uplink), not only to routers and firewalls.
 - **v5.1.6 (2026-09-26, second seed vendor: Junos):**
   - **Juniper Junos pack** (67 mappings, defaults quoted from Juniper's documentation), a weak
     twin with 17 catalogued weaknesses, golden cases, and fixtures across two vendors on every

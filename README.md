@@ -10,10 +10,10 @@ device's configuration meets CIS, NIST SP 800-53, DISA STIG and ISO/IEC 27001, f
 including ones it has never seen.
 
 > **Status: Milestone 1 (walking skeleton) complete.** A Cisco IOS XE configuration goes end to
-> end: parse → mappings → Security Baseline Model → 21 rules → JSON + PDF report. Parsers for all
-> seven shape families are in place, and every Cisco default is sourced from Cisco's documentation
-> ([review record](docs/reviews/cisco_ios_xe.md)). Progress is tracked task by task in
-> [docs/TODO.md](docs/TODO.md).
+> end: parse → mappings → Security Baseline Model → 23 rules → JSON + PDF report. Parsers for all
+> seven shape families are in place. Seed packs for Cisco IOS XE, Juniper Junos and Arista EOS
+> take every default from the vendor's own documentation ([review records](docs/reviews/)).
+> Progress is tracked task by task in [docs/TODO.md](docs/TODO.md).
 
 ## Try it
 

@@ -30,3 +30,12 @@ def validate(pattern: str) -> None:
 
 def search(pattern: str, text: str) -> bool:
     return _compiled(pattern).search(text) is not None
+
+
+def group(pattern: str, text: str, name: str) -> str | None:
+    """The named group of the first match, or None."""
+    m = _compiled(pattern).search(text)
+    if m is None:
+        return None
+    value = m.group(name)
+    return str(value) if value is not None else None

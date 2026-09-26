@@ -1,0 +1,15 @@
+format_version: 1
+id: arista_eos
+name: Arista EOS
+vendor: Arista
+os_family: EOS
+shape_family: indent
+pack_version: 1
+negation_words: ["no"]   # not "default": it resets a setting, which isn't the same as negating it
+comment_markers: ["!"]
+time_unit: minutes
+default_role: switch
+description: >
+  Seed pack (PLAN §20.4, TODO M2.27) for Arista EOS running-configs. Management access lives in
+  `management ssh|telnet|console|api` blocks rather than vty lines; ACL addresses use prefix
+  notation. Reviewed against Arista's documentation: docs/reviews/arista_eos.md.

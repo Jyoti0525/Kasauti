@@ -22,10 +22,13 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 | `cisco_ios_xe/fixtures/vty_acl_dangling.cfg` | Cisco IOS-XE 17.9, vty lines naming an ACL that doesn't exist (fail fixture for REF-DANGLING-01, MGMT-VTY-ACL-02) | 12 | `be369df0c87e40094137d0abaa4f0a106313089b524a71b6ea0605e593488b1e` | commands cross-checked against Cisco docs (C.06) |
 | `juniper_junos/hardened.conf` | Junos OS 23.4, branch SRX | 162 | `b6a504c35d9066a1b0da376dc94e82b7878c9f502fee8b7c0f159f08cdcc7cc9` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
 | `juniper_junos/weak.conf` | Junos OS 23.4, weak twin | 90 | `f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
+| `arista_eos/hardened.cfg` | Arista EOS 4.30, routed leaf with an ISP uplink | 70 | `d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
+| `arista_eos/weak.cfg` | Arista EOS 4.30, weak twin | 53 | `05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
 
 References used: Cisco IOS XE 17 configuration guides (security, SSH, AAA, SNMP, NTP, system
 management); Juniper Junos OS user guides (system basics, login classes, SSH, syslog, NTP,
-firewall filters, security zones).
+firewall filters, security zones); Arista EOS user manual (connection management, user
+security, system clock and time protocols, system event logging, ACLs).
 
 ### Planted weaknesses in `cisco_ios_xe/weak.cfg`
 
@@ -78,6 +81,34 @@ PASS) and what the hardened twin does instead.
 | J16 | WAN unit in no security zone and without an input filter | `ge-0/0/0.0` in zone `untrust` |
 | J17 | `proxy-arp unrestricted` on the WAN unit | not configured |
 
+### Planted weaknesses in `arista_eos/weak.cfg`
+
+| # | Weakness | Hardened twin |
+|---|---|---|
+| E1 | `username admin … nopassword` | no such user |
+| E2 | `netadmin` with `secret 5 $1$…` (MD5-crypt) | `secret sha512 $6$…` |
+| E3 | no TACACS+/RADIUS server | `tacacs-server host` + AAA group |
+| E4 | no `aaa authentication policy lockout` | `lockout failure 3 duration 900` |
+| E5 | no `password minimum length` | `management security` / `password minimum length 15` |
+| E6 | no `logging host` | `logging host 10.30.10.50 514 protocol tcp` |
+| E7 | no command accounting (whether EOS syslogs config changes by default isn't documented in the pages checked: REVIEW) | `aaa accounting commands all default start-stop group … logging` |
+| E8 | `ntp server` without `key`, no `ntp authenticate` | key, trusted-key, `ntp authenticate` |
+| E9 | SNMP community `public ro` | none |
+| E10 | SNMP community `private rw` | none |
+| E11 | Ethernet1 (WAN uplink) without an inbound access-group | `ip access-group EDGE-IN in` |
+| E12 | `EDGE-IN 10 permit ip any any` | SSH to the device only, then `deny ip any any log` |
+| E13 | eAPI with `protocol http` | eAPI not enabled |
+| E14 | eAPI with no access-group | eAPI not enabled |
+| E15 | `management console` / `idle-timeout 0` | `idle-timeout 5` |
+| E16 | `management ssh` / `idle-timeout 0` | `idle-timeout 10` |
+| E17 | `management ssh` / `ip access-group MGMT-ACL in`, ACL never defined | `MGMT-ACL` defined |
+| E18 | `management telnet` / `no shutdown` | Telnet left at its default (off) |
+| E19 | no login banner | `banner login` … `EOF` |
+| E20 | `ip proxy-arp` on the WAN uplink | not configured |
+
+`logging format timestamp traditional` is deliberately present and is **not** a weakness under
+LOG-TIMESTAMPS-01: traditional messages are still timestamped.
+
 ## Golden cases (`datasets/golden/`, E1)
 
 Each case holds a `case.yaml` (the input path and SHA-256, and hand-labelled verdicts for every
@@ -90,6 +121,8 @@ above, never from the engine's output.
 | `cisco_ios_xe_weak` | `authored/cisco_ios_xe/weak.cfg` | 21 rules FAIL, covering every weakness W1–W20; REF-DANGLING-01 and MGMT-VTY-ACL-02 N/A (no references) |
 | `cisco_ios_xe_hardened` | `authored/cisco_ios_xe/hardened.cfg` | 22 rules PASS; MGMT-WEB-ACL-01 N/A (no web server runs) |
 | `juniper_junos_weak` | `authored/juniper_junos/weak.conf` | 17 rules FAIL (J1–J17), LOG-CONFIG-CHANGE-01 REVIEW, 3 PASS by documented Junos defaults, 2 N/A (no vty lines) |
+| `arista_eos_weak` | `authored/arista_eos/weak.cfg` | 17 rules FAIL, covering E1–E20 except E7; LOG-CONFIG-CHANGE-01 and MGMT-SSH-V2-01 REVIEW (no documented default); 4 PASS (3 by documented or model defaults, and MGMT-VTY-ACL-01 because SSH names an ACL: that it dangles is E17, judged by MGMT-VTY-ACL-02) |
+| `arista_eos_hardened` | `authored/arista_eos/hardened.cfg` | 21 rules PASS; MGMT-SSH-V2-01 REVIEW (EOS has no SSH version setting and the version isn't documented in the pages checked); MGMT-WEB-ACL-01 N/A (eAPI off) |
 | `juniper_junos_hardened` | `authored/juniper_junos/hardened.conf` | 20 rules PASS, 3 N/A (no vty lines, no web management) |
 
 History: on 2026-09-26 the Junos hardened config gained a login class with `idle-timeout 10` and `minimum-length 15`, and the Cisco hardened twin changed to `security passwords min-length 15` (NIST SP

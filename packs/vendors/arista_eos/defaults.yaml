@@ -1,0 +1,133 @@
+# What Arista EOS does when the running-config says nothing (PLAN §8.2, §9.4).
+# Vendor defaults quote Arista's documentation (checked 2026-09-26; docs/reviews/arista_eos.md).
+# Not stated in the pages checked, so no entry (the rule says REVIEW): the SSH protocol version,
+# the SSH and console idle-timeout defaults, syslog timestamp format.
+defaults:
+  - id: telnet-off
+    attr: MgmtService.enabled
+    entity_key: telnet
+    value: false
+    source: vendor_doc
+    reference: >-
+      EOS Connection Management: "By default, EOS disables Telnet"; `no shutdown` in
+      `management telnet` turns it on.
+      https://www.arista.com/en/um-eos/eos-connection-management
+
+  - id: ssh-on
+    attr: MgmtService.enabled
+    entity_key: ssh
+    value: true
+    source: vendor_doc
+    reference: >-
+      EOS Connection Management: "The switch always enables the console and SSH."
+      https://www.arista.com/en/um-eos/eos-connection-management
+
+  - id: eapi-http-off
+    attr: MgmtService.enabled
+    entity_key: http
+    value: false
+    source: vendor_doc
+    reference: >-
+      Arista eAPI: the Command API server (management api http-commands) is disabled by default
+      ("shutdown"), and when enabled it serves HTTPS, with HTTP turned off.
+      https://www.arista.com/assets/data/pdf/Whitepapers/Arista_eAPI_FINAL.pdf
+
+  - id: eapi-https-off
+    attr: MgmtService.enabled
+    entity_key: https
+    value: false
+    source: vendor_doc
+    reference: >-
+      Arista eAPI: the Command API server is disabled by default until `no shutdown`.
+      https://www.arista.com/assets/data/pdf/Whitepapers/Arista_eAPI_FINAL.pdf
+
+  - id: passwords-stored-encrypted
+    attr: PasswordPolicy.cleartext_passwords_encrypted
+    value: true
+    source: vendor_doc
+    reference: >-
+      EOS User Security: "running-config stores encrypted versions of these passwords and keys."
+      https://www.arista.com/en/um-eos/eos-user-security
+
+  - id: no-snmp-communities
+    none_of: SnmpCommunity
+    source: vendor_doc
+    reference: >-
+      EOS SNMP: "SNMP is enabled with any snmp-server community or snmp-server user command";
+      no community exists until one is configured.
+      https://www.arista.com/en/um-eos/eos-snmp
+
+  - id: proxy-arp-off
+    attr: Interface.proxy_arp
+    value: false
+    source: vendor_doc
+    reference: >-
+      EOS IPv4: "EOS disables Proxy ARP by default."
+      https://www.arista.com/en/um-eos/eos-ipv4
+
+  - id: no-legacy-pad
+    attr: MgmtService.enabled
+    entity_key: pad
+    value: false
+    source: curated
+    reference: "Model default: EOS has no X.25 PAD service."
+
+  - id: no-legacy-finger
+    attr: MgmtService.enabled
+    entity_key: finger
+    value: false
+    source: curated
+    reference: "Model default: EOS has no finger service."
+
+  - id: no-legacy-bootp
+    attr: MgmtService.enabled
+    entity_key: bootp
+    value: false
+    source: curated
+    reference: "Model default: EOS runs no BOOTP server unless DHCP server is configured, which the mappings would read."
+
+  - id: no-tcp-small-servers
+    attr: MgmtService.enabled
+    entity_key: tcp-small-servers
+    value: false
+    source: curated
+    reference: "Model default: EOS has no TCP small servers."
+
+  - id: no-udp-small-servers
+    attr: MgmtService.enabled
+    entity_key: udp-small-servers
+    value: false
+    source: curated
+    reference: "Model default: EOS has no UDP small servers."
+
+  - id: no-interface-mgmt-protocol-list
+    attr: Interface.mgmt_protocols
+    value: []
+    source: curated
+    reference: >-
+      Model default: EOS interfaces carry no per-interface management-service list; management
+      access is set in the management blocks and by ACL.
+
+  - id: no-filter-rules
+    none_of: FilterRule
+    source: curated
+    reference: "Model default: every EOS ACL appears in the running-config, so none there means none exist."
+
+  - id: ntp-authentication-off
+    attr: TimePolicy.auth_enforced
+    value: false
+    source: vendor_doc
+    reference: >-
+      EOS System Clock and Time Protocols: "Disable the NTP authentication by default."; the
+      `ntp authenticate` command enables it.
+      https://www.arista.com/en/um-eos/eos-system-clock-and-time-protocols
+
+  - id: ntp-server-without-key
+    attr: TimeSource.authenticated
+    value: false
+    source: vendor_doc
+    reference: >-
+      EOS System Clock and Time Protocols: a server is authenticated when `ntp authenticate` is
+      on and a trusted key is given for that server ("specify to use the trusted-key for a
+      specific server"); a server line without `key` has none.
+      https://www.arista.com/en/um-eos/eos-system-clock-and-time-protocols
