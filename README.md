@@ -36,7 +36,12 @@ The web API runs on this machine only (the upload screens arrive with M2.04 and 
 
 ```bash
 uv run kasauti serve            # http://127.0.0.1:8000/api/health
+uv run kasauti serve --workers 4  # background job processes (default 2; 0 for none)
 ```
+
+Long work (parsing uploads, bulk audits) runs as background jobs: the queue is a table in the
+database, and each job runs in its own worker process, so a file that crashes or hangs the
+parser stops only that job. `GET /api/jobs/{id}` reports a job's progress.
 
 Audit history is kept in a SQLite file under `./var` (set `KASAUTI_DATA_DIR` to move it);
 `kasauti serve` creates and upgrades it. For a shared PostgreSQL server instead:

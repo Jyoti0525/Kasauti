@@ -42,8 +42,8 @@ jobs:
 
   postgresql:
     name: database · PostgreSQL
-    # SQLite is covered by every other job; this runs the schema tests on a real PostgreSQL
-    # (PLAN §4.2), the same major version as the one we test against locally.
+    # SQLite is covered by every other job; this runs the schema and job-queue tests on a real
+    # PostgreSQL (PLAN §4.2), the same major version as the one we test against locally.
     runs-on: ubuntu-24.04
     services:
       postgres:
@@ -65,10 +65,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --extra postgresql
-      - name: Migrations on PostgreSQL
+      - name: Migrations and the job queue on PostgreSQL
         env:
           KASAUTI_TEST_POSTGRES_URL: postgresql://kasauti@127.0.0.1:5432/kasauti_test
-        run: uv run pytest backend/tests/db -p no:cacheprovider -rs
+        run: uv run pytest backend/tests/db backend/tests/jobs -p no:cacheprovider -rs
 
   content-gates:
     name: content gates

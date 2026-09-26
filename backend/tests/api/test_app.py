@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -154,3 +155,92 @@ def test_serve_leaves_postgresql_migrations_to_the_operator(
     err = capsys.readouterr().err
     assert "sslmode=verify-full" in err
     assert "hunter2" not in err
+
+
+JOB_HANDLERS = {"echo": "job_handlers:echo"}
+"""From ``tests/jobs/job_handlers.py``; the shipped registry has no kinds until M2.04."""
+
+
+@pytest.fixture
+def job_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
+    monkeypatch.syspath_prepend(str(REPO / "backend" / "tests" / "jobs"))
+    settings = Settings(packs=PACKS, database=_migrated(tmp_path), handlers=JOB_HANDLERS)
+    app = create_app(settings)
+    yield app
+    app.state.engine.dispose()
+
+
+def test_a_job_is_reported_by_its_id(job_app: Any) -> None:
+    client = TestClient(job_app, base_url="http://127.0.0.1:8000")
+    job_id = job_app.state.jobs.enqueue("echo", {"upload": "sha256:ab"})
+    body = client.get(f"/api/jobs/{job_id}").json()
+    assert (body["id"], body["kind"], body["state"], body["attempts"]) == (
+        job_id,
+        "echo",
+        "queued",
+        0,
+    )
+    assert body["created_at"].endswith("Z")  # UTC, said so
+    assert "payload" not in body
+
+
+@pytest.mark.parametrize(
+    ("job_id", "status"),
+    [("00000000-0000-4000-8000-000000000000", 404), ("1", 422), ("1' OR '1'='1", 422)],
+)
+def test_unknown_and_malformed_job_ids(job_app: Any, job_id: str, status: int) -> None:
+    client = TestClient(job_app, base_url="http://127.0.0.1:8000")
+    assert client.get(f"/api/jobs/{job_id}").status_code == status
+
+
+def test_a_job_lookup_hides_database_errors(job_app: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    def broken(_job_id: str) -> None:
+        raise OperationalError("SELECT", {}, Exception("unable to open C:/secret/path.db"))
+
+    monkeypatch.setattr(job_app.state.jobs, "get", broken)
+    client = TestClient(job_app, base_url="http://127.0.0.1:8000")
+    response = client.get("/api/jobs/00000000-0000-4000-8000-000000000000")
+    assert (response.status_code, response.json()) == (503, {"detail": "database unavailable"})
+
+
+def test_the_server_runs_jobs_in_the_background_while_it_is_up(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.syspath_prepend(str(REPO / "backend" / "tests" / "jobs"))
+    settings = Settings(packs=PACKS, database=_migrated(tmp_path), handlers=JOB_HANDLERS, workers=1)
+    app = create_app(settings)
+    with TestClient(app, base_url="http://127.0.0.1:8000") as client:  # runs the lifespan
+        assert app.state.pool is not None
+        job_id = app.state.jobs.enqueue("echo", {"n": 1})
+        app.state.pool.wake()
+        deadline = time.monotonic() + 60
+        while (body := client.get(f"/api/jobs/{job_id}").json())["state"] != "succeeded":
+            assert time.monotonic() < deadline, body
+            time.sleep(0.05)
+        assert body["result"]["echo"] == {"n": 1}
+    assert app.state.pool._thread is None  # stopped with the application
+
+
+def test_serve_starts_the_worker_pool_it_is_asked_for(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    apps: list[Any] = []
+    monkeypatch.setattr(uvicorn, "run", lambda app, **_kw: apps.append(app))
+    base = ["serve", "--packs", str(PACKS), "--data-dir", str(tmp_path)]
+    assert main([*base, "--workers", "3"]) == 0
+    assert main(base) == 0
+    assert main([*base, "--workers", "0"]) == 0
+    assert apps[0].state.pool.workers == 3
+    assert apps[1].state.pool.workers in (1, 2)
+    assert apps[2].state.pool is None
+    for app in apps:
+        app.state.engine.dispose()
+
+
+@pytest.mark.parametrize("workers", ["-1", "33", "many"])
+def test_serve_rejects_a_worker_count_out_of_range(
+    workers: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit):
+        main(["serve", "--workers", workers])
+    assert "--workers" in capsys.readouterr().err

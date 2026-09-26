@@ -21,14 +21,22 @@ Exposure (PLAN §17, "Exposure" and "Air gap"):
 Storage (M2.02): the application opens the database it is given and refuses to start unless the
 schema is the one this version expects; migrating is ``kasauti db upgrade``'s job (``kasauti
 serve`` runs it first for SQLite).
+
+Jobs (M2.03): with ``workers`` set, a :class:`~kasauti.jobs.WorkerPool` runs queued jobs in the
+background for the application's lifetime; at shutdown, jobs still running go back to the queue.
+``GET /api/jobs/{id}`` reports a job. Job ids are random UUIDs, not counters, so one job's id
+says nothing about another's. Routes that create jobs arrive with uploads (M2.04).
 """
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Awaitable, Callable
+import datetime as dt
+import uuid
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict
@@ -39,6 +47,8 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from kasauti import __version__
 from kasauti.audit import KnowledgeBase, load_kb
 from kasauti.db import create_engine, current_revision, ensure_current
+from kasauti.jobs import JobQueue, JobState, WorkerPool
+from kasauti.jobs.kinds import HANDLERS
 from kasauti.log import get_logger
 
 log = get_logger(__name__)
@@ -64,6 +74,10 @@ class Settings:
     database: URL
     """From :func:`kasauti.db.database_url`."""
     allowed_hosts: tuple[str, ...] = LOOPBACK_HOSTS
+    workers: int = 0
+    """Worker processes for background jobs; 0 runs none (jobs wait in the queue)."""
+    handlers: Mapping[str, str] = field(default_factory=lambda: HANDLERS)
+    """Job kind to ``module:function``; :data:`kasauti.jobs.kinds.HANDLERS` unless testing."""
 
 
 class Health(BaseModel):
@@ -81,6 +95,22 @@ class Health(BaseModel):
     schema_revision: str
 
 
+class JobOut(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: str
+    kind: str
+    state: JobState
+    attempts: int
+    cancel_requested: bool
+    created_at: dt.datetime
+    started_at: dt.datetime | None
+    finished_at: dt.datetime | None
+    error: str | None
+    """Why it failed, written to be shown; never configuration text."""
+    result: dict[str, Any] | None
+
+
 def create_app(settings: Settings) -> FastAPI:
     """Build the application. The knowledge base and database are checked here, so invalid
     packs or an old schema stop the server from starting instead of failing on a request."""
@@ -88,14 +118,28 @@ def create_app(settings: Settings) -> FastAPI:
     engine = create_engine(settings.database)
     try:
         ensure_current(engine)
+        queue = JobQueue(engine, settings.handlers)
+        pool = (
+            WorkerPool(queue, settings.handlers, workers=settings.workers)
+            if settings.workers
+            else None
+        )
     except BaseException:
         engine.dispose()
         raise
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-        yield
-        engine.dispose()
+        if pool is not None:
+            pool.start()
+        try:
+            yield
+        finally:
+            try:
+                if pool is not None:
+                    pool.stop()
+            finally:  # even if handing jobs back failed (the database went away)
+                engine.dispose()
 
     app = FastAPI(
         title="Kasauti",
@@ -107,6 +151,8 @@ def create_app(settings: Settings) -> FastAPI:
     )
     app.state.kb = kb
     app.state.engine = engine
+    app.state.jobs = queue
+    app.state.pool = pool
     # Starlette runs the middleware added last first: the headers wrap the host check, so its
     # 400 responses carry them too.
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
@@ -128,6 +174,31 @@ def create_app(settings: Settings) -> FastAPI:
             log.exception("database unavailable", error=str(err))
             raise HTTPException(503, "database unavailable") from None
         return _health(kb, engine, revision or "none")
+
+    @app.get(
+        "/api/jobs/{job_id}",
+        responses={404: {"description": "no such job"}, 503: {"description": "database down"}},
+    )
+    def job(job_id: uuid.UUID) -> JobOut:
+        try:
+            found = queue.get(str(job_id))
+        except SQLAlchemyError as err:
+            log.exception("database unavailable", error=str(err))
+            raise HTTPException(503, "database unavailable") from None
+        if found is None:
+            raise HTTPException(404, "no such job")
+        return JobOut(
+            id=found.id,
+            kind=found.kind,
+            state=found.state,
+            attempts=found.attempts,
+            cancel_requested=found.cancel_requested,
+            created_at=found.created_at,
+            started_at=found.started_at,
+            finished_at=found.finished_at,
+            error=found.error,
+            result=found.result,
+        )
 
     return app
 

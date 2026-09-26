@@ -18,10 +18,10 @@ from alembic import context
 from sqlalchemy import Engine, make_url
 
 from kasauti.db.engine import create_engine, database_url
-from kasauti.db.schema import Base
+from kasauti.db.tables import metadata
 
 config = context.config
-target_metadata = Base.metadata
+target_metadata = metadata
 
 
 def run_offline() -> None:

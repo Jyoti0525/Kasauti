@@ -1,7 +1,8 @@
 """The ORM base every table derives from.
 
 Tables arrive with the milestones that need them (jobs M2.03, uploads M2.04), each with its own
-Alembic migration. ``tests/db`` fails if a table here and the migrations ever disagree.
+Alembic migration, and each module that declares one is imported by :mod:`kasauti.db.tables`.
+``tests/db`` fails if the tables and the migrations ever disagree.
 
 Constraint names follow one convention, so a migration can name the constraint it changes;
 SQLite's batch mode (a table rebuilt to alter it) depends on it.

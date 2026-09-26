@@ -174,6 +174,7 @@ Every requirement has a design home, a demo moment, and a **testable acceptance 
 | `trust` | Merkle transparency log, checkpoints, proofs, verifier CLI |
 | `packs` | Pack loading, schema validation, Ed25519 signature verification, hot reload |
 | `auth` | Sessions, Argon2id, TOTP MFA, RBAC |
+| `jobs` | Job queue in the database, worker pool (one process per job), lease-based recovery |
 | `api` / `cli` / `web` | FastAPI routes, command-line interface, React front end |
 
 ### 4.4 Packs: how "no code changes" actually works (R-08)
@@ -951,6 +952,13 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.15 (2026-09-27, M2.03 jobs):** §4.3 gains the `jobs` module. The queue is a database
+  table (migration 0002); pools claim with `FOR UPDATE SKIP LOCKED` on PostgreSQL and
+  `BEGIN IMMEDIATE` on SQLite, hold jobs on a renewed lease, and recover a lost pool's jobs.
+  Each job runs in its own spawned process that never sees the database and answers in JSON,
+  never pickle. A crash or timeout fails the job without retrying it, since the same input
+  would fail again; only lost workers are retried. §17 gains the background-jobs row.
+  M5.02 adds OS-level CPU and memory limits to these same processes.
 - **v5.1.14 (2026-09-26, M2.02 storage):** SQLAlchemy 2.1 + Alembic; SQLite (WAL) by default,
   PostgreSQL through the optional `postgresql` extra. §17 gains the database row: owner-only
   file, `secure_delete` for the retention policy, verified TLS to any PostgreSQL off the machine,

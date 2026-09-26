@@ -1,8 +1,8 @@
 """``kasauti`` command-line interface (PLAN §4.2).
 
 Commands that work today: ``audit`` (M1), ``packs validate`` (M0), ``serve`` (M2.01, the web
-API on the loopback interface) and ``db upgrade`` / ``db status`` (M2.02; ``audit`` never needs a
-database). ``kasauti verify`` arrives
+API on the loopback interface, with its pool of job workers from M2.03) and ``db upgrade`` /
+``db status`` (M2.02; ``audit`` never needs a database). ``kasauti verify`` arrives
 with the transparency log in M5; it is not stubbed, because a command that pretends to work is
 worse than one that doesn't exist yet.
 
@@ -31,6 +31,7 @@ if TYPE_CHECKING:
 FRAMEWORK_ALIASES = {"nist": "nist_800_53r5", "nist_800_53r5": "nist_800_53r5"}
 LOOPBACK_NAMES = ("127.0.0.1", "localhost")
 DATA_DIR_ENV = "KASAUTI_DATA_DIR"
+MAX_WORKERS = 32
 
 
 def _validate_packs(root: Path) -> int:
@@ -119,7 +120,7 @@ def _serve(args: argparse.Namespace) -> int:
         url = _database(args.data_dir)
         if url.drivername.startswith("sqlite"):
             _migrate(url)  # one user, one file: keep it current. PostgreSQL is the DBA's call.
-        app = create_app(Settings(packs=args.packs, database=url))
+        app = create_app(Settings(packs=args.packs, database=url, workers=args.workers))
     except PackError as err:
         print("kasauti: the knowledge base is invalid:", file=sys.stderr)
         for problem in err.problems:
@@ -228,6 +229,13 @@ def _port(text: str) -> int:
     return port
 
 
+def _workers(text: str) -> int:
+    workers = int(text)
+    if not 0 <= workers <= MAX_WORKERS:
+        raise argparse.ArgumentTypeError(f"{workers} isn't between 0 and {MAX_WORKERS}")
+    return workers
+
+
 def _report_date(given: str | None) -> str:
     """``--date``, else ``SOURCE_DATE_EPOCH`` (reproducible builds), else today."""
     if given:
@@ -291,6 +299,12 @@ def build_parser() -> argparse.ArgumentParser:
         "PostgreSQL is set with $KASAUTI_DATABASE_URL instead"
     )
     srv.add_argument("--data-dir", type=Path, default=None, help=data_help)
+    srv.add_argument(
+        "--workers",
+        type=_workers,
+        default=None,
+        help="processes running background jobs (default: 2, or 1 below 4 CPUs; 0 for none)",
+    )
 
     db = sub.add_parser("db", help="the database's schema")
     db_sub = db.add_subparsers(dest="db_command", required=True)
@@ -315,6 +329,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if getattr(args, "data_dir", False) is None:
         args.data_dir = _data_dir()
+    if args.command == "serve" and args.workers is None:
+        from kasauti.jobs import default_workers  # noqa: PLC0415
+
+        args.workers = default_workers()
     if args.command == "audit":
         args.framework = args.framework or ["nist"]
         return _audit(args)
