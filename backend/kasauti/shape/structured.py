@@ -27,7 +27,7 @@ import defusedxml.sax
 import yaml
 from defusedxml import DefusedXmlException
 
-from kasauti.shape.base import ParseError, RawStatement
+from kasauti.shape.base import MAX_DEPTH, ParseError, RawStatement, check_depth
 from kasauti.shape.tokens import quote_if_needed
 
 MAX_NODES = 2_000_000
@@ -64,6 +64,7 @@ class _XmlHandler(ContentHandler):
         self.count += 1
         if self.count > MAX_NODES:
             raise ParseError(f"more than {MAX_NODES} XML elements")
+        check_depth(len(self.stack) + 1, self._line())
         if self.stack:
             self.stack[-1].has_children = True
         label = attrs.get("name")
@@ -102,6 +103,10 @@ def parse_xml(text: str) -> Iterator[RawStatement]:
 def parse_json_yaml(text: str) -> Iterator[RawStatement]:
     try:
         root = yaml.compose(text, Loader=yaml.SafeLoader)
+    except RecursionError:
+        # PyYAML's composer recurses once per nesting level (a few hundred JSON "[" are
+        # enough); refused like any nesting past MAX_DEPTH (M2.07 review).
+        raise ParseError(f"blocks nested more than {MAX_DEPTH} levels deep") from None
     except yaml.MarkedYAMLError as err:
         line = err.problem_mark.line + 1 if err.problem_mark else None
         raise ParseError(f"invalid JSON/YAML: {err.problem}", line) from err
@@ -141,9 +146,11 @@ class _Walker:
                 self._visit(value)
                 yield RawStatement(path, f"{key} {_scalar(value)}", line, _end(value))
             elif isinstance(value, yaml.MappingNode):
+                check_depth(len(path) + 1, line)
                 yield RawStatement(path, key, line, line)
                 yield from self.mapping(value, (*path, key))
             else:
+                check_depth(len(path) + 1, line)
                 yield from self.sequence(key, value, path)
 
     def sequence(self, key: str, node: yaml.Node, path: tuple[str, ...]) -> Iterator[RawStatement]:
@@ -155,6 +162,7 @@ class _Walker:
                 yield RawStatement(path, f"{key} {_scalar(item)}", line, _end(item))
                 continue
             header = f"{key} {_item_name(item, index)}"
+            check_depth(len(path) + 1, line)
             yield RawStatement(path, header, line, line)
             if isinstance(item, yaml.MappingNode):
                 yield from self.mapping(item, (*path, header))

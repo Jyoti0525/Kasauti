@@ -51,9 +51,10 @@ MAX_EXPANDED_BYTES = 512 * 1024 * 1024
 """Bytes one archive may expand to, over all its entries."""
 SNIFF_BYTES = 8192
 CHUNK = 1024 * 1024
-_READABLE_METHODS = frozenset(
-    {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED, zipfile.ZIP_BZIP2, zipfile.ZIP_LZMA}
-)
+_READABLE_METHODS = frozenset({zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED, zipfile.ZIP_BZIP2})
+"""Methods whose decompressor needs little, fixed memory: deflate a 32 KiB window, bzip2 under
+4 MB. Not LZMA: an entry declares its own dictionary size, up to 4 GiB, which the decompressor
+allocates before reading a byte; a 1 KB zip made the server commit 1.5 GiB (M2.07 review)."""
 _LISTED = " ".join((*ACCEPTED_SUFFIXES, ARCHIVE_SUFFIX))
 
 

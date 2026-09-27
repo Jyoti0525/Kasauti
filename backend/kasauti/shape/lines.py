@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
-from kasauti.shape.base import ParseError, RawStatement
+from kasauti.shape.base import ParseError, RawStatement, check_depth
 from kasauti.shape.tokens import split_lines
 
 COMMENTS = ("#",)
@@ -68,11 +68,13 @@ def parse_block_edit(text: str) -> Iterator[RawStatement]:
         word = body.split(None, 1)[0]
         path = tuple(h for _, h, _ in stack)
         if word == "config":
+            check_depth(len(stack) + 1, start)
             yield RawStatement(path, body, start, end)
             stack.append(("config", body, start))
         elif word == "edit":
             if not stack or stack[-1][0] != "config":
                 raise ParseError("'edit' outside a 'config' block", start)
+            check_depth(len(stack) + 1, start)
             yield RawStatement(path, body, start, end)
             stack.append(("edit", body, start))
         elif body == "next":

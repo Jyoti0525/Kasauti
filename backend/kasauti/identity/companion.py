@@ -27,7 +27,7 @@ from kasauti.packs.model import CompanionKind
 from kasauti.rules import regex
 from kasauti.shape.model import ConfigTree, ShapeFamily
 from kasauti.shape.parse import parse_text
-from kasauti.shape.tokens import split_lines
+from kasauti.shape.tokens import joined_lines
 
 COMMANDS: dict[str, str] = {
     "show_version": "`show version`",
@@ -70,9 +70,9 @@ class Component:
 def recognise(text: str, pack: VendorPack) -> Detection | None:
     """Which of ``pack``'s companion outputs ``text`` is (the detection's ``pack_id`` holds
     the kind), or None: nothing reaches its threshold, or two kinds tie."""
-    lines = split_lines(text)
+    joined = joined_lines(text)
     found = sorted(
-        (score(text, spec, kind, lines=lines) for kind, spec in pack.identity.companions.items()),
+        (score(text, spec, kind, joined=joined) for kind, spec in pack.identity.companions.items()),
         key=lambda d: (-d.score, d.pack_id),
     )
     return choose(found)

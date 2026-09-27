@@ -15,7 +15,13 @@ def split_lines(text: str) -> list[str]:
     ``str.splitlines`` is not used: it also breaks on form feeds and Unicode separators, which
     would shift every later line number in the evidence.
     """
-    return text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    return joined_lines(text).split("\n")
+
+
+def joined_lines(text: str) -> str:
+    """``text`` with every line break (CRLF, a lone CR) made LF, so line *n* of it is line *n*
+    of :func:`split_lines`: whole-text searches then report the same line numbers."""
+    return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 def tokenize(text: str) -> tuple[str, ...]:

@@ -18,7 +18,7 @@ from kasauti.rules import regex
 from kasauti.sbm.facts import Evidence
 from kasauti.shape.model import ConfigTree
 from kasauti.shape.parse import parse_text
-from kasauti.shape.tokens import split_lines
+from kasauti.shape.tokens import joined_lines, split_lines
 
 _STRUCTURED = frozenset({"json_key", "xml_path"})
 """Signature kinds matched against the parsed tree rather than the text."""
@@ -46,14 +46,15 @@ def score(
     spec: DetectSpec,
     name: str,
     tree: ConfigTree | None = None,
-    lines: list[str] | None = None,
+    joined: str | None = None,
 ) -> Detection:
     """How well ``text`` matches ``spec``'s signatures: a vendor's fingerprint, or a companion
-    output's (``identity.yaml``)."""
-    lines = split_lines(text) if lines is None else lines
+    output's (``identity.yaml``). ``joined`` is :func:`joined_lines` of ``text``, if the
+    caller already has it."""
+    joined = joined_lines(text) if joined is None else joined
     matched: list[tuple[str, int]] = []
     for sig in spec.signatures:
-        line = _match(sig, text, lines, tree)
+        line = _match(sig, joined, tree)
         if line is not None:
             matched.append((sig.id, line))
     weights = {s.id: s.weight for s in spec.signatures}
@@ -68,6 +69,7 @@ def detect_vendor(text: str, packs: Sequence[VendorPack]) -> list[Detection]:
     most of what an audit costs in time and memory, and text signatures don't need one."""
     trees: dict[str, ConfigTree] = {}
     out: list[Detection] = []
+    joined = joined_lines(text)
     for pack in packs:
         tree = None
         if any(s.kind in _STRUCTURED for s in pack.detect.signatures):
@@ -75,7 +77,7 @@ def detect_vendor(text: str, packs: Sequence[VendorPack]) -> list[Detection]:
             if family not in trees:
                 trees[family] = parse_text(text, source_file="detect", family=family)
             tree = trees[family]
-        out.append(score_pack(text, pack, tree))
+        out.append(score(text, pack.detect, pack.manifest.id, tree, joined))
     return sorted(out, key=lambda d: (-d.score, d.pack_id))
 
 
@@ -90,10 +92,10 @@ def choose(detections: Sequence[Detection]) -> Detection | None:
 
 def input_warnings(text: str, pack: VendorPack, tree: ConfigTree | None = None) -> list[str]:
     """The pack's ``warnings`` whose pattern matches, each with the line that matched."""
-    lines = split_lines(text)
+    joined = joined_lines(text)
     out = []
     for warning in pack.detect.warnings:
-        line = _match(warning, text, lines, tree)
+        line = _match(warning, joined, tree)
         if line is not None:
             out.append(f"{warning.message} (line {line})")
     return out
@@ -112,21 +114,37 @@ def detection_evidence(detection: Detection, text: str, source_file: str) -> tup
     )
 
 
-def _match(
-    sig: Signature | InputWarning, text: str, lines: list[str], tree: ConfigTree | None
-) -> int | None:
+def _match(sig: Signature | InputWarning, joined: str, tree: ConfigTree | None) -> int | None:
+    """The 1-based line ``sig`` first matches in ``joined`` (the text, every line break made
+    ``\\n``), or None. Each kind is one pass over the text: a loop that called RE2 once per
+    line spent 48 s on a file of a million blank lines (M2.07 review)."""
     match sig.kind:
         case "contains":
-            pos = text.find(sig.pattern)
-            return None if pos < 0 else text.count("\n", 0, pos) + 1
+            pos = joined.find(sig.pattern)
+            return None if pos < 0 else joined.count("\n", 0, pos) + 1
         case "line_prefix":
-            return next(
-                (i for i, ln in enumerate(lines, 1) if ln.lstrip().startswith(sig.pattern)), None
-            )
+            return _line_prefix(joined, sig.pattern)
         case "regex":
-            return next((i for i, ln in enumerate(lines, 1) if regex.search(sig.pattern, ln)), None)
+            found = regex.first_line(sig.pattern, joined)
+            return None if found is None else found[0]
         case "json_key" | "xml_path":
             return _structured(sig.pattern, tree)
+
+
+def _line_prefix(joined: str, prefix: str) -> int | None:
+    """The first line that starts with ``prefix`` after leading whitespace. Candidates are
+    found by ``str.find``; a line whose candidate isn't at its start is skipped whole, so no
+    line is looked at twice."""
+    pos = 0
+    while (at := joined.find(prefix, pos)) >= 0:
+        start = joined.rfind("\n", 0, at) + 1
+        if joined[start:at].isspace() or start == at:
+            return joined.count("\n", 0, at) + 1
+        pos = joined.find("\n", at)
+        if pos < 0:
+            return None
+        pos += 1
+    return None
 
 
 def _structured(pattern: str, tree: ConfigTree | None) -> int | None:

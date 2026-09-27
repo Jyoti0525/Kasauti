@@ -24,7 +24,7 @@ from kasauti.rules import regex
 from kasauti.sbm.entities import Device
 from kasauti.sbm.facts import Evidence, Fact
 from kasauti.shape.model import ConfigTree
-from kasauti.shape.tokens import split_lines
+from kasauti.shape.tokens import joined_lines
 
 FIELDS: tuple[IdentityField, ...] = (
     "hostname",
@@ -125,9 +125,12 @@ def _read(tree: ConfigTree, text: str, source: IdentitySource) -> tuple[str, Evi
 
 
 def _from_raw_lines(file: str, text: str, pattern: str) -> tuple[str, Evidence] | None:
-    for lineno, line in enumerate(split_lines(text), start=1):
-        value = regex.group(pattern, line, "value")
+    joined = joined_lines(text)
+    for lineno, start, groups in regex.matching_lines(pattern, joined):
+        value = groups.get("value")
         if value:
+            end = joined.find("\n", start)
+            line = joined[start : end if end >= 0 else len(joined)]
             ev = Evidence(
                 file=file, line_start=lineno, line_end=lineno, raw=mask_secrets(line.strip())
             )

@@ -6,6 +6,9 @@ import ipaddress
 import re
 
 _INT = re.compile(r"^\d+$")
+_DIGIT = re.compile(r"\d")
+_IP_FIRST = frozenset("0123456789abcdefABCDEF:")
+"""How an IPv4 or IPv6 address or prefix can start."""
 _IFNAME = re.compile(r"^[A-Za-z][A-Za-z\-]*(\d+([/.:]\d+)*|\.\d+)$")
 # Interface prefixes seen across the seed and unseen vendors. Used for pattern keys, where a
 # false positive (``ipv4``, ``sha256``) would split one command into two patterns.
@@ -27,6 +30,10 @@ def is_int(token: str) -> bool:
 
 def is_ip(token: str) -> bool:
     """An IPv4/IPv6 address or prefix (``10.0.0.1``, ``10.0.0.0/24``, ``2001:db8::/32``)."""
+    # Most tokens are words; ``ipaddress`` rejects them by raising, which costs microseconds
+    # each, over every token of every line. An address has a digit or a colon (``::``).
+    if not token or (token[0] not in _IP_FIRST) or not (":" in token or _DIGIT.search(token)):
+        return False
     try:
         if "/" in token:
             ipaddress.ip_network(token, strict=False)

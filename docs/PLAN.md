@@ -207,6 +207,9 @@ Each pack is **data only** (schema-validated YAML/JSON; no code, no pickle) and 
 
 ### 5.2 Handling
 - Limits on size, archive entries and nesting depth; path normalisation (zip-slip); `defusedxml` (XXE, billion laughs); encoding detection; binary sniffing.
+  Reviewed against a hostile corpus (M2.07): archives inside archives and LZMA-compressed
+  entries are refused, parsers cap nesting at 100 levels, and every parser and search runs in
+  linear time.
 - **Sandboxed parsing:** each file is parsed in a worker process with CPU/memory/time limits.
 - **Until the vault exists (M2.04 → M5.01):** an uploaded original waits in an owner-only
   staging directory under a random id only until its audit job's worker reads it, and is
@@ -969,6 +972,17 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.20 (2026-09-27, M2.07 hostile inputs):** The limits reviewed against a generated
+  corpus of 7 hostile archives and 28 hostile files, through the intake, every parser and real
+  worker processes (§22: 0 crashes, 0 hangs). Found and fixed: an LZMA zip entry declares its
+  own dictionary size, allocated before a byte is read (a 1 KB zip committed 1.5 GiB), so
+  LZMA entries are refused; nesting was unbounded (256 KiB of nested XML took three minutes),
+  so every parser caps it at 100 levels and reads deeper input line by line with a warning;
+  unclosed block comments and banners rescanned the rest of the file, and line-by-line regex
+  loops in detection and identity cost seconds on a file of empty lines. All now linear:
+  whole-text RE2 searches (a million empty lines, 23.7 → 0.23 s). Nested archives stay
+  refused (§5.2): opening them would add a second expansion budget for a case device exports
+  don't produce.
 - **v5.1.19 (2026-09-27, sealed staging):** Closes the open staging risk from v5.1.16:
   a deleted staged configuration could be recovered from the disk. Brought forward from
   M5.01: an upload is sealed as it streams in (AES-256-GCM in 64 KiB segments with the STREAM

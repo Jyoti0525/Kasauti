@@ -14,14 +14,14 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
-from kasauti.shape.base import ParseError, RawStatement
+from kasauti.shape.base import ParseError, RawStatement, check_depth
 
 _LEX = re.compile(
     r"""
     (?P<nl>\n)
   | (?P<ws>[ \t\r\f\v]+)
   | (?P<comment>\#[^\n]*)
-  | (?P<block_comment>/\*.*?\*/)
+  | (?P<block_comment>/\*)
   | (?P<string>"(?:[^"\\\n]|\\.)*")
   | (?P<open>\{)
   | (?P<close>\})
@@ -40,12 +40,17 @@ def parse(text: str) -> Iterator[RawStatement]:  # noqa: PLR0912 - one branch pe
     words: list[str] = []
     start = 0
     line = 1
-    for m in _LEX.finditer(text):
+    pos = 0
+    while pos < len(text):
+        m = _LEX.match(text, pos)  # always matches: the last alternative takes any character
+        if m is None:  # pragma: no cover
+            raise ParseError("unreadable text", line)
         kind = m.lastgroup
+        pos = m.end()
         if kind == "nl":
             line += 1
         elif kind == "block_comment":
-            line += m.group().count("\n")
+            pos, line = _past_comment(text, pos, line)
         elif kind in ("string", "word"):
             if not words:
                 start = line
@@ -53,6 +58,7 @@ def parse(text: str) -> Iterator[RawStatement]:  # noqa: PLR0912 - one branch pe
         elif kind == "open":
             if not words:
                 raise ParseError("'{' without a block name", line)
+            check_depth(len(stack) + 1, line)
             active, header = _activity(words, line)
             parent_active = not stack or stack[-1][1]
             if active and parent_active:
@@ -77,6 +83,16 @@ def parse(text: str) -> Iterator[RawStatement]:  # noqa: PLR0912 - one branch pe
         raise ParseError(f"statement {' '.join(words)!r} is missing ';'", line)
     if stack:
         raise ParseError(f"block {stack[-1][0]!r} opened here is never closed", stack[-1][2])
+
+
+def _past_comment(text: str, pos: int, line: int) -> tuple[int, int]:
+    """Where a ``/*`` comment opened just before ``pos`` ends, and the line there. One forward
+    search, not a pattern that could run to the end of the text from every unclosed ``/*``
+    (quadratic in the text; M2.07 review)."""
+    close = text.find("*/", pos)
+    if close < 0:
+        raise ParseError("a /* comment is never closed", line)
+    return close + 2, line + text.count("\n", pos, close)
 
 
 def _activity(words: list[str], line: int) -> tuple[bool, str]:
