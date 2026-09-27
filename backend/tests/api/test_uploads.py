@@ -11,6 +11,7 @@ import socket
 import subprocess
 import sys
 import time
+import uuid
 import zipfile
 from collections.abc import Iterator
 from pathlib import Path
@@ -34,6 +35,7 @@ REPO = Path(__file__).resolve().parents[3]
 PACKS = REPO / "packs"
 WEAK = REPO / "datasets" / "authored" / "cisco_ios_xe" / "weak.cfg"
 PANOS = REPO / "datasets" / "authored" / "paloalto_panos" / "weak.xml"
+HARDENED = WEAK.with_name("hardened.cfg")
 SECRETS = re.compile(rb"PLACEHOLDER|\bpublic\b|\bprivate\b")
 """The secrets planted in weak.cfg (as in tests/test_audit.py)."""
 GUARD = {"X-Kasauti-Request": "1"}
@@ -276,6 +278,13 @@ def test_upload_to_audit_results_with_no_secret_left_behind(client: TestClient, 
         assert not SECRETS.search(path.read_bytes())
         assert b"EDGE-R1" not in path.read_bytes()
         assert b"PA-BRANCH" not in path.read_bytes()
+    early = client.post(f"/api/uploads/{upload_id}/start", headers=GUARD)
+    assert (early.status_code, early.json()["detail"]) == (
+        409,
+        "2 files are still being recognised; start again when they are",
+    )
+    _run_jobs(client)  # recognising them
+    assert [p for p in (var / "staging").rglob("*") if p.is_file()] == waiting, "still there"
     started = client.post(f"/api/uploads/{upload_id}/start", headers=GUARD)
     assert started.status_code == 202
     assert {f["job_state"] for f in started.json()["files"]} == {"queued"}
@@ -310,6 +319,7 @@ def test_upload_to_audit_results_with_no_secret_left_behind(client: TestClient, 
 def test_a_result_is_expanded_for_a_client_that_refuses_gzip(client: TestClient) -> None:
     upload_id = _new(client)
     _send(client, upload_id, "weak.cfg", WEAK.read_bytes())
+    _run_jobs(client)
     (row,) = client.post(f"/api/uploads/{upload_id}/start", headers=GUARD).json()["files"]
     early = client.get(f"/api/jobs/{row['job_id']}/result")
     assert (early.status_code, early.json()["detail"]) == (
@@ -357,6 +367,7 @@ def test_a_started_upload_takes_no_more_files_and_starts_once(client: TestClient
         "nothing to audit: no file in this upload was accepted",
     )
     _send(client, upload_id, "r.cfg", WEAK.read_bytes())
+    _run_jobs(client)
     assert client.post(f"/api/uploads/{upload_id}/start", headers=GUARD).status_code == 202
     assert client.post(f"/api/uploads/{upload_id}/start", headers=GUARD).status_code == 409
     assert _send(client, upload_id, "late.cfg", b"hostname L\n").status_code == 409
@@ -365,11 +376,81 @@ def test_a_started_upload_takes_no_more_files_and_starts_once(client: TestClient
 def test_an_unrecognised_file_fails_its_audit_with_a_reason(client: TestClient) -> None:
     upload_id = _new(client)
     _send(client, upload_id, "mystery.txt", b"just some words\n")
+    _run_jobs(client)
+    (row,) = client.get(f"/api/uploads/{upload_id}").json()["files"]
+    assert (row["kind"], row["paired_by"], row["device"]) == ("unknown", "alone", row["id"])
     client.post(f"/api/uploads/{upload_id}/start", headers=GUARD)
     _run_jobs(client)
     (row,) = client.get(f"/api/uploads/{upload_id}").json()["files"]
     assert row["job_state"] == "failed"
     assert row["job_error"].startswith("mystery.txt: can't tell which vendor this is")
+
+
+def test_devices_and_pairing_by_hand(client: TestClient) -> None:
+    upload_id = _new(client)
+    companions = REPO / "datasets" / "authored" / "cisco_ios_xe" / "companions"
+    running = _send(client, upload_id, "running.cfg", WEAK.read_bytes()).json()["files"][0]
+    startup = _send(client, upload_id, "startup.cfg", HARDENED.read_bytes()).json()["files"][0]
+    sent = _send(client, upload_id, "version.txt", (companions / "show_version.txt").read_bytes())
+    version = sent.json()["files"][0]
+    assert version["recognition"] == "pending"
+    url = f"/api/uploads/{upload_id}/files/{version['id']}/pairing"
+    waiting = client.put(url, json={"config": running["id"]}, headers=GUARD)
+    assert (waiting.status_code, waiting.json()["detail"]) == (
+        409,
+        "version.txt is still being recognised; try again shortly",
+    )
+    _run_jobs(client)
+
+    view = client.get(f"/api/uploads/{upload_id}").json()
+    assert view["recognising"] == 0
+    rows = {f["name"]: f for f in view["files"]}
+    assert {k: rows["version.txt"][k] for k in ("kind", "vendor", "command", "hostname")} == {
+        "kind": "companion",
+        "vendor": "cisco_ios_xe",
+        "command": "show_version",
+        "hostname": "EDGE-R1",
+    }
+    assert rows["version.txt"]["device"] is None, "two configurations are host EDGE-R1"
+    assert "pair it by hand" in rows["version.txt"]["note"]
+
+    paired = client.put(url, json={"config": startup["id"]}, headers=GUARD)
+    assert paired.status_code == 200
+    assert paired.json()["devices"] == [
+        {
+            "config": running["id"],
+            "name": "running.cfg",
+            "vendor": "cisco_ios_xe",
+            "hostname": "EDGE-R1",
+            "companions": [],
+        },
+        {
+            "config": startup["id"],
+            "name": "startup.cfg",
+            "vendor": "cisco_ios_xe",
+            "hostname": "EDGE-R1",
+            "companions": [version["id"]],
+        },
+    ]
+    wrong = client.put(
+        f"/api/uploads/{upload_id}/files/{running['id']}/pairing",
+        json={"config": startup["id"]},
+        headers=GUARD,
+    )
+    assert wrong.status_code == 422
+    assert wrong.json()["detail"].startswith("only command outputs are paired; running.cfg is")
+    missing = client.put(url, json={"config": str(uuid.uuid4())}, headers=GUARD)
+    assert (missing.status_code, missing.json()["detail"]) == (404, "no such file in this upload")
+    assert client.put(url, json={"config": startup["id"]}).status_code == 403  # no guard header
+
+    started = client.post(f"/api/uploads/{upload_id}/start", headers=GUARD).json()
+    jobs_by_name = {f["name"]: f["job_id"] for f in started["files"]}
+    assert jobs_by_name["version.txt"] == jobs_by_name["startup.cfg"] != jobs_by_name["running.cfg"]
+    _run_jobs(client)
+    result = client.get(f"/api/jobs/{jobs_by_name['startup.cfg']}/result").json()
+    assert [(c["file"], c["used"]) for c in result["companions"]] == [("version.txt", True)]
+    assert result["identity"]["serial"]["value"] is not None
+    assert client.delete(url, headers=GUARD).status_code == 409, "started: no more changes"
 
 
 # -- the installed command -------------------------------------------------------------------
@@ -420,8 +501,11 @@ def test_the_installed_kasauti_serve_runs_an_upload_to_its_audit(tmp_path: Path)
                     "X-File-Name": "w.cfg",
                 },
             )
-            http.post(f"/api/uploads/{upload_id}/start", headers=GUARD)
             deadline = time.monotonic() + 60
+            while http.get(f"/api/uploads/{upload_id}").json()["recognising"]:
+                assert time.monotonic() < deadline, "the file wasn't recognised"
+                time.sleep(0.2)
+            assert http.post(f"/api/uploads/{upload_id}/start", headers=GUARD).status_code == 202
             while (row := http.get(f"/api/uploads/{upload_id}").json()["files"][0])[
                 "job_state"
             ] in {"queued", "running"}:

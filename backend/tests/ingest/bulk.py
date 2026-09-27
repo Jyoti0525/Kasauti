@@ -38,7 +38,8 @@ class Row:
     name: str
     data: bytes
     outcome: str
-    """``audited``, ``failed`` or ``refused``."""
+    """``audited``, ``failed``, ``refused``, or ``left out`` (a command output with no
+    configuration of its host in the upload: reported, and in no audit)."""
     vendor: str | None = None
 
 
@@ -121,7 +122,12 @@ def corpus() -> tuple[list[Row], list[Row]]:
         Row("notes.txt", b"Change window: Saturday 02:00.\nCall the NOC first.\n", "failed"),
         # Audited, but read line by line: every rule is left for review.
         Row("cut-off.xml", config("paloalto_panos", "weak", 901).data[:2000], "audited"),
-        Row("show_version.txt", _companion("cisco_ios_xe", "show_version.txt"), "failed"),
+        # The first device's `show version` (host EDGE-R1-000): audited with its configuration.
+        Row(
+            "show_version.txt",
+            _companion("cisco_ios_xe", "show_version.txt").replace(b"EDGE-R1", b"EDGE-R1-000"),
+            "audited",
+        ),
     ]
     inside = [
         config(vendors[i % 5], "weak", 500 + i, MEDIUM if i < 3 else SMALL) for i in range(12)
@@ -140,7 +146,8 @@ def corpus() -> tuple[list[Row], list[Row]]:
 def _zip_outcome(name: str) -> str:
     if re.search(r"\.(md|zip)$", name):
         return "refused"
-    return "failed" if name.endswith(".txt") else "audited"
+    # The zip's one command output names FGT-EDGE, and no configuration here is that host.
+    return "left out" if name.endswith(".txt") else "audited"
 
 
 def zipped_bytes(rows: list[Row]) -> bytes:

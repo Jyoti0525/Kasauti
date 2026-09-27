@@ -90,17 +90,7 @@ class JobQueue:
         that refers to it are committed (or rolled back) together."""
         if kind not in self.kinds:
             raise JobInputError(f"unknown job kind {kind!r}")
-        if not isinstance(payload, dict):
-            raise JobInputError("a job's payload is a JSON object")
-        try:
-            text = canonical(payload)
-        except (TypeError, ValueError) as err:
-            raise JobInputError(f"the payload isn't JSON ({type(err).__name__})") from None
-        if len(text.encode()) > PAYLOAD_LIMIT:
-            raise JobInputError(
-                f"the payload is over {PAYLOAD_LIMIT // 1024} KiB; "
-                "pass a reference to stored input, not the input"
-            )
+        text = _checked_payload(payload)
         if timeout_s < 1 or max_attempts < 1:
             raise JobInputError("timeout_s and max_attempts must be at least 1")
         job_id = str(uuid.uuid4())
@@ -121,6 +111,20 @@ class JobQueue:
             with self.engine.begin() as own:
                 own.execute(row)
         return job_id
+
+    def amend(self, job_id: str, payload: JsonObject, *, timeout_s: int, conn: Connection) -> bool:
+        """Replace a job's payload and time limit, only while it is still queued, inside the
+        caller's transaction: False if a pool has claimed it (or it ended) since, in which
+        case the caller queues another. Checked as :meth:`enqueue` checks."""
+        text = _checked_payload(payload)
+        if timeout_s < 1:
+            raise JobInputError("timeout_s must be at least 1")
+        done = conn.execute(
+            update(jobs)
+            .where(jobs.c.id == job_id, jobs.c.state == JobState.QUEUED)
+            .values(payload=text, timeout_s=timeout_s)
+        )
+        return done.rowcount == 1
 
     def get(self, job_id: str) -> Job | None:
         with self.engine.connect() as conn:
@@ -289,6 +293,22 @@ class JobQueue:
             jobs.c.state == JobState.RUNNING,
             jobs.c.worker == worker,
         )
+
+
+def _checked_payload(payload: JsonObject) -> str:
+    """``payload`` as canonical JSON, within :data:`PAYLOAD_LIMIT`."""
+    if not isinstance(payload, dict):
+        raise JobInputError("a job's payload is a JSON object")
+    try:
+        text = canonical(payload)
+    except (TypeError, ValueError) as err:
+        raise JobInputError(f"the payload isn't JSON ({type(err).__name__})") from None
+    if len(text.encode()) > PAYLOAD_LIMIT:
+        raise JobInputError(
+            f"the payload is over {PAYLOAD_LIMIT // 1024} KiB; "
+            "pass a reference to stored input, not the input"
+        )
+    return text
 
 
 def _job(row: RowMapping) -> Job:

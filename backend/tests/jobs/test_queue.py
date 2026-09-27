@@ -48,6 +48,23 @@ def test_limits_must_be_positive(queue: JobQueue) -> None:
         queue.enqueue("a", {}, max_attempts=0)
 
 
+def test_a_job_is_amended_only_while_it_waits(queue: JobQueue) -> None:
+    job_id = queue.enqueue("a", {"files": ["x"]}, timeout_s=10)
+    with queue.engine.begin() as conn:
+        assert queue.amend(job_id, {"files": ["x", "y"]}, timeout_s=20, conn=conn)
+        with pytest.raises(JobInputError, match="pass a reference"):
+            queue.amend(job_id, {"config": "x" * PAYLOAD_LIMIT}, timeout_s=20, conn=conn)
+        with pytest.raises(JobInputError, match="at least 1"):
+            queue.amend(job_id, {}, timeout_s=0, conn=conn)
+    (claim,) = queue.claim("w1", 1)
+    assert (claim.payload, claim.timeout_s) == ('{"files":["x","y"]}', 20)
+    with queue.engine.begin() as conn:
+        assert not queue.amend(job_id, {"files": ["z"]}, timeout_s=30, conn=conn), "running"
+    with queue.engine.connect() as conn:
+        payload = conn.execute(select(jobs.c.payload).where(jobs.c.id == job_id)).scalar_one()
+    assert payload == '{"files":["x","y"]}'
+
+
 def test_a_queued_job(queue: JobQueue) -> None:
     job_id = queue.enqueue("a", {"upload": "sha256:ab", "n": 1}, now=T0)
     job = queue.get(job_id)

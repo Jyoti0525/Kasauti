@@ -1,9 +1,12 @@
-"""Uploads in the database, and keeping the staging area tidy (TODO M2.04).
+"""Uploads in the database, and keeping the staging area tidy (TODO M2.04, M2.06).
 
-An upload is open while files are added, then started: one audit job per accepted file, queued
-in the same transaction that closes the upload, so it is never half-started. Grouping files
-into devices (M2.06) and pairing companion files (M2.05) will change what one job covers; the
-upload flow stays the same.
+An upload is open while files are added, then started. As files arrive they are recognised in
+a worker (a ``sort_files`` job, :mod:`kasauti.ingest.sort`): configuration or command output,
+vendor, hostname. Files added while that job is still queued join it, so a hundred files
+dropped one by one cost one or two worker start-ups, not a hundred. From what it finds, the
+files are grouped into devices (:mod:`kasauti.ingest.devices`), which the user can correct by
+hand. Starting queues one audit job per device, its configuration and its command outputs
+together, in the same transaction that closes the upload, so it is never half-started.
 
 Every change runs with the upload's row locked (``FOR UPDATE`` on PostgreSQL; SQLite's
 ``BEGIN IMMEDIATE`` locks the whole database), so two requests adding files at once can't
@@ -16,20 +19,34 @@ import datetime as dt
 import json
 import math
 import time
-from collections.abc import Sequence
+from collections.abc import Collection, Iterable, Sequence
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import Connection, Engine, and_, delete, func, insert, select, update
 
+from kasauti.ingest.devices import (
+    MAX_COMPANIONS,
+    Kind,
+    Member,
+    Placement,
+    Recognised,
+    group,
+)
+from kasauti.ingest.sort import clean_hostname
 from kasauti.ingest.staging import Staging
 from kasauti.ingest.table import UploadState, upload_files, uploads
 from kasauti.ingest.upload import Received, new_id
 from kasauti.jobs.queue import JobQueue, utcnow
+from kasauti.jobs.results import ResultError, decode_result
 from kasauti.jobs.table import JobState, jobs
 
 AUDIT_KIND = "audit_file"
-"""The job kind that audits one uploaded file (``kasauti.jobs.kinds``)."""
+"""The job kind that audits one device (``kasauti.jobs.kinds``)."""
+SORT_KIND = "sort_files"
+"""The job kind that recognises uploaded files (TODO M2.06)."""
 MAX_FILES = 1000
 """Accepted files per upload."""
 MAX_ENTRIES = 2 * MAX_FILES
@@ -43,15 +60,35 @@ AUDIT_TIMEOUT_PER_MIB_S = 60
 """An audit job's wall-clock limit: a base for start-up and the knowledge base, plus this per
 MiB of the file. Measured 2026-09-27 on the plan's laptop: 14 s per MiB for a typical dense
 configuration and 44 s per MiB for the densest input found, so a file at the 20 MiB limit gets
-22 minutes against 15 at worst. A timeout catches a hang, never a large file."""
+22 minutes against 15 at worst. A timeout catches a hang, never a large file. A sort job gets
+the same for the files it covers: it parses each configuration, though only for its hostname."""
+SORT_RESULT_LIMIT = 16 * 1024 * 1024
+"""Bytes a sort job's result may expand to: a line or two per file, 1,000 files at most."""
 
 
 class UploadNotFoundError(LookupError):
     pass
 
 
+class FileNotInUploadError(LookupError):
+    pass
+
+
 class UploadStateError(Exception):
     """The upload can't take this action now (already started, say). User-safe text."""
+
+
+class PairingError(ValueError):
+    """A pairing that can't be made (a configuration with a configuration, say). User-safe."""
+
+
+class Recognition(StrEnum):
+    """Where recognising a file has got to."""
+
+    PENDING = "pending"
+    DONE = "done"
+    FAILED = "failed"
+    """Its sort job failed; it is treated as not recognised, and audited on its own."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +102,24 @@ class FileView:
     job_id: str | None
     job_state: JobState | None
     job_error: str | None
+    recognition: Recognition | None = None
+    """None for a refused file."""
+    recognised: Recognised | None = None
+    placement: Placement | None = None
+    manual: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class DeviceView:
+    """A device as grouped: a configuration and the command outputs that go with it."""
+
+    config: str
+    """The configuration's file id."""
+    name: str
+    vendor: str | None
+    hostname: str | None
+    companions: tuple[str, ...]
+    """File ids."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,17 +133,25 @@ class UploadView:
     touched_at: dt.datetime
     started_at: dt.datetime | None
     files: tuple[FileView, ...]
+    devices: tuple[DeviceView, ...] = ()
+
+    @property
+    def recognising(self) -> int:
+        """Accepted files still being recognised: the upload can't start until this is 0."""
+        return sum(f.recognition is Recognition.PENDING for f in self.files)
 
 
 def audit_timeout(size: int) -> int:
-    """Seconds an audit of a ``size``-byte file may take (:data:`AUDIT_TIMEOUT_PER_MIB_S`)."""
+    """Seconds an audit of ``size`` bytes may take (:data:`AUDIT_TIMEOUT_PER_MIB_S`)."""
     return AUDIT_TIMEOUT_S + math.ceil(AUDIT_TIMEOUT_PER_MIB_S * size / (1024 * 1024))
 
 
 class UploadStore:
-    def __init__(self, engine: Engine, staging: Staging) -> None:
+    def __init__(self, engine: Engine, staging: Staging, queue: JobQueue, packs: Path) -> None:
         self.engine = engine
         self.staging = staging
+        self.queue = queue
+        self.packs = packs
 
     # -- reading ------------------------------------------------------------------------------
 
@@ -97,26 +160,41 @@ class UploadStore:
             head = conn.execute(select(uploads).where(uploads.c.id == upload_id)).mappings().first()
             if head is None:
                 return None
-            rows = conn.execute(
-                select(upload_files, jobs.c.state.label("job_state"), jobs.c.error.label("job_err"))
-                .select_from(upload_files.outerjoin(jobs, upload_files.c.job_id == jobs.c.id))
-                .where(upload_files.c.upload_id == upload_id)
-                .order_by(upload_files.c.created_at, upload_files.c.name, upload_files.c.id)
-            ).mappings()
-            files = tuple(
-                FileView(
-                    id=r["id"],
-                    name=r["name"],
-                    size=r["size"],
-                    sha256=r["sha256"],
-                    accepted=bool(r["accepted"]),
-                    reason=r["reason"],
-                    job_id=r["job_id"],
-                    job_state=None if r["job_state"] is None else JobState(r["job_state"]),
-                    job_error=r["job_err"],
+            rows = (
+                conn.execute(
+                    select(
+                        upload_files,
+                        jobs.c.state.label("job_state"),
+                        jobs.c.error.label("job_err"),
+                    )
+                    .select_from(upload_files.outerjoin(jobs, upload_files.c.job_id == jobs.c.id))
+                    .where(upload_files.c.upload_id == upload_id)
+                    .order_by(upload_files.c.created_at, upload_files.c.name, upload_files.c.id)
                 )
-                for r in rows
+                .mappings()
+                .all()
             )
+            found = _recognitions(conn, rows)
+        members = [_member(r, found) for r in rows if r["accepted"]]
+        placements = group(members)
+        files = tuple(
+            FileView(
+                id=r["id"],
+                name=r["name"],
+                size=r["size"],
+                sha256=r["sha256"],
+                accepted=bool(r["accepted"]),
+                reason=r["reason"],
+                job_id=r["job_id"],
+                job_state=None if r["job_state"] is None else JobState(r["job_state"]),
+                job_error=r["job_err"],
+                recognition=found[r["id"]][0] if r["accepted"] else None,
+                recognised=found[r["id"]][1] if r["accepted"] else None,
+                placement=placements.get(r["id"]),
+                manual=bool(r["manual"]),
+            )
+            for r in rows
+        )
         return UploadView(
             id=head["id"],
             label=head["label"],
@@ -127,6 +205,7 @@ class UploadStore:
             touched_at=head["touched_at"],
             started_at=head["started_at"],
             files=files,
+            devices=_devices(members, placements),
         )
 
     # -- changes ------------------------------------------------------------------------------
@@ -173,9 +252,10 @@ class UploadStore:
     def add(
         self, upload_id: str, received: Sequence[Received], *, now: dt.datetime | None = None
     ) -> list[Received]:
-        """Record files taken in by :func:`kasauti.ingest.upload.inspect`. Limits and duplicate
-        content are checked here, with the upload locked; a file refused here is deleted. The
-        files as recorded (refusals included)."""
+        """Record files taken in by :func:`kasauti.ingest.upload.inspect`, and queue the
+        accepted ones to be recognised. Limits and duplicate content are checked here, with the
+        upload locked; a file refused here is deleted. The files as recorded (refusals
+        included)."""
         now = now or utcnow()
         try:
             with self.engine.begin() as conn:
@@ -198,6 +278,7 @@ class UploadStore:
                             for r in recorded
                         ],
                     )
+                self._sort(conn, upload_id, [r.id for r in recorded if r.accepted], now)
                 conn.execute(
                     update(uploads).where(uploads.c.id == upload_id).values(touched_at=now)
                 )
@@ -213,7 +294,8 @@ class UploadStore:
         return recorded
 
     def remove_file(self, upload_id: str, file_id: str, *, now: dt.datetime | None = None) -> bool:
-        """Take a file out of an open upload. False if the upload doesn't list it."""
+        """Take a file out of an open upload. False if the upload doesn't list it. Command
+        outputs paired with it by hand go back to being paired automatically."""
         with self.engine.begin() as conn:
             _require_open(_lock(conn, upload_id))
             gone = conn.execute(
@@ -222,10 +304,68 @@ class UploadStore:
                 )
             ).rowcount
             conn.execute(
+                update(upload_files)
+                .where(upload_files.c.upload_id == upload_id, upload_files.c.paired_with == file_id)
+                .values(manual=False, paired_with=None)
+            )
+            conn.execute(
                 update(uploads).where(uploads.c.id == upload_id).values(touched_at=now or utcnow())
             )
         self.staging.remove(upload_id, file_id)
         return gone == 1
+
+    def pair(
+        self,
+        upload_id: str,
+        file_id: str,
+        config_id: str | None,
+        *,
+        now: dt.datetime | None = None,
+    ) -> None:
+        """Pair a command output with a configuration by hand, or (``config_id`` None) leave
+        it out of every audit. :class:`PairingError` if that can't be done."""
+        with self.engine.begin() as conn:
+            _require_open(_lock(conn, upload_id))
+            members = self._members(conn, upload_id)
+            me = _find(members, file_id)
+            if me.recognised is None:
+                raise UploadStateError(f"{me.name} is still being recognised; try again shortly")
+            if me.recognised.kind is not Kind.COMPANION:
+                what = (
+                    "a configuration, which is a device of its own"
+                    if me.recognised.kind is Kind.CONFIG
+                    else "not recognised as a command output, so no audit could use it"
+                )
+                raise PairingError(f"only command outputs are paired; {me.name} is {what}")
+            if config_id is not None:
+                _check_target(members, me, me.recognised, config_id)
+            conn.execute(
+                update(upload_files)
+                .where(upload_files.c.id == file_id)
+                .values(manual=True, paired_with=config_id)
+            )
+            conn.execute(
+                update(uploads).where(uploads.c.id == upload_id).values(touched_at=now or utcnow())
+            )
+
+    def unpair(self, upload_id: str, file_id: str, *, now: dt.datetime | None = None) -> None:
+        """Undo :meth:`pair`: the file's device is found automatically again."""
+        with self.engine.begin() as conn:
+            _require_open(_lock(conn, upload_id))
+            done = conn.execute(
+                update(upload_files)
+                .where(
+                    upload_files.c.upload_id == upload_id,
+                    upload_files.c.id == file_id,
+                    upload_files.c.accepted,
+                )
+                .values(manual=False, paired_with=None)
+            ).rowcount
+            if done != 1:
+                raise FileNotInUploadError(file_id)
+            conn.execute(
+                update(uploads).where(uploads.c.id == upload_id).values(touched_at=now or utcnow())
+            )
 
     def discard(self, upload_id: str, *, now: dt.datetime | None = None) -> None:
         """Throw away an open upload and its files."""
@@ -238,48 +378,177 @@ class UploadStore:
             )
         self.staging.remove_upload(upload_id)
 
-    def start(
-        self, upload_id: str, queue: JobQueue, *, packs: Path, now: dt.datetime | None = None
-    ) -> list[str]:
-        """Close the upload and queue one audit job per accepted file; the job ids."""
+    def start(self, upload_id: str, *, now: dt.datetime | None = None) -> list[str]:
+        """Close the upload and queue one audit job per device; the job ids.
+        :class:`UploadStateError` while files are still being recognised."""
         now = now or utcnow()
+        waiting = 0
         with self.engine.begin() as conn:
             _require_open(_lock(conn, upload_id))
             head = conn.execute(
                 select(uploads.c.frameworks, uploads.c.vendor).where(uploads.c.id == upload_id)
             ).one()
-            accepted = conn.execute(
-                select(upload_files.c.id, upload_files.c.name, upload_files.c.size)
-                .where(upload_files.c.upload_id == upload_id, upload_files.c.accepted)
-                .order_by(upload_files.c.created_at, upload_files.c.name, upload_files.c.id)
-            ).all()
-            if not accepted:
+            members = self._members(conn, upload_id)
+            if not members:
                 raise UploadStateError("nothing to audit: no file in this upload was accepted")
-            job_ids = []
-            for row in accepted:
-                payload = {
-                    "upload": upload_id,
-                    "file": row.id,
-                    "name": row.name,
-                    "frameworks": json.loads(head.frameworks),
-                    "vendor": head.vendor,
-                    "staging": str(self.staging.root.resolve()),
-                    "staging_key": self.staging.key_id,
-                    "packs": str(packs.resolve()),
-                }
-                job_id = queue.enqueue(
-                    AUDIT_KIND, payload, timeout_s=audit_timeout(row.size), now=now, conn=conn
-                )
+            # Files with no sort job (an upload open across the upgrade that added them).
+            unsorted: list[str] = list(
                 conn.execute(
-                    update(upload_files).where(upload_files.c.id == row.id).values(job_id=job_id)
-                )
-                job_ids.append(job_id)
-            conn.execute(
-                update(uploads)
-                .where(uploads.c.id == upload_id)
-                .values(state=UploadState.STARTED, started_at=now, touched_at=now)
+                    select(upload_files.c.id).where(
+                        upload_files.c.upload_id == upload_id,
+                        upload_files.c.accepted,
+                        upload_files.c.sort_job_id.is_(None),
+                    )
+                ).scalars()
+            )
+            self._sort(conn, upload_id, unsorted, now)
+            waiting = sum(m.recognised is None for m in members)
+            job_ids = [] if waiting else self._queue_audits(conn, upload_id, head, members, now)
+        if waiting:
+            raise UploadStateError(
+                f"{waiting} file{'s are' if waiting > 1 else ' is'} still being recognised; "
+                "start again when they are"
             )
         return job_ids
+
+    def _queue_audits(
+        self,
+        conn: Connection,
+        upload_id: str,
+        head: Any,
+        members: Sequence[Member],
+        now: dt.datetime,
+    ) -> list[str]:
+        placements = group(members)
+        sizes: dict[str, int] = dict(
+            conn.execute(
+                select(upload_files.c.id, upload_files.c.size).where(
+                    upload_files.c.upload_id == upload_id
+                )
+            ).all()
+        )
+        by_id = {m.id: m for m in members}
+        roots = [m for m in members if placements[m.id].device == m.id]
+        if not roots:
+            raise UploadStateError(
+                "nothing to audit: every file here is a command output, and each needs its "
+                "device's configuration in the same upload"
+            )
+        job_ids = []
+        for root in roots:
+            paired = sorted(
+                (by_id[i] for i, p in placements.items() if p.device == root.id and i != root.id),
+                key=lambda m: (m.name, m.id),
+            )
+            payload = {
+                "upload": upload_id,
+                "file": root.id,
+                "name": root.name,
+                "companions": [{"id": m.id, "name": m.name} for m in paired],
+                "frameworks": json.loads(head.frameworks),
+                "vendor": head.vendor,
+                "staging": str(self.staging.root.resolve()),
+                "staging_key": self.staging.key_id,
+                "packs": str(self.packs.resolve()),
+            }
+            size = sizes[root.id] + sum(sizes[m.id] for m in paired)
+            job_id = self.queue.enqueue(
+                AUDIT_KIND, payload, timeout_s=audit_timeout(size), now=now, conn=conn
+            )
+            conn.execute(
+                update(upload_files)
+                .where(upload_files.c.id.in_([root.id, *(m.id for m in paired)]))
+                .values(job_id=job_id)
+            )
+            job_ids.append(job_id)
+        conn.execute(
+            update(uploads)
+            .where(uploads.c.id == upload_id)
+            .values(state=UploadState.STARTED, started_at=now, touched_at=now)
+        )
+        return job_ids
+
+    # -- recognising --------------------------------------------------------------------------
+
+    def _sort(
+        self, conn: Connection, upload_id: str, file_ids: Collection[str], now: dt.datetime
+    ) -> None:
+        """Queue ``file_ids`` to be recognised: added to the upload's sort job if one is still
+        queued, else in a new one. Runs with the upload locked, so at most one is queued."""
+        if not file_ids:
+            return
+        queued = conn.execute(
+            select(jobs.c.id, jobs.c.payload)
+            .select_from(upload_files.join(jobs, upload_files.c.sort_job_id == jobs.c.id))
+            .where(upload_files.c.upload_id == upload_id, jobs.c.state == JobState.QUEUED)
+            .limit(1)
+        ).first()
+        new = list(file_ids)
+        job_id: str | None = None
+        if queued is not None:
+            payload = json.loads(queued.payload)
+            # From the rows, not the old payload: files taken back out since drop off, so the
+            # payload never grows past the files the upload really has.
+            payload["files"] = [
+                *conn.execute(
+                    select(upload_files.c.id)
+                    .where(upload_files.c.sort_job_id == queued.id)
+                    .order_by(upload_files.c.created_at, upload_files.c.id)
+                ).scalars(),
+                *new,
+            ]
+            if self.queue.amend(
+                queued.id, payload, timeout_s=self._sort_timeout(conn, payload["files"]), conn=conn
+            ):
+                job_id = queued.id
+        if job_id is None:
+            vendor: str | None = conn.execute(
+                select(uploads.c.vendor).where(uploads.c.id == upload_id)
+            ).scalar_one()
+            payload = {
+                "upload": upload_id,
+                "files": new,
+                "vendor": vendor,
+                "staging": str(self.staging.root.resolve()),
+                "staging_key": self.staging.key_id,
+                "packs": str(self.packs.resolve()),
+            }
+            job_id = self.queue.enqueue(
+                SORT_KIND,
+                payload,
+                timeout_s=self._sort_timeout(conn, new),
+                now=now,
+                conn=conn,
+            )
+        conn.execute(
+            update(upload_files).where(upload_files.c.id.in_(new)).values(sort_job_id=job_id)
+        )
+
+    @staticmethod
+    def _sort_timeout(conn: Connection, file_ids: Iterable[str]) -> int:
+        size = 0
+        ids = list(file_ids)
+        for start in range(0, len(ids), 500):  # keep each IN list short
+            size += conn.execute(
+                select(func.coalesce(func.sum(upload_files.c.size), 0)).where(
+                    upload_files.c.id.in_(ids[start : start + 500])
+                )
+            ).scalar_one()
+        return audit_timeout(size)
+
+    @staticmethod
+    def _members(conn: Connection, upload_id: str) -> list[Member]:
+        rows = (
+            conn.execute(
+                select(upload_files)
+                .where(upload_files.c.upload_id == upload_id, upload_files.c.accepted)
+                .order_by(upload_files.c.created_at, upload_files.c.name, upload_files.c.id)
+            )
+            .mappings()
+            .all()
+        )
+        found = _recognitions(conn, rows)
+        return [_member(r, found) for r in rows]
 
     # -- housekeeping -------------------------------------------------------------------------
 
@@ -321,7 +590,9 @@ class UploadStore:
         return removed
 
     def _needed(self, upload_id: str) -> tuple[UploadState | None, set[str]]:
-        """The upload's state, and the accepted files still waiting for their audit."""
+        """The upload's state, and the accepted files still waiting for their audit: once it
+        has started, a device's command outputs wait with its configuration, under its job;
+        an output left out of every audit is needed by none."""
         with self.engine.connect() as conn:
             state: str | None = conn.execute(
                 select(uploads.c.state).where(uploads.c.id == upload_id)
@@ -365,6 +636,127 @@ class UploadStore:
         return out
 
 
+# -- recognitions --------------------------------------------------------------------------------
+
+
+def _recognitions(
+    conn: Connection, rows: Sequence[Any]
+) -> dict[str, tuple[Recognition, Recognised | None]]:
+    """For each accepted file, how far recognising it has got and what it found. A sort job's
+    result comes from a worker that has read untrusted files, so it is checked like input: an
+    entry for a file the job wasn't given, or that isn't well formed, is ignored."""
+    accepted = [r for r in rows if r["accepted"]]
+    job_ids = {r["sort_job_id"] for r in accepted if r["sort_job_id"] is not None}
+    states: dict[str, str] = (
+        dict(conn.execute(select(jobs.c.id, jobs.c.state).where(jobs.c.id.in_(job_ids))).all())
+        if job_ids
+        else {}
+    )
+    results: dict[str, dict[str, Recognised]] = {}
+    for job_id, job_state in states.items():
+        if job_state == JobState.SUCCEEDED:
+            given = {r["id"] for r in accepted if r["sort_job_id"] == job_id}
+            blob = conn.execute(
+                select(jobs.c.result_gzip).where(jobs.c.id == job_id)
+            ).scalar_one_or_none()
+            results[job_id] = _read_sorted(None if blob is None else bytes(blob), given)
+    unknown = Recognised(Kind.UNKNOWN)
+    out: dict[str, tuple[Recognition, Recognised | None]] = {}
+    for r in accepted:
+        sorter: str | None = r["sort_job_id"]
+        state: str | None = None if sorter is None else states.get(sorter)
+        if state in (None, JobState.QUEUED, JobState.RUNNING):
+            out[r["id"]] = (Recognition.PENDING, None)
+        elif state == JobState.SUCCEEDED and sorter is not None:
+            out[r["id"]] = (Recognition.DONE, results[sorter].get(r["id"], unknown))
+        else:
+            out[r["id"]] = (Recognition.FAILED, unknown)
+    return out
+
+
+def _read_sorted(blob: bytes | None, given: Collection[str]) -> dict[str, Recognised]:
+    if blob is None:
+        return {}
+    try:
+        obj = decode_result(blob, limit=SORT_RESULT_LIMIT)
+    except (ResultError, ValueError):
+        return {}
+    entries = obj.get("files")
+    out: dict[str, Recognised] = {}
+    for item in entries if isinstance(entries, list) else ():
+        if not isinstance(item, dict) or item.get("id") not in given:
+            continue
+        try:
+            kind = Kind(str(item.get("kind")))
+        except ValueError:
+            continue
+        vendor, command = item.get("vendor"), item.get("command")
+        out[item["id"]] = Recognised(
+            kind=kind,
+            vendor=vendor if isinstance(vendor, str) and 0 < len(vendor) <= 64 else None,
+            command=command if isinstance(command, str) and 0 < len(command) <= 64 else None,
+            hostname=clean_hostname(item.get("hostname")),
+        )
+    return out
+
+
+def _member(row: Any, found: dict[str, tuple[Recognition, Recognised | None]]) -> Member:
+    return Member(
+        id=row["id"],
+        name=row["name"],
+        recognised=found[row["id"]][1],
+        manual=bool(row["manual"]),
+        paired_with=row["paired_with"],
+    )
+
+
+def _devices(members: Sequence[Member], placements: dict[str, Placement]) -> tuple[DeviceView, ...]:
+    by_id = {m.id: m for m in members}
+    out = []
+    for m in members:
+        r = m.recognised
+        if r is None or r.kind is not Kind.CONFIG:
+            continue
+        paired = sorted(
+            (by_id[i] for i, p in placements.items() if p.device == m.id and i != m.id),
+            key=lambda c: (c.name, c.id),
+        )
+        out.append(
+            DeviceView(
+                config=m.id,
+                name=m.name,
+                vendor=r.vendor,
+                hostname=r.hostname,
+                companions=tuple(c.id for c in paired),
+            )
+        )
+    return tuple(out)
+
+
+def _find(members: Sequence[Member], file_id: str) -> Member:
+    for m in members:
+        if m.id == file_id:
+            return m
+    raise FileNotInUploadError(file_id)
+
+
+def _check_target(members: Sequence[Member], me: Member, mine: Recognised, config_id: str) -> None:
+    target = _find(members, config_id)
+    r = target.recognised
+    if r is None or r.kind is not Kind.CONFIG:
+        raise PairingError(f"{target.name} isn't a configuration, so it can't take {me.name}")
+    if r.vendor != mine.vendor:
+        raise PairingError(
+            f"{me.name} is {mine.vendor} output and {target.name} a {r.vendor} configuration"
+        )
+    placements = group(members)
+    count = sum(
+        1 for i, p in placements.items() if p.device == config_id and i not in (config_id, me.id)
+    )
+    if count >= MAX_COMPANIONS:
+        raise PairingError(f"{target.name} already has {MAX_COMPANIONS} command outputs")
+
+
 def _lock(conn: Connection, upload_id: str) -> str:
     state: str | None = conn.execute(
         select(uploads.c.state).where(uploads.c.id == upload_id).with_for_update()
@@ -383,3 +775,19 @@ def _require_open(state: str) -> None:
                 UploadState.EXPIRED: "this upload expired unstarted; its files were deleted",
             }.get(UploadState(state), f"this upload is {state}")
         )
+
+
+__all__ = [
+    "AUDIT_KIND",
+    "SORT_KIND",
+    "DeviceView",
+    "FileNotInUploadError",
+    "FileView",
+    "PairingError",
+    "Recognition",
+    "UploadNotFoundError",
+    "UploadStateError",
+    "UploadStore",
+    "UploadView",
+    "audit_timeout",
+]

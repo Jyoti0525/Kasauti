@@ -6,7 +6,9 @@ not, so the upload reports every file it was given, including the ones it refuse
 (R-04: "malformed files are reported").
 
 Rows hold names, sizes, hashes and reasons, never configuration text. The text itself waits in
-the staging area on disk (:mod:`kasauti.ingest.staging`) until its audit job reads it.
+the staging area on disk (:mod:`kasauti.ingest.staging`) until its audit job reads it. What a
+file was recognised as (TODO M2.06) is its sort job's result; a device chosen by hand is kept
+here, and ``paired_with`` names another row of the same upload (the store keeps it so).
 """
 
 from __future__ import annotations
@@ -23,6 +25,7 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    false,
 )
 
 from kasauti.db.schema import Base
@@ -85,9 +88,28 @@ upload_files = Table(
         comment="its audit, once the upload is started",
     ),
     Column("created_at", UtcDateTime, nullable=False),
+    Column(
+        "sort_job_id",
+        String(36),
+        ForeignKey("jobs.id", ondelete="SET NULL"),
+        comment="the job recognising it: config or command output, vendor, hostname (M2.06)",
+    ),
+    Column(
+        "manual",
+        Boolean,
+        nullable=False,
+        server_default=false(),
+        comment="its device was chosen by hand (M2.06)",
+    ),
+    Column(
+        "paired_with",
+        String(36),
+        comment="with manual: the configuration it goes with; null = left out",
+    ),
     CheckConstraint("size >= 0", name="size"),
     CheckConstraint(
         "(accepted AND reason IS NULL) OR (NOT accepted AND reason IS NOT NULL)", name="reason"
     ),
+    CheckConstraint("manual OR paired_with IS NULL", name="pairing"),
     Index("ix_upload_files_upload_id", "upload_id"),
 )

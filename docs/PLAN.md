@@ -204,6 +204,11 @@ Each pack is **data only** (schema-validated YAML/JSON; no code, no pickle) and 
 - Config files (`.txt .cfg .conf .log .xml .json .yaml`), `.zip` archives, folders; single or bulk.
 - **Companion files** per device (`show version`, `show inventory`, `get system status`, `show system info`, `show chassis hardware`, `display version`, `display esn`): the reliable source of serials and hardware (§7).
 - Pairing: files are grouped into devices by hostname and filename stem, with a manual correction UI.
+  Since v5.1.22 each file is recognised in a worker as it arrives (configuration or command
+  output, vendor, hostname); every configuration is a device, and an output joins the one whose
+  host it names, or whose file or folder name it shares. A tie or no match is never guessed:
+  the output is left out with the reason until someone pairs it by hand. The audit checks the
+  pairing again, so another host's serial can't reach a report.
 
 ### 5.2 Handling
 - Limits on size, archive entries and nesting depth; path normalisation (zip-slip); `defusedxml` (XXE, billion laughs); encoding detection; binary sniffing.
@@ -839,6 +844,10 @@ since each entity carries its facts, evidence and findings into the result. A 2 
 still audits about 4 MiB of that, and 15 MiB of realistic configuration. Going further would
 change the stored result's data model (a compact SBM), which is its own task.
 
+**Measured 2026-09-27, v5.1.22 (M2.06).** Recognising the 100 files before the upload starts
+is one worker job of 2 s, since files join the job still waiting; the whole bulk test, now
+with a `show version` audited with its device, takes 43 s on 2 workers.
+
 ---
 
 ## 23. Engineering practice and repository layout
@@ -994,6 +1003,13 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.22 (2026-09-27, M2.06 devices, server side):** Uploaded files are grouped into
+  devices before the upload starts. A `sort_files` job recognises each file in a worker
+  (files added while it waits join it: one job for 100 files, 2 s) and leaves it sealed for
+  the audit; the server groups by hostname, then file or folder name, and leaves ties and
+  misses for a person, with the reason. The API lets a client pair an output by hand, leave it
+  out, or go back to automatic; starting queues one audit per device with its outputs. The
+  screen waits for the frontend (M2.77). Migration 0005 adds the pairing columns.
 - **v5.1.21 (2026-09-27, M2.09 bulk acceptance):** R-04's acceptance test runs on every
   build: 100 mixed files, a zip among them, each ends audited, refused with a reason, or
   failed with a sentence, in 40 s on 2 workers (74 s on 1) against §22's 3 minutes. Per-job

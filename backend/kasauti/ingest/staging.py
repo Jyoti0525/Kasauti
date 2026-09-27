@@ -9,6 +9,8 @@ long as it has to be, and never in the clear:
   created owner-only (0600) on POSIX; on Windows the data directory's ACL applies;
 * named by random ids, never by anything the user sent, so no file name can reach outside the
   staging directory;
+* read, and left in place, by the worker that recognises it (config or command output, vendor,
+  hostname; :mod:`kasauti.ingest.sort`), so its device can be found before the upload starts;
 * read once by the audit job's worker process, which deletes it at once, before parsing it;
 * deleted by :func:`kasauti.ingest.store.housekeep` when its upload is discarded, expires
   unstarted, or its job ends without reading it (cancelled, say).
@@ -32,6 +34,8 @@ from pathlib import Path
 from kasauti.ingest.sealed import SEGMENT, TAG, Sealer, SealError
 
 PART = ".part"
+STAGING_KEY_NAME = "staging"
+"""The worker secret (:func:`kasauti.jobs.child.worker_secret`) staged files are sealed with."""
 _BINARY = getattr(os, "O_BINARY", 0)  # Windows: no newline translation
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 
@@ -139,11 +143,35 @@ def read_once(root: Path, key: bytes, upload_id: str, file_id: str, limit: int) 
     :class:`FileNotFoundError` if it is gone (already read, or deleted by housekeeping);
     :class:`SealError` if it doesn't open under ``key``; :class:`ValueError` if it is over
     ``limit`` bytes, which staging never lets in."""
-    path = Staging(root, key).path(upload_id, file_id)
+    return _read(root, key, upload_id, file_id, limit, keep=False)
+
+
+def read_kept(
+    root: Path, key: bytes, upload_id: str, file_id: str, limit: int, *, part: bool = False
+) -> bytes:
+    """As :func:`read_once`, but the staged file stays, sealed, for its audit: for recognising
+    a file before the upload starts (:mod:`kasauti.ingest.sort`). With ``part``, the file under
+    its ``.part`` name: complete, but its row committed a moment ago and not yet renamed."""
+    return _read(root, key, upload_id, file_id, limit, keep=True, part=part)
+
+
+def _read(
+    root: Path,
+    key: bytes,
+    upload_id: str,
+    file_id: str,
+    limit: int,
+    *,
+    keep: bool,
+    part: bool = False,
+) -> bytes:
+    staging = Staging(root, key)
+    path = staging.part(upload_id, file_id) if part else staging.path(upload_id, file_id)
     most = limit + (limit // SEGMENT + 2) * TAG + 64  # the plaintext limit, sealed
     with path.open("rb") as handle:
         sealed = handle.read(most + 1)
-    path.unlink(missing_ok=True)
+    if not keep:
+        path.unlink(missing_ok=True)
     if len(sealed) > most:
         raise ValueError("staged file over the limit")
     data = Sealer(key).open(sealed, _label(upload_id, file_id))
@@ -158,4 +186,14 @@ def delete_staged(root: Path, upload_id: str, file_id: str) -> None:
     (root / upload_id / file_id).unlink(missing_ok=True)
 
 
-__all__ = ["PART", "SealError", "Staging", "delete_staged", "is_id", "key_id", "read_once"]
+__all__ = [
+    "PART",
+    "STAGING_KEY_NAME",
+    "SealError",
+    "Staging",
+    "delete_staged",
+    "is_id",
+    "key_id",
+    "read_kept",
+    "read_once",
+]

@@ -33,7 +33,7 @@ from kasauti.packs.loader import (
     VendorPack,
     load_framework_pack,
     load_ruleset,
-    load_vendor_pack,
+    load_vendor_packs,
 )
 from kasauti.rules.engine import NOTHING_IN_SCOPE, evaluate_rules
 from kasauti.rules.enrich import apply_default_role, apply_inferences
@@ -75,7 +75,7 @@ class KnowledgeBase:
 
 
 def load_kb(packs_root: Path) -> KnowledgeBase:
-    vendor = {d.name: load_vendor_pack(d) for d in sorted((packs_root / "vendors").glob("*/"))}
+    vendor = load_vendor_packs(packs_root)
     frameworks = {
         fw.catalog.framework: fw
         for fw in (load_framework_pack(d) for d in sorted((packs_root / "frameworks").glob("*/")))

@@ -1,5 +1,6 @@
 """R-04's acceptance test (TODO M2.09): 100 mixed files, a zip among them, all ingested;
-malformed ones reported; nothing crashes; inside PLAN §22's three minutes."""
+malformed ones reported; nothing crashes; inside PLAN §22's three minutes. Since M2.06 the files
+are recognised and grouped into devices before the upload starts, and that counts too."""
 
 from __future__ import annotations
 
@@ -58,13 +59,19 @@ def test_a_hundred_mixed_files_are_all_accounted_for_within_budget(client: TestC
     for row in direct:
         _send(client, upload_id, row.name, row.data)
     _send(client, upload_id, "site-b.zip", zipped_bytes(zipped))
-    assert client.post(f"/api/uploads/{upload_id}/start", headers=GUARD).status_code == 202
     uploaded = time.monotonic() - started
     state = client.app.state  # type: ignore[attr-defined]
     pool = WorkerPool(state.jobs, HANDLERS, workers=default_workers(), secrets=state.worker_secrets)
+    pool.run_until_idle(timeout_s=BUDGET_S)  # recognising: one job, which every file joined
+    assert client.get(f"/api/uploads/{upload_id}").json()["recognising"] == 0
+    recognised = time.monotonic() - started
+    assert client.post(f"/api/uploads/{upload_id}/start", headers=GUARD).status_code == 202
     pool.run_until_idle(timeout_s=BUDGET_S * 2)
     elapsed = time.monotonic() - started
-    print(f"\n100 files: uploaded in {uploaded:.1f} s, all audited in {elapsed:.1f} s")
+    print(
+        f"\n100 files: uploaded in {uploaded:.1f} s, recognised in {recognised:.1f} s, "
+        f"all audited in {elapsed:.1f} s"
+    )
 
     files = client.get(f"/api/uploads/{upload_id}").json()["files"]
     assert {f["name"] for f in files} == set(expected)
@@ -73,6 +80,10 @@ def test_a_hundred_mixed_files_are_all_accounted_for_within_budget(client: TestC
         if not f["accepted"]:
             outcomes[f["name"]] = "refused"
             assert f["reason"], f
+        elif f["job_id"] is None:
+            outcomes[f["name"]] = "left out"
+            assert f["kind"] == "companion", f
+            assert f["note"] == "names host FGT-EDGE, and no configuration here is that host", f
         elif f["job_state"] == "succeeded":
             outcomes[f["name"]] = "audited"
         else:
@@ -80,7 +91,12 @@ def test_a_hundred_mixed_files_are_all_accounted_for_within_budget(client: TestC
             assert f["job_error"].startswith(f"{f['name']}: "), f
             outcomes[f["name"]] = "failed"
     assert outcomes == {name: row.outcome for name, row in expected.items()}
-    cut = next(f for f in files if f["name"] == "cut-off.xml")
+    by_name = {f["name"]: f for f in files}
+    version, device = by_name["show_version.txt"], by_name["cisco_ios_xe/edge-r1-000.cfg"]
+    assert version["job_id"] == device["job_id"], "audited with its device"
+    paired = client.get(f"/api/jobs/{device['job_id']}/result").json()
+    assert [(c["file"], c["used"]) for c in paired["companions"]] == [("show_version.txt", True)]
+    cut = by_name["cut-off.xml"]
     result = client.get(f"/api/jobs/{cut['job_id']}/result").json()
     assert {r["status"] for r in result["rules"]} <= {"REVIEW", "N/A"}
     assert elapsed < BUDGET_S

@@ -17,11 +17,11 @@ from sqlalchemy import Engine
 
 from kasauti.ingest.read import IngestError, decode
 from kasauti.ingest.sealed import new_key
-from kasauti.ingest.staging import Staging
+from kasauti.ingest.staging import STAGING_KEY_NAME, Staging
 from kasauti.ingest.upload import Received, inspect, new_id
-from kasauti.ingest.worker import STAGING_KEY_NAME
 from kasauti.jobs import JobQueue, JobState, WorkerPool
 from kasauti.jobs.kinds import HANDLERS
+from kasauti.jobs.results import decode_result
 from kasauti.shape.base import MAX_DEPTH
 from kasauti.shape.model import ShapeFamily
 from kasauti.shape.parse import parse_text
@@ -169,3 +169,39 @@ def test_every_hostile_file_ends_its_audit_job_cleanly(any_engine: Engine, tmp_p
             assert job.error is not None
             assert job.error.startswith(f"{name}: "), (name, job.error)
             assert not any(word in job.error for word in INTERNAL), (name, job.error)
+
+
+def test_recognising_every_hostile_file_ends_cleanly(any_engine: Engine, tmp_path: Path) -> None:
+    """The sort job (TODO M2.06) reads files before any audit, parsing each configuration for
+    its hostname, and one job covers a whole upload: a hostile file must not end it for every
+    file in it. All of them in one job; it succeeds and names every file."""
+    staging = Staging(tmp_path / "staging", KEY)
+    staging.prepare()
+    queue = JobQueue(any_engine, set(HANDLERS))
+    upload_id = new_id()
+    ids = []
+    for case in FILES:
+        file_id = new_id()
+        with staging.create(upload_id, file_id) as sink:
+            sink.write(case.make(256 * 1024))
+        staging.commit(upload_id, file_id)
+        ids.append(file_id)
+    payload = {
+        "upload": upload_id,
+        "files": ids,
+        "vendor": None,
+        "staging": str(staging.root),
+        "staging_key": staging.key_id,
+        "packs": str(REPO / "packs"),
+    }
+    job_id = queue.enqueue("sort_files", payload, timeout_s=600)
+    started = time.monotonic()
+    pool = WorkerPool(queue, HANDLERS, workers=1, poll_s=0.05, secrets={STAGING_KEY_NAME: KEY})
+    pool.run_until_idle(timeout_s=600)
+    job = queue.get(job_id)
+    assert job is not None
+    assert (job.state, job.error) == (JobState.SUCCEEDED, None)
+    result = decode_result(queue.result(job_id) or b"")
+    assert sorted(f["id"] for f in result["files"]) == sorted(ids)
+    assert all(p.is_file() for p in (staging.root / upload_id).iterdir()), "kept for the audit"
+    assert time.monotonic() - started < 120

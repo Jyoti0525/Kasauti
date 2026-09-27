@@ -62,9 +62,8 @@ from kasauti.api.uploads import router as uploads_router
 from kasauti.audit import KnowledgeBase, load_kb
 from kasauti.db import create_engine, current_revision, ensure_current
 from kasauti.ingest.sealed import new_key
-from kasauti.ingest.staging import Staging
+from kasauti.ingest.staging import STAGING_KEY_NAME, Staging
 from kasauti.ingest.store import UploadStore
-from kasauti.ingest.worker import STAGING_KEY_NAME
 from kasauti.jobs import JobQueue, WorkerPool
 from kasauti.jobs.kinds import HANDLERS
 from kasauti.jobs.limits import DEFAULT_MEMORY_MIB
@@ -244,7 +243,7 @@ def _jobs_and_uploads(
         if settings.workers
         else None
     )
-    return queue, UploadStore(engine, staging), pool, worker_secrets
+    return queue, UploadStore(engine, staging, queue, settings.packs), pool, worker_secrets
 
 
 async def _housekeep(store: UploadStore) -> None:

@@ -1,49 +1,93 @@
-"""Uploads in the database and staging housekeeping (TODO M2.04), on SQLite and PostgreSQL."""
+"""Uploads in the database, devices and staging housekeeping (TODO M2.04, M2.06), on SQLite
+and PostgreSQL."""
 
 from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import json
 import os
 import time
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
 from sqlalchemy import Engine, select, update
 
 from kasauti.ingest import store as store_module
+from kasauti.ingest.devices import How, Kind
 from kasauti.ingest.read import MAX_BYTES
 from kasauti.ingest.sealed import new_key
-from kasauti.ingest.staging import Staging
+from kasauti.ingest.sort import HOSTNAME_LIMIT, sort_files
+from kasauti.ingest.staging import STAGING_KEY_NAME, Staging
 from kasauti.ingest.store import (
     AUDIT_KIND,
     AUDIT_TIMEOUT_PER_MIB_S,
     AUDIT_TIMEOUT_S,
     OPEN_TTL,
+    SORT_KIND,
+    FileNotInUploadError,
+    PairingError,
+    Recognition,
     UploadNotFoundError,
     UploadStateError,
     UploadStore,
+    UploadView,
     audit_timeout,
 )
 from kasauti.ingest.table import UploadState
 from kasauti.ingest.upload import Received, new_id
 from kasauti.jobs import JobQueue, JobState
+from kasauti.jobs.child import set_worker_secrets
 from kasauti.jobs.queue import utcnow
+from kasauti.jobs.results import encode_result
 from kasauti.jobs.table import jobs
 
-PACKS = Path(__file__).resolve().parents[3] / "packs"
+REPO = Path(__file__).resolve().parents[3]
+PACKS = REPO / "packs"
+AUTHORED = REPO / "datasets" / "authored"
+KEY = new_key()
 
 
-@pytest.fixture
-def store(any_engine: Engine, tmp_path: Path) -> UploadStore:
-    staging = Staging(tmp_path / "staging", new_key())
-    staging.prepare()
-    return UploadStore(any_engine, staging)
+@pytest.fixture(autouse=True)
+def _worker_secrets() -> Iterator[None]:
+    """Sort jobs run in this process here (:func:`_recognise`), with the key a pool hands a
+    worker."""
+    set_worker_secrets({STAGING_KEY_NAME: KEY})
+    yield
+    set_worker_secrets({})
 
 
 @pytest.fixture
 def queue(any_engine: Engine) -> JobQueue:
-    return JobQueue(any_engine, {AUDIT_KIND})
+    return JobQueue(any_engine, {AUDIT_KIND, SORT_KIND})
+
+
+@pytest.fixture
+def store(any_engine: Engine, tmp_path: Path, queue: JobQueue) -> UploadStore:
+    staging = Staging(tmp_path / "staging", KEY)
+    staging.prepare()
+    return UploadStore(any_engine, staging, queue, PACKS)
+
+
+def _recognise(store: UploadStore) -> None:
+    """Run every queued sort job, in this process, as a worker would."""
+    sorter = JobQueue(store.engine, {SORT_KIND})
+    for claim in sorter.claim("test", 100):
+        result = encode_result(sort_files(json.loads(claim.payload)))
+        assert sorter.finish("test", claim.id, JobState.SUCCEEDED, result=result)
+
+
+def _view(store: UploadStore, upload_id: str) -> UploadView:
+    view = store.get(upload_id)
+    assert view is not None
+    return view
+
+
+def _sample(vendor: str, name: str) -> bytes:
+    folder = AUTHORED / vendor
+    path = folder / name if (folder / name).exists() else folder / "companions" / name
+    return path.read_bytes()
 
 
 def _open(store: UploadStore) -> str:
@@ -112,7 +156,8 @@ def test_an_upload_takes_no_files_once_started_and_starts_once(
     uid = _open(store)
     first = _staged(store, uid, b"hostname R1\n")
     store.add(uid, [first])
-    (job_id,) = store.start(uid, queue, packs=PACKS)
+    _recognise(store)
+    (job_id,) = store.start(uid)
     job = queue.get(job_id)
     assert job is not None
     assert (job.kind, job.state) == (AUDIT_KIND, JobState.QUEUED)
@@ -125,7 +170,7 @@ def test_an_upload_takes_no_files_once_started_and_starts_once(
         store.add(uid, [late])
     assert not store.staging.part(uid, late.id).exists(), "a refused add deletes its files"
     with pytest.raises(UploadStateError, match="has started"):
-        store.start(uid, queue, packs=PACKS)
+        store.start(uid)
     with pytest.raises(UploadStateError):
         store.check_open(uid)
 
@@ -133,18 +178,21 @@ def test_an_upload_takes_no_files_once_started_and_starts_once(
 def test_the_job_payload_is_references_not_content(store: UploadStore, queue: JobQueue) -> None:
     uid = _open(store)
     store.add(uid, [_staged(store, uid, b"hostname SECRET-HOST\n", "r1.cfg")])
-    (job_id,) = store.start(uid, queue, packs=PACKS)
+    _recognise(store)
+    (job_id,) = store.start(uid)
     with store.engine.connect() as conn:
-        payload = conn.execute(jobs.select().where(jobs.c.id == job_id)).one().payload
-    assert "SECRET-HOST" not in payload
-    assert '"name":"r1.cfg"' in payload
+        payloads = [p for (p,) in conn.execute(select(jobs.c.payload))]
+        audit = conn.execute(select(jobs.c.payload).where(jobs.c.id == job_id)).scalar_one()
+    assert len(payloads) == 2, "the sort job and the audit"
+    assert not any("SECRET-HOST" in p for p in payloads)
+    assert '"name":"r1.cfg"' in audit
 
 
 def test_nothing_to_start_without_an_accepted_file(store: UploadStore, queue: JobQueue) -> None:
     uid = _open(store)
     store.add(uid, [Received(new_id(), "a.exe", 0, None, "not a configuration file type")])
     with pytest.raises(UploadStateError, match="nothing to audit"):
-        store.start(uid, queue, packs=PACKS)
+        store.start(uid)
     assert queue.pending() == 0
 
 
@@ -193,7 +241,8 @@ def test_housekeeping_keeps_what_a_queued_job_needs_and_deletes_the_rest(
     waiting = _staged(store, uid, b"1\n", "1-waiting.cfg")
     cancelled = _staged(store, uid, b"2\n", "2-cancelled.cfg")
     store.add(uid, [waiting, cancelled])
-    job_waiting, job_cancelled = store.start(uid, queue, packs=PACKS)
+    _recognise(store)
+    job_waiting, job_cancelled = store.start(uid)
     queue.cancel(job_cancelled)  # ended without its worker ever reading the file
     assert store.housekeep() == 1
     assert store.staging.path(uid, waiting.id).exists()
@@ -231,11 +280,222 @@ def test_an_audit_s_time_limit_grows_with_its_file(store: UploadStore, queue: Jo
     small = _staged(store, uid, b"hostname R1\n", "small.cfg")
     large = _staged(store, uid, b"!" * (3 * 1024 * 1024 + 1), "large.cfg")
     store.add(uid, [small, large])
+    _recognise(store)
     timeouts = []
-    for job_id in store.start(uid, queue, packs=PACKS):
+    for job_id in store.start(uid):
         with store.engine.connect() as conn:
             timeouts.append(
                 conn.execute(select(jobs.c.timeout_s).where(jobs.c.id == job_id)).scalar_one()
             )
     # In name order; a part of a second rounds up.
     assert timeouts == [AUDIT_TIMEOUT_S + 3 * AUDIT_TIMEOUT_PER_MIB_S + 1, AUDIT_TIMEOUT_S + 1]
+
+
+# -- devices (TODO M2.06) ---------------------------------------------------------------------
+
+
+def _sort_job(store: UploadStore, file_id: str) -> str | None:
+    with store.engine.connect() as conn:
+        found: str | None = conn.execute(
+            select(store_module.upload_files.c.sort_job_id).where(
+                store_module.upload_files.c.id == file_id
+            )
+        ).scalar_one()
+    return found
+
+
+def test_files_join_the_sort_job_still_queued_and_start_waits_for_it(
+    store: UploadStore, queue: JobQueue
+) -> None:
+    uid = _open(store)
+    a = _staged(store, uid, b"hostname A\n", "a.cfg")
+    store.add(uid, [a])
+    b = _staged(store, uid, b"x" * (2 * 1024 * 1024), "b.cfg")
+    store.add(uid, [b])
+    job = _sort_job(store, a.id)
+    assert job is not None
+    assert _sort_job(store, b.id) == job, "one job for both"
+    with store.engine.connect() as conn:
+        row = conn.execute(select(jobs).where(jobs.c.id == job)).one()
+    assert json.loads(row.payload)["files"] == [a.id, b.id]
+    assert row.timeout_s == audit_timeout(a.size + b.size)
+    assert [f.recognition for f in _view(store, uid).files] == [Recognition.PENDING] * 2
+    assert _view(store, uid).recognising == 2
+    with pytest.raises(UploadStateError, match="2 files are still being recognised"):
+        store.start(uid)
+    assert _view(store, uid).state is UploadState.OPEN
+
+    (claimed,) = JobQueue(store.engine, {SORT_KIND}).claim("elsewhere", 1)  # now running
+    c = _staged(store, uid, b"hostname C\n", "c.cfg")
+    store.add(uid, [c])
+    assert _sort_job(store, c.id) not in (None, job), "a running job takes no more"
+    assert claimed.id == job
+
+
+def test_a_removed_file_drops_out_of_the_queued_sort_job(store: UploadStore) -> None:
+    uid = _open(store)
+    a, b = _staged(store, uid, b"a\n", "a.cfg"), _staged(store, uid, b"b\n", "b.cfg")
+    store.add(uid, [a, b])
+    store.remove_file(uid, a.id)
+    c = _staged(store, uid, b"c\n", "c.cfg")
+    store.add(uid, [c])
+    job = _sort_job(store, c.id)
+    with store.engine.connect() as conn:
+        payload = json.loads(conn.execute(select(jobs.c.payload).where(jobs.c.id == job)).one()[0])
+    assert payload["files"] == [b.id, c.id]
+
+
+def test_devices_are_found_and_each_is_audited_with_its_outputs(
+    store: UploadStore, queue: JobQueue
+) -> None:
+    uid = _open(store)
+    files = {
+        "EDGE-R1.cfg": _sample("cisco_ios_xe", "hardened.cfg"),
+        "show_version.txt": _sample("cisco_ios_xe", "show_version.txt"),  # names EDGE-R1
+        "edge-r1_show_inventory.txt": _sample("cisco_ios_xe", "show_inventory.txt"),
+        "leaf1/running.cfg": _sample("arista_eos", "hardened.cfg"),  # host LEAF-1
+        "leaf1/show_version.txt": _sample("arista_eos", "show_version.txt"),  # names no host
+    }
+    staged = {name: _staged(store, uid, data, name) for name, data in files.items()}
+    store.add(uid, list(staged.values()))
+    assert store.staging.path(uid, staged["EDGE-R1.cfg"].id).exists()
+    _recognise(store)
+    ids = {name: r.id for name, r in staged.items()}
+    view = _view(store, uid)
+    assert view.recognising == 0
+    assert all(p.is_file() for p in (store.staging.root / uid).iterdir()), "recognising keeps them"
+    by_name = {f.name: f for f in view.files}
+    assert by_name["EDGE-R1.cfg"].recognised is not None
+    assert (by_name["EDGE-R1.cfg"].recognised.kind, by_name["EDGE-R1.cfg"].recognised.hostname) == (
+        Kind.CONFIG,
+        "EDGE-R1",
+    )
+    assert {(f.name, f.placement.device, f.placement.how) for f in view.files if f.placement} == {
+        ("EDGE-R1.cfg", ids["EDGE-R1.cfg"], How.OWN),
+        ("show_version.txt", ids["EDGE-R1.cfg"], How.HOSTNAME),
+        ("edge-r1_show_inventory.txt", ids["EDGE-R1.cfg"], How.NAME),
+        ("leaf1/running.cfg", ids["leaf1/running.cfg"], How.OWN),
+        ("leaf1/show_version.txt", ids["leaf1/running.cfg"], How.NAME),
+    }
+    assert [(d.name, d.hostname, len(d.companions)) for d in view.devices] == [
+        ("EDGE-R1.cfg", "EDGE-R1", 2),
+        ("leaf1/running.cfg", "LEAF-1", 1),
+    ]
+
+    edge, leaf = store.start(uid)
+    with store.engine.connect() as conn:
+        payload = json.loads(conn.execute(select(jobs.c.payload).where(jobs.c.id == edge)).one()[0])
+    assert payload["file"] == ids["EDGE-R1.cfg"]
+    assert payload["companions"] == [
+        {"id": ids["edge-r1_show_inventory.txt"], "name": "edge-r1_show_inventory.txt"},
+        {"id": ids["show_version.txt"], "name": "show_version.txt"},
+    ]
+    jobs_by_file = {f.name: f.job_id for f in _view(store, uid).files}
+    assert jobs_by_file["show_version.txt"] == edge, "an output waits under its device's audit"
+    assert jobs_by_file["leaf1/show_version.txt"] == leaf
+    assert store.housekeep() == 0, "every file is still needed"
+
+
+def test_pairing_by_hand(store: UploadStore) -> None:
+    uid = _open(store)
+    running = _staged(store, uid, _sample("cisco_ios_xe", "hardened.cfg"), "running.cfg")
+    startup = _staged(store, uid, _sample("cisco_ios_xe", "weak.cfg"), "startup.cfg")  # EDGE-R1 too
+    fortigate = _staged(store, uid, _sample("fortinet_fortios", "hardened.conf"), "fw.conf")
+    version = _staged(store, uid, _sample("cisco_ios_xe", "show_version.txt"), "version.txt")
+    store.add(uid, [running, startup, fortigate, version])
+    with pytest.raises(UploadStateError, match="still being recognised"):
+        store.pair(uid, version.id, running.id)
+    _recognise(store)
+
+    def placement(file_id: str) -> tuple[str | None, How | None, str | None]:
+        (f,) = [f for f in _view(store, uid).files if f.id == file_id]
+        assert f.placement is not None
+        return f.placement.device, f.placement.how, f.placement.note
+
+    assert placement(version.id) == (
+        None,
+        How.HOSTNAME,
+        "matches 2 configurations (running.cfg, startup.cfg): pair it by hand",
+    )
+    store.pair(uid, version.id, startup.id)
+    assert placement(version.id) == (startup.id, How.HAND, None)
+    store.pair(uid, version.id, None)
+    assert placement(version.id) == (None, How.HAND, "left out by hand: used in no audit")
+    store.unpair(uid, version.id)
+    assert placement(version.id)[:2] == (None, How.HOSTNAME)
+
+    with pytest.raises(PairingError, match=r"running\.cfg is a configuration"):
+        store.pair(uid, running.id, startup.id)
+    with pytest.raises(PairingError, match=r"version\.txt is cisco_ios_xe output and fw\.conf"):
+        store.pair(uid, version.id, fortigate.id)
+    with pytest.raises(PairingError, match="isn't a configuration"):
+        store.pair(uid, version.id, version.id)
+    with pytest.raises(FileNotInUploadError):
+        store.pair(uid, version.id, new_id())
+    with pytest.raises(FileNotInUploadError):
+        store.unpair(uid, new_id())
+
+    store.pair(uid, version.id, running.id)
+    store.remove_file(uid, running.id)
+    assert placement(version.id) == (startup.id, How.HOSTNAME, None), "back to automatic"
+
+
+def test_only_command_outputs_is_nothing_to_audit(store: UploadStore) -> None:
+    uid = _open(store)
+    store.add(uid, [_staged(store, uid, _sample("cisco_ios_xe", "show_version.txt"), "v.txt")])
+    _recognise(store)
+    with pytest.raises(UploadStateError, match="every file here is a command output"):
+        store.start(uid)
+    assert _view(store, uid).files[0].placement is not None
+    assert _view(store, uid).state is UploadState.OPEN
+
+
+def test_a_failed_sort_leaves_its_files_to_be_audited_alone(store: UploadStore) -> None:
+    uid = _open(store)
+    staged = _staged(store, uid, _sample("cisco_ios_xe", "hardened.cfg"), "r1.cfg")
+    store.add(uid, [staged])
+    sorter = JobQueue(store.engine, {SORT_KIND})
+    (claim,) = sorter.claim("test", 1)
+    sorter.finish("test", claim.id, JobState.FAILED, error="the job's worker process crashed")
+    (f,) = _view(store, uid).files
+    assert f.recognition is Recognition.FAILED
+    assert f.placement is not None
+    assert f.placement.how is How.ALONE
+    assert len(store.start(uid)) == 1
+
+
+def test_a_sort_result_is_checked_like_input(store: UploadStore) -> None:
+    """A worker that a hostile file took over could send back anything: entries for files it
+    wasn't given, kinds that don't exist, a hostname built to break a screen."""
+    uid = _open(store)
+    config = _staged(store, uid, b"hostname R1\n", "r1.cfg")
+    other = _staged(store, uid, b"hostname R2\n", "r2.cfg")
+    store.add(uid, [config])
+    store.add(uid, [other])  # joins the same job, so the forged entry below must name neither
+    sorter = JobQueue(store.engine, {SORT_KIND})
+    (claim,) = sorter.claim("test", 1)
+    forged = {
+        "files": [
+            {
+                "id": config.id,
+                "kind": "config",
+                "vendor": "x" * 65,
+                "hostname": "\u202eR1\x00" + "h" * 300,
+            },
+            {"id": other.id, "kind": "firmware"},
+            {"id": new_id(), "kind": "config", "hostname": "INJECTED"},
+            "not an object",
+        ]
+    }
+    sorter.finish("test", claim.id, JobState.SUCCEEDED, result=encode_result(forged))
+    files = {f.id: f for f in _view(store, uid).files}
+    first = files[config.id].recognised
+    assert first is not None
+    assert (first.kind, first.vendor) == (Kind.CONFIG, None)
+    assert first.hostname is not None
+    assert first.hostname.startswith("R1h")
+    assert len(first.hostname) == HOSTNAME_LIMIT
+    second = files[other.id].recognised
+    assert second is not None
+    assert second.kind is Kind.UNKNOWN
+    assert all(d.hostname != "INJECTED" for d in _view(store, uid).devices)

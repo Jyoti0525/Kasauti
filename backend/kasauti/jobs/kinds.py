@@ -15,6 +15,7 @@ from types import MappingProxyType
 
 HANDLERS: Mapping[str, str] = MappingProxyType(
     {
-        "audit_file": "kasauti.ingest.worker:audit_file",  # one uploaded file (M2.04)
+        "audit_file": "kasauti.ingest.worker:audit_file",  # one device of an upload (M2.04)
+        "sort_files": "kasauti.ingest.sort:sort_files",  # recognise uploaded files (M2.06)
     }
 )

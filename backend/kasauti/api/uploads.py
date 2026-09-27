@@ -1,14 +1,23 @@
-"""Upload routes (PLAN §5.1, §18.1 "New audit"; TODO M2.04).
+"""Upload routes (PLAN §5.1, §18.1 "New audit"; TODO M2.04, M2.06).
 
 The flow the "New audit" screen follows, and any script can too::
 
     POST   /api/uploads                     {"label", "frameworks", "vendor"}  -> the upload
     POST   /api/uploads/{id}/files          one file's bytes (or a .zip)       -> its rows
     DELETE /api/uploads/{id}/files/{file}   take a file back out
+    GET    /api/uploads/{id}                files, refusals, devices, each audit's state
+    PUT    /api/uploads/{id}/files/{file}/pairing  {"config": id or null}      -> the upload
+    DELETE /api/uploads/{id}/files/{file}/pairing  back to automatic           -> the upload
     DELETE /api/uploads/{id}                discard the upload
-    POST   /api/uploads/{id}/start          queue one audit per accepted file  -> the upload
-    GET    /api/uploads/{id}                files, refusals, each audit's state
+    POST   /api/uploads/{id}/start          queue one audit per device         -> the upload
     GET    /api/jobs/{job}                  an audit's result
+
+Each accepted file is recognised in a worker as it arrives (configuration or command output,
+vendor, hostname), and the upload lists the devices that makes: each configuration with the
+command outputs that go with it (:mod:`kasauti.ingest.devices`). ``recognising`` counts files
+not yet recognised; start when it is 0 (until then, starting answers 409). An output paired
+wrongly, or not at all, is paired by hand with ``PUT .../pairing``; ``{"config": null}`` leaves
+it out of every audit.
 
 A file is sent as the raw request body (``Content-Type: application/octet-stream``) with its
 name, percent-encoded UTF-8, in ``X-File-Name``: one request per file. A folder is its files
@@ -37,8 +46,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 
+from kasauti.ingest.devices import How, Kind
 from kasauti.ingest.store import (
+    DeviceView,
+    FileNotInUploadError,
     FileView,
+    PairingError,
+    Recognition,
     UploadNotFoundError,
     UploadStateError,
     UploadStore,
@@ -87,8 +101,38 @@ class FileOut(_Model):
     reason: str | None
     """Why it was refused, when it was."""
     job_id: str | None
+    """Its device's audit, once the upload is started (a command output's too)."""
     job_state: JobState | None
     job_error: str | None
+    recognition: Recognition | None
+    """For an accepted file: ``pending`` until recognised, then ``done`` or ``failed``."""
+    kind: Kind | None
+    """``config``, ``companion`` (a command output) or ``unknown``."""
+    vendor: str | None
+    command: str | None
+    """For a command output: which (``show_version``…)."""
+    hostname: str | None
+    device: str | None
+    """The id of the configuration whose audit this file is part of; None if it is in none."""
+    paired_by: How | None
+    """``own`` (a configuration), ``hostname``, ``name``, ``hand`` or ``alone``."""
+    note: str | None
+    """Why it is left out of every audit, or audited alone."""
+
+
+class DeviceOut(_Model):
+    config: str
+    """The configuration's file id."""
+    name: str
+    vendor: str | None
+    hostname: str | None
+    companions: tuple[str, ...]
+    """The file ids of the command outputs audited with it."""
+
+
+class PairingIn(_Model):
+    config: uuid.UUID | None
+    """The configuration to pair this command output with; null leaves it out of every audit."""
 
 
 class UploadOut(_Model):
@@ -102,7 +146,10 @@ class UploadOut(_Model):
     started_at: dt.datetime | None
     accepted: int
     refused: int
+    recognising: int
+    """Accepted files not yet recognised; the upload can start when this is 0."""
     files: tuple[FileOut, ...]
+    devices: tuple[DeviceOut, ...]
 
 
 class FilesOut(_Model):
@@ -128,6 +175,10 @@ async def _call[T](function: Callable[..., T], *args: Any, **kwargs: Any) -> T:
         result = await run_in_threadpool(function, *args, **kwargs)
     except UploadNotFoundError:
         raise HTTPException(404, "no such upload") from None
+    except FileNotInUploadError:
+        raise HTTPException(404, "no such file in this upload") from None
+    except PairingError as err:
+        raise HTTPException(422, str(err)) from None
     except UploadStateError as err:
         raise HTTPException(409, str(err)) from None
     except SQLAlchemyError as err:
@@ -181,6 +232,7 @@ async def add_file(upload_id: uuid.UUID, request: Request) -> FilesOut:
         await run_in_threadpool(inspect, store.staging, uid, body) if body.accepted else [body]
     )
     recorded: list[Received] = await _call(store.add, uid, rows)
+    _wake(request)
     view = await _get(store, uid)
     ids = {r.id for r in recorded}
     return FilesOut(files=tuple(f for f in view.files if f.id in ids))
@@ -194,6 +246,26 @@ async def remove_file(upload_id: uuid.UUID, file_id: uuid.UUID, request: Request
     return Response(status_code=204)
 
 
+@router.put(
+    "/{upload_id}/files/{file_id}/pairing",
+    responses={**_RESPONSES, 422: {"description": "the pairing can't be made; says why"}},
+)
+async def pair_file(
+    upload_id: uuid.UUID, file_id: uuid.UUID, body: PairingIn, request: Request
+) -> UploadOut:
+    store, uid = _store(request), str(upload_id)
+    config = None if body.config is None else str(body.config)
+    await _call(store.pair, uid, str(file_id), config)
+    return await _get(store, uid)
+
+
+@router.delete("/{upload_id}/files/{file_id}/pairing", responses=_RESPONSES)
+async def unpair_file(upload_id: uuid.UUID, file_id: uuid.UUID, request: Request) -> UploadOut:
+    store, uid = _store(request), str(upload_id)
+    await _call(store.unpair, uid, str(file_id))
+    return await _get(store, uid)
+
+
 @router.delete("/{upload_id}", status_code=204, responses=_RESPONSES)
 async def discard_upload(upload_id: uuid.UUID, request: Request) -> Response:
     await _call(_store(request).discard, str(upload_id))
@@ -203,14 +275,19 @@ async def discard_upload(upload_id: uuid.UUID, request: Request) -> Response:
 @router.post("/{upload_id}/start", status_code=202, responses=_RESPONSES)
 async def start_upload(upload_id: uuid.UUID, request: Request) -> UploadOut:
     store, uid = _store(request), str(upload_id)
-    await _call(store.start, uid, request.app.state.jobs, packs=request.app.state.packs)
-    pool = request.app.state.pool
-    if pool is not None:
-        pool.wake()
+    await _call(store.start, uid)
+    _wake(request)
     return await _get(store, uid)
 
 
 # -- helpers ----------------------------------------------------------------------------------
+
+
+def _wake(request: Request) -> None:
+    """New jobs are queued: have the pool look now, not at its next poll."""
+    pool = request.app.state.pool
+    if pool is not None:
+        pool.wake()
 
 
 async def _get(store: UploadStore, upload_id: str) -> UploadOut:
@@ -230,7 +307,9 @@ async def _get(store: UploadStore, upload_id: str) -> UploadOut:
         started_at=view.started_at,
         accepted=accepted,
         refused=len(files) - accepted,
+        recognising=view.recognising,
         files=files,
+        devices=tuple(_device(d) for d in view.devices),
     )
 
 
@@ -245,6 +324,24 @@ def _file(f: FileView) -> FileOut:
         job_id=f.job_id,
         job_state=f.job_state,
         job_error=f.job_error,
+        recognition=f.recognition,
+        kind=None if f.recognised is None else f.recognised.kind,
+        vendor=None if f.recognised is None else f.recognised.vendor,
+        command=None if f.recognised is None else f.recognised.command,
+        hostname=None if f.recognised is None else f.recognised.hostname,
+        device=None if f.placement is None else f.placement.device,
+        paired_by=None if f.placement is None else f.placement.how,
+        note=None if f.placement is None else f.placement.note,
+    )
+
+
+def _device(d: DeviceView) -> DeviceOut:
+    return DeviceOut(
+        config=d.config,
+        name=d.name,
+        vendor=d.vendor,
+        hostname=d.hostname,
+        companions=d.companions,
     )
 
 

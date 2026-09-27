@@ -196,6 +196,11 @@ def load_vendor_pack(root: Path) -> VendorPack:
     )
 
 
+def load_vendor_packs(packs_root: Path) -> dict[str, VendorPack]:
+    """Every vendor pack under ``packs_root/vendors``, by id."""
+    return {d.name: load_vendor_pack(d) for d in sorted((packs_root / "vendors").glob("*/"))}
+
+
 def load_ruleset(
     rules_dir: Path,
     derivations_dir: Path,
