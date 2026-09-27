@@ -25,10 +25,12 @@ word is a literal key (`key: telnet`). PLAN §9.3 writes `key: ifname` as shorth
 rejects that form with a hint, because stored literally it would merge every interface into
 one entity.
 
-**`{@}` is the block line** (M2): the line of the block the entity lives in (the statement's own
-line for a context-free mapping, the innermost context block's line otherwise). A header and
-its child lines get the same key without naming a secret: Junos `community public { … }` is
-`community-{@}` on both.
+**`{@}` is the block line** (M2): the line of the block the entity lives in: the header line
+of the innermost block around the statement that opened an entity of the same type, or else
+the statement's own line. A header and its child lines get the same key without naming a
+secret: Junos `community public { authorization read-only; }` is `community-{@}` on both, and
+two communities in one `snmp` block are two entities. (Before v5.1.31 a header with a context
+took its parent's line, so a community and its `authorization` were two entities.)
 
 **`{#}` is an ordinal** (v5.1.3): the 1-based position of this statement among those opening the
 same entity type with the same key template, in file order. Use it where the natural key is a

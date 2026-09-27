@@ -28,6 +28,7 @@ from kasauti.identity.resolve import companion_value, resolve_identity
 from kasauti.ingest.mask import mask_secrets
 from kasauti.ingest.model import Artifact
 from kasauti.mapping.engine import apply_mappings
+from kasauti.mapping.setform import parse_config
 from kasauti.packs.loader import (
     FrameworkPack,
     PackError,
@@ -51,7 +52,6 @@ from kasauti.rules.scoring import (
 )
 from kasauti.sbm.document import SecurityBaselineModel
 from kasauti.shape.model import Statement
-from kasauti.shape.parse import parse_text
 
 FORMAT_VERSION = 1
 CONTENT_DIRS = ("rules", "derivations", "inferences", "exposures")
@@ -118,6 +118,9 @@ class InputInfo(_Out):
     sha256: str
     encoding: str
     shape_family: str
+    rebuilt_from: str | None = None
+    """The file's own syntax, when its lines were rebuilt into ``shape_family``'s tree (a Junos
+    ``display set`` export read as the brace configuration it stands for)."""
     parse_warnings: tuple[str, ...] = ()
 
 
@@ -272,12 +275,7 @@ def audit(
         raise AuditError(str(err)) from None
     pack, detection, chosen_by, warnings = _choose_pack(artifact, kb, vendor)
 
-    tree = parse_text(
-        artifact.text,
-        source_file=artifact.name,
-        family=pack.manifest.shape_family,
-        sha256=artifact.sha256,
-    )
+    tree = parse_config(artifact.text, pack, source_file=artifact.name, sha256=artifact.sha256)
     warnings.extend(input_warnings(artifact.text, pack, tree))
     fingerprint = detection if detection.matched else None
     # Companions are checked against the hostname the files give, never one typed by hand.
@@ -329,6 +327,7 @@ def audit(
             sha256=artifact.sha256,
             encoding=artifact.encoding,
             shape_family=tree.family.value,
+            rebuilt_from=None if tree.rebuilt_from is None else tree.rebuilt_from.value,
             parse_warnings=tree.warnings,
         ),
         detection=DetectionInfo(

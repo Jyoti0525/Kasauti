@@ -138,7 +138,7 @@ class _Engine:
         self.mapped = 0
         self.near_miss = 0
         self.unmapped: list[Statement] = []
-        self._line = 0
+        self._path: tuple[str, ...] = ()
         self._stmt_line = 0
         self._ordinals: dict[tuple[str, str], int] = defaultdict(int)
         self._header_lines: dict[tuple[str, ...], int] = {}
@@ -158,9 +158,7 @@ class _Engine:
         parents = {stmt.path for stmt in self.tree.statements}
         for stmt in self.tree.statements:
             self._header_lines.setdefault((*stmt.path, stmt.text), stmt.line_start)
-            self._line = (
-                self._header_lines.get(stmt.path, stmt.line_start) if stmt.path else stmt.line_start
-            )
+            self._path = stmt.path
             path = tokenize_path(stmt.path)
             hits = self._hits(stmt, path)
             if hits:
@@ -322,7 +320,7 @@ class _Engine:
         if any(s not in caps for s in slots):
             return None
         values = {s: _text(caps[s]) for s in slots}
-        line = str(self._line if m.context else self._stmt_line)
+        line = str(self._block_line(m.entity.type))
         template = m.entity.key.replace(BLOCK_LINE, line)
         parts = [part.format(**values) if slots else part for part in template.split(ORDINAL)]
         if len(parts) == 1:
@@ -334,6 +332,17 @@ class _Engine:
             self._ordinals[memo] += 1
             keys[memo] = str(self._ordinals[memo])
         return keys[memo].join(parts)
+
+    def _block_line(self, entity_type: str) -> int:
+        """``{@}``: the header line of the innermost block around the statement that opened an
+        entity of this type (``community public { authorization …; }``), else the statement's
+        own line (``community public;``, or the header itself). Two communities in one ``snmp``
+        block are two entities; a header and its lines are one."""
+        for i in range(len(self._path), 0, -1):
+            ref = self.builder.blocks.get(self._path[:i])
+            if ref is not None and ref[0] == entity_type:
+                return self._header_lines[self._path[:i]]
+        return self._stmt_line
 
     # --- near misses -----------------------------------------------------------------------
 

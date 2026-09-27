@@ -125,3 +125,73 @@ doesn't follow, the route's exit is *unknown* and nothing is inferred from it.
 
 The authored configs gained `routing-options { static { route 0.0.0.0/0 next-hop
 198.51.100.1; } }`, the ISP side of the WAN /30; every verdict is unchanged.
+
+## Addendum (v5.1.31, M2.28): `display set` exports
+
+Read on 2026-09-27. `show configuration | display set` is a common way to take a Junos
+configuration off a device. Before this change such a file was read line by line: every rule
+was left for review, and without `--vendor` it wasn't recognised as Junos at all (fingerprint
+score 0).
+
+**The format, as Juniper documents it.** [Displaying set Commands from the Junos OS
+Configuration](https://www.juniper.net/documentation/en_US/junos12.1x46/topics/concept/junos-cli-configuration-displaying-as-set-commands-overview.html)
+shows a configuration whose `unit 1` is `inactive:` printed as
+`set interfaces fe-0/0/0 unit 0 family inet address 192.107.1.230/24`, …,
+`set interfaces fe-0/0/0 unit 1 family inet address 10.0.0.1/8`, then
+`deactivate interfaces fe-0/0/0 unit 1`. Each line is the full path from the top of the
+hierarchy, and inactive configuration is printed and then deactivated. A test reads that
+example and gets the same statements as its brace form.
+
+**How it is read** (`kasauti/mapping/setform.py`). A line doesn't say where its blocks end:
+`set system ntp server 10.0.0.1 key 1` is one statement in `system ntp`, while
+`set system syslog host 10.0.0.2 any notice` is a statement inside the block `host 10.0.0.2`.
+The pack already records which blocks it reads, in its mappings' contexts and patterns, so
+each line is split there:
+
+1. If the rest of the line is a statement a mapping reads at that point, it is that statement.
+2. Otherwise, the next words become a block if a mapping reads them there with more words
+   after them, or if a context names them. A block that continues the current context is
+   preferred.
+3. Otherwise, an unknown word becomes a block only if a known context starts later in the
+   line (`routing-options` before `static`). Failing that, the rest of the line is one
+   statement that no mapping reads, as it would be in braces.
+
+The result is the brace tree (`input.shape_family: brace`, with `rebuilt_from: set_path` in the
+report), read by the same 84 mappings. Other commands:
+
+- `deactivate` and `delete` drop the path; `activate` undoes a `deactivate`.
+- `protect`, `unprotect` and `annotate` are ignored, since the device behaves the same.
+- Any other command, such as `insert` (which reorders first-match policies) or `rename`, makes
+  the file be read line by line with the reason, and every verdict is left for review.
+
+**Checked.** The authored configurations were converted into `hardened_set.conf` and
+`weak_set.conf`. Both are fingerprinted as Junos, and they give the same facts, verdicts and
+identity as the brace files. They are rule fixtures and golden cases.
+
+Three more brace configurations were written so that together every one of the 84 mappings
+reads at least one of them. They include inactive blocks, several communities, RADIUS, TACACS+
+and ordered lists. Each gives the same facts from its export as from its braces.
+
+**One false PASS was caught while building this.** `set system services web-management http
+interface ge-0/0/0.0` was first read as one statement no mapping knows, so HTTP looked off. In
+braces, `http` is a block that the pack reads. Rule 2 above was added for that case.
+
+**Lists.** The page above shows no multi-value list. Both forms are read:
+- brackets on one line (`set system authentication-order [ tacplus password ]`);
+- one value per line, which is joined back into one list in order for the statements the pack
+  reads as ordered (`leaf_lists: [authentication-order, protocol-version]` in `pack.yaml`).
+  Other lists are read one value at a time, which their mappings accumulate.
+
+**Fixed along the way.** The `{@}` entity key gave a block's header its parent's line. Junos
+`community public { authorization read-write; }` therefore became two communities: one with
+the default `read-only` access, one with `read-write`. Every one-line community in an `snmp`
+block also merged into one. It now keys the header and its lines alike and siblings apart. The
+weak golden case lost its phantom read-only community, and no verdict changed.
+
+**Limits.**
+- `display set relative` prints paths from the current edit level, not from the top. Such a
+  file is a fragment: its lines are statements no mapping reads, and its fingerprint doesn't
+  claim it, so the operator must name the vendor and is warned. The same holds for a brace
+  fragment.
+- In braces, `application [ junos-ssh junos-telnet ]` in a security policy leaves the policy's
+  service unknown (REVIEW, never PASS). The `set` form reads each value.

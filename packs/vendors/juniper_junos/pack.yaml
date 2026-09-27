@@ -9,6 +9,11 @@ negation_words: []     # brace form has no negation: deactivated (inactive:) con
 comment_markers: ["#", "/*"]
 time_unit: minutes
 default_role: router
+# A `show configuration | display set` export is read as the brace configuration it stands for:
+# each line split where this pack's mappings expect blocks (TODO M2.28; docs/reviews/juniper_junos.md).
+set_form:
+  # Statements whose value is an ordered list; `display set` may give one value per line.
+  leaf_lists: [authentication-order, protocol-version]
 description: >
   Seed pack (PLAN §20.4, TODO M2.28) for Junos OS hierarchical (curly-brace) configurations:
   MX/EX/QFX routers and switches and SRX firewalls. Interfaces are modelled at the logical unit

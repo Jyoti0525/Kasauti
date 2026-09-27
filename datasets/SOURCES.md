@@ -26,6 +26,8 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 | `cisco_ios_xe/fixtures/vty_login_list_local.cfg` | Cisco IOS-XE 17.9, TACACS+ default list but vty lines naming a local-only list (fail fixture for AAA-CENTRAL-AUTH-01) | 27 | `8493c233b28756b31fad3df873238f143036a4029154187f05e66dcc968489c6` | commands cross-checked against Cisco docs (C.06) |
 | `juniper_junos/hardened.conf` | Junos OS 23.4, branch SRX | 167 | `05abcfd1240c747141e1677c8e61c5bfb91db119abb34dbc269dd3f759454191` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
 | `juniper_junos/weak.conf` | Junos OS 23.4, weak twin | 95 | `9b22aa4dc497e98eb1805b20cfe6dada727b54333a33d2fc49f5c452f69e8c11` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
+| `juniper_junos/hardened_set.conf` | Junos OS 23.4, `hardened.conf` as `show configuration \| display set` prints it (M2.28) | 54 | `202d54c3c46fddc57aaf2de5c1b46d8cc2d94c21ff0feaafd43595d8f274cecb` | one `set` line per statement of `hardened.conf`, from the top of the hierarchy, in the form Juniper documents for `display set`; lists one value per line (`docs/reviews/juniper_junos.md`, M2.28 addendum) |
+| `juniper_junos/weak_set.conf` | Junos OS 23.4, `weak.conf` as `display set` prints it (M2.28) | 25 | `3bbd619977af8589de5e36d38d0f90f9ac06d6d0ebdceac6979485e059acbf9e` | as above, from `weak.conf`; the same planted weaknesses J1–J17 |
 | `arista_eos/hardened.cfg` | Arista EOS 4.30, routed leaf with an ISP uplink | 72 | `42ba3c5feff684d9df92cc813e31b48dabc53071f06d828fddab8f9f85746568` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
 | `arista_eos/weak.cfg` | Arista EOS 4.30, weak twin | 55 | `03c0b8d475f96aeec21a923089f88c271174c1a4bf9b8bfc6ea66f67fd0c6a1d` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
 | `fortinet_fortios/hardened.conf` | FortiOS 7.4.8, edge FortiGate 60F | 146 | `063ca0c4806bbbf776294c7b020f40612e1810a2d39d4c655b8ea2b0ac4d5005` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
@@ -192,6 +194,8 @@ above, never from the engine's output.
 | `paloalto_panos_weak` | `authored/paloalto_panos/weak.xml` | 13 rules FAIL (P1–P14; P8 and P9 both under MGMT-WEB-ACL-01), 7 PASS by documented or model defaults (proxy ARP: none before 12.2.2), zones and a resolved reference, 1 REVIEW (SSH version), 2 N/A (no vty lines) |
 | `paloalto_panos_hardened` | `authored/paloalto_panos/hardened.xml` | 19 rules PASS, 2 REVIEW (SSH version; lockout, since administrators log in through an authentication profile whose lockout Palo Alto doesn't rank against the management one), 2 N/A (no vty lines) |
 | `juniper_junos_hardened` | `authored/juniper_junos/hardened.conf` | 20 rules PASS, 3 N/A (no vty lines, no web management) |
+| `juniper_junos_weak_set` | `authored/juniper_junos/weak_set.conf` | the labels of `juniper_junos_weak`: the same configuration as `display set` (M2.28) |
+| `juniper_junos_hardened_set` | `authored/juniper_junos/hardened_set.conf` | the labels of `juniper_junos_hardened` (M2.28) |
 
 History: on 2026-09-26 the Junos hardened config gained a login class with `idle-timeout 10` and `minimum-length 15`, and the Cisco hardened twin changed to `security passwords min-length 15` (NIST SP
 800-63B-4's minimum for single-factor passwords) and `no ip proxy-arp` on GigabitEthernet3, so

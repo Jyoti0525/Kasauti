@@ -18,8 +18,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf]
 
   - id: AAA-PASSWORD-ENCRYPTION-01
     title: No password is stored in the configuration in clear text
@@ -39,7 +39,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: AAA-PASSWORD-MIN-LENGTH-01
@@ -61,8 +61,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]
 
   - id: MGMT-WEB-ACL-01
     title: Web management accepts only permitted sources
@@ -83,7 +83,7 @@ rules:
       iso_27001_2022: derived
     fixtures:
       pass: [cisco_ios_xe/fixtures/web_mgmt_restricted.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml, fortinet_fortios/fixtures/local_in_restricted.conf]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml, fortinet_fortios/fixtures/local_in_ipv6_open.conf]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml, fortinet_fortios/fixtures/local_in_ipv6_open.conf]
 
   - id: MGMT-SSH-V2-01
     title: SSH management uses protocol version 2 only
@@ -101,7 +101,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, fortinet_fortios/hardened.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, fortinet_fortios/hardened.conf]
       fail: [cisco_ios_xe/weak.cfg, fortinet_fortios/weak.conf]
 
   - id: MGMT-BANNER-01
@@ -122,8 +122,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]
 
   - id: SVC-PROXY-ARP-01
     title: Interfaces do not answer ARP for other hosts
@@ -142,8 +142,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf]
 
   - id: FILTER-PERMIT-ANY-01
     title: No filter entry permits all traffic from anywhere to anywhere
@@ -163,8 +163,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]
 
   - id: FILTER-UNTRUSTED-INGRESS-01
     title: Untrusted interfaces filter inbound traffic
@@ -190,8 +190,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf, arista_eos/weak.cfg]
 
   - id: LOG-TIMESTAMPS-01
     title: Log messages carry the date and time
@@ -210,7 +210,7 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
       fail: [cisco_ios_xe/weak.cfg]
 
   - id: LOG-CONFIG-CHANGE-01
@@ -230,5 +230,5 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
       fail: [cisco_ios_xe/weak.cfg, fortinet_fortios/weak.conf]

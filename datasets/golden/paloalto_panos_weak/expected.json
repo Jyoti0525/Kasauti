@@ -1,11 +1,12 @@
 {
   "format_version": 1,
-  "audit_id": "6d65ce70a5843a85db30e12b",
+  "audit_id": "e3fc55948c7588359fd81209",
   "input": {
     "file": "weak.xml",
     "sha256": "845b94ce8f00e3c62b19f9b4435d7e0a1cf980a608d3e9a4d8fb9ca36bceb75f",
     "encoding": "utf-8",
     "shape_family": "xml",
+    "rebuilt_from": null,
     "parse_warnings": []
   },
   "detection": {
@@ -50,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "148674dcaedfaa9884d6c2c6e56bbaafe888fac890ff779b6321764c9fa32703",
-    "ruleset_version": "aa3815593bd5283a1f6bba3f8ec737aa294d87409b34d0a429a77ee3988f7e28",
+    "kb_version": "622294cde42aa17a8dc5037fcae07e47e7afc30a722823854df0cab0e36b3e5b",
+    "ruleset_version": "1bc107babd4a42068fc94aad70d709c71832d3082a7cb925032e5428fc334df7",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"

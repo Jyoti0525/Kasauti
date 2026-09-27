@@ -6,7 +6,12 @@ Implements PLAN §4.4. Source of truth: `backend/kasauti/packs/model.py`; JSON S
 ```
 packs/
   vendors/<vendor_os>/          directory name == pack id (lower_snake)
-    pack.yaml                   manifest: shape family, negation words, comment markers, time unit
+    pack.yaml                   manifest: shape family, negation words, comment markers, time unit;
+                                `set_form` (brace packs only): the configuration may also come as
+                                `set` commands (Junos `display set`), rebuilt into the brace tree
+                                by splitting each line where the pack's mappings expect blocks;
+                                `leaf_lists` names statements whose one-value-per-line form is
+                                joined back into one ordered list
     detect.yaml                 fingerprint signatures (contains | line_prefix | regex | json_key | xml_path),
                                 and `warnings`: patterns saying the file isn't what the audit
                                 expects (a Panorama export); a match adds a warning, never a verdict;

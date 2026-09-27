@@ -1005,6 +1005,16 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.31 (2026-09-27, M2.28 Junos `display set` exports):** A Junos configuration exported
+  as `set` commands is rebuilt into the brace tree it stands for, and read by the same 84
+  mappings. Each line is split where the pack's mappings expect blocks, `deactivate`/`delete`
+  drop paths, and ordered lists given one value per line are joined back. Before, such a file
+  was read line by line with every rule left for review, and it wasn't recognised as Junos
+  (score 0); it now scores what the brace file does. The display-set twins of the authored
+  configurations give the same facts and verdicts as their brace files, and so does every
+  mapping. One false PASS was caught while building it (`web-management http` with settings
+  read as unknown). The `{@}` entity key now keys a block's header and its lines alike; before,
+  a Junos community and its `authorization` were two entities.
 - **v5.1.30 (2026-09-27, M2.26 NX-OS and classic IOS kept out of IOS XE):** No seed pack
   reads NX-OS or classic IOS (§20.4), so the separation M2.26 waited on can't come from their
   packs. A vendor pack's `detect.yaml` can now list `excludes`: patterns that name another OS

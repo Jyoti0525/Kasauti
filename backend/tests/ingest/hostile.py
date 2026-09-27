@@ -227,4 +227,12 @@ FILES = [
     Case("brace-mix.cfg", lambda s: _repeat(b'{ } ; " # /* */ \\ ', s), "every lexer delimiter"),
     Case("path.rsc", lambda s: _repeat(b'/ip service set telnet disabled="', s), "unclosed quotes"),
     Case("slots.cfg", _slots, "many typed tokens per line"),
+    # Junos `display set` exports, rebuilt into brace trees when named for Junos (M2.28).
+    Case("set-deep.conf", lambda s: _repeat(b"system ", s, b"set "), "a set path a million deep"),
+    Case("set-lines.conf", lambda s: _repeat(b"set system services ssh\n", s), "many set lines"),
+    Case(
+        "set-deletes.conf",
+        lambda s: _repeat(b"set system login user u class c\ndelete system login user u\n", s),
+        "a delete after every set line",
+    ),
 ]

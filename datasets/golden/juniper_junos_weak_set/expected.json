@@ -1,12 +1,12 @@
 {
   "format_version": 1,
-  "audit_id": "6ac365a3cff25627a3f67683",
+  "audit_id": "472f61453f7f2271baa1cc4f",
   "input": {
-    "file": "hardened.conf",
-    "sha256": "05abcfd1240c747141e1677c8e61c5bfb91db119abb34dbc269dd3f759454191",
+    "file": "weak_set.conf",
+    "sha256": "3bbd619977af8589de5e36d38d0f90f9ac06d6d0ebdceac6979485e059acbf9e",
     "encoding": "utf-8",
     "shape_family": "brace",
-    "rebuilt_from": null,
+    "rebuilt_from": "set_path",
     "parse_warnings": []
   },
   "detection": {
@@ -27,7 +27,7 @@
   "identity": {
     "hostname": {
       "value": "BR-SRX1",
-      "source": "config line 5"
+      "source": "config line 4"
     },
     "vendor": {
       "value": "Juniper",
@@ -66,12 +66,12 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 20,
-      "failed": 0,
-      "review": 0,
-      "not_applicable": 3,
-      "compliance_pct": 100.0,
-      "coverage_pct": 100.0
+      "passed": 3,
+      "failed": 17,
+      "review": 1,
+      "not_applicable": 2,
+      "compliance_pct": 15.0,
+      "coverage_pct": 95.2
     }
   ],
   "rules": [
@@ -79,7 +79,7 @@
       "rule_id": "AAA-CENTRAL-AUTH-01",
       "title": "Administrators authenticate against a central AAA server",
       "domain": "aaa",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-2(1)",
@@ -91,7 +91,7 @@
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
       "title": "Local passwords are stored with a strong one-way hash",
       "domain": "aaa",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "high",
       "nist_800_53r5": [
         "IA-5(1)"
@@ -102,7 +102,7 @@
       "rule_id": "AAA-LOCKOUT-01",
       "title": "Repeated failed logins are blocked",
       "domain": "aaa",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-7"
@@ -124,7 +124,7 @@
       "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
       "title": "Passwords must be at least 15 characters",
       "domain": "aaa",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "IA-5(1)"
@@ -135,7 +135,7 @@
       "rule_id": "FILTER-PERMIT-ANY-01",
       "title": "No filter entry permits all traffic from anywhere to anywhere",
       "domain": "filtering",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "high",
       "nist_800_53r5": [
         "SC-7(5)",
@@ -147,7 +147,7 @@
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
       "title": "Untrusted interfaces filter inbound traffic",
       "domain": "filtering",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "high",
       "nist_800_53r5": [
         "SC-7"
@@ -158,7 +158,7 @@
       "rule_id": "LOG-CONFIG-CHANGE-01",
       "title": "Configuration changes are logged",
       "domain": "logging",
-      "status": "PASS",
+      "status": "REVIEW",
       "severity": "medium",
       "nist_800_53r5": [
         "AU-2",
@@ -171,7 +171,7 @@
       "rule_id": "LOG-REMOTE-01",
       "title": "Logs are sent to a remote log server",
       "domain": "logging",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "AU-4(1)",
@@ -195,7 +195,7 @@
       "rule_id": "MGMT-BANNER-01",
       "title": "A login banner warns against unauthorised use",
       "domain": "management_plane",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "low",
       "nist_800_53r5": [
         "AC-8"
@@ -206,7 +206,7 @@
       "rule_id": "MGMT-HTTP-01",
       "title": "Unencrypted HTTP management is disabled",
       "domain": "management_plane",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "high",
       "nist_800_53r5": [
         "CM-7",
@@ -219,7 +219,7 @@
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
       "title": "Idle management sessions time out within 10 minutes",
       "domain": "management_plane",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-12",
@@ -244,7 +244,7 @@
       "rule_id": "MGMT-TELNET-01",
       "title": "Clear-text Telnet management is not reachable",
       "domain": "management_plane",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "high",
       "nist_800_53r5": [
         "CM-7",
@@ -281,7 +281,7 @@
       "rule_id": "MGMT-WEB-ACL-01",
       "title": "Web management accepts only permitted sources",
       "domain": "management_plane",
-      "status": "N/A",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "AC-3",
@@ -293,7 +293,7 @@
       "rule_id": "REF-DANGLING-01",
       "title": "Every reference points at something that exists",
       "domain": "filtering",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "CM-6",
@@ -305,7 +305,7 @@
       "rule_id": "SNMP-COMMUNITY-01",
       "title": "No SNMP community is well known or writable",
       "domain": "snmp",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "high",
       "nist_800_53r5": [
         "IA-5",
@@ -317,7 +317,7 @@
       "rule_id": "SVC-LEGACY-01",
       "title": "Legacy network services are disabled",
       "domain": "services",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "CM-7"
@@ -328,7 +328,7 @@
       "rule_id": "SVC-PROXY-ARP-01",
       "title": "Interfaces do not answer ARP for other hosts",
       "domain": "services",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "low",
       "nist_800_53r5": [
         "CM-7",
@@ -340,7 +340,7 @@
       "rule_id": "TIME-NTP-AUTH-01",
       "title": "Time sources are authenticated",
       "domain": "time",
-      "status": "PASS",
+      "status": "FAIL",
       "severity": "medium",
       "nist_800_53r5": [
         "SC-45(1)",
@@ -353,7 +353,7 @@
     {
       "control": "AC-2(1)",
       "title": "Automated System Account Management",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
       ]
@@ -361,7 +361,7 @@
     {
       "control": "AC-3",
       "title": "Access Enforcement",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -372,7 +372,7 @@
     {
       "control": "AC-4",
       "title": "Information Flow Enforcement",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
       ]
@@ -380,7 +380,7 @@
     {
       "control": "AC-7",
       "title": "Unsuccessful Logon Attempts",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "AAA-LOCKOUT-01"
       ]
@@ -388,7 +388,7 @@
     {
       "control": "AC-8",
       "title": "System Use Notification",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-BANNER-01"
       ]
@@ -396,7 +396,7 @@
     {
       "control": "AC-12",
       "title": "Session Termination",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
       ]
@@ -404,7 +404,7 @@
     {
       "control": "AC-17",
       "title": "Remote Access",
-      "status": "not applicable",
+      "status": "not satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -414,7 +414,7 @@
     {
       "control": "AC-17(2)",
       "title": "Protection of Confidentiality and Integrity Using Encryption",
-      "status": "satisfied",
+      "status": "partially satisfied",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
@@ -424,7 +424,7 @@
     {
       "control": "AU-2",
       "title": "Event Logging",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
       ]
@@ -440,7 +440,7 @@
     {
       "control": "AU-4(1)",
       "title": "Transfer to Alternate Storage",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "LOG-REMOTE-01"
       ]
@@ -456,7 +456,7 @@
     {
       "control": "AU-9(2)",
       "title": "Store on Separate Physical Systems or Components",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "LOG-REMOTE-01"
       ]
@@ -464,7 +464,7 @@
     {
       "control": "AU-12",
       "title": "Audit Record Generation",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
       ]
@@ -472,7 +472,7 @@
     {
       "control": "CM-3",
       "title": "Configuration Change Control",
-      "status": "satisfied",
+      "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
       ]
@@ -480,7 +480,7 @@
     {
       "control": "CM-6",
       "title": "Configuration Settings",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "REF-DANGLING-01",
         "SNMP-COMMUNITY-01"
@@ -489,7 +489,7 @@
     {
       "control": "CM-7",
       "title": "Least Functionality",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-TELNET-01",
@@ -500,7 +500,7 @@
     {
       "control": "IA-2",
       "title": "Identification and Authentication (Organizational Users)",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
       ]
@@ -508,7 +508,7 @@
     {
       "control": "IA-3(1)",
       "title": "Cryptographic Bidirectional Authentication",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "TIME-NTP-AUTH-01"
       ]
@@ -516,7 +516,7 @@
     {
       "control": "IA-5",
       "title": "Authenticator Management",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "SNMP-COMMUNITY-01"
       ]
@@ -524,7 +524,7 @@
     {
       "control": "IA-5(1)",
       "title": "Password-based Authentication",
-      "status": "satisfied",
+      "status": "partially satisfied",
       "rules": [
         "AAA-LOCAL-PASSWORD-HASH-01",
         "AAA-PASSWORD-ENCRYPTION-01",
@@ -534,7 +534,7 @@
     {
       "control": "SC-7",
       "title": "Boundary Protection",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
@@ -543,7 +543,7 @@
     {
       "control": "SC-7(5)",
       "title": "Deny by Default — Allow by Exception",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
       ]
@@ -551,7 +551,7 @@
     {
       "control": "SC-8",
       "title": "Transmission Confidentiality and Integrity",
-      "status": "satisfied",
+      "status": "partially satisfied",
       "rules": [
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
@@ -561,7 +561,7 @@
     {
       "control": "SC-10",
       "title": "Network Disconnect",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
       ]
@@ -577,7 +577,7 @@
     {
       "control": "SC-45(1)",
       "title": "Synchronization with Authoritative Time Source",
-      "status": "satisfied",
+      "status": "not satisfied",
       "rules": [
         "TIME-NTP-AUTH-01"
       ]
@@ -587,41 +587,16 @@
     {
       "rule_id": "AAA-CENTRAL-AUTH-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Administrators authenticate against a central AAA server: holds for the device.",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Administrators authenticate against a central AAA server: fails for the device; the rule treats absence as a violation (missing: AuthPolicy[auth-policy].login_methods, any AuthServer).",
       "actual": [
-        "aaa.central_login_in_use = true",
-        "AuthPolicy[auth-policy].login_methods = {tacacs}",
-        "AuthServer[tacacs:10.20.10.40].kind = tacacs",
-        "AuthServer[tacacs:10.20.10.40].host = 10.20.10.40"
+        "AuthPolicy[auth-policy].login_methods: missing",
+        "any AuthServer: missing"
       ],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 31,
-          "line_end": 31,
-          "raw": "authentication-order [ tacplus password ]",
-          "mapping_id": "juniper_junos/authentication-order-list",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 33,
-          "line_end": 33,
-          "raw": "10.20.10.40 secret \"****\"",
-          "mapping_id": "juniper_junos/tacplus-server",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
@@ -636,9 +611,9 @@
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 26,
-          "line_end": 26,
+          "file": "weak_set.conf",
+          "line_start": 8,
+          "line_end": 8,
           "raw": "encrypted-password \"****\"",
           "mapping_id": "juniper_junos/user-password",
           "mapping_version": 1,
@@ -651,19 +626,19 @@
     {
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
       "entity_id": "LocalUser[root]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Local passwords are stored with a strong one-way hash: holds for LocalUser[root].",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "Local passwords are stored with a strong one-way hash: is violated for LocalUser[root].",
       "actual": [
-        "LocalUser[root].hash_type = sha512-crypt"
+        "LocalUser[root].hash_type = md5-crypt"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 7,
-          "line_end": 7,
+          "file": "weak_set.conf",
+          "line_start": 5,
+          "line_end": 5,
           "raw": "encrypted-password \"****\"",
           "mapping_id": "juniper_junos/root-password",
           "mapping_version": 1,
@@ -676,39 +651,15 @@
     {
       "rule_id": "AAA-LOCKOUT-01",
       "entity_id": "LockoutPolicy[lockout-policy]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Repeated failed logins are blocked: holds for LockoutPolicy[lockout-policy].",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Repeated failed logins are blocked: fails for LockoutPolicy[lockout-policy]; the rule treats absence as a violation (missing: LockoutPolicy[lockout-policy].max_attempts).",
       "actual": [
-        "LockoutPolicy[lockout-policy].max_attempts = 3",
-        "LockoutPolicy[lockout-policy].lockout_s = 600"
+        "LockoutPolicy[lockout-policy].max_attempts: missing"
       ],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 15,
-          "line_end": 15,
-          "raw": "tries-before-disconnect 3",
-          "mapping_id": "juniper_junos/retry-tries",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 16,
-          "line_end": 16,
-          "raw": "lockout-period 10",
-          "mapping_id": "juniper_junos/retry-lockout-period",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
@@ -728,21 +679,20 @@
     {
       "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
       "entity_id": "PasswordPolicy[password-policy]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Passwords must be at least 15 characters: holds for PasswordPolicy[password-policy].",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Passwords must be at least 15 characters: is violated for PasswordPolicy[password-policy].",
       "actual": [
-        "PasswordPolicy[password-policy].min_length = 15",
-        "PasswordPolicy[password-policy].enforced: missing"
+        "PasswordPolicy[password-policy].min_length = 6"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 19,
-          "line_end": 19,
-          "raw": "minimum-length 15",
+          "file": "weak_set.conf",
+          "line_start": 6,
+          "line_end": 6,
+          "raw": "minimum-length 6",
           "mapping_id": "juniper_junos/password-minimum-length",
           "mapping_version": 1,
           "approved_by": [
@@ -754,70 +704,31 @@
     {
       "rule_id": "FILTER-PERMIT-ANY-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "No filter entry permits all traffic from anywhere to anywhere: holds for the device.",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "No filter entry permits all traffic from anywhere to anywhere: is violated for the device (using the vendor default for this OS version).",
       "actual": [
-        "filtering.permit_all_present = false",
-        "FilterRule[PROTECT-RE:ALLOW-NTP].service = {udp}",
-        "FilterRule[PROTECT-RE:ALLOW-NTP].src = {10.20.10.70/32}",
-        "FilterRule[PROTECT-RE:ALLOW-SSH-MGMT].service = {tcp}",
-        "FilterRule[PROTECT-RE:ALLOW-SSH-MGMT].src = {10.20.10.0/24}",
-        "FilterRule[PROTECT-RE:DENY-REST].action = deny"
+        "filtering.permit_all_present = true",
+        "FilterRule[ALLOW-ALL:ANY].action = permit",
+        "FilterRule[ALLOW-ALL:ANY].enabled: missing",
+        "FilterRule[ALLOW-ALL:ANY].service = {ip} (vendor default)",
+        "FilterRule[ALLOW-ALL:ANY].src = {any} (vendor default)",
+        "FilterRule[ALLOW-ALL:ANY].dst = {any} (vendor default)",
+        "FilterRule[ALLOW-ALL:ANY].applications: missing"
       ],
-      "defaults_used": [],
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#term-matches-every-destination",
+        "juniper_junos/defaults.yaml#term-matches-every-protocol",
+        "juniper_junos/defaults.yaml#term-matches-every-source"
+      ],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 122,
-          "line_end": 122,
-          "raw": "10.20.10.0/24",
-          "mapping_id": "juniper_junos/term-source-address",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 124,
-          "line_end": 124,
-          "raw": "protocol tcp",
-          "mapping_id": "juniper_junos/term-protocol",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 132,
-          "line_end": 132,
-          "raw": "10.20.10.70/32",
-          "mapping_id": "juniper_junos/term-source-address",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 134,
-          "line_end": 134,
-          "raw": "protocol udp",
-          "mapping_id": "juniper_junos/term-protocol",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 142,
-          "line_end": 142,
-          "raw": "discard",
-          "mapping_id": "juniper_junos/term-then-block-discard",
+          "file": "weak_set.conf",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "then accept",
+          "mapping_id": "juniper_junos/term-then-accept",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -828,33 +739,23 @@
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
       "entity_id": "Interface[ge-0/0/0.0]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Untrusted interfaces filter inbound traffic: holds for Interface[ge-0/0/0.0].",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "Untrusted interfaces filter inbound traffic: is violated for Interface[ge-0/0/0.0].",
       "actual": [
         "Interface[ge-0/0/0.0].role = untrusted",
-        "Interface[ge-0/0/0.0].zone = untrust"
+        "Interface[ge-0/0/0.0].filters_in: missing",
+        "Interface[ge-0/0/0.0].zone: missing"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 152,
-          "line_end": 152,
-          "raw": "ge-0/0/0.0",
-          "mapping_id": "inference/interface.role.untrusted_by_zone",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 152,
-          "line_end": 152,
-          "raw": "ge-0/0/0.0",
-          "mapping_id": "juniper_junos/zone-interface",
+          "file": "weak_set.conf",
+          "line_start": 15,
+          "line_end": 15,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -865,54 +766,28 @@
     {
       "rule_id": "LOG-CONFIG-CHANGE-01",
       "entity_id": "LoggingPolicy[logging-policy]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Configuration changes are logged: holds for LoggingPolicy[logging-policy].",
+      "status": "REVIEW",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Cannot judge the rule for LoggingPolicy[logging-policy] (missing: LoggingPolicy[logging-policy].config_change_logged). No vendor default is known for this OS version.",
       "actual": [
-        "LoggingPolicy[logging-policy].config_change_logged = true"
+        "LoggingPolicy[logging-policy].config_change_logged: missing"
       ],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 53,
-          "line_end": 53,
-          "raw": "interactive-commands any",
-          "mapping_id": "juniper_junos/syslog-file-interactive-commands",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "LOG-REMOTE-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Logs are sent to a remote log server: holds for the device.",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Logs are sent to a remote log server: fails for the device; the rule treats absence as a violation (missing: any LogTarget).",
       "actual": [
-        "logging.remote_configured = true",
-        "LogTarget[10.20.10.50].host = 10.20.10.50",
-        "LogTarget[10.20.10.50].enabled: missing"
+        "any LogTarget: missing"
       ],
       "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 47,
-          "line_end": 47,
-          "raw": "host 10.20.10.50",
-          "mapping_id": "juniper_junos/syslog-host",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "evidence": []
     },
     {
       "rule_id": "LOG-TIMESTAMPS-01",
@@ -932,22 +807,46 @@
     {
       "rule_id": "MGMT-BANNER-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "A login banner warns against unauthorised use: holds for the device.",
+      "status": "FAIL",
+      "severity": "low",
+      "severity_reason": "Low (base)",
+      "reason": "A login banner warns against unauthorised use: fails for the device; the rule treats absence as a violation (missing: any Banner).",
       "actual": [
-        "management.login_banner_present = true",
-        "Banner[login].present = true"
+        "any Banner: missing"
+      ],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-HTTP-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
+      "reason": "Unencrypted HTTP management is disabled: is violated for the device.",
+      "actual": [
+        "management.http_enabled = true",
+        "MgmtService[http].enabled = true"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 29,
-          "line_end": 29,
-          "raw": "message \"Authorised access only. Activity is logged and monitored.\"",
-          "mapping_id": "juniper_junos/login-message",
+          "file": "weak_set.conf",
+          "line_start": 12,
+          "line_end": 12,
+          "raw": "http",
+          "mapping_id": "juniper_junos/web-management-http",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak_set.conf",
+          "line_start": 15,
+          "line_end": 15,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -956,50 +855,25 @@
       ]
     },
     {
-      "rule_id": "MGMT-HTTP-01",
-      "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Unencrypted HTTP management is disabled: holds for the device (using the vendor default for this OS version).",
+      "rule_id": "MGMT-SESSION-TIMEOUT-01",
+      "entity_id": "MgmtSession[class:super-user]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Idle management sessions time out within 10 minutes: is violated for MgmtSession[class:super-user] (using the vendor default for this OS version).",
       "actual": [
-        "management.http_enabled = false",
-        "MgmtService[http].enabled = false (vendor default)"
+        "MgmtSession[class:super-user].kind = cli",
+        "MgmtSession[class:super-user].idle_timeout_s = 0 (vendor default)"
       ],
       "defaults_used": [
-        "juniper_junos/defaults.yaml#http-off"
+        "juniper_junos/defaults.yaml#class-never-times-out"
       ],
-      "evidence": []
-    },
-    {
-      "rule_id": "MGMT-SESSION-TIMEOUT-01",
-      "entity_id": "MgmtSession[class:NETADMIN]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Idle management sessions time out within 10 minutes: holds for MgmtSession[class:NETADMIN].",
-      "actual": [
-        "MgmtSession[class:NETADMIN].kind = cli",
-        "MgmtSession[class:NETADMIN].idle_timeout_s = 600"
-      ],
-      "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 11,
-          "line_end": 11,
-          "raw": "idle-timeout 10",
-          "mapping_id": "juniper_junos/login-class-idle-timeout",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 24,
-          "line_end": 24,
-          "raw": "class NETADMIN",
+          "file": "weak_set.conf",
+          "line_start": 7,
+          "line_end": 7,
+          "raw": "class super-user",
           "mapping_id": "juniper_junos/user-class",
           "mapping_version": 1,
           "approved_by": [
@@ -1014,63 +888,46 @@
       "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "SSH management uses protocol version 2 only: holds for the device.",
+      "reason": "SSH management uses protocol version 2 only: holds for the device (using the vendor default for this OS version).",
       "actual": [
         "management.ssh_v1_negotiable = false",
-        "MgmtService[ssh].version = 2"
+        "MgmtService[ssh].version = 2 (vendor default)"
       ],
-      "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 38,
-          "line_end": 38,
-          "raw": "protocol-version v2",
-          "mapping_id": "juniper_junos/ssh-v2",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#ssh-v2"
+      ],
+      "evidence": []
     },
     {
       "rule_id": "MGMT-TELNET-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Clear-text Telnet management is not reachable: holds for the device (using the vendor default for this OS version).",
+      "status": "FAIL",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: telnet is reachable and an untrusted interface lets it through (no inbound filter or zone, or telnet allowed on it)",
+      "reason": "Clear-text Telnet management is not reachable: is violated for the device.",
       "actual": [
-        "management.telnet_reachable = false",
-        "MgmtService[telnet].enabled = false (vendor default)",
-        "MgmtSession[class:NETADMIN].kind = cli",
-        "Interface[ge-0/0/0.0].mgmt_protocols = {} (vendor default)",
-        "Interface[ge-0/0/1.0].mgmt_protocols = {ssh}",
-        "Interface[lo0.0].mgmt_protocols = {} (vendor default)"
+        "management.telnet_reachable = true",
+        "MgmtService[telnet].enabled = true"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#no-host-inbound-services",
-        "juniper_junos/defaults.yaml#services-off"
-      ],
+      "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 24,
-          "line_end": 24,
-          "raw": "class NETADMIN",
-          "mapping_id": "juniper_junos/user-class",
+          "file": "weak_set.conf",
+          "line_start": 10,
+          "line_end": 10,
+          "raw": "telnet",
+          "mapping_id": "juniper_junos/service-telnet",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
           ]
         },
         {
-          "file": "hardened.conf",
-          "line_start": 160,
-          "line_end": 160,
-          "raw": "ssh",
-          "mapping_id": "juniper_junos/zone-host-inbound-service",
+          "file": "weak_set.conf",
+          "line_start": 15,
+          "line_end": 15,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1102,31 +959,57 @@
     },
     {
       "rule_id": "MGMT-WEB-ACL-01",
-      "entity_id": "Device[device]",
-      "status": "N/A",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Not applicable: nothing matches `MgmtService where key in [http, https] and enabled` on this device.",
-      "actual": [],
-      "defaults_used": [],
-      "evidence": []
-    },
-    {
-      "rule_id": "REF-DANGLING-01",
-      "entity_id": "Reference[Interface[lo0.0].filters_in -> PROTECT-RE]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Every reference points at something that exists: holds for Reference[Interface[lo0.0].filters_in -> PROTECT-RE].",
+      "entity_id": "MgmtService[http]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
+      "reason": "Web management accepts only permitted sources: is violated for MgmtService[http].",
       "actual": [
-        "Reference[Interface[lo0.0].filters_in -> PROTECT-RE].resolved = true"
+        "MgmtService[http].enabled = true",
+        "MgmtService[http].access_filter: missing"
       ],
       "defaults_used": [],
       "evidence": [
         {
-          "file": "hardened.conf",
-          "line_start": 88,
-          "line_end": 88,
+          "file": "weak_set.conf",
+          "line_start": 12,
+          "line_end": 12,
+          "raw": "http",
+          "mapping_id": "juniper_junos/web-management-http",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak_set.conf",
+          "line_start": 15,
+          "line_end": 15,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[Interface[lo0.0].filters_in -> PROTECT-RE]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Every reference points at something that exists: is violated for Reference[Interface[lo0.0].filters_in -> PROTECT-RE].",
+      "actual": [
+        "Reference[Interface[lo0.0].filters_in -> PROTECT-RE].resolved = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak_set.conf",
+          "line_start": 20,
+          "line_end": 20,
           "raw": "input PROTECT-RE",
           "mapping_id": "juniper_junos/unit-filter-input",
           "mapping_version": 1,
@@ -1139,57 +1022,102 @@
     {
       "rule_id": "SNMP-COMMUNITY-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "No SNMP community is well known or writable: holds for the device (using the vendor default for this OS version).",
+      "status": "FAIL",
+      "severity": "critical",
+      "severity_reason": "High (base) → Critical: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
+      "reason": "No SNMP community is well known or writable: is violated for the device.",
       "actual": [
-        "snmp.weak_community_present = false",
-        "SnmpCommunity: none configured = none (vendor default)"
+        "snmp.weak_community_present = true",
+        "SnmpCommunity[community-23].is_well_known = true",
+        "SnmpCommunity[community-23].access = rw"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#no-snmp-communities"
-      ],
-      "evidence": []
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak_set.conf",
+          "line_start": 15,
+          "line_end": 15,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak_set.conf",
+          "line_start": 23,
+          "line_end": 23,
+          "raw": "authorization read-write",
+          "mapping_id": "juniper_junos/snmp-community-authorization",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak_set.conf",
+          "line_start": 23,
+          "line_end": 23,
+          "raw": "community ****",
+          "mapping_id": "juniper_junos/snmp-community",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "SVC-LEGACY-01",
       "entity_id": "Device[device]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Legacy network services are disabled: holds for the device (using the vendor default for this OS version).",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Legacy network services are disabled: is violated for the device.",
       "actual": [
-        "services.legacy_enabled = false",
-        "MgmtService[pad].enabled = false (vendor default)",
-        "MgmtService[finger].enabled = false (vendor default)",
-        "MgmtService[bootp].enabled = false (vendor default)",
-        "MgmtService[tcp-small-servers].enabled = false (vendor default)",
-        "MgmtService[udp-small-servers].enabled = false (vendor default)"
+        "services.legacy_enabled = true",
+        "MgmtService[finger].enabled = true"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#finger-off",
-        "juniper_junos/defaults.yaml#no-bootp-server",
-        "juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad",
-        "juniper_junos/defaults.yaml#no-tcp-small-servers",
-        "juniper_junos/defaults.yaml#no-udp-small-servers"
-      ],
-      "evidence": []
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak_set.conf",
+          "line_start": 11,
+          "line_end": 11,
+          "raw": "finger",
+          "mapping_id": "juniper_junos/service-finger",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
       "entity_id": "Interface[ge-0/0/0.0]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Interfaces do not answer ARP for other hosts: holds for Interface[ge-0/0/0.0] (using the vendor default for this OS version).",
+      "status": "FAIL",
+      "severity": "low",
+      "severity_reason": "Low (base)",
+      "reason": "Interfaces do not answer ARP for other hosts: is violated for Interface[ge-0/0/0.0].",
       "actual": [
-        "Interface[ge-0/0/0.0].proxy_arp = false (vendor default)"
+        "Interface[ge-0/0/0.0].proxy_arp = true"
       ],
-      "defaults_used": [
-        "juniper_junos/defaults.yaml#proxy-arp-off"
-      ],
-      "evidence": []
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak_set.conf",
+          "line_start": 16,
+          "line_end": 16,
+          "raw": "proxy-arp unrestricted",
+          "mapping_id": "juniper_junos/unit-proxy-arp",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
@@ -1224,360 +1152,165 @@
     {
       "rule_id": "TIME-NTP-AUTH-01",
       "entity_id": "TimeSource[10.20.10.70]",
-      "status": "PASS",
-      "severity": null,
-      "severity_reason": null,
-      "reason": "Time sources are authenticated: holds for TimeSource[10.20.10.70].",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Time sources are authenticated: is violated for TimeSource[10.20.10.70] (using the vendor default for this OS version).",
       "actual": [
-        "TimeSource[10.20.10.70].authenticated = true",
-        "TimePolicy[time-policy].auth_enforced = true"
+        "TimeSource[10.20.10.70].authenticated = false (vendor default)",
+        "TimePolicy[time-policy].auth_enforced = false (vendor default)"
       ],
-      "defaults_used": [],
-      "evidence": [
-        {
-          "file": "hardened.conf",
-          "line_start": 63,
-          "line_end": 63,
-          "raw": "server 10.20.10.70 key 1",
-          "mapping_id": "juniper_junos/ntp-server-key",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "hardened.conf",
-          "line_start": 64,
-          "line_end": 64,
-          "raw": "trusted-key 1",
-          "mapping_id": "juniper_junos/ntp-trusted-key",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        }
-      ]
+      "defaults_used": [
+        "juniper_junos/defaults.yaml#ntp-authentication-off",
+        "juniper_junos/defaults.yaml#ntp-server-without-key"
+      ],
+      "evidence": []
     }
   ],
   "assurance": {
-    "statements": 108,
-    "understood": 46,
-    "unmapped": 62,
+    "statements": 58,
+    "understood": 29,
+    "unmapped": 28,
     "near_miss": 0,
-    "understood_pct": 42.6,
+    "understood_pct": 50.0,
     "unmapped_patterns": [
       {
         "pattern_key": "family inet",
         "count": 4,
-        "first_line": 71,
+        "first_line": 16,
         "example": "family inet"
-      },
-      {
-        "pattern_key": "interfaces",
-        "count": 3,
-        "first_line": 67,
-        "example": "interfaces"
       },
       {
         "pattern_key": "<IFNAME>",
         "count": 3,
-        "first_line": 68,
+        "first_line": 15,
         "example": "ge-0/0/0"
       },
       {
-        "pattern_key": "any notice",
+        "pattern_key": "interfaces",
         "count": 2,
-        "first_line": 48,
-        "example": "any notice"
-      },
-      {
-        "pattern_key": "authorization info",
-        "count": 2,
-        "first_line": 49,
-        "example": "authorization info"
-      },
-      {
-        "pattern_key": "description <STR>",
-        "count": 2,
-        "first_line": 69,
-        "example": "description \"WAN uplink\""
-      },
-      {
-        "pattern_key": "from",
-        "count": 2,
-        "first_line": 120,
-        "example": "from"
-      },
-      {
-        "pattern_key": "source-address",
-        "count": 2,
-        "first_line": 121,
-        "example": "source-address"
-      },
-      {
-        "pattern_key": "system",
-        "count": 1,
-        "first_line": 4,
-        "example": "system"
+        "first_line": 15,
+        "example": "interfaces"
       },
       {
         "pattern_key": "root-authentication",
         "count": 1,
-        "first_line": 6,
+        "first_line": 5,
         "example": "root-authentication"
       },
       {
         "pattern_key": "login",
         "count": 1,
-        "first_line": 9,
+        "first_line": 6,
         "example": "login"
-      },
-      {
-        "pattern_key": "permissions all",
-        "count": 1,
-        "first_line": 12,
-        "example": "permissions all"
-      },
-      {
-        "pattern_key": "retry-options",
-        "count": 1,
-        "first_line": 14,
-        "example": "retry-options"
       },
       {
         "pattern_key": "password",
         "count": 1,
-        "first_line": 18,
+        "first_line": 6,
         "example": "password"
-      },
-      {
-        "pattern_key": "change-type character-sets",
-        "count": 1,
-        "first_line": 20,
-        "example": "change-type character-sets"
-      },
-      {
-        "pattern_key": "minimum-character-changes <INT>",
-        "count": 1,
-        "first_line": 21,
-        "example": "minimum-character-changes 4"
       },
       {
         "pattern_key": "authentication",
         "count": 1,
-        "first_line": 25,
+        "first_line": 8,
         "example": "authentication"
-      },
-      {
-        "pattern_key": "tacplus-server",
-        "count": 1,
-        "first_line": 32,
-        "example": "tacplus-server"
       },
       {
         "pattern_key": "services",
         "count": 1,
-        "first_line": 35,
+        "first_line": 9,
         "example": "services"
       },
       {
-        "pattern_key": "root-login deny",
+        "pattern_key": "web-management",
         "count": 1,
-        "first_line": 37,
-        "example": "root-login deny"
+        "first_line": 12,
+        "example": "web-management"
       },
       {
-        "pattern_key": "connection-limit <INT>",
+        "pattern_key": "interface <IFNAME>",
         "count": 1,
-        "first_line": 39,
-        "example": "connection-limit 10"
-      },
-      {
-        "pattern_key": "rate-limit <INT>",
-        "count": 1,
-        "first_line": 40,
-        "example": "rate-limit 5"
-      },
-      {
-        "pattern_key": "netconf",
-        "count": 1,
-        "first_line": 42,
-        "example": "netconf"
-      },
-      {
-        "pattern_key": "ssh",
-        "count": 1,
-        "first_line": 43,
-        "example": "ssh"
+        "first_line": 12,
+        "example": "interface ge-0/0/0.0"
       },
       {
         "pattern_key": "syslog",
         "count": 1,
-        "first_line": 46,
+        "first_line": 13,
         "example": "syslog"
-      },
-      {
-        "pattern_key": "file interactive-commands",
-        "count": 1,
-        "first_line": 52,
-        "example": "file interactive-commands"
       },
       {
         "pattern_key": "file messages",
         "count": 1,
-        "first_line": 55,
+        "first_line": 13,
         "example": "file messages"
       },
       {
-        "pattern_key": "time-format millisecond",
+        "pattern_key": "any notice",
         "count": 1,
-        "first_line": 59,
-        "example": "time-format millisecond"
+        "first_line": 13,
+        "example": "any notice"
       },
       {
         "pattern_key": "ntp",
         "count": 1,
-        "first_line": 61,
+        "first_line": 14,
         "example": "ntp"
-      },
-      {
-        "pattern_key": "authentication-key <INT> type sha256 value <STR>",
-        "count": 1,
-        "first_line": 62,
-        "example": "authentication-key 1 type sha256 value \"****\""
       },
       {
         "pattern_key": "filter",
         "count": 1,
-        "first_line": 87,
+        "first_line": 20,
         "example": "filter"
       },
       {
         "pattern_key": "routing-options",
         "count": 1,
-        "first_line": 95,
+        "first_line": 22,
         "example": "routing-options"
       },
       {
         "pattern_key": "static",
         "count": 1,
-        "first_line": 96,
+        "first_line": 22,
         "example": "static"
       },
       {
         "pattern_key": "snmp",
         "count": 1,
-        "first_line": 100,
+        "first_line": 23,
         "example": "snmp"
-      },
-      {
-        "pattern_key": "v3",
-        "count": 1,
-        "first_line": 101,
-        "example": "v3"
-      },
-      {
-        "pattern_key": "usm",
-        "count": 1,
-        "first_line": 102,
-        "example": "usm"
-      },
-      {
-        "pattern_key": "local-engine",
-        "count": 1,
-        "first_line": 103,
-        "example": "local-engine"
-      },
-      {
-        "pattern_key": "user nmsuser",
-        "count": 1,
-        "first_line": 104,
-        "example": "user nmsuser"
-      },
-      {
-        "pattern_key": "authentication-sha",
-        "count": 1,
-        "first_line": 105,
-        "example": "authentication-sha"
-      },
-      {
-        "pattern_key": "authentication-key <STR>",
-        "count": 1,
-        "first_line": 106,
-        "example": "authentication-key \"****\""
-      },
-      {
-        "pattern_key": "privacy-aes128",
-        "count": 1,
-        "first_line": 108,
-        "example": "privacy-aes128"
-      },
-      {
-        "pattern_key": "privacy-key <STR>",
-        "count": 1,
-        "first_line": 109,
-        "example": "privacy-key \"****\""
       },
       {
         "pattern_key": "firewall",
         "count": 1,
-        "first_line": 116,
+        "first_line": 24,
         "example": "firewall"
-      },
-      {
-        "pattern_key": "then",
-        "count": 1,
-        "first_line": 140,
-        "example": "then"
       },
       {
         "pattern_key": "security",
         "count": 1,
-        "first_line": 148,
+        "first_line": 25,
         "example": "security"
       },
       {
         "pattern_key": "zones",
         "count": 1,
-        "first_line": 149,
+        "first_line": 25,
         "example": "zones"
-      },
-      {
-        "pattern_key": "security-zone untrust",
-        "count": 1,
-        "first_line": 150,
-        "example": "security-zone untrust"
       },
       {
         "pattern_key": "security-zone trust",
         "count": 1,
-        "first_line": 155,
+        "first_line": 25,
         "example": "security-zone trust"
-      },
-      {
-        "pattern_key": "host-inbound-traffic",
-        "count": 1,
-        "first_line": 158,
-        "example": "host-inbound-traffic"
-      },
-      {
-        "pattern_key": "system-services",
-        "count": 1,
-        "first_line": 159,
-        "example": "system-services"
       }
     ],
-    "review_findings": 0,
+    "review_findings": 1,
     "mappings_used": [
       {
-        "mapping": "inference/interface.role.untrusted_by_zone@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/authentication-order-list@1",
+        "mapping": "inference/interface.role.untrusted_by_description@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1595,31 +1328,10 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 4
-      },
-      {
-        "mapping": "juniper_junos/login-class-idle-timeout@1",
-        "approved_by": [
-          "maintainer"
-        ],
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/login-message@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/ntp-server-key@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "juniper_junos/ntp-trusted-key@1",
+        "mapping": "juniper_junos/ntp-server@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1633,25 +1345,18 @@
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/retry-lockout-period@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/retry-tries@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
         "mapping": "juniper_junos/root-password@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 2
+      },
+      {
+        "mapping": "juniper_junos/service-finger@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
       },
       {
         "mapping": "juniper_junos/service-ssh@1",
@@ -1661,7 +1366,21 @@
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/ssh-v2@1",
+        "mapping": "juniper_junos/service-telnet@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/snmp-community-authorization@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "juniper_junos/snmp-community@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1675,70 +1394,14 @@
         "facts": 3
       },
       {
-        "mapping": "juniper_junos/syslog-file-interactive-commands@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/syslog-host@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/tacplus-server-inline-secret@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/tacplus-server@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "juniper_junos/term-destination-port@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/term-port@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 1
-      },
-      {
-        "mapping": "juniper_junos/term-protocol@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
-        "mapping": "juniper_junos/term-source-address@1",
-        "approved_by": [
-          "maintainer"
-        ],
-        "facts": 2
-      },
-      {
         "mapping": "juniper_junos/term-then-accept@1",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 2
+        "facts": 1
       },
       {
-        "mapping": "juniper_junos/term-then-block-discard@1",
+        "mapping": "juniper_junos/unit-description@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1749,7 +1412,7 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 7
+        "facts": 6
       },
       {
         "mapping": "juniper_junos/unit-inet-address@1",
@@ -1757,6 +1420,13 @@
           "maintainer"
         ],
         "facts": 7
+      },
+      {
+        "mapping": "juniper_junos/unit-proxy-arp@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
       },
       {
         "mapping": "juniper_junos/user-class@1",
@@ -1773,7 +1443,7 @@
         "facts": 1
       },
       {
-        "mapping": "juniper_junos/zone-host-inbound-service@1",
+        "mapping": "juniper_junos/web-management-http@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1784,22 +1454,20 @@
         "approved_by": [
           "maintainer"
         ],
-        "facts": 2
+        "facts": 1
       }
     ],
     "defaults_used": [
-      "juniper_junos/defaults.yaml#finger-off",
-      "juniper_junos/defaults.yaml#http-off",
-      "juniper_junos/defaults.yaml#no-bootp-server",
-      "juniper_junos/defaults.yaml#no-host-inbound-services",
-      "juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad",
-      "juniper_junos/defaults.yaml#no-snmp-communities",
-      "juniper_junos/defaults.yaml#no-tcp-small-servers",
-      "juniper_junos/defaults.yaml#no-udp-small-servers",
+      "juniper_junos/defaults.yaml#class-never-times-out",
+      "juniper_junos/defaults.yaml#ntp-authentication-off",
+      "juniper_junos/defaults.yaml#ntp-server-without-key",
       "juniper_junos/defaults.yaml#passwords-always-hashed",
       "juniper_junos/defaults.yaml#proxy-arp-off",
-      "juniper_junos/defaults.yaml#services-off",
-      "juniper_junos/defaults.yaml#syslog-date-timestamps"
+      "juniper_junos/defaults.yaml#ssh-v2",
+      "juniper_junos/defaults.yaml#syslog-date-timestamps",
+      "juniper_junos/defaults.yaml#term-matches-every-destination",
+      "juniper_junos/defaults.yaml#term-matches-every-protocol",
+      "juniper_junos/defaults.yaml#term-matches-every-source"
     ],
     "mappings_skipped_for_version": []
   },
@@ -1814,9 +1482,9 @@
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 5,
-            "line_end": 5,
+            "file": "weak_set.conf",
+            "line_start": 4,
+            "line_end": 4,
             "raw": "host-name BR-SRX1",
             "mapping_id": null,
             "mapping_version": null,
@@ -1830,55 +1498,46 @@
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
+            "file": "weak_set.conf",
             "line_start": 3,
             "line_end": 3,
-            "raw": "version 23.4R1.9;",
+            "raw": "set version 23.4R1.9",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
+            "file": "weak_set.conf",
             "line_start": 4,
             "line_end": 4,
-            "raw": "system {",
+            "raw": "set system host-name BR-SRX1",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
+            "file": "weak_set.conf",
             "line_start": 5,
             "line_end": 5,
-            "raw": "host-name BR-SRX1;",
+            "raw": "set system root-authentication encrypted-password \"****\"",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 6,
-            "line_end": 6,
-            "raw": "root-authentication {",
+            "file": "weak_set.conf",
+            "line_start": 15,
+            "line_end": 15,
+            "raw": "set interfaces ge-0/0/0 unit 0 description \"WAN uplink\"",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 68,
-            "line_end": 68,
-            "raw": "ge-0/0/0 {",
-            "mapping_id": null,
-            "mapping_version": null,
-            "approved_by": []
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 150,
-            "line_end": 150,
-            "raw": "security-zone untrust {",
+            "file": "weak_set.conf",
+            "line_start": 25,
+            "line_end": 25,
+            "raw": "set security zones security-zone trust interfaces ge-0/0/1.0",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1891,55 +1550,46 @@
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
+            "file": "weak_set.conf",
             "line_start": 3,
             "line_end": 3,
-            "raw": "version 23.4R1.9;",
+            "raw": "set version 23.4R1.9",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
+            "file": "weak_set.conf",
             "line_start": 4,
             "line_end": 4,
-            "raw": "system {",
+            "raw": "set system host-name BR-SRX1",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
+            "file": "weak_set.conf",
             "line_start": 5,
             "line_end": 5,
-            "raw": "host-name BR-SRX1;",
+            "raw": "set system root-authentication encrypted-password \"****\"",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 6,
-            "line_end": 6,
-            "raw": "root-authentication {",
+            "file": "weak_set.conf",
+            "line_start": 15,
+            "line_end": 15,
+            "raw": "set interfaces ge-0/0/0 unit 0 description \"WAN uplink\"",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
           },
           {
-            "file": "hardened.conf",
-            "line_start": 68,
-            "line_end": 68,
-            "raw": "ge-0/0/0 {",
-            "mapping_id": null,
-            "mapping_version": null,
-            "approved_by": []
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 150,
-            "line_end": 150,
-            "raw": "security-zone untrust {",
+            "file": "weak_set.conf",
+            "line_start": 25,
+            "line_end": 25,
+            "raw": "set security zones security-zone trust interfaces ge-0/0/1.0",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []
@@ -1952,7 +1602,7 @@
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
+            "file": "weak_set.conf",
             "line_start": 3,
             "line_end": 3,
             "raw": "version 23.4R1.9",
@@ -1990,453 +1640,18 @@
     },
     "entities": [
       {
-        "key": "auth-policy",
-        "evidence": [],
-        "type": "AuthPolicy",
-        "login_methods": {
-          "value": [
-            "tacacs"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 31,
-              "line_end": 31,
-              "raw": "authentication-order [ tacplus password ]",
-              "mapping_id": "juniper_junos/authentication-order-list",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "tacacs:10.20.10.40",
-        "evidence": [],
-        "type": "AuthServer",
-        "kind": {
-          "value": "tacacs",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 33,
-              "line_end": 33,
-              "raw": "10.20.10.40 secret \"****\"",
-              "mapping_id": "juniper_junos/tacplus-server",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "host": {
-          "value": "10.20.10.40",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 33,
-              "line_end": 33,
-              "raw": "10.20.10.40 secret \"****\"",
-              "mapping_id": "juniper_junos/tacplus-server",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "key_present": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 33,
-              "line_end": 33,
-              "raw": "10.20.10.40 secret \"****\"",
-              "mapping_id": "juniper_junos/tacplus-server-inline-secret",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "login",
-        "evidence": [],
-        "type": "Banner",
-        "present": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 29,
-              "line_end": 29,
-              "raw": "message \"Authorised access only. Activity is logged and monitored.\"",
-              "mapping_id": "juniper_junos/login-message",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "text": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
-        "key": "PROTECT-RE:ALLOW-NTP",
+        "key": "ALLOW-ALL:ANY",
         "evidence": [],
         "type": "FilterRule",
         "ruleset": {
-          "value": "PROTECT-RE",
+          "value": "ALLOW-ALL",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 129,
-              "line_end": 129,
-              "raw": "term ALLOW-NTP",
-              "mapping_id": "juniper_junos/filter-term",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "position": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "name": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "src": {
-          "value": [
-            "10.20.10.70/32"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 132,
-              "line_end": 132,
-              "raw": "10.20.10.70/32",
-              "mapping_id": "juniper_junos/term-source-address",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "dst": {
-          "value": [
-            "any"
-          ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination"
-        },
-        "service": {
-          "value": [
-            "udp"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 134,
-              "line_end": 134,
-              "raw": "protocol udp",
-              "mapping_id": "juniper_junos/term-protocol",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "action": {
-          "value": "permit",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 137,
-              "line_end": 137,
-              "raw": "then accept",
-              "mapping_id": "juniper_junos/term-then-accept",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "log": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "enabled": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone_from": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone_to": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "applications": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "interfaces": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "negated": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "narrowed": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 135,
-              "line_end": 135,
-              "raw": "port ntp",
-              "mapping_id": "juniper_junos/term-port",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "PROTECT-RE:ALLOW-SSH-MGMT",
-        "evidence": [],
-        "type": "FilterRule",
-        "ruleset": {
-          "value": "PROTECT-RE",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 119,
-              "line_end": 119,
-              "raw": "term ALLOW-SSH-MGMT",
-              "mapping_id": "juniper_junos/filter-term",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "position": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "name": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "src": {
-          "value": [
-            "10.20.10.0/24"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 122,
-              "line_end": 122,
-              "raw": "10.20.10.0/24",
-              "mapping_id": "juniper_junos/term-source-address",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "dst": {
-          "value": [
-            "any"
-          ],
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination"
-        },
-        "service": {
-          "value": [
-            "tcp"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 124,
-              "line_end": 124,
-              "raw": "protocol tcp",
-              "mapping_id": "juniper_junos/term-protocol",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "action": {
-          "value": "permit",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 127,
-              "line_end": 127,
-              "raw": "then accept",
-              "mapping_id": "juniper_junos/term-then-accept",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "log": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "enabled": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone_from": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone_to": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "applications": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "interfaces": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "negated": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "narrowed": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 125,
-              "line_end": 125,
-              "raw": "destination-port ssh",
-              "mapping_id": "juniper_junos/term-destination-port",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "PROTECT-RE:DENY-REST",
-        "evidence": [],
-        "type": "FilterRule",
-        "ruleset": {
-          "value": "PROTECT-RE",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 139,
-              "line_end": 139,
-              "raw": "term DENY-REST",
+              "file": "weak_set.conf",
+              "line_start": 24,
+              "line_end": 24,
+              "raw": "term ANY",
               "mapping_id": "juniper_junos/filter-term",
               "mapping_version": 1,
               "approved_by": [
@@ -2483,15 +1698,15 @@
           "default_source": "juniper_junos/defaults.yaml#term-matches-every-protocol"
         },
         "action": {
-          "value": "deny",
+          "value": "permit",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 142,
-              "line_end": 142,
-              "raw": "discard",
-              "mapping_id": "juniper_junos/term-then-block-discard",
+              "file": "weak_set.conf",
+              "line_start": 24,
+              "line_end": 24,
+              "raw": "then accept",
+              "mapping_id": "juniper_junos/term-then-accept",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -2554,20 +1769,206 @@
         "evidence": [],
         "type": "Interface",
         "description": {
+          "value": "WAN uplink",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 15,
+              "line_end": 15,
+              "raw": "description \"WAN uplink\"",
+              "mapping_id": "juniper_junos/unit-description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
           "value": null,
           "state": "absent",
           "evidence": [],
           "default_source": null
         },
-        "zone": {
-          "value": "untrust",
+        "role": {
+          "value": "untrusted",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 152,
-              "line_end": 152,
-              "raw": "ge-0/0/0.0",
+              "file": "weak_set.conf",
+              "line_start": 15,
+              "line_end": 15,
+              "raw": "description \"WAN uplink\"",
+              "mapping_id": "inference/interface.role.untrusted_by_description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "admin_up": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols": {
+          "value": [],
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services"
+        },
+        "mgmt_permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_protocols_v6": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "mgmt_restricted": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "proxy_arp": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 16,
+              "line_end": 16,
+              "raw": "proxy-arp unrestricted",
+              "mapping_id": "juniper_junos/unit-proxy-arp",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "filters_in": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "198.51.100.2/30"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 17,
+              "line_end": 17,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 17,
+              "line_end": 17,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 17,
+              "line_end": 17,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "weak_set.conf",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
+              "mapping_id": "juniper_junos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "ge-0/0/1.0",
+        "evidence": [],
+        "type": "Interface",
+        "description": {
+          "value": "LAN",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 18,
+              "line_end": 18,
+              "raw": "description \"LAN\"",
+              "mapping_id": "juniper_junos/unit-description",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone": {
+          "value": "trust",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 25,
+              "line_end": 25,
+              "raw": "ge-0/0/1.0",
               "mapping_id": "juniper_junos/zone-interface",
               "mapping_version": 1,
               "approved_by": [
@@ -2578,21 +1979,9 @@
           "default_source": null
         },
         "role": {
-          "value": "untrusted",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 152,
-              "line_end": 152,
-              "raw": "ge-0/0/0.0",
-              "mapping_id": "inference/interface.role.untrusted_by_zone",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         },
         "admin_up": {
@@ -2645,178 +2034,14 @@
         },
         "addresses": {
           "value": [
-            "198.51.100.2/30"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 72,
-              "line_end": 72,
-              "raw": "address 198.51.100.2/30",
-              "mapping_id": "juniper_junos/unit-inet-address",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "public_address": {
-          "value": false,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 72,
-              "line_end": 72,
-              "raw": "address 198.51.100.2/30",
-              "mapping_id": "juniper_junos/unit-inet-address",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "default_route": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 72,
-              "line_end": 72,
-              "raw": "address 198.51.100.2/30",
-              "mapping_id": "juniper_junos/unit-inet-address",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            },
-            {
-              "file": "hardened.conf",
-              "line_start": 97,
-              "line_end": 97,
-              "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
-              "mapping_id": "juniper_junos/static-route-next-hop",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "ge-0/0/1.0",
-        "evidence": [],
-        "type": "Interface",
-        "description": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "zone": {
-          "value": "trust",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 157,
-              "line_end": 157,
-              "raw": "ge-0/0/1.0",
-              "mapping_id": "juniper_junos/zone-interface",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "role": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "admin_up": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_protocols": {
-          "value": [
-            "ssh"
-          ],
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 160,
-              "line_end": 160,
-              "raw": "ssh",
-              "mapping_id": "juniper_junos/zone-host-inbound-service",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "mgmt_permitted_sources": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_protocols_v6": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "mgmt_restricted": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "proxy_arp": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#proxy-arp-off"
-        },
-        "filters_in": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "filters_out": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "addresses": {
-          "value": [
             "10.20.20.1/24"
           ],
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 80,
-              "line_end": 80,
+              "file": "weak_set.conf",
+              "line_start": 19,
+              "line_end": 19,
               "raw": "address 10.20.20.1/24",
               "mapping_id": "juniper_junos/unit-inet-address",
               "mapping_version": 1,
@@ -2832,9 +2057,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 80,
-              "line_end": 80,
+              "file": "weak_set.conf",
+              "line_start": 19,
+              "line_end": 19,
               "raw": "address 10.20.20.1/24",
               "mapping_id": "juniper_junos/unit-inet-address",
               "mapping_version": 1,
@@ -2917,9 +2142,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
+              "file": "weak_set.conf",
+              "line_start": 20,
+              "line_end": 20,
               "raw": "input PROTECT-RE",
               "mapping_id": "juniper_junos/unit-filter-input",
               "mapping_version": 1,
@@ -2943,9 +2168,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 90,
-              "line_end": 90,
+              "file": "weak_set.conf",
+              "line_start": 21,
+              "line_end": 21,
               "raw": "address 10.20.255.1/32",
               "mapping_id": "juniper_junos/unit-inet-address",
               "mapping_version": 1,
@@ -2961,9 +2186,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 90,
-              "line_end": 90,
+              "file": "weak_set.conf",
+              "line_start": 21,
+              "line_end": 21,
               "raw": "address 10.20.255.1/32",
               "mapping_id": "juniper_junos/unit-inet-address",
               "mapping_version": 1,
@@ -2996,9 +2221,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 26,
-              "line_end": 26,
+              "file": "weak_set.conf",
+              "line_start": 8,
+              "line_end": 8,
               "raw": "encrypted-password \"****\"",
               "mapping_id": "juniper_junos/user-password",
               "mapping_version": 1,
@@ -3031,9 +2256,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 7,
-              "line_end": 7,
+              "file": "weak_set.conf",
+              "line_start": 5,
+              "line_end": 5,
               "raw": "encrypted-password \"****\"",
               "mapping_id": "juniper_junos/root-password",
               "mapping_version": 1,
@@ -3045,13 +2270,13 @@
           "default_source": null
         },
         "hash_type": {
-          "value": "sha512-crypt",
+          "value": "md5-crypt",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 7,
-              "line_end": 7,
+              "file": "weak_set.conf",
+              "line_start": 5,
+              "line_end": 5,
               "raw": "encrypted-password \"****\"",
               "mapping_id": "juniper_junos/root-password",
               "mapping_version": 1,
@@ -3076,88 +2301,6 @@
         }
       },
       {
-        "key": "lockout-policy",
-        "evidence": [],
-        "type": "LockoutPolicy",
-        "max_attempts": {
-          "value": 3,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 15,
-              "line_end": 15,
-              "raw": "tries-before-disconnect 3",
-              "mapping_id": "juniper_junos/retry-tries",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "lockout_s": {
-          "value": 600,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 16,
-              "line_end": 16,
-              "raw": "lockout-period 10",
-              "mapping_id": "juniper_junos/retry-lockout-period",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        }
-      },
-      {
-        "key": "10.20.10.50",
-        "evidence": [],
-        "type": "LogTarget",
-        "host": {
-          "value": "10.20.10.50",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 47,
-              "line_end": 47,
-              "raw": "host 10.20.10.50",
-              "mapping_id": "juniper_junos/syslog-host",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
-        },
-        "transport": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "severity": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        },
-        "enabled": {
-          "value": null,
-          "state": "absent",
-          "evidence": [],
-          "default_source": null
-        }
-      },
-      {
         "key": "logging-policy",
         "evidence": [],
         "type": "LoggingPolicy",
@@ -3174,21 +2317,9 @@
           "default_source": null
         },
         "config_change_logged": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 53,
-              "line_end": 53,
-              "raw": "interactive-commands any",
-              "mapping_id": "juniper_junos/syslog-file-interactive-commands",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -3250,10 +2381,22 @@
         "evidence": [],
         "type": "MgmtService",
         "enabled": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#finger-off"
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 11,
+              "line_end": 11,
+              "raw": "finger",
+              "mapping_id": "juniper_junos/service-finger",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "version": {
           "value": null,
@@ -3303,10 +2446,22 @@
         "evidence": [],
         "type": "MgmtService",
         "enabled": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#http-off"
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 12,
+              "line_end": 12,
+              "raw": "http",
+              "mapping_id": "juniper_junos/web-management-http",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "version": {
           "value": null,
@@ -3413,9 +2568,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 36,
-              "line_end": 36,
+              "file": "weak_set.conf",
+              "line_start": 9,
+              "line_end": 9,
               "raw": "ssh",
               "mapping_id": "juniper_junos/service-ssh",
               "mapping_version": 1,
@@ -3428,21 +2583,9 @@
         },
         "version": {
           "value": "2",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 38,
-              "line_end": 38,
-              "raw": "protocol-version v2",
-              "mapping_id": "juniper_junos/ssh-v2",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#ssh-v2"
         },
         "access_filter": {
           "value": null,
@@ -3539,10 +2682,22 @@
         "evidence": [],
         "type": "MgmtService",
         "enabled": {
-          "value": false,
-          "state": "vendor_default",
-          "evidence": [],
-          "default_source": "juniper_junos/defaults.yaml#services-off"
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 10,
+              "line_end": 10,
+              "raw": "telnet",
+              "mapping_id": "juniper_junos/service-telnet",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         },
         "version": {
           "value": null,
@@ -3641,7 +2796,7 @@
         }
       },
       {
-        "key": "class:NETADMIN",
+        "key": "class:super-user",
         "evidence": [],
         "type": "MgmtSession",
         "kind": {
@@ -3649,10 +2804,10 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 24,
-              "line_end": 24,
-              "raw": "class NETADMIN",
+              "file": "weak_set.conf",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "class super-user",
               "mapping_id": "juniper_junos/user-class",
               "mapping_version": 1,
               "approved_by": [
@@ -3681,22 +2836,10 @@
           "default_source": null
         },
         "idle_timeout_s": {
-          "value": 600,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 11,
-              "line_end": 11,
-              "raw": "idle-timeout 10",
-              "mapping_id": "juniper_junos/login-class-idle-timeout",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "value": 0,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#class-never-times-out"
         },
         "auth_method": {
           "value": null,
@@ -3712,7 +2855,7 @@
         }
       },
       {
-        "key": "acl:PROTECT-RE",
+        "key": "acl:ALLOW-ALL",
         "evidence": [],
         "type": "ObjectDef",
         "kind": {
@@ -3720,10 +2863,10 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 118,
-              "line_end": 118,
-              "raw": "filter PROTECT-RE",
+              "file": "weak_set.conf",
+              "line_start": 24,
+              "line_end": 24,
+              "raw": "filter ALLOW-ALL",
               "mapping_id": "juniper_junos/filter-inet",
               "mapping_version": 1,
               "approved_by": [
@@ -3763,14 +2906,14 @@
         "evidence": [],
         "type": "PasswordPolicy",
         "min_length": {
-          "value": 15,
+          "value": 6,
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 19,
-              "line_end": 19,
-              "raw": "minimum-length 15",
+              "file": "weak_set.conf",
+              "line_start": 6,
+              "line_end": 6,
+              "raw": "minimum-length 6",
               "mapping_id": "juniper_junos/password-minimum-length",
               "mapping_version": 1,
               "approved_by": [
@@ -3815,9 +2958,9 @@
         "key": "Interface[lo0.0].filters_in -> PROTECT-RE",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 88,
-            "line_end": 88,
+            "file": "weak_set.conf",
+            "line_start": 20,
+            "line_end": 20,
             "raw": "input PROTECT-RE",
             "mapping_id": "juniper_junos/unit-filter-input",
             "mapping_version": 1,
@@ -3832,9 +2975,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
+              "file": "weak_set.conf",
+              "line_start": 20,
+              "line_end": 20,
               "raw": "input PROTECT-RE",
               "mapping_id": "juniper_junos/unit-filter-input",
               "mapping_version": 1,
@@ -3850,9 +2993,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
+              "file": "weak_set.conf",
+              "line_start": 20,
+              "line_end": 20,
               "raw": "input PROTECT-RE",
               "mapping_id": "juniper_junos/unit-filter-input",
               "mapping_version": 1,
@@ -3868,9 +3011,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
+              "file": "weak_set.conf",
+              "line_start": 20,
+              "line_end": 20,
               "raw": "input PROTECT-RE",
               "mapping_id": "juniper_junos/unit-filter-input",
               "mapping_version": 1,
@@ -3886,9 +3029,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
+              "file": "weak_set.conf",
+              "line_start": 20,
+              "line_end": 20,
               "raw": "input PROTECT-RE",
               "mapping_id": "juniper_junos/unit-filter-input",
               "mapping_version": 1,
@@ -3900,13 +3043,13 @@
           "default_source": null
         },
         "resolved": {
-          "value": true,
+          "value": false,
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
+              "file": "weak_set.conf",
+              "line_start": 20,
+              "line_end": 20,
               "raw": "input PROTECT-RE",
               "mapping_id": "juniper_junos/unit-filter-input",
               "mapping_version": 1,
@@ -3918,50 +3061,15 @@
           "default_source": null
         },
         "target": {
-          "value": "ObjectDef[acl:PROTECT-RE]",
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 88,
-              "line_end": 88,
-              "raw": "input PROTECT-RE",
-              "mapping_id": "juniper_junos/unit-filter-input",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         },
         "permits_any": {
-          "value": false,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 139,
-              "line_end": 139,
-              "raw": "term DENY-REST",
-              "mapping_id": "juniper_junos/filter-term",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            },
-            {
-              "file": "hardened.conf",
-              "line_start": 142,
-              "line_end": 142,
-              "raw": "discard",
-              "mapping_id": "juniper_junos/term-then-block-discard",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -3974,9 +3082,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 97,
-              "line_end": 97,
+              "file": "weak_set.conf",
+              "line_start": 22,
+              "line_end": 22,
               "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
               "mapping_id": "juniper_junos/static-route-next-hop",
               "mapping_version": 1,
@@ -3994,9 +3102,9 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 97,
-              "line_end": 97,
+              "file": "weak_set.conf",
+              "line_start": 22,
+              "line_end": 22,
               "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
               "mapping_id": "juniper_junos/static-route-next-hop",
               "mapping_version": 1,
@@ -4021,7 +3129,7 @@
         }
       },
       {
-        "key": "PROTECT-RE",
+        "key": "ALLOW-ALL",
         "evidence": [],
         "type": "Ruleset",
         "order": {
@@ -4056,19 +3164,19 @@
         }
       },
       {
-        "key": "time-policy",
+        "key": "community-23",
         "evidence": [],
-        "type": "TimePolicy",
-        "auth_enforced": {
-          "value": true,
+        "type": "SnmpCommunity",
+        "access": {
+          "value": "rw",
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 64,
-              "line_end": 64,
-              "raw": "trusted-key 1",
-              "mapping_id": "juniper_junos/ntp-trusted-key",
+              "file": "weak_set.conf",
+              "line_start": 23,
+              "line_end": 23,
+              "raw": "authorization read-write",
+              "mapping_id": "juniper_junos/snmp-community-authorization",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -4076,6 +3184,41 @@
             }
           ],
           "default_source": null
+        },
+        "filter": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "is_well_known": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak_set.conf",
+              "line_start": 23,
+              "line_end": 23,
+              "raw": "community ****",
+              "mapping_id": "juniper_junos/snmp-community",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "time-policy",
+        "evidence": [],
+        "type": "TimePolicy",
+        "auth_enforced": {
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#ntp-authentication-off"
         },
         "sync_enabled": {
           "value": null,
@@ -4093,11 +3236,11 @@
           "state": "explicit",
           "evidence": [
             {
-              "file": "hardened.conf",
-              "line_start": 63,
-              "line_end": 63,
-              "raw": "server 10.20.10.70 key 1",
-              "mapping_id": "juniper_junos/ntp-server-key",
+              "file": "weak_set.conf",
+              "line_start": 14,
+              "line_end": 14,
+              "raw": "server 10.20.10.70",
+              "mapping_id": "juniper_junos/ntp-server",
               "mapping_version": 1,
               "approved_by": [
                 "maintainer"
@@ -4107,22 +3250,10 @@
           "default_source": null
         },
         "authenticated": {
-          "value": true,
-          "state": "explicit",
-          "evidence": [
-            {
-              "file": "hardened.conf",
-              "line_start": 63,
-              "line_end": 63,
-              "raw": "server 10.20.10.70 key 1",
-              "mapping_id": "juniper_junos/ntp-server-key",
-              "mapping_version": 1,
-              "approved_by": [
-                "maintainer"
-              ]
-            }
-          ],
-          "default_source": null
+          "value": false,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "juniper_junos/defaults.yaml#ntp-server-without-key"
         },
         "enabled": {
           "value": null,
@@ -4134,136 +3265,57 @@
     ],
     "derived": {
       "aaa.central_login_in_use": {
-        "value": true,
-        "state": "explicit",
-        "evidence": [
-          {
-            "file": "hardened.conf",
-            "line_start": 31,
-            "line_end": 31,
-            "raw": "authentication-order [ tacplus password ]",
-            "mapping_id": "juniper_junos/authentication-order-list",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 33,
-            "line_end": 33,
-            "raw": "10.20.10.40 secret \"****\"",
-            "mapping_id": "juniper_junos/tacplus-server",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "value": null,
+        "state": "absent",
+        "evidence": [],
         "default_source": null
       },
       "filtering.permit_all_present": {
-        "value": false,
-        "state": "explicit",
+        "value": true,
+        "state": "vendor_default",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 122,
-            "line_end": 122,
-            "raw": "10.20.10.0/24",
-            "mapping_id": "juniper_junos/term-source-address",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 124,
-            "line_end": 124,
-            "raw": "protocol tcp",
-            "mapping_id": "juniper_junos/term-protocol",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 132,
-            "line_end": 132,
-            "raw": "10.20.10.70/32",
-            "mapping_id": "juniper_junos/term-source-address",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 134,
-            "line_end": 134,
-            "raw": "protocol udp",
-            "mapping_id": "juniper_junos/term-protocol",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 142,
-            "line_end": 142,
-            "raw": "discard",
-            "mapping_id": "juniper_junos/term-then-block-discard",
+            "file": "weak_set.conf",
+            "line_start": 24,
+            "line_end": 24,
+            "raw": "then accept",
+            "mapping_id": "juniper_junos/term-then-accept",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
-        "default_source": null
+        "default_source": "juniper_junos/defaults.yaml#term-matches-every-destination, juniper_junos/defaults.yaml#term-matches-every-protocol, juniper_junos/defaults.yaml#term-matches-every-source"
       },
       "logging.remote_configured": {
-        "value": true,
-        "state": "explicit",
-        "evidence": [
-          {
-            "file": "hardened.conf",
-            "line_start": 47,
-            "line_end": 47,
-            "raw": "host 10.20.10.50",
-            "mapping_id": "juniper_junos/syslog-host",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          }
-        ],
+        "value": null,
+        "state": "absent",
+        "evidence": [],
         "default_source": null
       },
       "management.http_enabled": {
-        "value": false,
-        "state": "vendor_default",
-        "evidence": [],
-        "default_source": "juniper_junos/defaults.yaml#http-off"
-      },
-      "management.login_banner_present": {
         "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 29,
-            "line_end": 29,
-            "raw": "message \"Authorised access only. Activity is logged and monitored.\"",
-            "mapping_id": "juniper_junos/login-message",
+            "file": "weak_set.conf",
+            "line_start": 12,
+            "line_end": 12,
+            "raw": "http",
+            "mapping_id": "juniper_junos/web-management-http",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
+        "default_source": null
+      },
+      "management.login_banner_present": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
         "default_source": null
       },
       "management.ssh_reachable": {
@@ -4271,9 +3323,9 @@
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 36,
-            "line_end": 36,
+            "file": "weak_set.conf",
+            "line_start": 9,
+            "line_end": 9,
             "raw": "ssh",
             "mapping_id": "juniper_junos/service-ssh",
             "mapping_version": 1,
@@ -4286,14 +3338,20 @@
       },
       "management.ssh_v1_negotiable": {
         "value": false,
+        "state": "vendor_default",
+        "evidence": [],
+        "default_source": "juniper_junos/defaults.yaml#ssh-v2"
+      },
+      "management.telnet_reachable": {
+        "value": true,
         "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 38,
-            "line_end": 38,
-            "raw": "protocol-version v2",
-            "mapping_id": "juniper_junos/ssh-v2",
+            "file": "weak_set.conf",
+            "line_start": 10,
+            "line_end": 10,
+            "raw": "telnet",
+            "mapping_id": "juniper_junos/service-telnet",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
@@ -4302,51 +3360,55 @@
         ],
         "default_source": null
       },
-      "management.telnet_reachable": {
-        "value": false,
-        "state": "vendor_default",
+      "services.legacy_enabled": {
+        "value": true,
+        "state": "explicit",
         "evidence": [
           {
-            "file": "hardened.conf",
-            "line_start": 24,
-            "line_end": 24,
-            "raw": "class NETADMIN",
-            "mapping_id": "juniper_junos/user-class",
-            "mapping_version": 1,
-            "approved_by": [
-              "maintainer"
-            ]
-          },
-          {
-            "file": "hardened.conf",
-            "line_start": 160,
-            "line_end": 160,
-            "raw": "ssh",
-            "mapping_id": "juniper_junos/zone-host-inbound-service",
+            "file": "weak_set.conf",
+            "line_start": 11,
+            "line_end": 11,
+            "raw": "finger",
+            "mapping_id": "juniper_junos/service-finger",
             "mapping_version": 1,
             "approved_by": [
               "maintainer"
             ]
           }
         ],
-        "default_source": "juniper_junos/defaults.yaml#no-host-inbound-services, juniper_junos/defaults.yaml#services-off"
-      },
-      "services.legacy_enabled": {
-        "value": false,
-        "state": "vendor_default",
-        "evidence": [],
-        "default_source": "juniper_junos/defaults.yaml#finger-off, juniper_junos/defaults.yaml#no-bootp-server, juniper_junos/defaults.yaml#no-pad-bootp-small-servers-pad, juniper_junos/defaults.yaml#no-tcp-small-servers, juniper_junos/defaults.yaml#no-udp-small-servers"
+        "default_source": null
       },
       "snmp.weak_community_present": {
-        "value": false,
-        "state": "vendor_default",
-        "evidence": [],
-        "default_source": "juniper_junos/defaults.yaml#no-snmp-communities"
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak_set.conf",
+            "line_start": 23,
+            "line_end": 23,
+            "raw": "authorization read-write",
+            "mapping_id": "juniper_junos/snmp-community-authorization",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak_set.conf",
+            "line_start": 23,
+            "line_end": 23,
+            "raw": "community ****",
+            "mapping_id": "juniper_junos/snmp-community",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
       }
     },
-    "known_empty": {
-      "SnmpCommunity": "juniper_junos/defaults.yaml#no-snmp-communities"
-    },
+    "known_empty": {},
     "unread": {}
   },
   "warnings": [],

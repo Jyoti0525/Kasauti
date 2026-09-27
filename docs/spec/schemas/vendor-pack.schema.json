@@ -11,6 +11,22 @@
       "title": "Role",
       "type": "string"
     },
+    "SetForm": {
+      "additionalProperties": false,
+      "description": "How ``set`` commands stand for the pack's brace configuration (TODO M2.28). Each line is\nthe full path to one statement; it is split into blocks where the pack's own mappings\nexpect them (:mod:`kasauti.mapping.setform`), so the same mappings read both forms.",
+      "properties": {
+        "leaf_lists": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Leaf Lists",
+          "type": "array"
+        }
+      },
+      "title": "SetForm",
+      "type": "object"
+    },
     "ShapeFamily": {
       "description": "The seven structural families plus the flat fallback (PLAN §6.1).",
       "enum": [
@@ -83,6 +99,17 @@
       "minimum": 1,
       "title": "Pack Version",
       "type": "integer"
+    },
+    "set_form": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SetForm"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "shape_family": {
       "$ref": "#/$defs/ShapeFamily"

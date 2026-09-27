@@ -43,6 +43,16 @@ class _Strict(BaseModel):
 # --- vendors/<vendor_os>/pack.yaml -------------------------------------------------------------
 
 
+class SetForm(_Strict):
+    """How ``set`` commands stand for the pack's brace configuration (TODO M2.28). Each line is
+    the full path to one statement; it is split into blocks where the pack's own mappings
+    expect them (:mod:`kasauti.mapping.setform`), so the same mappings read both forms."""
+
+    leaf_lists: tuple[str, ...] = ()
+    """Statements that take a list of values in order (``authentication-order [ tacplus
+    password ]``). Consecutive lines giving one value each are joined back into one list."""
+
+
 class VendorManifest(_Strict):
     format_version: Literal[1]
     id: Slug
@@ -60,7 +70,15 @@ class VendorManifest(_Strict):
     default_role: Role | None = None
     """The device role when no inference decides one (FortiOS: firewall). Recorded as a
     ``vendor_default``, so an inferred or admin-set role always wins (PLAN §7)."""
+    set_form: SetForm | None = None
+    """The configuration can also come as ``set`` commands (Junos ``display set``)."""
     description: str = ""
+
+    @model_validator(mode="after")
+    def _set_form_needs_blocks(self) -> Self:
+        if self.set_form is not None and self.shape_family is not ShapeFamily.BRACE:
+            raise ValueError("set_form rebuilds a brace tree: shape_family must be brace")
+        return self
 
 
 # --- detect.yaml -------------------------------------------------------------------------------

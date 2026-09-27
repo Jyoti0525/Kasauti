@@ -29,8 +29,8 @@ from kasauti.ingest.model import Artifact
 from kasauti.ingest.read import MAX_BYTES, IngestError, decode
 from kasauti.ingest.staging import STAGING_KEY_NAME, SealError, is_id, key_id, read_kept
 from kasauti.jobs.child import JobError, worker_secret
+from kasauti.mapping.setform import parse_config
 from kasauti.packs.loader import VendorPack, load_vendor_packs
-from kasauti.shape.parse import parse_text
 
 HOSTNAME_LIMIT = 255
 """Characters of a hostname kept: DNS's limit for a whole name."""
@@ -105,12 +105,7 @@ def recognise(data: bytes, packs: dict[str, VendorPack], vendor: str | None) -> 
 
 
 def _config(artifact: Artifact, pack: VendorPack) -> dict[str, Any]:
-    tree = parse_text(
-        artifact.text,
-        source_file=artifact.name,
-        family=pack.manifest.shape_family,
-        sha256=artifact.sha256,
-    )
+    tree = parse_config(artifact.text, pack, source_file=artifact.name, sha256=artifact.sha256)
     hostname = resolve_identity(tree, pack, None, artifact.text).device.hostname.value
     return {"kind": Kind.CONFIG, "vendor": pack.manifest.id, "hostname": clean_hostname(hostname)}
 

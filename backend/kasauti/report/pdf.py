@@ -188,6 +188,13 @@ def _table(rows: list[list[Any]], widths: Sequence[float], *, header: bool = Tru
     return table
 
 
+def _family(r: AuditResult) -> str:
+    """``brace``, or ``brace (from set_path)`` for a Junos ``display set`` export."""
+    if r.input.rebuilt_from is None:
+        return r.input.shape_family
+    return f"{r.input.shape_family} (from {r.input.rebuilt_from})"
+
+
 def _pct(value: float | None) -> str:
     return "n/a" if value is None else f"{value:.1f}%"
 
@@ -240,7 +247,7 @@ def _cover(r: AuditResult, s: _Styles, generated: str) -> list[Any]:
     meta = [
         ("Configuration file", r.input.file),
         ("SHA-256", r.input.sha256),
-        ("Shape family / encoding", f"{r.input.shape_family} / {r.input.encoding}"),
+        ("Shape family / encoding", f"{_family(r)} / {r.input.encoding}"),
         *(
             [
                 (

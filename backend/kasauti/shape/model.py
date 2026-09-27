@@ -58,6 +58,9 @@ class ConfigTree:
     statements: tuple[Statement, ...]
     warnings: tuple[str, ...] = ()
     """Why the tree isn't what was expected, e.g. a flat fallback after a syntax error."""
+    rebuilt_from: ShapeFamily | None = None
+    """The file's own family, when its lines were rebuilt into this family's tree (a Junos
+    ``display set`` export, read as the brace configuration it stands for)."""
 
     def __post_init__(self) -> None:
         if not _SHA256.fullmatch(self.sha256):

@@ -308,6 +308,44 @@ def test_context_must_be_a_suffix_and_empty_context_means_top_level() -> None:
     assert not any(e.type == "MgmtService" for e in r.sbm.entities)
 
 
+def test_block_line_keys_a_header_and_its_lines_alike_and_siblings_apart() -> None:
+    """``{@}`` (mapping-language §1): Junos ``community public { authorization …; }`` is one
+    entity, keyed by the line of its header; two communities in one ``snmp`` block are two.
+    Before M2.28 a header took its parent's line, so a community and its authorization were
+    two entities, and every community given as one line (``community private;``) was one."""
+    community = m(
+        id="v/community",
+        context=["snmp"],
+        entity={"type": "SnmpCommunity", "key": "community-{@}"},
+        match="community <STR:c>",
+        effect={
+            "set": "SnmpCommunity.is_well_known",
+            "from": "c",
+            "map": {"public": True},
+            "otherwise": False,
+        },
+    )
+    access = m(
+        id="v/access",
+        context=["snmp", "community <STR:c>"],
+        entity={"type": "SnmpCommunity", "key": "community-{@}"},
+        match="authorization <STR:a>",
+        effect={"set": "SnmpCommunity.access", "from": "a", "map": {"read-write": "rw"}},
+    )
+    config = (
+        "snmp {\n"
+        "    community c1;\n"
+        "    community c2 {\n"
+        "        authorization read-write;\n"
+        "    }\n"
+        "    community c3;\n"
+        "}\n"
+    )
+    r = run(config, [community, access], family=ShapeFamily.BRACE, negation=())
+    got = {e.key: e.access.value for e in r.sbm.entities if e.type == "SnmpCommunity"}
+    assert got == {"community-2": None, "community-3": "rw", "community-6": None}
+
+
 # --- versions and defaults (M1.07, M2.24) -------------------------------------------------------
 
 

@@ -55,13 +55,29 @@ def parse_text(
         warnings.append(f"not valid {chosen.value} syntax ({err}); parsed line by line instead")
         chosen = ShapeFamily.FLAT
         raws = list(lines.parse_flat(text))
-    statements = tuple(_statement(r, chosen) for r in raws if r.text)
+    return build_tree(
+        raws, chosen, text=text, source_file=source_file, sha256=sha256, warnings=warnings
+    )
+
+
+def build_tree(
+    raws: Iterable[RawStatement],
+    family: ShapeFamily,
+    *,
+    text: str,
+    source_file: str,
+    sha256: str | None = None,
+    warnings: Iterable[str] = (),
+    rebuilt_from: ShapeFamily | None = None,
+) -> ConfigTree:
+    """The tree for statements a parser gave; ``text`` is what they were read from."""
     return ConfigTree(
         source_file=source_file,
         sha256=sha256 or hashlib.sha256(text.encode("utf-8")).hexdigest(),
-        family=chosen,
-        statements=statements,
+        family=family,
+        statements=tuple(_statement(r, family) for r in raws if r.text),
         warnings=tuple(warnings),
+        rebuilt_from=rebuilt_from,
     )
 
 

@@ -1,0 +1,31 @@
+# E1 golden case (PLAN §21.1). Labels are ground truth from the weakness catalogue in
+# datasets/SOURCES.md, not engine output.
+description: Junos OS 23.4 hardened branch SRX (twin of the weak case), exported with `show configuration | display set` (M2.28)
+input: authored/juniper_junos/hardened_set.conf
+input_sha256: 202d54c3c46fddc57aaf2de5c1b46d8cc2d94c21ff0feaafd43595d8f274cecb
+vendor: null
+frameworks: [nist_800_53r5]
+expected_statuses:
+  AAA-CENTRAL-AUTH-01: PASS   
+  AAA-LOCAL-PASSWORD-HASH-01: PASS   
+  AAA-LOCKOUT-01: PASS   
+  AAA-PASSWORD-ENCRYPTION-01: PASS   
+  AAA-PASSWORD-MIN-LENGTH-01: PASS   
+  FILTER-PERMIT-ANY-01: PASS   
+  FILTER-UNTRUSTED-INGRESS-01: PASS   
+  LOG-CONFIG-CHANGE-01: PASS   
+  LOG-REMOTE-01: PASS   
+  LOG-TIMESTAMPS-01: PASS   
+  MGMT-BANNER-01: PASS   
+  MGMT-HTTP-01: PASS   
+  MGMT-SESSION-TIMEOUT-01: PASS   
+  MGMT-SSH-V2-01: PASS   
+  MGMT-TELNET-01: PASS   
+  MGMT-VTY-ACL-01: N/A      # Junos has no vty lines
+  MGMT-VTY-ACL-02: N/A      # Junos has no vty lines
+  MGMT-WEB-ACL-01: N/A      # no web management enabled
+  REF-DANGLING-01: PASS   
+  SNMP-COMMUNITY-01: PASS   
+  SVC-LEGACY-01: PASS   
+  SVC-PROXY-ARP-01: PASS   
+  TIME-NTP-AUTH-01: PASS   
