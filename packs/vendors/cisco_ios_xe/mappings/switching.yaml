@@ -1,0 +1,19 @@
+# Switch ports, which make a device a switch for role inference (TODO M2.22). Only the mode a
+# port states is read: `switchport mode {access | dynamic {auto | desirable} | trunk}`.
+# Seed mappings: reviewed in docs/reviews/cisco_ios_xe.md.
+mappings:
+  - id: cisco_ios_xe/switchport-mode
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: L2Port, key: "{name}"}
+    match: "switchport mode <STR:m>"
+    effect: {set: L2Port.mode, from: m, map: {access: access, trunk: trunk}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/switchport-mode-dynamic
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: L2Port, key: "{name}"}
+    match: "switchport mode dynamic <STR:m>"
+    effect: {set: L2Port.mode, from: m, map: {auto: dynamic, desirable: dynamic}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

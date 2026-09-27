@@ -2,7 +2,7 @@
 # every catalogued weakness, so every rule in scope passes.
 description: Cisco IOS XE 17.9 hardened edge router (twin of the weak case)
 input: authored/cisco_ios_xe/hardened.cfg
-input_sha256: aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2
+input_sha256: 65b2f470f0a4bb9d4c52e2021ee3b700b88e59fcd6bb57d381ad89242c4d9e65
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:

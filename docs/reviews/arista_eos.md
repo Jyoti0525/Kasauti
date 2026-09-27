@@ -128,3 +128,25 @@ the Model Number](https://www.arista.com/en/um-eos/eos-command-line-interface-cl
 
 Fixed: the model pattern was `Arista <STR:value> <LIST>`, and a `LIST` slot needs at least one
 token, so it could never match the documented line. It is now `Arista <STR:value>`.
+
+## Addendum (v5.1.28, M2.22): addresses, routes and switch ports
+
+Read on 2026-09-27. These lines feed role inference only (TODO M2.22): an interface with a
+public IPv4 address, or the one a default route leaves by, is inferred untrusted, which can
+raise a finding's severity by one level with the reason shown. No rule judges them, so none
+of them can turn a verdict into PASS. Where a line says the route leaves somewhere the pack
+doesn't follow, the route's exit is *unknown* and nothing is inferred from it.
+
+| Mappings | Syntax quoted | Source |
+|---|---|---|
+| `interface-ip-address` | "The ip address command specifies the IPv4 address of an interface and the mask for the subnet": `ip address 10.0.0.1/24`; `ip address … secondary` | [EOS 4.36.2F: IPv4](https://www.arista.com/en/um-eos/eos-ipv4) |
+| `interface-ipv6-address`, `-link-local` | "ipv6 address [ *ipv6_address* \| *ipv6_prefix* \| auto-config ]", e.g. `ipv6 address 2001:db8:1::/64`; link-local read and ignored | [EOS 4.36.2F: IPv6](https://www.arista.com/en/um-eos/eos-ipv6) |
+| `ip-route-via-*` | "ip route [*vrf_instance*] *dest_net* *next-hop* [*distance*][*tag_varname*][*rt_name*]"; *dest_net* "Destination IPv4 subnet (CIDR or address-mask notation)"; *next-hop* an IPv4 address or an interface (ethernet, loopback, management, port-channel, vlan, VXLAN, null0); example `ip route 0.0.0.0/0 192.14.0.4` | [EOS 4.36.2F: IPv4](https://www.arista.com/en/um-eos/eos-ipv4) |
+| `ipv6-route-via-*` | "ipv6 route *dest_prefix* *next-hop* [*distance*][*tag_opt*][*rt_name*]", next hop an address, an interface, or both ("Combination route"); example `ipv6 route ::/0 fd7a:629f:52a4:fe61::2` | [EOS 4.36.2F: IPv6](https://www.arista.com/en/um-eos/eos-ipv6) |
+| `switchport-mode` | "The switchport mode command specifies the switching mode … access, trunk, dot1q-tunnel, tap, and tool". Access, trunk and dot1q-tunnel read; tap and tool unknown | [EOS 4.36.2F: Virtual LANs (VLANs)](https://www.arista.com/en/um-eos/eos-virtual-lans-vlans) |
+
+A known limit: this pack's `default_role` is `switch`, applied after inference, so the
+default-route signal can't see it. A routed leaf with a default route (like the authored
+configs) is treated as a router for that signal. The authored configs gained
+`ip route 0.0.0.0/0 198.51.100.1 name ISP` (hardened) and `ip route 0.0.0.0/0 198.51.100.5`
+(weak); every verdict is unchanged.

@@ -3,6 +3,24 @@
 # Vendor-neutral: they read SBM facts, so every vendor pack benefits.
 
 inferences:
+  # --- Device role ------------------------------------------------------------------------------
+  # First, so the interface inferences below can ask what kind of device this is.
+  - id: device.role.firewall_by_zones
+    version: 1
+    description: >
+      A device whose policies move traffic between security zones is a firewall.
+    for_each: Device
+    when: "any(FilterRule: exists(zone_from) or exists(zone_to))"
+    set: {role: firewall}
+
+  - id: device.role.switch_by_l2_ports
+    version: 1
+    description: >
+      A device with switch ports (access or trunk) and no zone-based policy is a switch.
+    for_each: Device
+    when: "any(L2Port: exists(mode))"
+    set: {role: switch}
+
   # --- Interfaces facing the outside ------------------------------------------------------------
   - id: interface.role.untrusted_by_zone
     version: 1
@@ -23,19 +41,26 @@ inferences:
     when: "exists(description) and description matches '(?i)(^|[^a-z])(wan|internet|isp|outside|untrust(ed)?)([^a-z]|$)'"
     set: {role: untrusted}
 
-  # --- Device role ------------------------------------------------------------------------------
-  - id: device.role.firewall_by_zones
+  # Addressing and routes (PLAN §12.7: "public addressing, default-route egress"). Weaker than
+  # a zone or description the admin chose, so they come after them.
+  - id: interface.role.untrusted_by_public_address
     version: 1
     description: >
-      A device whose policies move traffic between security zones is a firewall.
-    for_each: Device
-    when: "any(FilterRule: exists(zone_from) or exists(zone_to))"
-    set: {role: firewall}
+      An interface with a public IPv4 address (globally reachable by IANA's special-purpose
+      address registry) is untrusted. IPv4 only: inside networks use global IPv6 addresses
+      as a matter of course.
+    for_each: Interface
+    when: "exists(public_address) and public_address"
+    set: {role: untrusted}
 
-  - id: device.role.switch_by_l2_ports
+  - id: interface.role.untrusted_by_default_route
     version: 1
     description: >
-      A device with switch ports (access or trunk) and no zone-based policy is a switch.
-    for_each: Device
-    when: "any(L2Port: exists(mode))"
-    set: {role: switch}
+      The interface the default route leaves by is untrusted: traffic for anywhere the device
+      has no route to goes out through it. Not on a switch (recognised by its switch ports,
+      above), where the default route points at the core rather than the internet.
+    for_each: Interface
+    when: >
+      exists(default_route) and default_route
+      and not (exists(Device.role) and Device.role == 'switch')
+    set: {role: untrusted}

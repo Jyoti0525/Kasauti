@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "39d658c2c8663a39bf6c42bd",
+  "audit_id": "80e6c8e9cd78a03cc0f202b5",
   "input": {
     "file": "weak.cfg",
-    "sha256": "11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946",
+    "sha256": "ba77cc7a6b22126ec539f23cc647198f19b00583afcc4d7f22e191ec10e43937",
     "encoding": "utf-8",
     "shape_family": "indent",
     "parse_warnings": []
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
-    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
+    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
+    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -636,8 +636,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 51,
-          "line_end": 51,
+          "line_start": 53,
+          "line_end": 53,
           "raw": "password 7 ****",
           "mapping_id": "cisco_ios_xe/vty-range-password",
           "mapping_version": 1,
@@ -743,8 +743,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 38,
-          "line_end": 38,
+          "line_start": 40,
+          "line_end": 40,
           "raw": "10 permit ip any any",
           "mapping_id": "cisco_ios_xe/acl-ext-entry",
           "mapping_version": 1,
@@ -754,8 +754,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 38,
-          "line_end": 38,
+          "line_start": 40,
+          "line_end": 40,
           "raw": "10 permit ip any any",
           "mapping_id": "cisco_ios_xe/acl-ext-ip-any-any",
           "mapping_version": 1,
@@ -922,8 +922,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 47,
-          "line_end": 47,
+          "line_start": 49,
+          "line_end": 49,
           "raw": "line con 0",
           "mapping_id": "cisco_ios_xe/line-con",
           "mapping_version": 1,
@@ -933,8 +933,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 48,
-          "line_end": 48,
+          "line_start": 50,
+          "line_end": 50,
           "raw": "exec-timeout 0 0",
           "mapping_id": "cisco_ios_xe/con-exec-timeout",
           "mapping_version": 1,
@@ -959,8 +959,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 49,
-          "line_end": 49,
+          "line_start": 51,
+          "line_end": 51,
           "raw": "line vty 0 4",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -970,8 +970,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 50,
-          "line_end": 50,
+          "line_start": 52,
+          "line_end": 52,
           "raw": "exec-timeout 0 0",
           "mapping_id": "cisco_ios_xe/vty-range-exec-timeout",
           "mapping_version": 1,
@@ -996,8 +996,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 54,
-          "line_end": 54,
+          "line_start": 56,
+          "line_end": 56,
           "raw": "line vty 5 15",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -1007,8 +1007,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 55,
-          "line_end": 55,
+          "line_start": 57,
+          "line_end": 57,
           "raw": "exec-timeout 30 0",
           "mapping_id": "cisco_ios_xe/vty-range-exec-timeout",
           "mapping_version": 1,
@@ -1060,8 +1060,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 49,
-          "line_end": 49,
+          "line_start": 51,
+          "line_end": 51,
           "raw": "line vty 0 4",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -1071,8 +1071,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 53,
-          "line_end": 53,
+          "line_start": 55,
+          "line_end": 55,
           "raw": "transport input ssh telnet",
           "mapping_id": "cisco_ios_xe/vty-range-transport-input",
           "mapping_version": 1,
@@ -1122,8 +1122,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 49,
-          "line_end": 49,
+          "line_start": 51,
+          "line_end": 51,
           "raw": "line vty 0 4",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -1133,8 +1133,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 53,
-          "line_end": 53,
+          "line_start": 55,
+          "line_end": 55,
           "raw": "transport input ssh telnet",
           "mapping_id": "cisco_ios_xe/vty-range-transport-input",
           "mapping_version": 1,
@@ -1144,8 +1144,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 54,
-          "line_end": 54,
+          "line_start": 56,
+          "line_end": 56,
           "raw": "line vty 5 15",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -1155,8 +1155,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 57,
-          "line_end": 57,
+          "line_start": 59,
+          "line_end": 59,
           "raw": "transport input telnet",
           "mapping_id": "cisco_ios_xe/vty-range-transport-input",
           "mapping_version": 1,
@@ -1203,8 +1203,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 49,
-          "line_end": 49,
+          "line_start": 51,
+          "line_end": 51,
           "raw": "line vty 0 4",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -1251,8 +1251,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 54,
-          "line_end": 54,
+          "line_start": 56,
+          "line_end": 56,
           "raw": "line vty 5 15",
           "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
@@ -1419,8 +1419,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 42,
-          "line_end": 42,
+          "line_start": 44,
+          "line_end": 44,
           "raw": "snmp-server community **** RO",
           "mapping_id": "cisco_ios_xe/snmp-community",
           "mapping_version": 1,
@@ -1430,8 +1430,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 43,
-          "line_end": 43,
+          "line_start": 45,
+          "line_end": 45,
           "raw": "snmp-server community **** RW",
           "mapping_id": "cisco_ios_xe/snmp-community",
           "mapping_version": 1,
@@ -1578,8 +1578,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 45,
-          "line_end": 45,
+          "line_start": 47,
+          "line_end": 47,
           "raw": "ntp server 10.10.10.70",
           "mapping_id": "cisco_ios_xe/ntp-server",
           "mapping_version": 2,
@@ -1591,22 +1591,16 @@
     }
   ],
   "assurance": {
-    "statements": 38,
-    "understood": 29,
-    "unmapped": 9,
+    "statements": 39,
+    "understood": 33,
+    "unmapped": 6,
     "near_miss": 0,
-    "understood_pct": 76.3,
+    "understood_pct": 84.6,
     "unmapped_patterns": [
-      {
-        "pattern_key": "ip address <IP> <IP>",
-        "count": 3,
-        "first_line": 26,
-        "example": "ip address 203.0.113.2 255.255.255.252"
-      },
       {
         "pattern_key": "login",
         "count": 2,
-        "first_line": 52,
+        "first_line": 54,
         "example": "login"
       },
       {
@@ -1630,7 +1624,7 @@
       {
         "pattern_key": "logging buffered <INT>",
         "count": 1,
-        "first_line": 40,
+        "first_line": 42,
         "example": "logging buffered 4096"
       }
     ],
@@ -1679,6 +1673,13 @@
         "facts": 3
       },
       {
+        "mapping": "cisco_ios_xe/interface-ip-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 7
+      },
+      {
         "mapping": "cisco_ios_xe/interface-proxy-arp@1",
         "approved_by": [
           "maintainer"
@@ -1698,6 +1699,13 @@
           "maintainer"
         ],
         "facts": 1
+      },
+      {
+        "mapping": "cisco_ios_xe/ip-route-via-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
       },
       {
         "mapping": "cisco_ios_xe/line-con@1",
@@ -1789,7 +1797,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.9",
+    "sbm_version": "0.10",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1861,8 +1869,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 49,
-            "line_end": 49,
+            "line_start": 51,
+            "line_end": 51,
             "raw": "line vty 0 4",
             "mapping_id": null,
             "mapping_version": null,
@@ -1922,8 +1930,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 49,
-            "line_end": 49,
+            "line_start": 51,
+            "line_end": 51,
             "raw": "line vty 0 4",
             "mapping_id": null,
             "mapping_version": null,
@@ -1984,8 +1992,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 38,
-              "line_end": 38,
+              "line_start": 40,
+              "line_end": 40,
               "raw": "10 permit ip any any",
               "mapping_id": "cisco_ios_xe/acl-ext-entry",
               "mapping_version": 1,
@@ -2002,8 +2010,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 38,
-              "line_end": 38,
+              "line_start": 40,
+              "line_end": 40,
               "raw": "10 permit ip any any",
               "mapping_id": "cisco_ios_xe/acl-ext-entry",
               "mapping_version": 1,
@@ -2028,8 +2036,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 38,
-              "line_end": 38,
+              "line_start": 40,
+              "line_end": 40,
               "raw": "10 permit ip any any",
               "mapping_id": "cisco_ios_xe/acl-ext-ip-any-any",
               "mapping_version": 1,
@@ -2048,8 +2056,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 38,
-              "line_end": 38,
+              "line_start": 40,
+              "line_end": 40,
               "raw": "10 permit ip any any",
               "mapping_id": "cisco_ios_xe/acl-ext-ip-any-any",
               "mapping_version": 1,
@@ -2068,8 +2076,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 38,
-              "line_end": 38,
+              "line_start": 40,
+              "line_end": 40,
               "raw": "10 permit ip any any",
               "mapping_id": "cisco_ios_xe/acl-ext-entry",
               "mapping_version": 1,
@@ -2086,8 +2094,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 38,
-              "line_end": 38,
+              "line_start": 40,
+              "line_end": 40,
               "raw": "10 permit ip any any",
               "mapping_id": "cisco_ios_xe/acl-ext-entry",
               "mapping_version": 1,
@@ -2264,6 +2272,73 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "203.0.113.2/30"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 26,
+              "line_end": 26,
+              "raw": "ip address 203.0.113.2 255.255.255.252",
+              "mapping_id": "cisco_ios_xe/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 26,
+              "line_end": 26,
+              "raw": "ip address 203.0.113.2 255.255.255.252",
+              "mapping_id": "cisco_ios_xe/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 26,
+              "line_end": 26,
+              "raw": "ip address 203.0.113.2 255.255.255.252",
+              "mapping_id": "cisco_ios_xe/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "ip route 0.0.0.0 0.0.0.0 203.0.113.1",
+              "mapping_id": "cisco_ios_xe/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -2355,6 +2430,50 @@
           "default_source": null
         },
         "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.10.20.1/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 31,
+              "line_end": 31,
+              "raw": "ip address 10.10.20.1 255.255.255.0",
+              "mapping_id": "cisco_ios_xe/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 31,
+              "line_end": 31,
+              "raw": "ip address 10.10.20.1 255.255.255.0",
+              "mapping_id": "cisco_ios_xe/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2454,6 +2573,50 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.10.10.1/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 35,
+              "line_end": 35,
+              "raw": "ip address 10.10.10.1 255.255.255.0",
+              "mapping_id": "cisco_ios_xe/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 35,
+              "line_end": 35,
+              "raw": "ip address 10.10.10.1 255.255.255.0",
+              "mapping_id": "cisco_ios_xe/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2537,8 +2700,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 51,
-              "line_end": 51,
+              "line_start": 53,
+              "line_end": 53,
               "raw": "password 7 ****",
               "mapping_id": "cisco_ios_xe/vty-range-password",
               "mapping_version": 1,
@@ -3204,8 +3367,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 47,
-            "line_end": 47,
+            "line_start": 49,
+            "line_end": 49,
             "raw": "line con 0",
             "mapping_id": "cisco_ios_xe/line-con",
             "mapping_version": 1,
@@ -3221,8 +3384,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
+              "line_start": 49,
+              "line_end": 49,
               "raw": "line con 0",
               "mapping_id": "cisco_ios_xe/line-con",
               "mapping_version": 1,
@@ -3257,8 +3420,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 48,
-              "line_end": 48,
+              "line_start": 50,
+              "line_end": 50,
               "raw": "exec-timeout 0 0",
               "mapping_id": "cisco_ios_xe/con-exec-timeout",
               "mapping_version": 1,
@@ -3287,8 +3450,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 49,
-            "line_end": 49,
+            "line_start": 51,
+            "line_end": 51,
             "raw": "line vty 0 4",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -3304,8 +3467,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 49,
-              "line_end": 49,
+              "line_start": 51,
+              "line_end": 51,
               "raw": "line vty 0 4",
               "mapping_id": "cisco_ios_xe/line-vty-range",
               "mapping_version": 1,
@@ -3331,8 +3494,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 53,
-              "line_end": 53,
+              "line_start": 55,
+              "line_end": 55,
               "raw": "transport input ssh telnet",
               "mapping_id": "cisco_ios_xe/vty-range-transport-input",
               "mapping_version": 1,
@@ -3355,8 +3518,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 50,
-              "line_end": 50,
+              "line_start": 52,
+              "line_end": 52,
               "raw": "exec-timeout 0 0",
               "mapping_id": "cisco_ios_xe/vty-range-exec-timeout",
               "mapping_version": 1,
@@ -3385,8 +3548,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 54,
-            "line_end": 54,
+            "line_start": 56,
+            "line_end": 56,
             "raw": "line vty 5 15",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -3402,8 +3565,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 54,
-              "line_end": 54,
+              "line_start": 56,
+              "line_end": 56,
               "raw": "line vty 5 15",
               "mapping_id": "cisco_ios_xe/line-vty-range",
               "mapping_version": 1,
@@ -3428,8 +3591,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 57,
-              "line_end": 57,
+              "line_start": 59,
+              "line_end": 59,
               "raw": "transport input telnet",
               "mapping_id": "cisco_ios_xe/vty-range-transport-input",
               "mapping_version": 1,
@@ -3452,8 +3615,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 55,
-              "line_end": 55,
+              "line_start": 57,
+              "line_end": 57,
               "raw": "exec-timeout 30 0",
               "mapping_id": "cisco_ios_xe/vty-range-exec-timeout",
               "mapping_version": 1,
@@ -3482,8 +3645,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 37,
-            "line_end": 37,
+            "line_start": 39,
+            "line_end": 39,
             "raw": "ip access-list extended EDGE-IN",
             "mapping_id": "cisco_ios_xe/acl-extended",
             "mapping_version": 1,
@@ -3499,8 +3662,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 37,
-              "line_end": 37,
+              "line_start": 39,
+              "line_end": 39,
               "raw": "ip access-list extended EDGE-IN",
               "mapping_id": "cisco_ios_xe/acl-extended",
               "mapping_version": 1,
@@ -3590,6 +3753,73 @@
         }
       },
       {
+        "key": "0.0.0.0 0.0.0.0 203.0.113.1",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 37,
+            "line_end": 37,
+            "raw": "ip route 0.0.0.0 0.0.0.0 203.0.113.1",
+            "mapping_id": "cisco_ios_xe/ip-route-via-address",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Route",
+        "destination": {
+          "value": "0.0.0.0/0",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "ip route 0.0.0.0 0.0.0.0 203.0.113.1",
+              "mapping_id": "cisco_ios_xe/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "next_hops": {
+          "value": [
+            "203.0.113.1"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 37,
+              "line_end": 37,
+              "raw": "ip route 0.0.0.0 0.0.0.0 203.0.113.1",
+              "mapping_id": "cisco_ios_xe/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "interface": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
         "key": "EDGE-IN",
         "evidence": [],
         "type": "Ruleset",
@@ -3629,8 +3859,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 42,
-            "line_end": 42,
+            "line_start": 44,
+            "line_end": 44,
             "raw": "snmp-server community **** RO",
             "mapping_id": "cisco_ios_xe/snmp-community",
             "mapping_version": 1,
@@ -3646,8 +3876,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 42,
-              "line_end": 42,
+              "line_start": 44,
+              "line_end": 44,
               "raw": "snmp-server community **** RO",
               "mapping_id": "cisco_ios_xe/snmp-community",
               "mapping_version": 1,
@@ -3670,8 +3900,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 42,
-              "line_end": 42,
+              "line_start": 44,
+              "line_end": 44,
               "raw": "snmp-server community **** RO",
               "mapping_id": "cisco_ios_xe/snmp-community",
               "mapping_version": 1,
@@ -3688,8 +3918,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 43,
-            "line_end": 43,
+            "line_start": 45,
+            "line_end": 45,
             "raw": "snmp-server community **** RW",
             "mapping_id": "cisco_ios_xe/snmp-community",
             "mapping_version": 1,
@@ -3705,8 +3935,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 43,
-              "line_end": 43,
+              "line_start": 45,
+              "line_end": 45,
               "raw": "snmp-server community **** RW",
               "mapping_id": "cisco_ios_xe/snmp-community",
               "mapping_version": 1,
@@ -3729,8 +3959,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 43,
-              "line_end": 43,
+              "line_start": 45,
+              "line_end": 45,
               "raw": "snmp-server community **** RW",
               "mapping_id": "cisco_ios_xe/snmp-community",
               "mapping_version": 1,
@@ -3764,8 +3994,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 45,
-            "line_end": 45,
+            "line_start": 47,
+            "line_end": 47,
             "raw": "ntp server 10.10.10.70",
             "mapping_id": "cisco_ios_xe/ntp-server",
             "mapping_version": 2,
@@ -3781,8 +4011,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 45,
-              "line_end": 45,
+              "line_start": 47,
+              "line_end": 47,
               "raw": "ntp server 10.10.10.70",
               "mapping_id": "cisco_ios_xe/ntp-server",
               "mapping_version": 2,
@@ -3820,8 +4050,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 38,
-            "line_end": 38,
+            "line_start": 40,
+            "line_end": 40,
             "raw": "10 permit ip any any",
             "mapping_id": "cisco_ios_xe/acl-ext-entry",
             "mapping_version": 1,
@@ -3831,8 +4061,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 38,
-            "line_end": 38,
+            "line_start": 40,
+            "line_end": 40,
             "raw": "10 permit ip any any",
             "mapping_id": "cisco_ios_xe/acl-ext-ip-any-any",
             "mapping_version": 1,
@@ -3879,8 +4109,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 49,
-            "line_end": 49,
+            "line_start": 51,
+            "line_end": 51,
             "raw": "line vty 0 4",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -3890,8 +4120,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 53,
-            "line_end": 53,
+            "line_start": 55,
+            "line_end": 55,
             "raw": "transport input ssh telnet",
             "mapping_id": "cisco_ios_xe/vty-range-transport-input",
             "mapping_version": 1,
@@ -3908,8 +4138,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 49,
-            "line_end": 49,
+            "line_start": 51,
+            "line_end": 51,
             "raw": "line vty 0 4",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -3919,8 +4149,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 53,
-            "line_end": 53,
+            "line_start": 55,
+            "line_end": 55,
             "raw": "transport input ssh telnet",
             "mapping_id": "cisco_ios_xe/vty-range-transport-input",
             "mapping_version": 1,
@@ -3937,8 +4167,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 49,
-            "line_end": 49,
+            "line_start": 51,
+            "line_end": 51,
             "raw": "line vty 0 4",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -3948,8 +4178,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 53,
-            "line_end": 53,
+            "line_start": 55,
+            "line_end": 55,
             "raw": "transport input ssh telnet",
             "mapping_id": "cisco_ios_xe/vty-range-transport-input",
             "mapping_version": 1,
@@ -3959,8 +4189,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 54,
-            "line_end": 54,
+            "line_start": 56,
+            "line_end": 56,
             "raw": "line vty 5 15",
             "mapping_id": "cisco_ios_xe/line-vty-range",
             "mapping_version": 1,
@@ -3970,8 +4200,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 57,
-            "line_end": 57,
+            "line_start": 59,
+            "line_end": 59,
             "raw": "transport input telnet",
             "mapping_id": "cisco_ios_xe/vty-range-transport-input",
             "mapping_version": 1,
@@ -4006,8 +4236,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 42,
-            "line_end": 42,
+            "line_start": 44,
+            "line_end": 44,
             "raw": "snmp-server community **** RO",
             "mapping_id": "cisco_ios_xe/snmp-community",
             "mapping_version": 1,
@@ -4017,8 +4247,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 43,
-            "line_end": 43,
+            "line_start": 45,
+            "line_end": 45,
             "raw": "snmp-server community **** RW",
             "mapping_id": "cisco_ios_xe/snmp-community",
             "mapping_version": 1,

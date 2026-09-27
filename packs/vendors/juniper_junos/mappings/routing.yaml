@@ -1,0 +1,72 @@
+# Interface addresses and static routes, which role inference reads (TODO M2.22): an interface
+# with a public IPv4 address, or the one the default route leaves by, faces the outside.
+# Addresses belong to the logical unit (`ge-0/0/0.0`), like the rest of this pack's interfaces.
+# Seed mappings: reviewed in docs/reviews/juniper_junos.md.
+mappings:
+- id: juniper_junos/unit-inet-address
+  vendor: juniper_junos
+  context: [interfaces, "<IFNAME:i>", "unit <INT:u>", family inet]
+  entity: {type: Interface, key: "{i}.{u}"}
+  match: "address <IP:a>"
+  effect: {members: Interface.addresses, from: a, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/unit-inet6-address
+  vendor: juniper_junos
+  context: [interfaces, "<IFNAME:i>", "unit <INT:u>", family inet6]
+  entity: {type: Interface, key: "{i}.{u}"}
+  match: "address <IP:a>"
+  effect: {members: Interface.addresses, from: a, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+# --- Static routes, under `routing-options static` (IPv4) and `rib inet6.0 static` (IPv6):
+#     route 0.0.0.0/0 next-hop 172.16.1.1;  or  route 0.0.0.0/0 { next-hop 172.16.1.1; }
+- id: juniper_junos/static-route-next-hop
+  vendor: juniper_junos
+  context: [static]
+  entity: {type: Route, key: "{p}"}
+  match: "route <IP:p> next-hop <IP:hop>"
+  effect:
+  - {set: Route.destination, from: p, transform: [cidr]}
+  - {members: Route.next_hops, from: hop}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/static-route-block
+  vendor: juniper_junos
+  context: [static]
+  entity: {type: Route, key: "{p}"}
+  match: "route <IP:p>"
+  effect: {set: Route.destination, from: p, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/static-route-block-next-hop
+  vendor: juniper_junos
+  context: [static, "route <IP:p>"]
+  entity: {type: Route, key: "{p}"}
+  match: "next-hop <IP:hop>"
+  effect: {members: Route.next_hops, from: hop}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+# A route that drops its traffic leaves by no interface.
+- id: juniper_junos/static-route-discard
+  vendor: juniper_junos
+  context: [static]
+  entity: {type: Route, key: "{p}"}
+  match: "route <IP:p> discard"
+  effect: {set: Route.destination, from: p, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/static-route-reject
+  vendor: juniper_junos
+  context: [static]
+  entity: {type: Route, key: "{p}"}
+  match: "route <IP:p> reject"
+  effect: {set: Route.destination, from: p, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

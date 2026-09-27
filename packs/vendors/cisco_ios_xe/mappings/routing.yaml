@@ -1,0 +1,95 @@
+# Interface addresses and static routes, which role inference reads (TODO M2.22): an interface
+# with a public IPv4 address, or the one the default route leaves by, faces the outside.
+# Seed mappings: reviewed in docs/reviews/cisco_ios_xe.md.
+mappings:
+  # --- Interface addresses -----------------------------------------------------------------------
+  - id: cisco_ios_xe/interface-ip-address
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: Interface, key: "{name}"}
+    match: "ip address <IP:a> <IP:mask> [secondary]"
+    effect: {members: Interface.addresses, template: "{a} {mask}", transform: [cidr]}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/interface-ipv6-address
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: Interface, key: "{name}"}
+    match: "ipv6 address <IP:a> [eui-64]"
+    effect: {members: Interface.addresses, from: a, transform: [cidr]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/interface-ipv6-link-local
+    vendor: cisco_ios_xe
+    context: ["interface <IFNAME:name>"]
+    entity: {type: Interface, key: "{name}"}
+    match: "ipv6 address <IP:a> link-local"
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Static routes: ip route prefix mask {ip-address | interface [ip-address]} [distance]
+  #     [name next-hop-name] [permanent | track number] [tag tag] -------------------------------
+  - id: cisco_ios_xe/ip-route-via-address
+    vendor: cisco_ios_xe
+    entity: {type: Route, key: "{net} {mask} {hop}"}
+    match: "ip route <IP:net> <IP:mask> <IP:hop> [<INT>] [name <STR>] [track <INT>]"
+    effect:
+      - {set: Route.destination, template: "{net} {mask}", transform: [cidr]}
+      - {members: Route.next_hops, from: hop}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-route-via-interface
+    vendor: cisco_ios_xe
+    entity: {type: Route, key: "{net} {mask} {out}"}
+    match: "ip route <IP:net> <IP:mask> <IFNAME:out> [<INT>] [name <STR>] [track <INT>]"
+    effect:
+      - {set: Route.destination, template: "{net} {mask}", transform: [cidr]}
+      - {set: Route.interface, from: out}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ip-route-via-interface-and-address
+    vendor: cisco_ios_xe
+    entity: {type: Route, key: "{net} {mask} {out} {hop}"}
+    match: "ip route <IP:net> <IP:mask> <IFNAME:out> <IP:hop> [<INT>] [name <STR>] [track <INT>]"
+    effect:
+      - {set: Route.destination, template: "{net} {mask}", transform: [cidr]}
+      - {set: Route.interface, from: out}
+      - {members: Route.next_hops, from: hop}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # ipv6 route ipv6-prefix/prefix-length {ipv6-address | interface-type interface-number
+  # [ipv6-address]} [administrative-distance] ...
+  - id: cisco_ios_xe/ipv6-route-via-address
+    vendor: cisco_ios_xe
+    entity: {type: Route, key: "{net} {hop}"}
+    match: "ipv6 route <IP:net> <IP:hop> [<INT>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {members: Route.next_hops, from: hop}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ipv6-route-via-interface
+    vendor: cisco_ios_xe
+    entity: {type: Route, key: "{net} {out}"}
+    match: "ipv6 route <IP:net> <IFNAME:out> [<INT>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {set: Route.interface, from: out}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: cisco_ios_xe/ipv6-route-via-interface-and-address
+    vendor: cisco_ios_xe
+    entity: {type: Route, key: "{net} {out} {hop}"}
+    match: "ipv6 route <IP:net> <IFNAME:out> <IP:hop> [<INT>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {set: Route.interface, from: out}
+      - {members: Route.next_hops, from: hop}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

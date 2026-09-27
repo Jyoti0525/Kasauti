@@ -1,0 +1,93 @@
+# Interface addresses and static routes, which role inference reads (TODO M2.22): an interface
+# with a public IPv4 address, or the one the default route leaves by, faces the outside.
+# Seed mappings: reviewed in docs/reviews/arista_eos.md.
+mappings:
+  # --- Interface addresses: `ip address 10.0.0.1/24 [secondary]`, `ipv6 address 2001:db8:1::1/64`
+  - id: arista_eos/interface-ip-address
+    vendor: arista_eos
+    context: ["interface <IFNAME:n>"]
+    entity: {type: Interface, key: "{n}"}
+    match: "ip address <IP:a> [secondary]"
+    effect: {members: Interface.addresses, from: a, transform: [cidr]}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: arista_eos/interface-ipv6-address
+    vendor: arista_eos
+    context: ["interface <IFNAME:n>"]
+    entity: {type: Interface, key: "{n}"}
+    match: "ipv6 address <IP:a>"
+    effect: {members: Interface.addresses, from: a, transform: [cidr]}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: arista_eos/interface-ipv6-link-local
+    vendor: arista_eos
+    context: ["interface <IFNAME:n>"]
+    entity: {type: Interface, key: "{n}"}
+    match: "ipv6 address <IP:a> link-local"
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  # --- Static routes: ip route dest_net next-hop [distance] [tag t] [name text]; the next hop
+  #     is an address, an interface, or an interface and an address ---------------------------
+  - id: arista_eos/ip-route-via-address
+    vendor: arista_eos
+    entity: {type: Route, key: "{net} {hop}"}
+    match: "ip route <IP:net> <IP:hop> [<INT>] [tag <INT>] [name <STR>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {members: Route.next_hops, from: hop}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: arista_eos/ip-route-via-interface
+    vendor: arista_eos
+    entity: {type: Route, key: "{net} {out}"}
+    match: "ip route <IP:net> <IFNAME:out> [<INT>] [tag <INT>] [name <STR>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {set: Route.interface, from: out}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: arista_eos/ip-route-via-interface-and-address
+    vendor: arista_eos
+    entity: {type: Route, key: "{net} {out} {hop}"}
+    match: "ip route <IP:net> <IFNAME:out> <IP:hop> [<INT>] [tag <INT>] [name <STR>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {set: Route.interface, from: out}
+      - {members: Route.next_hops, from: hop}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: arista_eos/ipv6-route-via-address
+    vendor: arista_eos
+    entity: {type: Route, key: "{net} {hop}"}
+    match: "ipv6 route <IP:net> <IP:hop> [<INT>] [tag <INT>] [name <STR>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {members: Route.next_hops, from: hop}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: arista_eos/ipv6-route-via-interface
+    vendor: arista_eos
+    entity: {type: Route, key: "{net} {out}"}
+    match: "ipv6 route <IP:net> <IFNAME:out> [<INT>] [tag <INT>] [name <STR>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {set: Route.interface, from: out}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+  - id: arista_eos/ipv6-route-via-interface-and-address
+    vendor: arista_eos
+    entity: {type: Route, key: "{net} {out} {hop}"}
+    match: "ipv6 route <IP:net> <IFNAME:out> <IP:hop> [<INT>] [tag <INT>] [name <STR>]"
+    effect:
+      - {set: Route.destination, from: net, transform: [cidr]}
+      - {set: Route.interface, from: out}
+      - {members: Route.next_hops, from: hop}
+    negation: null
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

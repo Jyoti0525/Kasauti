@@ -2,7 +2,7 @@
 # datasets/SOURCES.md, not engine output.
 description: FortiOS 7.4.8 branch FortiGate with 16 planted weaknesses (F1-F16)
 input: authored/fortinet_fortios/weak.conf
-input_sha256: 3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a
+input_sha256: dfa553492c4e201c7b6defe3117908f93dee2bbd1709f3ee0ecf7c39dbb0edb8
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:

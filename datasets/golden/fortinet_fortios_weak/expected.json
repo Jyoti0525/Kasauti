@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "84acca5003e79be07d79cc97",
+  "audit_id": "e0b8ef07abb0eceb469ebaa7",
   "input": {
     "file": "weak.conf",
-    "sha256": "3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a",
+    "sha256": "dfa553492c4e201c7b6defe3117908f93dee2bbd1709f3ee0ecf7c39dbb0edb8",
     "encoding": "utf-8",
     "shape_family": "block_edit",
     "parse_warnings": []
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
-    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
+    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
+    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
     "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -1314,11 +1314,11 @@
     }
   ],
   "assurance": {
-    "statements": 58,
-    "understood": 33,
-    "unmapped": 26,
+    "statements": 62,
+    "understood": 38,
+    "unmapped": 25,
     "near_miss": 0,
-    "understood_pct": 56.9,
+    "understood_pct": 61.3,
     "unmapped_patterns": [
       {
         "pattern_key": "set vdom <STR>",
@@ -1331,12 +1331,6 @@
         "count": 3,
         "first_line": 32,
         "example": "edit 1"
-      },
-      {
-        "pattern_key": "set ip <IP> <IP>",
-        "count": 2,
-        "first_line": 17,
-        "example": "set ip 198.51.100.6 255.255.255.252"
       },
       {
         "pattern_key": "config system global",
@@ -1445,6 +1439,12 @@
         "count": 1,
         "first_line": 79,
         "example": "set schedule \"always\""
+      },
+      {
+        "pattern_key": "config router static",
+        "count": 1,
+        "first_line": 83,
+        "example": "config router static"
       }
     ],
     "review_findings": 0,
@@ -1507,6 +1507,13 @@
       },
       {
         "mapping": "fortinet_fortios/interface-allowaccess@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 4
+      },
+      {
+        "mapping": "fortinet_fortios/interface-ip@1",
         "approved_by": [
           "maintainer"
         ],
@@ -1632,6 +1639,20 @@
         "facts": 1
       },
       {
+        "mapping": "fortinet_fortios/static-route-device@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "fortinet_fortios/static-route-gateway@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
         "mapping": "fortinet_fortios/syslogd-server@1",
         "approved_by": [
           "maintainer"
@@ -1668,7 +1689,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.9",
+    "sbm_version": "0.10",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2245,6 +2266,50 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.20.0.1/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 25,
+              "line_end": 25,
+              "raw": "set ip 10.20.0.1 255.255.255.0",
+              "mapping_id": "fortinet_fortios/interface-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 25,
+              "line_end": 25,
+              "raw": "set ip 10.20.0.1 255.255.255.0",
+              "mapping_id": "fortinet_fortios/interface-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2393,6 +2458,73 @@
           "value": null,
           "state": "absent",
           "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "198.51.100.6/30"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 17,
+              "line_end": 17,
+              "raw": "set ip 198.51.100.6 255.255.255.252",
+              "mapping_id": "fortinet_fortios/interface-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 17,
+              "line_end": 17,
+              "raw": "set ip 198.51.100.6 255.255.255.252",
+              "mapping_id": "fortinet_fortios/interface-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 85,
+              "line_end": 85,
+              "raw": "set gateway 198.51.100.5",
+              "mapping_id": "fortinet_fortios/static-route-gateway",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "weak.conf",
+              "line_start": 86,
+              "line_end": 86,
+              "raw": "set device \"wan1\"",
+              "mapping_id": "fortinet_fortios/static-route-device",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
           "default_source": null
         }
       },
@@ -3265,6 +3397,61 @@
           "state": "vendor_default",
           "evidence": [],
           "default_source": "fortinet_fortios/defaults.yaml#password-policy-off"
+        }
+      },
+      {
+        "key": "static:1",
+        "evidence": [],
+        "type": "Route",
+        "destination": {
+          "value": "0.0.0.0/0",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#route-dst-default"
+        },
+        "next_hops": {
+          "value": [
+            "198.51.100.5"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 85,
+              "line_end": 85,
+              "raw": "set gateway 198.51.100.5",
+              "mapping_id": "fortinet_fortios/static-route-gateway",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "interface": {
+          "value": "wan1",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 86,
+              "line_end": 86,
+              "raw": "set device \"wan1\"",
+              "mapping_id": "fortinet_fortios/static-route-device",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "fortinet_fortios/defaults.yaml#route-enabled"
         }
       },
       {

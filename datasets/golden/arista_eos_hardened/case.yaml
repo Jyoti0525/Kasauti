@@ -2,7 +2,7 @@
 # datasets/SOURCES.md, not engine output.
 description: Arista EOS 4.30 hardened routed leaf (twin of the weak case)
 input: authored/arista_eos/hardened.cfg
-input_sha256: d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1
+input_sha256: 42ba3c5feff684d9df92cc813e31b48dabc53071f06d828fddab8f9f85746568
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:

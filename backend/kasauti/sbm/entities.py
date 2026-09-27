@@ -20,6 +20,8 @@ Deviations from the §8.1 table, each needed by other parts of the plan:
   happens to traffic no entry matches, and whether it guards the device itself (0.9). These
   are quoted vendor facts, never assumed: Cisco's access lists end in an implicit deny,
   FortiOS local-in policies don't.
+* ``Route`` holds a static route: where it leads and how it leaves. Role inference needs it
+  to tell which interface the default route leaves by (§12.7 "default-route egress", 0.10).
 """
 
 from __future__ import annotations
@@ -133,6 +135,34 @@ class Interface(Entity):
     """The interface answers ARP on behalf of other hosts (0.3)."""
     filters_in: SetFact = SetFact()
     filters_out: SetFact = SetFact()
+    addresses: SetFact = SetFact()
+    """The interface's own addresses with their prefix length, IPv4 and IPv6, written one way
+    whatever the vendor's form (``198.51.100.2/30``; Cisco ``ip address A MASK`` too) (0.10)."""
+    public_address: BoolFact = BoolFact()
+    """At least one IPv4 address in ``addresses`` is globally reachable by IANA's
+    special-purpose address registries; false where it has IPv4 addresses and none is.
+    IPv4 only: inside networks use global IPv6 addresses as a matter of course, so a global
+    IPv6 address says nothing about facing the internet. Computed by the resolver (0.10)."""
+    default_route: BoolFact = BoolFact()
+    """A default route (``0.0.0.0/0`` or ``::/0``) leaves by this interface: the route names
+    it, or its next hop is on one of the interface's subnets (the longest match wins, as
+    on a router). Only ever true; absent otherwise. Computed by the resolver (0.10)."""
+
+
+class Route(Entity):
+    """A static route (0.10). ``key`` is how the configuration names it: the route as
+    written (Cisco, EOS, Junos), its entry ID (FortiOS ``static:3``, ``static6:1``) or name
+    (PAN-OS)."""
+
+    type: Literal["Route"] = "Route"
+    destination: StrFact = StrFact()
+    """The destination prefix, written one way (``0.0.0.0/0``, ``2001:db8::/32``)."""
+    next_hops: SetFact = SetFact()
+    """Gateway addresses, as written."""
+    interface: StrFact = StrFact()
+    """The interface the route names to leave by, if it names one."""
+    enabled: BoolFact = BoolFact()
+    """False for a route switched off (FortiOS ``set status disable``)."""
 
 
 # --- AAA ------------------------------------------------------------------------------------
@@ -400,7 +430,7 @@ class RoutingAuth(Entity):
 class L2Port(Entity):
     type: Literal["L2Port"] = "L2Port"
     mode: StrFact = StrFact()
-    """access | trunk"""
+    """access | trunk | dynamic (Cisco DTP ``dynamic auto``/``desirable``) | dot1q-tunnel"""
     port_security: BoolFact = BoolFact()
     bpdu_guard: BoolFact = BoolFact()
     native_vlan: IntFact = IntFact()
@@ -439,7 +469,8 @@ AnyEntity = Annotated[
     | Banner
     | RoutingAuth
     | L2Port
-    | Tunnel,
+    | Tunnel
+    | Route,
     Field(discriminator="type"),
 ]
 
@@ -470,6 +501,7 @@ ENTITY_TYPES: dict[str, type[Entity]] = {
         RoutingAuth,
         L2Port,
         Tunnel,
+        Route,
     )
 }
 

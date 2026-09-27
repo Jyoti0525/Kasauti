@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "cd91370ba82641bf51a9952d",
+  "audit_id": "c0e1445a1274c629abaec511",
   "input": {
     "file": "weak.cfg",
-    "sha256": "05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48",
+    "sha256": "03c0b8d475f96aeec21a923089f88c271174c1a4bf9b8bfc6ea66f67fd0c6a1d",
     "encoding": "utf-8",
     "shape_family": "indent",
     "parse_warnings": []
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
-    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
+    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
+    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -869,8 +869,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 40,
-          "line_end": 40,
+          "line_start": 42,
+          "line_end": 42,
           "raw": "protocol http",
           "mapping_id": "arista_eos/eapi-protocol-http",
           "mapping_version": 1,
@@ -895,8 +895,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 43,
-          "line_end": 43,
+          "line_start": 45,
+          "line_end": 45,
           "raw": "management console",
           "mapping_id": "arista_eos/management-console",
           "mapping_version": 1,
@@ -906,8 +906,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 44,
-          "line_end": 44,
+          "line_start": 46,
+          "line_end": 46,
           "raw": "idle-timeout 0",
           "mapping_id": "arista_eos/console-idle-timeout",
           "mapping_version": 1,
@@ -932,8 +932,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 46,
-          "line_end": 46,
+          "line_start": 48,
+          "line_end": 48,
           "raw": "management ssh",
           "mapping_id": "arista_eos/management-ssh",
           "mapping_version": 1,
@@ -943,8 +943,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 48,
-          "line_end": 48,
+          "line_start": 50,
+          "line_end": 50,
           "raw": "idle-timeout 0",
           "mapping_id": "arista_eos/ssh-idle-timeout",
           "mapping_version": 1,
@@ -1027,8 +1027,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 50,
-          "line_end": 50,
+          "line_start": 52,
+          "line_end": 52,
           "raw": "management telnet",
           "mapping_id": "arista_eos/management-telnet",
           "mapping_version": 1,
@@ -1038,8 +1038,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 51,
-          "line_end": 51,
+          "line_start": 53,
+          "line_end": 53,
           "raw": "no shutdown",
           "mapping_id": "arista_eos/telnet-shutdown",
           "mapping_version": 1,
@@ -1064,8 +1064,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 46,
-          "line_end": 46,
+          "line_start": 48,
+          "line_end": 48,
           "raw": "management ssh",
           "mapping_id": "arista_eos/management-ssh",
           "mapping_version": 1,
@@ -1075,8 +1075,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 47,
-          "line_end": 47,
+          "line_start": 49,
+          "line_end": 49,
           "raw": "ip access-group MGMT-ACL in",
           "mapping_id": "arista_eos/ssh-access-group",
           "mapping_version": 1,
@@ -1123,8 +1123,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 47,
-          "line_end": 47,
+          "line_start": 49,
+          "line_end": 49,
           "raw": "ip access-group MGMT-ACL in",
           "mapping_id": "arista_eos/ssh-access-group",
           "mapping_version": 1,
@@ -1171,8 +1171,8 @@
         },
         {
           "file": "weak.cfg",
-          "line_start": 40,
-          "line_end": 40,
+          "line_start": 42,
+          "line_end": 42,
           "raw": "protocol http",
           "mapping_id": "arista_eos/eapi-protocol-http",
           "mapping_version": 1,
@@ -1196,8 +1196,8 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 47,
-          "line_end": 47,
+          "line_start": 49,
+          "line_end": 49,
           "raw": "ip access-group MGMT-ACL in",
           "mapping_id": "arista_eos/ssh-access-group",
           "mapping_version": 1,
@@ -1413,18 +1413,12 @@
     }
   ],
   "assurance": {
-    "statements": 32,
-    "understood": 25,
-    "unmapped": 8,
+    "statements": 33,
+    "understood": 29,
+    "unmapped": 5,
     "near_miss": 0,
-    "understood_pct": 78.1,
+    "understood_pct": 87.9,
     "unmapped_patterns": [
-      {
-        "pattern_key": "ip address <IP>",
-        "count": 3,
-        "first_line": 24,
-        "example": "ip address 198.51.100.6/30"
-      },
       {
         "pattern_key": "no switchport",
         "count": 2,
@@ -1440,13 +1434,13 @@
       {
         "pattern_key": "management api http-commands",
         "count": 1,
-        "first_line": 39,
+        "first_line": 41,
         "example": "management api http-commands"
       },
       {
         "pattern_key": "no shutdown",
         "count": 1,
-        "first_line": 41,
+        "first_line": 43,
         "example": "no shutdown"
       }
     ],
@@ -1495,11 +1489,25 @@
         "facts": 3
       },
       {
+        "mapping": "arista_eos/interface-ip-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 7
+      },
+      {
         "mapping": "arista_eos/interface-proxy-arp@1",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
+      },
+      {
+        "mapping": "arista_eos/ip-route-via-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
       },
       {
         "mapping": "arista_eos/logging-format-timestamp@1",
@@ -1600,7 +1608,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.9",
+    "sbm_version": "0.10",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1672,8 +1680,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 39,
-            "line_end": 39,
+            "line_start": 41,
+            "line_end": 41,
             "raw": "management api http-commands",
             "mapping_id": null,
             "mapping_version": null,
@@ -1733,8 +1741,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 39,
-            "line_end": 39,
+            "line_start": 41,
+            "line_end": 41,
             "raw": "management api http-commands",
             "mapping_id": null,
             "mapping_version": null,
@@ -2085,6 +2093,73 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "198.51.100.6/30"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 24,
+              "line_end": 24,
+              "raw": "ip address 198.51.100.6/30",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 24,
+              "line_end": 24,
+              "raw": "ip address 198.51.100.6/30",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 24,
+              "line_end": 24,
+              "raw": "ip address 198.51.100.6/30",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "weak.cfg",
+              "line_start": 39,
+              "line_end": 39,
+              "raw": "ip route 0.0.0.0/0 198.51.100.5",
+              "mapping_id": "arista_eos/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -2180,6 +2255,50 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.20.0.1/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 30,
+              "line_end": 30,
+              "raw": "ip address 10.20.0.1/24",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 30,
+              "line_end": 30,
+              "raw": "ip address 10.20.0.1/24",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -2271,6 +2390,50 @@
           "default_source": null
         },
         "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.30.10.3/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 34,
+              "line_end": 34,
+              "raw": "ip address 10.30.10.3/24",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 34,
+              "line_end": 34,
+              "raw": "ip address 10.30.10.3/24",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2558,8 +2721,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 40,
-              "line_end": 40,
+              "line_start": 42,
+              "line_end": 42,
               "raw": "protocol http",
               "mapping_id": "arista_eos/eapi-protocol-http",
               "mapping_version": 1,
@@ -2830,8 +2993,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 50,
-            "line_end": 50,
+            "line_start": 52,
+            "line_end": 52,
             "raw": "management telnet",
             "mapping_id": "arista_eos/management-telnet",
             "mapping_version": 1,
@@ -2847,8 +3010,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 51,
-              "line_end": 51,
+              "line_start": 53,
+              "line_end": 53,
               "raw": "no shutdown",
               "mapping_id": "arista_eos/telnet-shutdown",
               "mapping_version": 1,
@@ -2960,8 +3123,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 43,
-            "line_end": 43,
+            "line_start": 45,
+            "line_end": 45,
             "raw": "management console",
             "mapping_id": "arista_eos/management-console",
             "mapping_version": 1,
@@ -2977,8 +3140,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 43,
-              "line_end": 43,
+              "line_start": 45,
+              "line_end": 45,
               "raw": "management console",
               "mapping_id": "arista_eos/management-console",
               "mapping_version": 1,
@@ -3013,8 +3176,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 44,
-              "line_end": 44,
+              "line_start": 46,
+              "line_end": 46,
               "raw": "idle-timeout 0",
               "mapping_id": "arista_eos/console-idle-timeout",
               "mapping_version": 1,
@@ -3043,8 +3206,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 46,
-            "line_end": 46,
+            "line_start": 48,
+            "line_end": 48,
             "raw": "management ssh",
             "mapping_id": "arista_eos/management-ssh",
             "mapping_version": 1,
@@ -3060,8 +3223,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 46,
-              "line_end": 46,
+              "line_start": 48,
+              "line_end": 48,
               "raw": "management ssh",
               "mapping_id": "arista_eos/management-ssh",
               "mapping_version": 1,
@@ -3086,8 +3249,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 46,
-              "line_end": 46,
+              "line_start": 48,
+              "line_end": 48,
               "raw": "management ssh",
               "mapping_id": "arista_eos/management-ssh",
               "mapping_version": 1,
@@ -3104,8 +3267,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
+              "line_start": 49,
+              "line_end": 49,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -3122,8 +3285,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 48,
-              "line_end": 48,
+              "line_start": 50,
+              "line_end": 50,
               "raw": "idle-timeout 0",
               "mapping_id": "arista_eos/ssh-idle-timeout",
               "mapping_version": 1,
@@ -3252,8 +3415,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 47,
-            "line_end": 47,
+            "line_start": 49,
+            "line_end": 49,
             "raw": "ip access-group MGMT-ACL in",
             "mapping_id": "arista_eos/ssh-access-group",
             "mapping_version": 1,
@@ -3269,8 +3432,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
+              "line_start": 49,
+              "line_end": 49,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -3287,8 +3450,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
+              "line_start": 49,
+              "line_end": 49,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -3305,8 +3468,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
+              "line_start": 49,
+              "line_end": 49,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -3323,8 +3486,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
+              "line_start": 49,
+              "line_end": 49,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -3341,8 +3504,8 @@
           "evidence": [
             {
               "file": "weak.cfg",
-              "line_start": 47,
-              "line_end": 47,
+              "line_start": 49,
+              "line_end": 49,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -3360,6 +3523,73 @@
           "default_source": null
         },
         "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "0.0.0.0/0 198.51.100.5",
+        "evidence": [
+          {
+            "file": "weak.cfg",
+            "line_start": 39,
+            "line_end": 39,
+            "raw": "ip route 0.0.0.0/0 198.51.100.5",
+            "mapping_id": "arista_eos/ip-route-via-address",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Route",
+        "destination": {
+          "value": "0.0.0.0/0",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 39,
+              "line_end": 39,
+              "raw": "ip route 0.0.0.0/0 198.51.100.5",
+              "mapping_id": "arista_eos/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "next_hops": {
+          "value": [
+            "198.51.100.5"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.cfg",
+              "line_start": 39,
+              "line_end": 39,
+              "raw": "ip route 0.0.0.0/0 198.51.100.5",
+              "mapping_id": "arista_eos/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "interface": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3632,8 +3862,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 40,
-            "line_end": 40,
+            "line_start": 42,
+            "line_end": 42,
             "raw": "protocol http",
             "mapping_id": "arista_eos/eapi-protocol-http",
             "mapping_version": 1,
@@ -3656,8 +3886,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 46,
-            "line_end": 46,
+            "line_start": 48,
+            "line_end": 48,
             "raw": "management ssh",
             "mapping_id": "arista_eos/management-ssh",
             "mapping_version": 1,
@@ -3680,8 +3910,8 @@
         "evidence": [
           {
             "file": "weak.cfg",
-            "line_start": 50,
-            "line_end": 50,
+            "line_start": 52,
+            "line_end": 52,
             "raw": "management telnet",
             "mapping_id": "arista_eos/management-telnet",
             "mapping_version": 1,
@@ -3691,8 +3921,8 @@
           },
           {
             "file": "weak.cfg",
-            "line_start": 51,
-            "line_end": 51,
+            "line_start": 53,
+            "line_end": 53,
             "raw": "no shutdown",
             "mapping_id": "arista_eos/telnet-shutdown",
             "mapping_version": 1,

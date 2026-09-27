@@ -2,7 +2,7 @@
 # datasets/SOURCES.md, not engine output.
 description: PAN-OS 11.1.2 branch firewall with 14 planted weaknesses (P1-P14)
 input: authored/paloalto_panos/weak.xml
-input_sha256: d7aad8397621ac42c0c313c3d53c939b85a04f89b41d7bd11b13bd092b1699eb
+input_sha256: 845b94ce8f00e3c62b19f9b4435d7e0a1cf980a608d3e9a4d8fb9ca36bceb75f
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:

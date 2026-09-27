@@ -1,0 +1,22 @@
+# Switch ports, which make a device a switch for role inference (TODO M2.22): a unit in
+# `family ethernet-switching` with `interface-mode access | trunk` (ELS), or `port-mode` on
+# software without ELS. Keyed like this pack's interfaces, at the unit.
+# Seed mappings: reviewed in docs/reviews/juniper_junos.md.
+mappings:
+- id: juniper_junos/ethernet-switching-interface-mode
+  vendor: juniper_junos
+  context: [interfaces, "<IFNAME:i>", "unit <INT:u>", family ethernet-switching]
+  entity: {type: L2Port, key: "{i}.{u}"}
+  match: "interface-mode <STR:m>"
+  effect: {set: L2Port.mode, from: m, map: {access: access, trunk: trunk}}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/ethernet-switching-port-mode
+  vendor: juniper_junos
+  context: [interfaces, "<IFNAME:i>", "unit <INT:u>", family ethernet-switching]
+  entity: {type: L2Port, key: "{i}.{u}"}
+  match: "port-mode <STR:m>"
+  effect: {set: L2Port.mode, from: m, map: {access: access, trunk: trunk}}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

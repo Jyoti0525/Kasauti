@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "fae2bf539ed408e0ac91b9f0",
+  "audit_id": "f3d531bb6bc6d89ea5af3e35",
   "input": {
     "file": "weak.xml",
-    "sha256": "d7aad8397621ac42c0c313c3d53c939b85a04f89b41d7bd11b13bd092b1699eb",
+    "sha256": "845b94ce8f00e3c62b19f9b4435d7e0a1cf980a608d3e9a4d8fb9ca36bceb75f",
     "encoding": "utf-8",
     "shape_family": "xml",
     "parse_warnings": []
@@ -25,7 +25,7 @@
   "identity": {
     "hostname": {
       "value": "PA-BRANCH",
-      "source": "config line 72"
+      "source": "config line 93"
     },
     "vendor": {
       "value": "Palo Alto Networks",
@@ -50,8 +50,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
-    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
+    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
+    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -700,8 +700,8 @@
       "evidence": [
         {
           "file": "weak.xml",
-          "line_start": 130,
-          "line_end": 130,
+          "line_start": 151,
+          "line_end": 151,
           "raw": "member untrust",
           "mapping_id": "inference/device.role.firewall_by_zones",
           "mapping_version": 1,
@@ -711,8 +711,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 133,
-          "line_end": 133,
+          "line_start": 154,
+          "line_end": 154,
           "raw": "member trust",
           "mapping_id": "inference/device.role.firewall_by_zones",
           "mapping_version": 1,
@@ -722,8 +722,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 136,
-          "line_end": 136,
+          "line_start": 157,
+          "line_end": 157,
           "raw": "member any",
           "mapping_id": "paloalto_panos/rule-source",
           "mapping_version": 1,
@@ -733,8 +733,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 139,
-          "line_end": 139,
+          "line_start": 160,
+          "line_end": 160,
           "raw": "member any",
           "mapping_id": "paloalto_panos/rule-destination",
           "mapping_version": 1,
@@ -744,8 +744,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 142,
-          "line_end": 142,
+          "line_start": 163,
+          "line_end": 163,
           "raw": "member any",
           "mapping_id": "paloalto_panos/rule-application",
           "mapping_version": 1,
@@ -755,8 +755,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 145,
-          "line_end": 145,
+          "line_start": 166,
+          "line_end": 166,
           "raw": "member any",
           "mapping_id": "paloalto_panos/rule-service",
           "mapping_version": 1,
@@ -766,8 +766,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 147,
-          "line_end": 147,
+          "line_start": 168,
+          "line_end": 168,
           "raw": "action allow",
           "mapping_id": "paloalto_panos/rule-action",
           "mapping_version": 1,
@@ -792,8 +792,8 @@
       "evidence": [
         {
           "file": "weak.xml",
-          "line_start": 113,
-          "line_end": 113,
+          "line_start": 134,
+          "line_end": 134,
           "raw": "member ethernet1/1",
           "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
@@ -803,8 +803,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 113,
-          "line_end": 113,
+          "line_start": 134,
+          "line_end": 134,
           "raw": "member ethernet1/1",
           "mapping_id": "paloalto_panos/zone-member",
           "mapping_version": 1,
@@ -932,8 +932,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 78,
-          "line_end": 78,
+          "line_start": 99,
+          "line_end": 99,
           "raw": "disable-http no",
           "mapping_id": "paloalto_panos/mgt-http",
           "mapping_version": 1,
@@ -943,8 +943,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 113,
-          "line_end": 113,
+          "line_start": 134,
+          "line_end": 134,
           "raw": "member ethernet1/1",
           "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
@@ -969,8 +969,8 @@
       "evidence": [
         {
           "file": "weak.xml",
-          "line_start": 103,
-          "line_end": 103,
+          "line_start": 124,
+          "line_end": 124,
           "raw": "idle-timeout 0",
           "mapping_id": "paloalto_panos/idle-timeout",
           "mapping_version": 1,
@@ -1038,8 +1038,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 113,
-          "line_end": 113,
+          "line_start": 134,
+          "line_end": 134,
           "raw": "member ethernet1/1",
           "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
@@ -1064,8 +1064,8 @@
       "evidence": [
         {
           "file": "weak.xml",
-          "line_start": 77,
-          "line_end": 77,
+          "line_start": 98,
+          "line_end": 98,
           "raw": "disable-telnet no",
           "mapping_id": "paloalto_panos/mgt-telnet",
           "mapping_version": 1,
@@ -1156,8 +1156,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 78,
-          "line_end": 78,
+          "line_start": 99,
+          "line_end": 99,
           "raw": "disable-http no",
           "mapping_id": "paloalto_panos/mgt-http",
           "mapping_version": 1,
@@ -1167,8 +1167,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 113,
-          "line_end": 113,
+          "line_start": 134,
+          "line_end": 134,
           "raw": "member ethernet1/1",
           "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
@@ -1237,8 +1237,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 79,
-          "line_end": 79,
+          "line_start": 100,
+          "line_end": 100,
           "raw": "disable-https no",
           "mapping_id": "paloalto_panos/mgt-https",
           "mapping_version": 1,
@@ -1248,8 +1248,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 113,
-          "line_end": 113,
+          "line_start": 134,
+          "line_end": 134,
           "raw": "member ethernet1/1",
           "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
@@ -1418,8 +1418,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 94,
-          "line_end": 94,
+          "line_start": 115,
+          "line_end": 115,
           "raw": "snmp-community-string ****",
           "mapping_id": "paloalto_panos/snmp-v2c-community",
           "mapping_version": 1,
@@ -1429,8 +1429,8 @@
         },
         {
           "file": "weak.xml",
-          "line_start": 113,
-          "line_end": 113,
+          "line_start": 134,
+          "line_end": 134,
           "raw": "member ethernet1/1",
           "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
@@ -1508,8 +1508,8 @@
       "evidence": [
         {
           "file": "weak.xml",
-          "line_start": 86,
-          "line_end": 86,
+          "line_start": 107,
+          "line_end": 107,
           "raw": "none",
           "mapping_id": "paloalto_panos/ntp-auth-none",
           "mapping_version": 1,
@@ -1521,11 +1521,11 @@
     }
   ],
   "assurance": {
-    "statements": 102,
-    "understood": 35,
-    "unmapped": 67,
+    "statements": 115,
+    "understood": 41,
+    "unmapped": 74,
     "near_miss": 0,
-    "understood_pct": 34.3,
+    "understood_pct": 35.7,
     "unmapped_patterns": [
       {
         "pattern_key": "network",
@@ -1540,34 +1540,28 @@
         "example": "layer3"
       },
       {
+        "pattern_key": "member <IFNAME>",
+        "count": 4,
+        "first_line": 72,
+        "example": "member ethernet1/1"
+      },
+      {
         "pattern_key": "interface",
-        "count": 2,
+        "count": 3,
         "first_line": 39,
         "example": "interface"
       },
       {
         "pattern_key": "ip",
-        "count": 2,
+        "count": 3,
         "first_line": 43,
         "example": "ip"
       },
       {
-        "pattern_key": "entry <IP>",
-        "count": 2,
-        "first_line": 44,
-        "example": "entry 198.51.100.6/30"
-      },
-      {
         "pattern_key": "service",
         "count": 2,
-        "first_line": 76,
+        "first_line": 97,
         "example": "service"
-      },
-      {
-        "pattern_key": "member <IFNAME>",
-        "count": 2,
-        "first_line": 155,
-        "example": "member ethernet1/1"
       },
       {
         "pattern_key": "mgt-config",
@@ -1690,177 +1684,207 @@
         "example": "interface-management-profile"
       },
       {
-        "pattern_key": "deviceconfig",
+        "pattern_key": "virtual-router",
+        "count": 1,
+        "first_line": 69,
+        "example": "virtual-router"
+      },
+      {
+        "pattern_key": "entry default",
         "count": 1,
         "first_line": 70,
+        "example": "entry default"
+      },
+      {
+        "pattern_key": "routing-table",
+        "count": 1,
+        "first_line": 75,
+        "example": "routing-table"
+      },
+      {
+        "pattern_key": "static-route",
+        "count": 1,
+        "first_line": 77,
+        "example": "static-route"
+      },
+      {
+        "pattern_key": "nexthop",
+        "count": 1,
+        "first_line": 79,
+        "example": "nexthop"
+      },
+      {
+        "pattern_key": "deviceconfig",
+        "count": 1,
+        "first_line": 91,
         "example": "deviceconfig"
       },
       {
         "pattern_key": "system",
         "count": 1,
-        "first_line": 71,
+        "first_line": 92,
         "example": "system"
       },
       {
         "pattern_key": "ip-address <IP>",
         "count": 1,
-        "first_line": 73,
+        "first_line": 94,
         "example": "ip-address 10.30.10.6"
       },
       {
         "pattern_key": "netmask <IP>",
         "count": 1,
-        "first_line": 74,
+        "first_line": 95,
         "example": "netmask 255.255.255.0"
       },
       {
         "pattern_key": "default-gateway <IP>",
         "count": 1,
-        "first_line": 75,
+        "first_line": 96,
         "example": "default-gateway 10.30.10.1"
       },
       {
         "pattern_key": "ntp-servers",
         "count": 1,
-        "first_line": 82,
+        "first_line": 103,
         "example": "ntp-servers"
       },
       {
         "pattern_key": "primary-ntp-server",
         "count": 1,
-        "first_line": 83,
+        "first_line": 104,
         "example": "primary-ntp-server"
       },
       {
         "pattern_key": "authentication-type",
         "count": 1,
-        "first_line": 85,
+        "first_line": 106,
         "example": "authentication-type"
       },
       {
         "pattern_key": "snmp-setting",
         "count": 1,
-        "first_line": 90,
+        "first_line": 111,
         "example": "snmp-setting"
       },
       {
         "pattern_key": "access-setting",
         "count": 1,
-        "first_line": 91,
+        "first_line": 112,
         "example": "access-setting"
       },
       {
         "pattern_key": "version",
         "count": 1,
-        "first_line": 92,
+        "first_line": 113,
         "example": "version"
       },
       {
         "pattern_key": "v2c",
         "count": 1,
-        "first_line": 93,
+        "first_line": 114,
         "example": "v2c"
       },
       {
         "pattern_key": "timezone Asia/Kolkata",
         "count": 1,
-        "first_line": 99,
+        "first_line": 120,
         "example": "timezone Asia/Kolkata"
       },
       {
         "pattern_key": "setting",
         "count": 1,
-        "first_line": 101,
+        "first_line": 122,
         "example": "setting"
       },
       {
         "pattern_key": "management",
         "count": 1,
-        "first_line": 102,
+        "first_line": 123,
         "example": "management"
       },
       {
         "pattern_key": "vsys",
         "count": 1,
-        "first_line": 107,
+        "first_line": 128,
         "example": "vsys"
       },
       {
         "pattern_key": "entry vsys1",
         "count": 1,
-        "first_line": 108,
+        "first_line": 129,
         "example": "entry vsys1"
       },
       {
         "pattern_key": "zone",
         "count": 1,
-        "first_line": 109,
+        "first_line": 130,
         "example": "zone"
       },
       {
         "pattern_key": "entry untrust",
         "count": 1,
-        "first_line": 110,
+        "first_line": 131,
         "example": "entry untrust"
       },
       {
         "pattern_key": "entry trust",
         "count": 1,
-        "first_line": 117,
+        "first_line": 138,
         "example": "entry trust"
       },
       {
         "pattern_key": "rulebase",
         "count": 1,
-        "first_line": 125,
+        "first_line": 146,
         "example": "rulebase"
       },
       {
         "pattern_key": "security",
         "count": 1,
-        "first_line": 126,
+        "first_line": 147,
         "example": "security"
       },
       {
         "pattern_key": "rules",
         "count": 1,
-        "first_line": 127,
+        "first_line": 148,
         "example": "rules"
       },
       {
         "pattern_key": "from",
         "count": 1,
-        "first_line": 129,
+        "first_line": 150,
         "example": "from"
       },
       {
         "pattern_key": "to",
         "count": 1,
-        "first_line": 132,
+        "first_line": 153,
         "example": "to"
       },
       {
         "pattern_key": "source",
         "count": 1,
-        "first_line": 135,
+        "first_line": 156,
         "example": "source"
       },
       {
         "pattern_key": "destination",
         "count": 1,
-        "first_line": 138,
+        "first_line": 159,
         "example": "destination"
       },
       {
         "pattern_key": "application",
         "count": 1,
-        "first_line": 141,
+        "first_line": 162,
         "example": "application"
       },
       {
         "pattern_key": "import",
         "count": 1,
-        "first_line": 152,
+        "first_line": 173,
         "example": "import"
       }
     ],
@@ -1893,6 +1917,13 @@
           "maintainer"
         ],
         "facts": 1
+      },
+      {
+        "mapping": "paloalto_panos/ethernet-ip@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 4
       },
       {
         "mapping": "paloalto_panos/ethernet-layer3-mgmt-profile@1",
@@ -2042,6 +2073,27 @@
         "facts": 1
       },
       {
+        "mapping": "paloalto_panos/static-route-destination@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "paloalto_panos/static-route-interface@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "paloalto_panos/static-route-next-hop@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
         "mapping": "paloalto_panos/syslog-server@1",
         "approved_by": [
           "maintainer"
@@ -2081,7 +2133,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.9",
+    "sbm_version": "0.10",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2092,8 +2144,8 @@
         "evidence": [
           {
             "file": "weak.xml",
-            "line_start": 72,
-            "line_end": 72,
+            "line_start": 93,
+            "line_end": 93,
             "raw": "hostname PA-BRANCH",
             "mapping_id": null,
             "mapping_version": null,
@@ -2126,8 +2178,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 70,
-            "line_end": 70,
+            "line_start": 91,
+            "line_end": 91,
             "raw": "<deviceconfig>",
             "mapping_id": null,
             "mapping_version": null,
@@ -2135,8 +2187,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 108,
-            "line_end": 108,
+            "line_start": 129,
+            "line_end": 129,
             "raw": "<entry name=\"vsys1\">",
             "mapping_id": null,
             "mapping_version": null,
@@ -2144,8 +2196,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 125,
-            "line_end": 125,
+            "line_start": 146,
+            "line_end": 146,
             "raw": "<rulebase>",
             "mapping_id": null,
             "mapping_version": null,
@@ -2178,8 +2230,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 70,
-            "line_end": 70,
+            "line_start": 91,
+            "line_end": 91,
             "raw": "<deviceconfig>",
             "mapping_id": null,
             "mapping_version": null,
@@ -2187,8 +2239,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 108,
-            "line_end": 108,
+            "line_start": 129,
+            "line_end": 129,
             "raw": "<entry name=\"vsys1\">",
             "mapping_id": null,
             "mapping_version": null,
@@ -2196,8 +2248,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 125,
-            "line_end": 125,
+            "line_start": 146,
+            "line_end": 146,
             "raw": "<rulebase>",
             "mapping_id": null,
             "mapping_version": null,
@@ -2246,8 +2298,8 @@
         "evidence": [
           {
             "file": "weak.xml",
-            "line_start": 130,
-            "line_end": 130,
+            "line_start": 151,
+            "line_end": 151,
             "raw": "member untrust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -2257,8 +2309,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 133,
-            "line_end": 133,
+            "line_start": 154,
+            "line_end": 154,
             "raw": "member trust",
             "mapping_id": "inference/device.role.firewall_by_zones",
             "mapping_version": 1,
@@ -2281,8 +2333,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 128,
-              "line_end": 148,
+              "line_start": 149,
+              "line_end": 169,
               "raw": "entry allow-all",
               "mapping_id": "paloalto_panos/rule",
               "mapping_version": 1,
@@ -2313,8 +2365,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 136,
-              "line_end": 136,
+              "line_start": 157,
+              "line_end": 157,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-source",
               "mapping_version": 1,
@@ -2333,8 +2385,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 139,
-              "line_end": 139,
+              "line_start": 160,
+              "line_end": 160,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-destination",
               "mapping_version": 1,
@@ -2353,8 +2405,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 145,
-              "line_end": 145,
+              "line_start": 166,
+              "line_end": 166,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-service",
               "mapping_version": 1,
@@ -2371,8 +2423,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 147,
-              "line_end": 147,
+              "line_start": 168,
+              "line_end": 168,
               "raw": "action allow",
               "mapping_id": "paloalto_panos/rule-action",
               "mapping_version": 1,
@@ -2401,8 +2453,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 130,
-              "line_end": 130,
+              "line_start": 151,
+              "line_end": 151,
               "raw": "member untrust",
               "mapping_id": "paloalto_panos/rule-from",
               "mapping_version": 1,
@@ -2419,8 +2471,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 133,
-              "line_end": 133,
+              "line_start": 154,
+              "line_end": 154,
               "raw": "member trust",
               "mapping_id": "paloalto_panos/rule-to",
               "mapping_version": 1,
@@ -2439,8 +2491,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 142,
-              "line_end": 142,
+              "line_start": 163,
+              "line_end": 163,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-application",
               "mapping_version": 1,
@@ -2498,8 +2550,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 113,
-              "line_end": 113,
+              "line_start": 134,
+              "line_end": 134,
               "raw": "member ethernet1/1",
               "mapping_id": "paloalto_panos/zone-member",
               "mapping_version": 1,
@@ -2516,8 +2568,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 113,
-              "line_end": 113,
+              "line_start": 134,
+              "line_end": 134,
               "raw": "member ethernet1/1",
               "mapping_id": "inference/interface.role.untrusted_by_zone",
               "mapping_version": 1,
@@ -2638,6 +2690,84 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "198.51.100.6/30"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 44,
+              "line_end": 44,
+              "raw": "entry 198.51.100.6/30",
+              "mapping_id": "paloalto_panos/ethernet-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 44,
+              "line_end": 44,
+              "raw": "entry 198.51.100.6/30",
+              "mapping_id": "paloalto_panos/ethernet-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "ip-address 198.51.100.5",
+              "mapping_id": "paloalto_panos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "weak.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface ethernet1/1",
+              "mapping_id": "paloalto_panos/static-route-interface",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "weak.xml",
+              "line_start": 83,
+              "line_end": 83,
+              "raw": "destination 0.0.0.0/0",
+              "mapping_id": "paloalto_panos/static-route-destination",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -2656,8 +2786,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 120,
-              "line_end": 120,
+              "line_start": 141,
+              "line_end": 141,
               "raw": "member ethernet1/2",
               "mapping_id": "paloalto_panos/zone-member",
               "mapping_version": 1,
@@ -2780,6 +2910,50 @@
           "default_source": null
         },
         "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.20.0.1/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 53,
+              "line_end": 53,
+              "raw": "entry 10.20.0.1/24",
+              "mapping_id": "paloalto_panos/ethernet-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 53,
+              "line_end": 53,
+              "raw": "entry 10.20.0.1/24",
+              "mapping_id": "paloalto_panos/ethernet-ip",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3040,8 +3214,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 78,
-              "line_end": 78,
+              "line_start": 99,
+              "line_end": 99,
               "raw": "disable-http no",
               "mapping_id": "paloalto_panos/mgt-http",
               "mapping_version": 1,
@@ -3107,8 +3281,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 79,
-              "line_end": 79,
+              "line_start": 100,
+              "line_end": 100,
               "raw": "disable-https no",
               "mapping_id": "paloalto_panos/mgt-https",
               "mapping_version": 1,
@@ -3229,8 +3403,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 80,
-              "line_end": 80,
+              "line_start": 101,
+              "line_end": 101,
               "raw": "disable-ssh no",
               "mapping_id": "paloalto_panos/mgt-ssh",
               "mapping_version": 1,
@@ -3351,8 +3525,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 77,
-              "line_end": 77,
+              "line_start": 98,
+              "line_end": 98,
               "raw": "disable-telnet no",
               "mapping_id": "paloalto_panos/mgt-telnet",
               "mapping_version": 1,
@@ -3473,8 +3647,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 103,
-              "line_end": 103,
+              "line_start": 124,
+              "line_end": 124,
               "raw": "idle-timeout 0",
               "mapping_id": "paloalto_panos/idle-timeout",
               "mapping_version": 1,
@@ -3509,8 +3683,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 103,
-              "line_end": 103,
+              "line_start": 124,
+              "line_end": 124,
               "raw": "idle-timeout 0",
               "mapping_id": "paloalto_panos/idle-timeout",
               "mapping_version": 1,
@@ -4209,6 +4383,73 @@
         }
       },
       {
+        "key": "ip:default-to-isp",
+        "evidence": [],
+        "type": "Route",
+        "destination": {
+          "value": "0.0.0.0/0",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 83,
+              "line_end": 83,
+              "raw": "destination 0.0.0.0/0",
+              "mapping_id": "paloalto_panos/static-route-destination",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "next_hops": {
+          "value": [
+            "198.51.100.5"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "ip-address 198.51.100.5",
+              "mapping_id": "paloalto_panos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "interface": {
+          "value": "ethernet1/1",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.xml",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "interface ethernet1/1",
+              "mapping_id": "paloalto_panos/static-route-interface",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
         "key": "security",
         "evidence": [],
         "type": "Ruleset",
@@ -4265,8 +4506,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 94,
-              "line_end": 94,
+              "line_start": 115,
+              "line_end": 115,
               "raw": "snmp-community-string ****",
               "mapping_id": "paloalto_panos/snmp-v2c-community",
               "mapping_version": 1,
@@ -4288,8 +4529,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 84,
-              "line_end": 84,
+              "line_start": 105,
+              "line_end": 105,
               "raw": "ntp-server-address 10.30.10.70",
               "mapping_id": "paloalto_panos/ntp-server",
               "mapping_version": 1,
@@ -4306,8 +4547,8 @@
           "evidence": [
             {
               "file": "weak.xml",
-              "line_start": 86,
-              "line_end": 86,
+              "line_start": 107,
+              "line_end": 107,
               "raw": "none",
               "mapping_id": "paloalto_panos/ntp-auth-none",
               "mapping_version": 1,
@@ -4339,8 +4580,8 @@
         "evidence": [
           {
             "file": "weak.xml",
-            "line_start": 136,
-            "line_end": 136,
+            "line_start": 157,
+            "line_end": 157,
             "raw": "member any",
             "mapping_id": "paloalto_panos/rule-source",
             "mapping_version": 1,
@@ -4350,8 +4591,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 139,
-            "line_end": 139,
+            "line_start": 160,
+            "line_end": 160,
             "raw": "member any",
             "mapping_id": "paloalto_panos/rule-destination",
             "mapping_version": 1,
@@ -4361,8 +4602,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 142,
-            "line_end": 142,
+            "line_start": 163,
+            "line_end": 163,
             "raw": "member any",
             "mapping_id": "paloalto_panos/rule-application",
             "mapping_version": 1,
@@ -4372,8 +4613,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 145,
-            "line_end": 145,
+            "line_start": 166,
+            "line_end": 166,
             "raw": "member any",
             "mapping_id": "paloalto_panos/rule-service",
             "mapping_version": 1,
@@ -4383,8 +4624,8 @@
           },
           {
             "file": "weak.xml",
-            "line_start": 147,
-            "line_end": 147,
+            "line_start": 168,
+            "line_end": 168,
             "raw": "action allow",
             "mapping_id": "paloalto_panos/rule-action",
             "mapping_version": 1,
@@ -4407,8 +4648,8 @@
         "evidence": [
           {
             "file": "weak.xml",
-            "line_start": 78,
-            "line_end": 78,
+            "line_start": 99,
+            "line_end": 99,
             "raw": "disable-http no",
             "mapping_id": "paloalto_panos/mgt-http",
             "mapping_version": 1,
@@ -4431,8 +4672,8 @@
         "evidence": [
           {
             "file": "weak.xml",
-            "line_start": 80,
-            "line_end": 80,
+            "line_start": 101,
+            "line_end": 101,
             "raw": "disable-ssh no",
             "mapping_id": "paloalto_panos/mgt-ssh",
             "mapping_version": 1,
@@ -4455,8 +4696,8 @@
         "evidence": [
           {
             "file": "weak.xml",
-            "line_start": 77,
-            "line_end": 77,
+            "line_start": 98,
+            "line_end": 98,
             "raw": "disable-telnet no",
             "mapping_id": "paloalto_panos/mgt-telnet",
             "mapping_version": 1,
@@ -4479,8 +4720,8 @@
         "evidence": [
           {
             "file": "weak.xml",
-            "line_start": 94,
-            "line_end": 94,
+            "line_start": 115,
+            "line_end": 115,
             "raw": "snmp-community-string ****",
             "mapping_id": "paloalto_panos/snmp-v2c-community",
             "mapping_version": 1,

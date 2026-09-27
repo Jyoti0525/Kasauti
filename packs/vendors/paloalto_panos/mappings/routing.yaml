@@ -1,0 +1,125 @@
+# Interface addresses and static routes, which role inference reads (TODO M2.22): an interface
+# with a public IPv4 address, or the one the default route leaves by, faces the outside.
+# Paths as pan-os-python (Palo Alto Networks' SDK) writes them: an interface's IPv4 addresses
+# are `layer3/ip/entry[@name]`, its IPv6 ones `layer3/ipv6/address/entry[@name]`; a virtual
+# router's static routes are `routing-table/ip/static-route/entry` (IPv6: `routing-table/ipv6`)
+# with `destination`, `nexthop/ip-address` (`ipv6-address`) and `interface`.
+# An address given as an address object's name isn't read (no fact, not a guess).
+# Seed mappings: reviewed in docs/reviews/paloalto_panos.md.
+mappings:
+- id: paloalto_panos/ethernet-ip
+  vendor: paloalto_panos
+  context: [ethernet, "entry <STR:i>", layer3, ip]
+  entity: {type: Interface, key: "{i}"}
+  match: "entry <IP:a>"
+  effect: {members: Interface.addresses, from: a, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/ethernet-ipv6
+  vendor: paloalto_panos
+  context: [ethernet, "entry <STR:i>", layer3, ipv6, address]
+  entity: {type: Interface, key: "{i}"}
+  match: "entry <IP:a>"
+  effect: {members: Interface.addresses, from: a, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+# --- IPv4 static routes -----------------------------------------------------------------------
+- id: paloalto_panos/static-route
+  vendor: paloalto_panos
+  context: [routing-table, ip, static-route]
+  entity: {type: Route, key: "ip:{n}"}
+  match: "entry <STR:n>"
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route-destination
+  vendor: paloalto_panos
+  context: [routing-table, ip, static-route, "entry <STR:n>"]
+  entity: {type: Route, key: "ip:{n}"}
+  match: "destination <IP:net>"
+  effect: {set: Route.destination, from: net, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route-interface
+  vendor: paloalto_panos
+  context: [routing-table, ip, static-route, "entry <STR:n>"]
+  entity: {type: Route, key: "ip:{n}"}
+  match: "interface <STR:out>"
+  effect: {set: Route.interface, from: out}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route-next-hop
+  vendor: paloalto_panos
+  context: [routing-table, ip, static-route, "entry <STR:n>", nexthop]
+  entity: {type: Route, key: "ip:{n}"}
+  match: "ip-address <IP:hop>"
+  effect: {members: Route.next_hops, from: hop}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route-next-vr
+  vendor: paloalto_panos
+  context: [routing-table, ip, static-route, "entry <STR:n>", nexthop]
+  entity: {type: Route, key: "ip:{n}"}
+  match: "next-vr <STR:vr>"
+  effect: {unknown: Route.interface, why: "the route hands its traffic to another virtual router, which isn't followed here"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route-discard
+  vendor: paloalto_panos
+  context: [routing-table, ip, static-route, "entry <STR:n>", nexthop]
+  entity: {type: Route, key: "ip:{n}"}
+  match: "discard"
+  effect: {unknown: Route.interface, why: "a discard route drops its traffic instead of sending it out"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+# --- IPv6 static routes -----------------------------------------------------------------------
+- id: paloalto_panos/static-route6
+  vendor: paloalto_panos
+  context: [routing-table, ipv6, static-route]
+  entity: {type: Route, key: "ipv6:{n}"}
+  match: "entry <STR:n>"
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route6-destination
+  vendor: paloalto_panos
+  context: [routing-table, ipv6, static-route, "entry <STR:n>"]
+  entity: {type: Route, key: "ipv6:{n}"}
+  match: "destination <IP:net>"
+  effect: {set: Route.destination, from: net, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route6-interface
+  vendor: paloalto_panos
+  context: [routing-table, ipv6, static-route, "entry <STR:n>"]
+  entity: {type: Route, key: "ipv6:{n}"}
+  match: "interface <STR:out>"
+  effect: {set: Route.interface, from: out}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route6-next-hop
+  vendor: paloalto_panos
+  context: [routing-table, ipv6, static-route, "entry <STR:n>", nexthop]
+  entity: {type: Route, key: "ipv6:{n}"}
+  match: "ipv6-address <IP:hop>"
+  effect: {members: Route.next_hops, from: hop}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: paloalto_panos/static-route6-discard
+  vendor: paloalto_panos
+  context: [routing-table, ipv6, static-route, "entry <STR:n>", nexthop]
+  entity: {type: Route, key: "ipv6:{n}"}
+  match: "discard"
+  effect: {unknown: Route.interface, why: "a discard route drops its traffic instead of sending it out"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

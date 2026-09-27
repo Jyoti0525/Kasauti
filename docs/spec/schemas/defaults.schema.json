@@ -2,12 +2,12 @@
   "$defs": {
     "DefaultEntry": {
       "additionalProperties": false,
-      "description": "What holds when the configuration says nothing, for an OS version range.\n\nTwo forms:\n\n* ``attr`` + ``value``: an attribute's default (``MgmtSession.idle_timeout_s = 600``).\n  With ``entity_key`` it names one entity (``MgmtService`` ``telnet``) and materialises it\n  if the config never mentions it; without, it fills that attribute on every entity of\n  the type (or on the singleton), except those named in ``except_keys`` (a default for\n  FortiOS's configured NTP servers doesn't describe the implicit FortiGuard source).\n* ``none_of``: the vendor ships *no* entities of this type (no SNMP communities until\n  one is configured). Only this lets a rule treat \"none seen\" as \"none exist\".",
+      "description": "What holds when the configuration says nothing, for an OS version range.\n\nTwo forms:\n\n* ``attr`` + ``value``: an attribute's default (``MgmtSession.idle_timeout_s = 600``).\n  With ``entity_key`` it names one entity (``MgmtService`` ``telnet``) and materialises it\n  if the config never mentions it; without, it fills that attribute on every entity of\n  the type (or on the singleton), except those named in ``except_keys`` (a default for\n  FortiOS's configured NTP servers doesn't describe the implicit FortiGuard source), or\n  only those whose key starts with ``key_prefix`` (FortiOS's IPv4 routes, ``static:…``,\n  default to ``0.0.0.0/0`` and its IPv6 routes, ``static6:…``, to ``::/0``).\n* ``none_of``: the vendor ships *no* entities of this type (no SNMP communities until\n  one is configured). Only this lets a rule treat \"none seen\" as \"none exist\".",
       "properties": {
         "attr": {
           "anyOf": [
             {
-              "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+              "pattern": "^[A-Z][A-Za-z0-9]+\\.[a-z][a-z0-9_]*$",
               "type": "string"
             },
             {
@@ -41,6 +41,19 @@
           "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
           "title": "Id",
           "type": "string"
+        },
+        "key_prefix": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Key Prefix"
         },
         "none_of": {
           "anyOf": [

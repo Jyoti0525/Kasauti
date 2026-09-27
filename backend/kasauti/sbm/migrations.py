@@ -75,6 +75,14 @@ def _v08_to_v09(data: RawSBM) -> RawSBM:
     return data
 
 
+def _v09_to_v010(data: RawSBM) -> RawSBM:
+    """0.9 -> 0.10 (M2.22, role inference from addressing and routes): new entity type
+    ``Route`` and new optional attributes ``Interface.addresses``, ``Interface.public_address``
+    and ``Interface.default_route``. Absent in older documents, which read no addresses or
+    routes."""
+    return data
+
+
 # from_version -> (to_version, step). Add one entry per schema change; never edit old steps.
 MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.1": ("0.2", _v01_to_v02),
@@ -85,6 +93,7 @@ MIGRATIONS: dict[str, tuple[str, Step]] = {
     "0.6": ("0.7", _v06_to_v07),
     "0.7": ("0.8", _v07_to_v08),
     "0.8": ("0.9", _v08_to_v09),
+    "0.9": ("0.10", _v09_to_v010),
 }
 
 

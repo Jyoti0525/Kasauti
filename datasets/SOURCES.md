@@ -15,8 +15,8 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 
 | File | Platform | Lines | SHA-256 | Review |
 |---|---|---|---|---|
-| `cisco_ios_xe/hardened.cfg` | Cisco IOS-XE 17.9, edge router | 121 | `aa42cfc9a1aadbb8803740d5f9a37df8a021c2ae23245d3e86255508c1f461b2` | commands cross-checked against Cisco docs (C.06, see `docs/reviews/cisco_ios_xe.md`) |
-| `cisco_ios_xe/weak.cfg` | Cisco IOS-XE 17.9, weak twin | 59 | `11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946` | commands cross-checked against Cisco docs (C.06) |
+| `cisco_ios_xe/hardened.cfg` | Cisco IOS-XE 17.9, edge router | 123 | `65b2f470f0a4bb9d4c52e2021ee3b700b88e59fcd6bb57d381ad89242c4d9e65` | commands cross-checked against Cisco docs (C.06, see `docs/reviews/cisco_ios_xe.md`) |
+| `cisco_ios_xe/weak.cfg` | Cisco IOS-XE 17.9, weak twin | 61 | `ba77cc7a6b22126ec539f23cc647198f19b00583afcc4d7f22e191ec10e43937` | commands cross-checked against Cisco docs (C.06) |
 | `cisco_ios_xe/fixtures/web_mgmt_restricted.cfg` | Cisco IOS-XE 17.9, HTTPS management behind an ACL (pass fixture for MGMT-WEB-ACL-01) | 16 | `b7a21e0d5106bdd3c0e5eb6d6eff77a1d41f0ed3b3719a5ad3530de5d3bc257d` | commands cross-checked against Cisco docs (C.06) |
 | `cisco_ios_xe/fixtures/vty_acl_permits_any.cfg` | Cisco IOS-XE 17.9, vty lines behind an ACL that permits any source (fail fixture for MGMT-VTY-ACL-02) | 16 | `aebeb3dd78ca32ab8971c7d8263e994d678d9811a625a00d212bbd752b08b2ba` | commands cross-checked against Cisco docs (C.06) |
 | `cisco_ios_xe/fixtures/vty_acl_dangling.cfg` | Cisco IOS-XE 17.9, vty lines naming an ACL that doesn't exist (fail fixture for REF-DANGLING-01, MGMT-VTY-ACL-02) | 12 | `be369df0c87e40094137d0abaa4f0a106313089b524a71b6ea0605e593488b1e` | commands cross-checked against Cisco docs (C.06) |
@@ -24,16 +24,16 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 | `cisco_ios_xe/fixtures/vty_acl_first_match.cfg` | Cisco IOS-XE 17.9, a vty ACL whose `permit any` follows a `deny any`: first match decides (pass fixture for MGMT-VTY-ACL-02) | 18 | `a149d5925331d3e845d7917ba3cc95c42af2af2f6e0eaa29c6460ad941c147b7` | commands cross-checked against Cisco docs (C.06) |
 | `cisco_ios_xe/fixtures/vty_login_list_central.cfg` | Cisco IOS-XE 17.9, vty lines naming their own login list, TACACS+ first (pass fixture for AAA-CENTRAL-AUTH-01) | 27 | `717d63120a7f826c37d2478df5da43f5b83b979237240fab4b53175e3db3de1e` | commands cross-checked against Cisco docs (C.06) |
 | `cisco_ios_xe/fixtures/vty_login_list_local.cfg` | Cisco IOS-XE 17.9, TACACS+ default list but vty lines naming a local-only list (fail fixture for AAA-CENTRAL-AUTH-01) | 27 | `8493c233b28756b31fad3df873238f143036a4029154187f05e66dcc968489c6` | commands cross-checked against Cisco docs (C.06) |
-| `juniper_junos/hardened.conf` | Junos OS 23.4, branch SRX | 162 | `b6a504c35d9066a1b0da376dc94e82b7878c9f502fee8b7c0f159f08cdcc7cc9` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
-| `juniper_junos/weak.conf` | Junos OS 23.4, weak twin | 90 | `f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
-| `arista_eos/hardened.cfg` | Arista EOS 4.30, routed leaf with an ISP uplink | 70 | `d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
-| `arista_eos/weak.cfg` | Arista EOS 4.30, weak twin | 53 | `05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
-| `fortinet_fortios/hardened.conf` | FortiOS 7.4.8, edge FortiGate 60F | 140 | `1b302a15d8eebb323a1a28212f6c5822f8f5de76d2e89f62d7cc9471d0d71d4d` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
-| `fortinet_fortios/weak.conf` | FortiOS 7.4.8, weak twin | 82 | `3f9c81f20f880e52f6bf60e45ed2260c1f7dc4bdd1076fbb9dcefd5225c1f97a` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
+| `juniper_junos/hardened.conf` | Junos OS 23.4, branch SRX | 167 | `05abcfd1240c747141e1677c8e61c5bfb91db119abb34dbc269dd3f759454191` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
+| `juniper_junos/weak.conf` | Junos OS 23.4, weak twin | 95 | `9b22aa4dc497e98eb1805b20cfe6dada727b54333a33d2fc49f5c452f69e8c11` | commands cross-checked against Juniper docs (C.06, `docs/reviews/juniper_junos.md`) |
+| `arista_eos/hardened.cfg` | Arista EOS 4.30, routed leaf with an ISP uplink | 72 | `42ba3c5feff684d9df92cc813e31b48dabc53071f06d828fddab8f9f85746568` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
+| `arista_eos/weak.cfg` | Arista EOS 4.30, weak twin | 55 | `03c0b8d475f96aeec21a923089f88c271174c1a4bf9b8bfc6ea66f67fd0c6a1d` | commands cross-checked against Arista docs (C.06, `docs/reviews/arista_eos.md`) |
+| `fortinet_fortios/hardened.conf` | FortiOS 7.4.8, edge FortiGate 60F | 146 | `063ca0c4806bbbf776294c7b020f40612e1810a2d39d4c655b8ea2b0ac4d5005` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
+| `fortinet_fortios/weak.conf` | FortiOS 7.4.8, weak twin | 88 | `dfa553492c4e201c7b6defe3117908f93dee2bbd1709f3ee0ecf7c39dbb0edb8` | commands cross-checked against Fortinet docs (C.06, `docs/reviews/fortinet_fortios.md`) |
 | `fortinet_fortios/fixtures/local_in_restricted.conf` | FortiOS 7.4.8, no trusted hosts; WAN HTTPS/SSH limited to the NOC by local-in policies (pass fixture for MGMT-WEB-ACL-01) | 69 | `1d6421afd6d0b7fd26fc4d5103bf2fc546df83a48c2e4de17f9c432fe886262f` | commands cross-checked against Fortinet docs (C.06) |
 | `fortinet_fortios/fixtures/local_in_ipv6_open.conf` | FortiOS 7.4.8, the same local-in policies, but HTTPS offered over IPv6 with no IPv6 local-in policy (fail fixture for MGMT-WEB-ACL-01) | 73 | `2f44e9367aafc9020a9092a5bbad98d5ab8c4da197d4fdbf6e5f01d3d59364fb` | commands cross-checked against Fortinet docs (C.06) |
-| `paloalto_panos/hardened.xml` | PAN-OS 11.1.2, edge firewall (XML running config) | 311 | `37927308ce4b29ba19ad2edbcd17e2904bf06a6e0a5bdeefa85aa73f62b475f2` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06, `docs/reviews/paloalto_panos.md`) |
-| `paloalto_panos/weak.xml` | PAN-OS 11.1.2, weak twin | 164 | `d7aad8397621ac42c0c313c3d53c939b85a04f89b41d7bd11b13bd092b1699eb` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06, `docs/reviews/paloalto_panos.md`) |
+| `paloalto_panos/hardened.xml` | PAN-OS 11.1.2, edge firewall (XML running config) | 332 | `c79f6fb5b4fae21ee65923120642d734f6c8d67979269222c00a1ee7936a4cf5` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06, `docs/reviews/paloalto_panos.md`) |
+| `paloalto_panos/weak.xml` | PAN-OS 11.1.2, weak twin | 185 | `845b94ce8f00e3c62b19f9b4435d7e0a1cf980a608d3e9a4d8fb9ca36bceb75f` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06, `docs/reviews/paloalto_panos.md`) |
 | `cisco_ios_xe/companions/show_version.txt` | Cisco IOS-XE 17.9, `show version` of EDGE-R1 (Catalyst 8000V) | 23 | `150349f7e26b4081074dab5fe6cb1b9b4830300e05000dee50d73be7e0763cf9` | the lines Kasauti reads cross-checked against Cisco's IOS XE 17 `show version` example (M2.05); other lines and all values illustrative |
 | `cisco_ios_xe/companions/show_inventory.txt` | Cisco IOS-XE 17.9, `show inventory` of EDGE-R1 | 9 | `d25302e65f9a7573949d4cc0a2cb03241b3cb5b7ed0cbda8d3f825407ac18c9a` | the lines Kasauti reads cross-checked against Cisco's `show inventory` command reference (M2.05); other lines and all values illustrative |
 | `juniper_junos/companions/show_version.txt` | Junos OS 23.4, `show version` of BR-SRX1 (SRX345) | 8 | `3a83ad455b1e92de8946e9bcc1167003139cff42eb0e365335d4d099ef4b344e` | the lines Kasauti reads cross-checked against Juniper's `show version` CLI reference (M2.05); other lines and all values illustrative |
@@ -67,15 +67,15 @@ PASS) and what the hardened twin does instead.
 | W8 | 21 | HTTP management server enabled | `no ip http server` |
 | W9 | 22 | HTTPS management server enabled without a restricting ACL | disabled |
 | W10 | 27 | Proxy ARP on the WAN interface | `no ip proxy-arp` |
-| W11 | 37–38, 24–27 | Edge ACL permits everything (`permit ip any any`) and isn't applied to the WAN interface | explicit allow list, final `deny ip any any log` |
-| W12 | 40 | No remote syslog host; no timestamps; no config-change logging | `logging host … transport tcp`, `archive log config` |
-| W13 | 42 | SNMP community `public` (RO), well-known string | SNMPv3 `priv` only |
-| W14 | 43 | SNMP community `private` with **RW** access | none |
-| W15 | 45 | NTP without authentication | `ntp authenticate` + trusted key |
+| W11 | 39–40, 24–27 | Edge ACL permits everything (`permit ip any any`) and isn't applied to the WAN interface | explicit allow list, final `deny ip any any log` |
+| W12 | 42 | No remote syslog host; no timestamps; no config-change logging | `logging host … transport tcp`, `archive log config` |
+| W13 | 44 | SNMP community `public` (RO), well-known string | SNMPv3 `priv` only |
+| W14 | 45 | SNMP community `private` with **RW** access | none |
+| W15 | 47 | NTP without authentication | `ntp authenticate` + trusted key |
 | W16 | absent | No `ip ssh version 2` (version left to default) | `ip ssh version 2` |
-| W17 | 47–48 | Console never times out (`exec-timeout 0 0`) | `exec-timeout 5 0` |
-| W18 | 49–53 | vty 0–4: never times out, type-7 line password, **Telnet allowed**, no access-class | SSH only, `access-class MGMT-ACL in`, 10-minute timeout |
-| W19 | 54–57 | vty 5–15: **Telnet only**, 30-minute timeout, no access-class | `transport input none` |
+| W17 | 49–50 | Console never times out (`exec-timeout 0 0`) | `exec-timeout 5 0` |
+| W18 | 51–55 | vty 0–4: never times out, type-7 line password, **Telnet allowed**, no access-class | SSH only, `access-class MGMT-ACL in`, 10-minute timeout |
+| W19 | 56–59 | vty 5–15: **Telnet only**, 30-minute timeout, no access-class | `transport input none` |
 | W20 | absent | No login banner | `banner login` |
 
 ### Planted weaknesses in `juniper_junos/weak.conf`

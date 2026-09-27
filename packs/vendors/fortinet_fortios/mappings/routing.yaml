@@ -1,0 +1,188 @@
+# Interface addresses and static routes, which role inference reads (TODO M2.22): an interface
+# with a public IPv4 address, or the one the default route leaves by, faces the outside.
+# A route that sets no `dst` is a default route (defaults.yaml: `route-dst-default`).
+# Seed mappings: reviewed in docs/reviews/fortinet_fortios.md.
+mappings:
+# --- Interface addresses: `set ip 198.51.100.2 255.255.255.252`; `config ipv6`
+#     `set ip6-address 2001:db8:100::2/64`
+- id: fortinet_fortios/interface-ip
+  vendor: fortinet_fortios
+  context: [config system interface, "edit <STR:i>"]
+  entity: {type: Interface, key: "{i}"}
+  match: "set ip <IP:a> <IP:mask>"
+  effect: {members: Interface.addresses, template: "{a} {mask}", transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+# `set ip 0.0.0.0 0.0.0.0` is FortiOS's "no address" (the attribute's default).
+- id: fortinet_fortios/interface-ip-none
+  vendor: fortinet_fortios
+  context: [config system interface, "edit <STR:i>"]
+  entity: {type: Interface, key: "{i}"}
+  match: "set ip 0.0.0.0 0.0.0.0"
+  effect: {assert: Interface.addresses, value: []}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/interface-ip6-address
+  vendor: fortinet_fortios
+  context: [config system interface, "edit <STR:i>", config ipv6]
+  entity: {type: Interface, key: "{i}"}
+  match: "set ip6-address <IP:a>"
+  effect: {members: Interface.addresses, from: a, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+# --- IPv4 static routes: config router static; dst (default 0.0.0.0 0.0.0.0), gateway,
+#     device ("Gateway out interface or tunnel"), status (default enable)
+- id: fortinet_fortios/static-route
+  vendor: fortinet_fortios
+  context: [config router static]
+  entity: {type: Route, key: "static:{n}"}
+  match: "edit <INT:n>"
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-dst
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set dst <IP:net> <IP:mask>"
+  effect: {set: Route.destination, template: "{net} {mask}", transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-dst-prefix
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set dst <IP:net>"
+  effect: {set: Route.destination, from: net, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-dstaddr
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set dstaddr <STR:name>"
+  effect: {unknown: Route.destination, why: "the destination is a firewall address object, not read here"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-internet-service
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set internet-service <INT:id>"
+  effect: {unknown: Route.destination, why: "the destination is an Internet service database entry, not read here"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-gateway
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set gateway <IP:hop>"
+  effect: {members: Route.next_hops, from: hop}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-device
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set device <STR:out>"
+  effect: {set: Route.interface, from: out}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-sdwan-zone
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set sdwan-zone <LIST:zones>"
+  effect: {unknown: Route.interface, why: "the route leaves by an SD-WAN zone, whose members aren't read here"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-blackhole
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set blackhole enable"
+  effect: {unknown: Route.interface, why: "a blackhole route drops its traffic instead of sending it out"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static-route-status
+  vendor: fortinet_fortios
+  context: [config router static, "edit <INT:n>"]
+  entity: {type: Route, key: "static:{n}"}
+  match: "set status <STR:s>"
+  effect: {set: Route.enabled, from: s, map: {enable: true, disable: false}}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+# --- IPv6 static routes: config router static6; dst (default ::/0), gateway, device, status
+- id: fortinet_fortios/static6-route
+  vendor: fortinet_fortios
+  context: [config router static6]
+  entity: {type: Route, key: "static6:{n}"}
+  match: "edit <INT:n>"
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static6-route-dst
+  vendor: fortinet_fortios
+  context: [config router static6, "edit <INT:n>"]
+  entity: {type: Route, key: "static6:{n}"}
+  match: "set dst <IP:net>"
+  effect: {set: Route.destination, from: net, transform: [cidr]}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static6-route-gateway
+  vendor: fortinet_fortios
+  context: [config router static6, "edit <INT:n>"]
+  entity: {type: Route, key: "static6:{n}"}
+  match: "set gateway <IP:hop>"
+  effect: {members: Route.next_hops, from: hop}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static6-route-device
+  vendor: fortinet_fortios
+  context: [config router static6, "edit <INT:n>"]
+  entity: {type: Route, key: "static6:{n}"}
+  match: "set device <STR:out>"
+  effect: {set: Route.interface, from: out}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static6-route-sdwan-zone
+  vendor: fortinet_fortios
+  context: [config router static6, "edit <INT:n>"]
+  entity: {type: Route, key: "static6:{n}"}
+  match: "set sdwan-zone <LIST:zones>"
+  effect: {unknown: Route.interface, why: "the route leaves by an SD-WAN zone, whose members aren't read here"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static6-route-blackhole
+  vendor: fortinet_fortios
+  context: [config router static6, "edit <INT:n>"]
+  entity: {type: Route, key: "static6:{n}"}
+  match: "set blackhole enable"
+  effect: {unknown: Route.interface, why: "a blackhole route drops its traffic instead of sending it out"}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: fortinet_fortios/static6-route-status
+  vendor: fortinet_fortios
+  context: [config router static6, "edit <INT:n>"]
+  entity: {type: Route, key: "static6:{n}"}
+  match: "set status <STR:s>"
+  effect: {set: Route.enabled, from: s, map: {enable: true, disable: false}}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

@@ -2,7 +2,7 @@
 # datasets/SOURCES.md, not engine output.
 description: Arista EOS 4.30 routed leaf with 20 planted weaknesses (E1-E20)
 input: authored/arista_eos/weak.cfg
-input_sha256: 05ec52c6ed8ac684a84da3c78620d89d6c883f8b153257f50adf1436aeacbe48
+input_sha256: 03c0b8d475f96aeec21a923089f88c271174c1a4bf9b8bfc6ea66f67fd0c6a1d
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:

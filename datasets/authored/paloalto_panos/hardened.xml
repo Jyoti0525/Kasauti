@@ -134,6 +134,27 @@
             </entry>
           </interface-management-profile>
         </profiles>
+        <virtual-router>
+          <entry name="default">
+            <interface>
+              <member>ethernet1/1</member>
+              <member>ethernet1/2</member>
+            </interface>
+            <routing-table>
+              <ip>
+                <static-route>
+                  <entry name="default-to-isp">
+                    <nexthop>
+                      <ip-address>198.51.100.1</ip-address>
+                    </nexthop>
+                    <interface>ethernet1/1</interface>
+                    <destination>0.0.0.0/0</destination>
+                  </entry>
+                </static-route>
+              </ip>
+            </routing-table>
+          </entry>
+        </virtual-router>
       </network>
       <deviceconfig>
         <system>

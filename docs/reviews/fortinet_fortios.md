@@ -179,3 +179,28 @@ FortiGate-VM64-KVM v6.4.2,build1723,200730 (GA)` (model and release), `Serial-Nu
 
 Fixed: the pack named this source `show version`, which isn't a FortiOS command, so the report
 told the user to upload the wrong thing. It now says `get system status`.
+
+## Addendum (v5.1.28, M2.22): addresses and routes
+
+Read on 2026-09-27. These lines feed role inference only (TODO M2.22): an interface with a
+public IPv4 address, or the one a default route leaves by, is inferred untrusted, which can
+raise a finding's severity by one level with the reason shown. No rule judges them, so none
+of them can turn a verdict into PASS. Where a line says the route leaves somewhere the pack
+doesn't follow, the route's exit is *unknown* and nothing is inferred from it.
+
+| Default | Value | Fortinet's words | Source |
+|---|---|---|---|
+| `route-dst-default` | `0.0.0.0/0`, for `static:` routes only (`key_prefix`) | `dst`: "Destination IP and mask for this route." Default `0.0.0.0 0.0.0.0` | [config router static, 7.4.7](https://docs.fortinet.com/document/fortigate/7.4.7/cli-reference/200835411/config-router-static) |
+| `route6-dst-default` | `::/0`, for `static6:` routes | `dst`: "Destination IPv6 prefix." Default `::/0` | [config router static6, 7.4.0](https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference/525620/config-router-static6) |
+| `route-enabled` | true | `status`: "Enable/disable this static route." Default enable (both tables) | both pages |
+
+| Mappings | What they read | Source |
+|---|---|---|
+| `interface-ip`, `-ip-none`, `-ip6-address` | `set ip 198.51.100.2 255.255.255.252` (→ `198.51.100.2/30`); `set ip 0.0.0.0 0.0.0.0` is the attribute's default, no address; `config ipv6` `set ip6-address …/64` | [config system interface](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/317104469/config-system-interface) |
+| `static-route*`, `static6-route*` | entries keyed `static:<id>` / `static6:<id>`; `dst`, `gateway` ("Gateway IP for this route"), `device` ("Gateway out interface or tunnel"), `status` | the two route pages above |
+| `…-dstaddr`, `…-internet-service` | a destination named by an address object or an Internet service entry: *unknown*, so the dst default can't make it a default route | [config router static, 7.4.7](https://docs.fortinet.com/document/fortigate/7.4.7/cli-reference/200835411/config-router-static) |
+| `…-sdwan-zone`, `…-blackhole` | the route leaves by an SD-WAN zone, or drops its traffic: its exit is *unknown* | same, and static6 |
+
+The authored configs gained `config router static` `edit 1` `set gateway 198.51.100.1` (weak:
+`.5`) `set device "wan1"`, which by the quoted default is a default route; every verdict is
+unchanged.

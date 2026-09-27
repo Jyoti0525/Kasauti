@@ -496,3 +496,32 @@ defaults:
       applied, and subsequent rules are not evaluated." Policies are reordered in the list, so
       the policy ID is not the order.
       https://community.fortinet.com/t5/FortiGate/Technical-Tip-How-policy-order-works-on-FortiGate/ta-p/207381
+
+  # --- static routes (role inference, TODO M2.22) ---------------------------------------------
+  - id: route-dst-default
+    attr: Route.destination
+    key_prefix: "static:"
+    value: 0.0.0.0/0
+    source: vendor_doc
+    reference: >-
+      config router static, dst: "Destination IP and mask for this route." Default
+      0.0.0.0 0.0.0.0, so a route that sets no dst is a default route.
+      https://docs.fortinet.com/document/fortigate/7.4.7/cli-reference/200835411/config-router-static
+
+  - id: route6-dst-default
+    attr: Route.destination
+    key_prefix: "static6:"
+    value: ::/0
+    source: vendor_doc
+    reference: >-
+      config router static6, dst: "Destination IPv6 prefix." Default ::/0.
+      https://docs.fortinet.com/document/fortigate/7.4.0/cli-reference/525620/config-router-static6
+
+  - id: route-enabled
+    attr: Route.enabled
+    value: true
+    source: vendor_doc
+    reference: >-
+      config router static and config router static6, status: "Enable/disable this static
+      route." Default enable.
+      https://docs.fortinet.com/document/fortigate/7.4.7/cli-reference/200835411/config-router-static

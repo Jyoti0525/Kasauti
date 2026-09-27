@@ -1,0 +1,12 @@
+# Switch ports, which make a device a switch for role inference (TODO M2.22). Only the mode a
+# port states is read: `switchport mode access | trunk | dot1q-tunnel` (tap and tool ports
+# are left unknown).
+# Seed mappings: reviewed in docs/reviews/arista_eos.md.
+mappings:
+  - id: arista_eos/switchport-mode
+    vendor: arista_eos
+    context: ["interface <IFNAME:n>"]
+    entity: {type: L2Port, key: "{n}"}
+    match: "switchport mode <STR:m>"
+    effect: {set: L2Port.mode, from: m, map: {access: access, trunk: trunk, dot1q-tunnel: dot1q-tunnel}}
+    provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

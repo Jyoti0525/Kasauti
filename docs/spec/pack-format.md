@@ -76,7 +76,9 @@ Rules (checked when the pack loads and when the defaults are applied):
 - `entity_key` names one entity and creates it if the config never mentions it. Without it,
   the default fills the attribute on every existing entity of the type (or the singleton),
   except the keys listed in `except_keys` (FortiOS: the per-server NTP default doesn't
-  describe the implicit FortiGuard source, whose authentication Fortinet doesn't document).
+  describe the implicit FortiGuard source, whose authentication Fortinet doesn't document),
+  or only the entities whose key starts with `key_prefix` (FortiOS: IPv4 routes, `static:…`,
+  default to `0.0.0.0/0`, IPv6 routes, `static6:…`, to `::/0`).
 - A default only fills an **absent** fact: never an explicit one, never an unknown one.
 - If the device's OS version is unknown, only defaults scoped `*` apply.
 - If two entries for the same target apply with different values, neither is used and the

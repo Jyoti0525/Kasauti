@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "3a55dc4d554839b6246cbe20",
+  "audit_id": "f8299744ebbb6c9522513252",
   "input": {
     "file": "weak.conf",
-    "sha256": "f48beafafa88a1d91043583e0a4acad920cb676aa4e51b50eb55685b49248d37",
+    "sha256": "9b22aa4dc497e98eb1805b20cfe6dada727b54333a33d2fc49f5c452f69e8c11",
     "encoding": "utf-8",
     "shape_family": "brace",
     "parse_warnings": []
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
-    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
+    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
+    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -724,8 +724,8 @@
       "evidence": [
         {
           "file": "weak.conf",
-          "line_start": 77,
-          "line_end": 77,
+          "line_start": 82,
+          "line_end": 82,
           "raw": "then accept",
           "mapping_id": "juniper_junos/term-then-accept",
           "mapping_version": 1,
@@ -1027,8 +1027,8 @@
       "reason": "No SNMP community is well known or writable: is violated for the device.",
       "actual": [
         "snmp.weak_community_present = true",
-        "SnmpCommunity[community-68].is_well_known = true",
-        "SnmpCommunity[community-69].access = rw"
+        "SnmpCommunity[community-73].is_well_known = true",
+        "SnmpCommunity[community-74].access = rw"
       ],
       "defaults_used": [],
       "evidence": [
@@ -1045,8 +1045,8 @@
         },
         {
           "file": "weak.conf",
-          "line_start": 69,
-          "line_end": 69,
+          "line_start": 74,
+          "line_end": 74,
           "raw": "community ****",
           "mapping_id": "juniper_junos/snmp-community",
           "mapping_version": 1,
@@ -1056,8 +1056,8 @@
         },
         {
           "file": "weak.conf",
-          "line_start": 70,
-          "line_end": 70,
+          "line_start": 75,
+          "line_end": 75,
           "raw": "authorization read-write",
           "mapping_id": "juniper_junos/snmp-community-authorization",
           "mapping_version": 1,
@@ -1167,11 +1167,11 @@
     }
   ],
   "assurance": {
-    "statements": 55,
-    "understood": 25,
-    "unmapped": 30,
+    "statements": 58,
+    "understood": 29,
+    "unmapped": 29,
     "near_miss": 0,
-    "understood_pct": 45.5,
+    "understood_pct": 50.0,
     "unmapped_patterns": [
       {
         "pattern_key": "family inet",
@@ -1184,12 +1184,6 @@
         "count": 3,
         "first_line": 40,
         "example": "ge-0/0/0"
-      },
-      {
-        "pattern_key": "address <IP>",
-        "count": 3,
-        "first_line": 45,
-        "example": "address 198.51.100.2/30"
       },
       {
         "pattern_key": "interfaces",
@@ -1276,33 +1270,45 @@
         "example": "filter"
       },
       {
-        "pattern_key": "snmp",
+        "pattern_key": "routing-options",
         "count": 1,
         "first_line": 68,
+        "example": "routing-options"
+      },
+      {
+        "pattern_key": "static",
+        "count": 1,
+        "first_line": 69,
+        "example": "static"
+      },
+      {
+        "pattern_key": "snmp",
+        "count": 1,
+        "first_line": 73,
         "example": "snmp"
       },
       {
         "pattern_key": "firewall",
         "count": 1,
-        "first_line": 73,
+        "first_line": 78,
         "example": "firewall"
       },
       {
         "pattern_key": "security",
         "count": 1,
-        "first_line": 82,
+        "first_line": 87,
         "example": "security"
       },
       {
         "pattern_key": "zones",
         "count": 1,
-        "first_line": 83,
+        "first_line": 88,
         "example": "zones"
       },
       {
         "pattern_key": "security-zone trust",
         "count": 1,
-        "first_line": 84,
+        "first_line": 89,
         "example": "security-zone trust"
       }
     ],
@@ -1386,6 +1392,13 @@
         "facts": 1
       },
       {
+        "mapping": "juniper_junos/static-route-next-hop@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
         "mapping": "juniper_junos/term-then-accept@1",
         "approved_by": [
           "maintainer"
@@ -1405,6 +1418,13 @@
           "maintainer"
         ],
         "facts": 6
+      },
+      {
+        "mapping": "juniper_junos/unit-inet-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 7
       },
       {
         "mapping": "juniper_junos/unit-proxy-arp@1",
@@ -1457,7 +1477,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.9",
+    "sbm_version": "0.10",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1529,8 +1549,8 @@
           },
           {
             "file": "weak.conf",
-            "line_start": 84,
-            "line_end": 84,
+            "line_start": 89,
+            "line_end": 89,
             "raw": "security-zone trust {",
             "mapping_id": null,
             "mapping_version": null,
@@ -1590,8 +1610,8 @@
           },
           {
             "file": "weak.conf",
-            "line_start": 84,
-            "line_end": 84,
+            "line_start": 89,
+            "line_end": 89,
             "raw": "security-zone trust {",
             "mapping_id": null,
             "mapping_version": null,
@@ -1652,8 +1672,8 @@
           "evidence": [
             {
               "file": "weak.conf",
-              "line_start": 76,
-              "line_end": 76,
+              "line_start": 81,
+              "line_end": 81,
               "raw": "term ANY",
               "mapping_id": "juniper_junos/filter-term",
               "mapping_version": 1,
@@ -1706,8 +1726,8 @@
           "evidence": [
             {
               "file": "weak.conf",
-              "line_start": 77,
-              "line_end": 77,
+              "line_start": 82,
+              "line_end": 82,
               "raw": "then accept",
               "mapping_id": "juniper_junos/term-then-accept",
               "mapping_version": 1,
@@ -1872,6 +1892,73 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "198.51.100.2/30"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 45,
+              "line_end": 45,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 45,
+              "line_end": 45,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 45,
+              "line_end": 45,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "weak.conf",
+              "line_start": 70,
+              "line_end": 70,
+              "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
+              "mapping_id": "juniper_junos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -1902,8 +1989,8 @@
           "evidence": [
             {
               "file": "weak.conf",
-              "line_start": 86,
-              "line_end": 86,
+              "line_start": 91,
+              "line_end": 91,
               "raw": "ge-0/0/1.0",
               "mapping_id": "juniper_junos/zone-interface",
               "mapping_version": 1,
@@ -1963,6 +2050,50 @@
           "default_source": null
         },
         "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.20.20.1/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 53,
+              "line_end": 53,
+              "raw": "address 10.20.20.1/24",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 53,
+              "line_end": 53,
+              "raw": "address 10.20.20.1/24",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2048,6 +2179,50 @@
           "default_source": null
         },
         "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.20.255.1/32"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 63,
+              "line_end": 63,
+              "raw": "address 10.20.255.1/32",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 63,
+              "line_end": 63,
+              "raw": "address 10.20.255.1/32",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2712,8 +2887,8 @@
           "evidence": [
             {
               "file": "weak.conf",
-              "line_start": 75,
-              "line_end": 75,
+              "line_start": 80,
+              "line_end": 80,
               "raw": "filter ALLOW-ALL",
               "mapping_id": "juniper_junos/filter-inet",
               "mapping_version": 1,
@@ -2922,6 +3097,61 @@
         }
       },
       {
+        "key": "0.0.0.0/0",
+        "evidence": [],
+        "type": "Route",
+        "destination": {
+          "value": "0.0.0.0/0",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 70,
+              "line_end": 70,
+              "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
+              "mapping_id": "juniper_junos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "next_hops": {
+          "value": [
+            "198.51.100.1"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 70,
+              "line_end": 70,
+              "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
+              "mapping_id": "juniper_junos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "interface": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
         "key": "ALLOW-ALL",
         "evidence": [],
         "type": "Ruleset",
@@ -2957,7 +3187,7 @@
         }
       },
       {
-        "key": "community-68",
+        "key": "community-73",
         "evidence": [],
         "type": "SnmpCommunity",
         "access": {
@@ -2978,8 +3208,8 @@
           "evidence": [
             {
               "file": "weak.conf",
-              "line_start": 69,
-              "line_end": 69,
+              "line_start": 74,
+              "line_end": 74,
               "raw": "community ****",
               "mapping_id": "juniper_junos/snmp-community",
               "mapping_version": 1,
@@ -2992,7 +3222,7 @@
         }
       },
       {
-        "key": "community-69",
+        "key": "community-74",
         "evidence": [],
         "type": "SnmpCommunity",
         "access": {
@@ -3001,8 +3231,8 @@
           "evidence": [
             {
               "file": "weak.conf",
-              "line_start": 70,
-              "line_end": 70,
+              "line_start": 75,
+              "line_end": 75,
               "raw": "authorization read-write",
               "mapping_id": "juniper_junos/snmp-community-authorization",
               "mapping_version": 1,
@@ -3092,8 +3322,8 @@
         "evidence": [
           {
             "file": "weak.conf",
-            "line_start": 77,
-            "line_end": 77,
+            "line_start": 82,
+            "line_end": 82,
             "raw": "then accept",
             "mapping_id": "juniper_junos/term-then-accept",
             "mapping_version": 1,
@@ -3200,8 +3430,8 @@
         "evidence": [
           {
             "file": "weak.conf",
-            "line_start": 69,
-            "line_end": 69,
+            "line_start": 74,
+            "line_end": 74,
             "raw": "community ****",
             "mapping_id": "juniper_junos/snmp-community",
             "mapping_version": 1,
@@ -3211,8 +3441,8 @@
           },
           {
             "file": "weak.conf",
-            "line_start": 70,
-            "line_end": 70,
+            "line_start": 75,
+            "line_end": 75,
             "raw": "authorization read-write",
             "mapping_id": "juniper_junos/snmp-community-authorization",
             "mapping_version": 1,

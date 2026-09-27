@@ -34,7 +34,7 @@ def test_weak_config_fails_every_rule_with_its_lines(kb: KnowledgeBase) -> None:
     assert set(statuses.values()) == {Status.FAIL}
     telnet = next(f for f in result.findings if f.rule_id == "MGMT-TELNET-01")
     # The vty lines that allow Telnet, plus the WAN interface that makes it Critical (§12.7).
-    assert {49, 53, 54, 57} <= {e.line_start for e in telnet.evidence}
+    assert {51, 55, 56, 59} <= {e.line_start for e in telnet.evidence}
     assert telnet.severity == "critical"
     assert telnet.severity_reason is not None
     assert telnet.severity_reason.startswith("High (base) → Critical")

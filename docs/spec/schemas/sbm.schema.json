@@ -772,7 +772,25 @@
     "Interface": {
       "additionalProperties": false,
       "properties": {
+        "addresses": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
         "admin_up": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "default_route": {
           "$ref": "#/$defs/Fact_bool_",
           "default": {
             "default_source": null,
@@ -858,6 +876,15 @@
           }
         },
         "proxy_arp": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "public_address": {
           "$ref": "#/$defs/Fact_bool_",
           "default": {
             "default_source": null,
@@ -1641,6 +1668,72 @@
       "title": "Reference",
       "type": "object"
     },
+    "Route": {
+      "additionalProperties": false,
+      "description": "A static route (0.10). ``key`` is how the configuration names it: the route as\nwritten (Cisco, EOS, Junos), its entry ID (FortiOS ``static:3``, ``static6:1``) or name\n(PAN-OS).",
+      "properties": {
+        "destination": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "enabled": {
+          "$ref": "#/$defs/Fact_bool_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "interface": {
+          "$ref": "#/$defs/Fact_str_",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "next_hops": {
+          "$ref": "#/$defs/Fact_Annotated_frozenset_str___PlainSerializer__",
+          "default": {
+            "default_source": null,
+            "evidence": [],
+            "state": "absent",
+            "value": null
+          }
+        },
+        "type": {
+          "const": "Route",
+          "default": "Route",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Route",
+      "type": "object"
+    },
     "RoutingAuth": {
       "additionalProperties": false,
       "description": "``key`` is ``<protocol>:<scope>``, e.g. ``ospf:area 0`` or ``bgp:neighbor 192.0.2.1``.",
@@ -2069,6 +2162,7 @@
             "ObjectDef": "#/$defs/ObjectDef",
             "PasswordPolicy": "#/$defs/PasswordPolicy",
             "Reference": "#/$defs/Reference",
+            "Route": "#/$defs/Route",
             "RoutingAuth": "#/$defs/RoutingAuth",
             "Ruleset": "#/$defs/Ruleset",
             "SnmpCommunity": "#/$defs/SnmpCommunity",
@@ -2151,6 +2245,9 @@
           },
           {
             "$ref": "#/$defs/Tunnel"
+          },
+          {
+            "$ref": "#/$defs/Route"
           }
         ]
       },
@@ -2165,7 +2262,7 @@
       "type": "object"
     },
     "sbm_version": {
-      "default": "0.9",
+      "default": "0.10",
       "title": "Sbm Version",
       "type": "string"
     },

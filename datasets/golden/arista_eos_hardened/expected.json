@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "35dab1f10f10a5a44be37239",
+  "audit_id": "d6f9f9a3d0be3b2017c313ad",
   "input": {
     "file": "hardened.cfg",
-    "sha256": "d6372eb5f4730eabf7b084a54cb1601d99d9eca857b6e04137c515ad021f8cd1",
+    "sha256": "42ba3c5feff684d9df92cc813e31b48dabc53071f06d828fddab8f9f85746568",
     "encoding": "utf-8",
     "shape_family": "indent",
     "parse_warnings": []
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
-    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
+    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
+    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -939,8 +939,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 66,
-          "line_end": 68,
+          "line_start": 68,
+          "line_end": 70,
           "raw": "banner login",
           "mapping_id": "arista_eos/banner",
           "mapping_version": 1,
@@ -981,8 +981,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 59,
-          "line_end": 59,
+          "line_start": 61,
+          "line_end": 61,
           "raw": "management console",
           "mapping_id": "arista_eos/management-console",
           "mapping_version": 1,
@@ -992,8 +992,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 60,
-          "line_end": 60,
+          "line_start": 62,
+          "line_end": 62,
           "raw": "idle-timeout 5",
           "mapping_id": "arista_eos/console-idle-timeout",
           "mapping_version": 1,
@@ -1018,8 +1018,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 62,
-          "line_end": 62,
+          "line_start": 64,
+          "line_end": 64,
           "raw": "management ssh",
           "mapping_id": "arista_eos/management-ssh",
           "mapping_version": 1,
@@ -1029,8 +1029,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 64,
-          "line_end": 64,
+          "line_start": 66,
+          "line_end": 66,
           "raw": "idle-timeout 10",
           "mapping_id": "arista_eos/ssh-idle-timeout",
           "mapping_version": 1,
@@ -1109,8 +1109,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 59,
-          "line_end": 59,
+          "line_start": 61,
+          "line_end": 61,
           "raw": "management console",
           "mapping_id": "arista_eos/management-console",
           "mapping_version": 1,
@@ -1120,8 +1120,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 62,
-          "line_end": 62,
+          "line_start": 64,
+          "line_end": 64,
           "raw": "management ssh",
           "mapping_id": "arista_eos/management-ssh",
           "mapping_version": 1,
@@ -1146,8 +1146,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 62,
-          "line_end": 62,
+          "line_start": 64,
+          "line_end": 64,
           "raw": "management ssh",
           "mapping_id": "arista_eos/management-ssh",
           "mapping_version": 1,
@@ -1157,8 +1157,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 63,
-          "line_end": 63,
+          "line_start": 65,
+          "line_end": 65,
           "raw": "ip access-group MGMT-ACL in",
           "mapping_id": "arista_eos/ssh-access-group",
           "mapping_version": 1,
@@ -1206,8 +1206,8 @@
         },
         {
           "file": "hardened.cfg",
-          "line_start": 63,
-          "line_end": 63,
+          "line_start": 65,
+          "line_end": 65,
           "raw": "ip access-group MGMT-ACL in",
           "mapping_id": "arista_eos/ssh-access-group",
           "mapping_version": 1,
@@ -1292,8 +1292,8 @@
       "evidence": [
         {
           "file": "hardened.cfg",
-          "line_start": 63,
-          "line_end": 63,
+          "line_start": 65,
+          "line_end": 65,
           "raw": "ip access-group MGMT-ACL in",
           "mapping_id": "arista_eos/ssh-access-group",
           "mapping_version": 1,
@@ -1463,18 +1463,12 @@
     }
   ],
   "assurance": {
-    "statements": 43,
-    "understood": 32,
-    "unmapped": 12,
+    "statements": 44,
+    "understood": 36,
+    "unmapped": 9,
     "near_miss": 0,
-    "understood_pct": 74.4,
+    "understood_pct": 81.8,
     "unmapped_patterns": [
-      {
-        "pattern_key": "ip address <IP>",
-        "count": 3,
-        "first_line": 39,
-        "example": "ip address 198.51.100.2/30"
-      },
       {
         "pattern_key": "no switchport",
         "count": 2,
@@ -1618,6 +1612,20 @@
         "facts": 3
       },
       {
+        "mapping": "arista_eos/interface-ip-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 7
+      },
+      {
+        "mapping": "arista_eos/ip-route-via-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
         "mapping": "arista_eos/lockout@1",
         "approved_by": [
           "maintainer"
@@ -1746,7 +1754,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.9",
+    "sbm_version": "0.10",
     "device": {
       "key": "device",
       "evidence": [],
@@ -2053,8 +2061,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 66,
-            "line_end": 68,
+            "line_start": 68,
+            "line_end": 70,
             "raw": "banner login",
             "mapping_id": "arista_eos/banner",
             "mapping_version": 1,
@@ -2070,8 +2078,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 66,
-              "line_end": 68,
+              "line_start": 68,
+              "line_end": 70,
               "raw": "banner login",
               "mapping_id": "arista_eos/banner",
               "mapping_version": 1,
@@ -2900,6 +2908,73 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "198.51.100.2/30"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 39,
+              "line_end": 39,
+              "raw": "ip address 198.51.100.2/30",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 39,
+              "line_end": 39,
+              "raw": "ip address 198.51.100.2/30",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 39,
+              "line_end": 39,
+              "raw": "ip address 198.51.100.2/30",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.cfg",
+              "line_start": 59,
+              "line_end": 59,
+              "raw": "ip route 0.0.0.0/0 198.51.100.1 name ISP",
+              "mapping_id": "arista_eos/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -2995,6 +3070,50 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.20.0.1/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 45,
+              "line_end": 45,
+              "raw": "ip address 10.20.0.1/24",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 45,
+              "line_end": 45,
+              "raw": "ip address 10.20.0.1/24",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
         }
       },
       {
@@ -3086,6 +3205,50 @@
           "default_source": null
         },
         "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.30.10.2/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 49,
+              "line_end": 49,
+              "raw": "ip address 10.30.10.2/24",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 49,
+              "line_end": 49,
+              "raw": "ip address 10.30.10.2/24",
+              "mapping_id": "arista_eos/interface-ip-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3792,8 +3955,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 59,
-            "line_end": 59,
+            "line_start": 61,
+            "line_end": 61,
             "raw": "management console",
             "mapping_id": "arista_eos/management-console",
             "mapping_version": 1,
@@ -3809,8 +3972,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 59,
-              "line_end": 59,
+              "line_start": 61,
+              "line_end": 61,
               "raw": "management console",
               "mapping_id": "arista_eos/management-console",
               "mapping_version": 1,
@@ -3845,8 +4008,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 60,
-              "line_end": 60,
+              "line_start": 62,
+              "line_end": 62,
               "raw": "idle-timeout 5",
               "mapping_id": "arista_eos/console-idle-timeout",
               "mapping_version": 1,
@@ -3875,8 +4038,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 62,
-            "line_end": 62,
+            "line_start": 64,
+            "line_end": 64,
             "raw": "management ssh",
             "mapping_id": "arista_eos/management-ssh",
             "mapping_version": 1,
@@ -3892,8 +4055,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 62,
-              "line_end": 62,
+              "line_start": 64,
+              "line_end": 64,
               "raw": "management ssh",
               "mapping_id": "arista_eos/management-ssh",
               "mapping_version": 1,
@@ -3918,8 +4081,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 62,
-              "line_end": 62,
+              "line_start": 64,
+              "line_end": 64,
               "raw": "management ssh",
               "mapping_id": "arista_eos/management-ssh",
               "mapping_version": 1,
@@ -3936,8 +4099,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 63,
-              "line_end": 63,
+              "line_start": 65,
+              "line_end": 65,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -3954,8 +4117,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 64,
-              "line_end": 64,
+              "line_start": 66,
+              "line_end": 66,
               "raw": "idle-timeout 10",
               "mapping_id": "arista_eos/ssh-idle-timeout",
               "mapping_version": 1,
@@ -4513,8 +4676,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 63,
-            "line_end": 63,
+            "line_start": 65,
+            "line_end": 65,
             "raw": "ip access-group MGMT-ACL in",
             "mapping_id": "arista_eos/ssh-access-group",
             "mapping_version": 1,
@@ -4530,8 +4693,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 63,
-              "line_end": 63,
+              "line_start": 65,
+              "line_end": 65,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -4548,8 +4711,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 63,
-              "line_end": 63,
+              "line_start": 65,
+              "line_end": 65,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -4566,8 +4729,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 63,
-              "line_end": 63,
+              "line_start": 65,
+              "line_end": 65,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -4584,8 +4747,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 63,
-              "line_end": 63,
+              "line_start": 65,
+              "line_end": 65,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -4602,8 +4765,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 63,
-              "line_end": 63,
+              "line_start": 65,
+              "line_end": 65,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -4620,8 +4783,8 @@
           "evidence": [
             {
               "file": "hardened.cfg",
-              "line_start": 63,
-              "line_end": 63,
+              "line_start": 65,
+              "line_end": 65,
               "raw": "ip access-group MGMT-ACL in",
               "mapping_id": "arista_eos/ssh-access-group",
               "mapping_version": 1,
@@ -4659,6 +4822,73 @@
               ]
             }
           ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "0.0.0.0/0 198.51.100.1",
+        "evidence": [
+          {
+            "file": "hardened.cfg",
+            "line_start": 59,
+            "line_end": 59,
+            "raw": "ip route 0.0.0.0/0 198.51.100.1 name ISP",
+            "mapping_id": "arista_eos/ip-route-via-address",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Route",
+        "destination": {
+          "value": "0.0.0.0/0",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 59,
+              "line_end": 59,
+              "raw": "ip route 0.0.0.0/0 198.51.100.1 name ISP",
+              "mapping_id": "arista_eos/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "next_hops": {
+          "value": [
+            "198.51.100.1"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.cfg",
+              "line_start": 59,
+              "line_end": 59,
+              "raw": "ip route 0.0.0.0/0 198.51.100.1 name ISP",
+              "mapping_id": "arista_eos/ip-route-via-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "interface": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -4954,8 +5184,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 66,
-            "line_end": 68,
+            "line_start": 68,
+            "line_end": 70,
             "raw": "banner login",
             "mapping_id": "arista_eos/banner",
             "mapping_version": 1,
@@ -4972,8 +5202,8 @@
         "evidence": [
           {
             "file": "hardened.cfg",
-            "line_start": 62,
-            "line_end": 62,
+            "line_start": 64,
+            "line_end": 64,
             "raw": "management ssh",
             "mapping_id": "arista_eos/management-ssh",
             "mapping_version": 1,
@@ -5029,8 +5259,8 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 59,
-            "line_end": 59,
+            "line_start": 61,
+            "line_end": 61,
             "raw": "management console",
             "mapping_id": "arista_eos/management-console",
             "mapping_version": 1,
@@ -5040,8 +5270,8 @@
           },
           {
             "file": "hardened.cfg",
-            "line_start": 62,
-            "line_end": 62,
+            "line_start": 64,
+            "line_end": 64,
             "raw": "management ssh",
             "mapping_id": "arista_eos/management-ssh",
             "mapping_version": 1,

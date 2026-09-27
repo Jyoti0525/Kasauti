@@ -1,9 +1,9 @@
 {
   "format_version": 1,
-  "audit_id": "ddcd75dab4a16af65ec8a8dd",
+  "audit_id": "2e9b9c37779bae29cb4fd9a5",
   "input": {
     "file": "hardened.conf",
-    "sha256": "b6a504c35d9066a1b0da376dc94e82b7878c9f502fee8b7c0f159f08cdcc7cc9",
+    "sha256": "05abcfd1240c747141e1677c8e61c5bfb91db119abb34dbc269dd3f759454191",
     "encoding": "utf-8",
     "shape_family": "brace",
     "parse_warnings": []
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "7adb5a9c9afea1d2e2d53f72c9da39fc9a3576a9eb66dddf32dd69a320b2bf8f",
-    "ruleset_version": "67846c7dfe16c20a0c9ce75c1942464b3586f135a776b4ffa762a0502762a8e5",
+    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
+    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -769,8 +769,8 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 117,
-          "line_end": 117,
+          "line_start": 122,
+          "line_end": 122,
           "raw": "10.20.10.0/24",
           "mapping_id": "juniper_junos/term-source-address",
           "mapping_version": 1,
@@ -780,8 +780,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 119,
-          "line_end": 119,
+          "line_start": 124,
+          "line_end": 124,
           "raw": "protocol tcp",
           "mapping_id": "juniper_junos/term-protocol",
           "mapping_version": 1,
@@ -791,8 +791,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 127,
-          "line_end": 127,
+          "line_start": 132,
+          "line_end": 132,
           "raw": "10.20.10.70/32",
           "mapping_id": "juniper_junos/term-source-address",
           "mapping_version": 1,
@@ -802,8 +802,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 129,
-          "line_end": 129,
+          "line_start": 134,
+          "line_end": 134,
           "raw": "protocol udp",
           "mapping_id": "juniper_junos/term-protocol",
           "mapping_version": 1,
@@ -813,8 +813,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 137,
-          "line_end": 137,
+          "line_start": 142,
+          "line_end": 142,
           "raw": "discard",
           "mapping_id": "juniper_junos/term-then-block-discard",
           "mapping_version": 1,
@@ -839,8 +839,8 @@
       "evidence": [
         {
           "file": "hardened.conf",
-          "line_start": 147,
-          "line_end": 147,
+          "line_start": 152,
+          "line_end": 152,
           "raw": "ge-0/0/0.0",
           "mapping_id": "inference/interface.role.untrusted_by_zone",
           "mapping_version": 1,
@@ -850,8 +850,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 147,
-          "line_end": 147,
+          "line_start": 152,
+          "line_end": 152,
           "raw": "ge-0/0/0.0",
           "mapping_id": "juniper_junos/zone-interface",
           "mapping_version": 1,
@@ -1066,8 +1066,8 @@
         },
         {
           "file": "hardened.conf",
-          "line_start": 155,
-          "line_end": 155,
+          "line_start": 160,
+          "line_end": 160,
           "raw": "ssh",
           "mapping_id": "juniper_junos/zone-host-inbound-service",
           "mapping_version": 1,
@@ -1259,11 +1259,11 @@
     }
   ],
   "assurance": {
-    "statements": 105,
-    "understood": 42,
-    "unmapped": 63,
+    "statements": 108,
+    "understood": 46,
+    "unmapped": 62,
     "near_miss": 0,
-    "understood_pct": 40.0,
+    "understood_pct": 42.6,
     "unmapped_patterns": [
       {
         "pattern_key": "family inet",
@@ -1282,12 +1282,6 @@
         "count": 3,
         "first_line": 68,
         "example": "ge-0/0/0"
-      },
-      {
-        "pattern_key": "address <IP>",
-        "count": 3,
-        "first_line": 72,
-        "example": "address 198.51.100.2/30"
       },
       {
         "pattern_key": "any notice",
@@ -1310,13 +1304,13 @@
       {
         "pattern_key": "from",
         "count": 2,
-        "first_line": 115,
+        "first_line": 120,
         "example": "from"
       },
       {
         "pattern_key": "source-address",
         "count": 2,
-        "first_line": 116,
+        "first_line": 121,
         "example": "source-address"
       },
       {
@@ -1458,105 +1452,117 @@
         "example": "filter"
       },
       {
-        "pattern_key": "snmp",
+        "pattern_key": "routing-options",
         "count": 1,
         "first_line": 95,
+        "example": "routing-options"
+      },
+      {
+        "pattern_key": "static",
+        "count": 1,
+        "first_line": 96,
+        "example": "static"
+      },
+      {
+        "pattern_key": "snmp",
+        "count": 1,
+        "first_line": 100,
         "example": "snmp"
       },
       {
         "pattern_key": "v3",
         "count": 1,
-        "first_line": 96,
+        "first_line": 101,
         "example": "v3"
       },
       {
         "pattern_key": "usm",
         "count": 1,
-        "first_line": 97,
+        "first_line": 102,
         "example": "usm"
       },
       {
         "pattern_key": "local-engine",
         "count": 1,
-        "first_line": 98,
+        "first_line": 103,
         "example": "local-engine"
       },
       {
         "pattern_key": "user nmsuser",
         "count": 1,
-        "first_line": 99,
+        "first_line": 104,
         "example": "user nmsuser"
       },
       {
         "pattern_key": "authentication-sha",
         "count": 1,
-        "first_line": 100,
+        "first_line": 105,
         "example": "authentication-sha"
       },
       {
         "pattern_key": "authentication-key <STR>",
         "count": 1,
-        "first_line": 101,
+        "first_line": 106,
         "example": "authentication-key \"****\""
       },
       {
         "pattern_key": "privacy-aes128",
         "count": 1,
-        "first_line": 103,
+        "first_line": 108,
         "example": "privacy-aes128"
       },
       {
         "pattern_key": "privacy-key <STR>",
         "count": 1,
-        "first_line": 104,
+        "first_line": 109,
         "example": "privacy-key \"****\""
       },
       {
         "pattern_key": "firewall",
         "count": 1,
-        "first_line": 111,
+        "first_line": 116,
         "example": "firewall"
       },
       {
         "pattern_key": "then",
         "count": 1,
-        "first_line": 135,
+        "first_line": 140,
         "example": "then"
       },
       {
         "pattern_key": "security",
         "count": 1,
-        "first_line": 143,
+        "first_line": 148,
         "example": "security"
       },
       {
         "pattern_key": "zones",
         "count": 1,
-        "first_line": 144,
+        "first_line": 149,
         "example": "zones"
       },
       {
         "pattern_key": "security-zone untrust",
         "count": 1,
-        "first_line": 145,
+        "first_line": 150,
         "example": "security-zone untrust"
       },
       {
         "pattern_key": "security-zone trust",
         "count": 1,
-        "first_line": 150,
+        "first_line": 155,
         "example": "security-zone trust"
       },
       {
         "pattern_key": "host-inbound-traffic",
         "count": 1,
-        "first_line": 153,
+        "first_line": 158,
         "example": "host-inbound-traffic"
       },
       {
         "pattern_key": "system-services",
         "count": 1,
-        "first_line": 154,
+        "first_line": 159,
         "example": "system-services"
       }
     ],
@@ -1661,6 +1667,13 @@
         "facts": 1
       },
       {
+        "mapping": "juniper_junos/static-route-next-hop@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
         "mapping": "juniper_junos/syslog-file-interactive-commands@1",
         "approved_by": [
           "maintainer"
@@ -1738,6 +1751,13 @@
         "facts": 7
       },
       {
+        "mapping": "juniper_junos/unit-inet-address@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 7
+      },
+      {
         "mapping": "juniper_junos/user-class@1",
         "approved_by": [
           "maintainer"
@@ -1783,7 +1803,7 @@
     "mappings_skipped_for_version": []
   },
   "sbm": {
-    "sbm_version": "0.9",
+    "sbm_version": "0.10",
     "device": {
       "key": "device",
       "evidence": [],
@@ -1855,8 +1875,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 145,
-            "line_end": 145,
+            "line_start": 150,
+            "line_end": 150,
             "raw": "security-zone untrust {",
             "mapping_id": null,
             "mapping_version": null,
@@ -1916,8 +1936,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 145,
-            "line_end": 145,
+            "line_start": 150,
+            "line_end": 150,
             "raw": "security-zone untrust {",
             "mapping_id": null,
             "mapping_version": null,
@@ -2091,8 +2111,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 124,
-              "line_end": 124,
+              "line_start": 129,
+              "line_end": 129,
               "raw": "term ALLOW-NTP",
               "mapping_id": "juniper_junos/filter-term",
               "mapping_version": 1,
@@ -2123,8 +2143,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 127,
-              "line_end": 127,
+              "line_start": 132,
+              "line_end": 132,
               "raw": "10.20.10.70/32",
               "mapping_id": "juniper_junos/term-source-address",
               "mapping_version": 1,
@@ -2151,8 +2171,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 129,
-              "line_end": 129,
+              "line_start": 134,
+              "line_end": 134,
               "raw": "protocol udp",
               "mapping_id": "juniper_junos/term-protocol",
               "mapping_version": 1,
@@ -2169,8 +2189,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 132,
-              "line_end": 132,
+              "line_start": 137,
+              "line_end": 137,
               "raw": "then accept",
               "mapping_id": "juniper_junos/term-then-accept",
               "mapping_version": 1,
@@ -2229,8 +2249,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 130,
-              "line_end": 130,
+              "line_start": 135,
+              "line_end": 135,
               "raw": "port ntp",
               "mapping_id": "juniper_junos/term-port",
               "mapping_version": 1,
@@ -2252,8 +2272,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 114,
-              "line_end": 114,
+              "line_start": 119,
+              "line_end": 119,
               "raw": "term ALLOW-SSH-MGMT",
               "mapping_id": "juniper_junos/filter-term",
               "mapping_version": 1,
@@ -2284,8 +2304,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 117,
-              "line_end": 117,
+              "line_start": 122,
+              "line_end": 122,
               "raw": "10.20.10.0/24",
               "mapping_id": "juniper_junos/term-source-address",
               "mapping_version": 1,
@@ -2312,8 +2332,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 119,
-              "line_end": 119,
+              "line_start": 124,
+              "line_end": 124,
               "raw": "protocol tcp",
               "mapping_id": "juniper_junos/term-protocol",
               "mapping_version": 1,
@@ -2330,8 +2350,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 122,
-              "line_end": 122,
+              "line_start": 127,
+              "line_end": 127,
               "raw": "then accept",
               "mapping_id": "juniper_junos/term-then-accept",
               "mapping_version": 1,
@@ -2390,8 +2410,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 120,
-              "line_end": 120,
+              "line_start": 125,
+              "line_end": 125,
               "raw": "destination-port ssh",
               "mapping_id": "juniper_junos/term-destination-port",
               "mapping_version": 1,
@@ -2413,8 +2433,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 134,
-              "line_end": 134,
+              "line_start": 139,
+              "line_end": 139,
               "raw": "term DENY-REST",
               "mapping_id": "juniper_junos/filter-term",
               "mapping_version": 1,
@@ -2467,8 +2487,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 137,
-              "line_end": 137,
+              "line_start": 142,
+              "line_end": 142,
               "raw": "discard",
               "mapping_id": "juniper_junos/term-then-block-discard",
               "mapping_version": 1,
@@ -2544,8 +2564,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 147,
-              "line_end": 147,
+              "line_start": 152,
+              "line_end": 152,
               "raw": "ge-0/0/0.0",
               "mapping_id": "juniper_junos/zone-interface",
               "mapping_version": 1,
@@ -2562,8 +2582,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 147,
-              "line_end": 147,
+              "line_start": 152,
+              "line_end": 152,
               "raw": "ge-0/0/0.0",
               "mapping_id": "inference/interface.role.untrusted_by_zone",
               "mapping_version": 1,
@@ -2621,6 +2641,73 @@
           "state": "absent",
           "evidence": [],
           "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "198.51.100.2/30"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 72,
+              "line_end": 72,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 72,
+              "line_end": 72,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 72,
+              "line_end": 72,
+              "raw": "address 198.51.100.2/30",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            },
+            {
+              "file": "hardened.conf",
+              "line_start": 97,
+              "line_end": 97,
+              "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
+              "mapping_id": "juniper_junos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
         }
       },
       {
@@ -2639,8 +2726,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 152,
-              "line_end": 152,
+              "line_start": 157,
+              "line_end": 157,
               "raw": "ge-0/0/1.0",
               "mapping_id": "juniper_junos/zone-interface",
               "mapping_version": 1,
@@ -2671,8 +2758,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 155,
-              "line_end": 155,
+              "line_start": 160,
+              "line_end": 160,
               "raw": "ssh",
               "mapping_id": "juniper_junos/zone-host-inbound-service",
               "mapping_version": 1,
@@ -2714,6 +2801,50 @@
           "default_source": null
         },
         "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.20.20.1/24"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "address 10.20.20.1/24",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 80,
+              "line_end": 80,
+              "raw": "address 10.20.20.1/24",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -2799,6 +2930,50 @@
           "default_source": null
         },
         "filters_out": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "addresses": {
+          "value": [
+            "10.20.255.1/32"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 90,
+              "line_end": 90,
+              "raw": "address 10.20.255.1/32",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "public_address": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 90,
+              "line_end": 90,
+              "raw": "address 10.20.255.1/32",
+              "mapping_id": "juniper_junos/unit-inet-address",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "default_route": {
           "value": null,
           "state": "absent",
           "evidence": [],
@@ -3545,8 +3720,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 113,
-              "line_end": 113,
+              "line_start": 118,
+              "line_end": 118,
               "raw": "filter PROTECT-RE",
               "mapping_id": "juniper_junos/filter-inet",
               "mapping_version": 1,
@@ -3765,8 +3940,8 @@
           "evidence": [
             {
               "file": "hardened.conf",
-              "line_start": 134,
-              "line_end": 134,
+              "line_start": 139,
+              "line_end": 139,
               "raw": "term DENY-REST",
               "mapping_id": "juniper_junos/filter-term",
               "mapping_version": 1,
@@ -3776,8 +3951,8 @@
             },
             {
               "file": "hardened.conf",
-              "line_start": 137,
-              "line_end": 137,
+              "line_start": 142,
+              "line_end": 142,
               "raw": "discard",
               "mapping_id": "juniper_junos/term-then-block-discard",
               "mapping_version": 1,
@@ -3786,6 +3961,61 @@
               ]
             }
           ],
+          "default_source": null
+        }
+      },
+      {
+        "key": "0.0.0.0/0",
+        "evidence": [],
+        "type": "Route",
+        "destination": {
+          "value": "0.0.0.0/0",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 97,
+              "line_end": 97,
+              "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
+              "mapping_id": "juniper_junos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "next_hops": {
+          "value": [
+            "198.51.100.1"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 97,
+              "line_end": 97,
+              "raw": "route 0.0.0.0/0 next-hop 198.51.100.1",
+              "mapping_id": "juniper_junos/static-route-next-hop",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "interface": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
           "default_source": null
         }
       },
@@ -3937,8 +4167,8 @@
         "evidence": [
           {
             "file": "hardened.conf",
-            "line_start": 117,
-            "line_end": 117,
+            "line_start": 122,
+            "line_end": 122,
             "raw": "10.20.10.0/24",
             "mapping_id": "juniper_junos/term-source-address",
             "mapping_version": 1,
@@ -3948,8 +4178,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 119,
-            "line_end": 119,
+            "line_start": 124,
+            "line_end": 124,
             "raw": "protocol tcp",
             "mapping_id": "juniper_junos/term-protocol",
             "mapping_version": 1,
@@ -3959,8 +4189,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 127,
-            "line_end": 127,
+            "line_start": 132,
+            "line_end": 132,
             "raw": "10.20.10.70/32",
             "mapping_id": "juniper_junos/term-source-address",
             "mapping_version": 1,
@@ -3970,8 +4200,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 129,
-            "line_end": 129,
+            "line_start": 134,
+            "line_end": 134,
             "raw": "protocol udp",
             "mapping_id": "juniper_junos/term-protocol",
             "mapping_version": 1,
@@ -3981,8 +4211,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 137,
-            "line_end": 137,
+            "line_start": 142,
+            "line_end": 142,
             "raw": "discard",
             "mapping_id": "juniper_junos/term-then-block-discard",
             "mapping_version": 1,
@@ -4088,8 +4318,8 @@
           },
           {
             "file": "hardened.conf",
-            "line_start": 155,
-            "line_end": 155,
+            "line_start": 160,
+            "line_end": 160,
             "raw": "ssh",
             "mapping_id": "juniper_junos/zone-host-inbound-service",
             "mapping_version": 1,

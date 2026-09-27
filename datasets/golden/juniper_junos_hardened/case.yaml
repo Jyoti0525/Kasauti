@@ -2,7 +2,7 @@
 # datasets/SOURCES.md, not engine output.
 description: Junos OS 23.4 hardened branch SRX (twin of the weak case)
 input: authored/juniper_junos/hardened.conf
-input_sha256: b6a504c35d9066a1b0da376dc94e82b7878c9f502fee8b7c0f159f08cdcc7cc9
+input_sha256: 05abcfd1240c747141e1677c8e61c5bfb91db119abb34dbc269dd3f759454191
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:

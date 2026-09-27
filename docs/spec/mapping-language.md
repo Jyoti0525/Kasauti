@@ -102,7 +102,12 @@ captured by `match` or `context`.
 `{split: ","}`, `{prefix: {"$6$": sha512-crypt}}`: classify by the longest matching prefix, so
 a crypt hash gives its type and the hash itself is never kept; `{prepend: "tcp/"}`: fixed text
 in front of each value, so FortiOS `tcp-portrange 443` is `tcp/443` and can't be taken for a
-UDP port) → coercion to the attribute's type. For `set`, a word missing from `map` makes the
+UDP port; `cidr`: an address or prefix with its length written one way, `198.51.100.2/30`
+from `198.51.100.2/30` or `198.51.100.2 255.255.255.252`, IPv6 compressed in lower case; a
+bare address or a mask that isn't a contiguous netmask is unknown) → coercion to the
+attribute's type. A `members` item built from a `template` goes through its transforms too
+(Cisco `ip address {a} {mask}` → `cidr`), and its negation without values (`no ip address`)
+leaves the set explicitly empty. For `set`, a word missing from `map` makes the
 fact **unknown** (we saw the line but can't say what it means), unless `otherwise: <value>`
 gives the value for every unlisted word (`is_well_known`: listed strings → true, others → false).
 Anything else that can't be carried through (`invert` on a non-boolean, text for a number) is

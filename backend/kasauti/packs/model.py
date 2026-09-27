@@ -206,7 +206,9 @@ class DefaultEntry(_Strict):
       With ``entity_key`` it names one entity (``MgmtService`` ``telnet``) and materialises it
       if the config never mentions it; without, it fills that attribute on every entity of
       the type (or on the singleton), except those named in ``except_keys`` (a default for
-      FortiOS's configured NTP servers doesn't describe the implicit FortiGuard source).
+      FortiOS's configured NTP servers doesn't describe the implicit FortiGuard source), or
+      only those whose key starts with ``key_prefix`` (FortiOS's IPv4 routes, ``static:…``,
+      default to ``0.0.0.0/0`` and its IPv6 routes, ``static6:…``, to ``::/0``).
     * ``none_of``: the vendor ships *no* entities of this type (no SNMP communities until
       one is configured). Only this lets a rule treat "none seen" as "none exist".
     """
@@ -215,6 +217,7 @@ class DefaultEntry(_Strict):
     attr: AttrPath | None = None
     entity_key: str | None = None
     except_keys: tuple[str, ...] = ()
+    key_prefix: str | None = Field(default=None, min_length=1)
     value: Scalar | tuple[Scalar, ...] | None = None
     none_of: str | None = None
     os_versions: VersionRangeText = "*"
@@ -228,8 +231,15 @@ class DefaultEntry(_Strict):
         if (self.attr is None) == (self.none_of is None):
             raise ValueError("give exactly one of `attr` (with `value`) or `none_of`")
         if self.none_of is not None:
-            if self.value is not None or self.entity_key is not None or self.except_keys:
-                raise ValueError("`none_of` takes no `value`, `entity_key` or `except_keys`")
+            if (
+                self.value is not None
+                or self.entity_key is not None
+                or self.except_keys
+                or self.key_prefix is not None
+            ):
+                raise ValueError(
+                    "`none_of` takes no `value`, `entity_key`, `except_keys` or `key_prefix`"
+                )
             if self.none_of not in ENTITY_TYPES or self.none_of in SINGLETON_TYPES:
                 raise ValueError(f"none_of: {self.none_of!r} is not a multi-entity type")
             return self
@@ -239,10 +249,16 @@ class DefaultEntry(_Strict):
         kind = attribute_type(entity_type, attr)
         if kind is None or attr == "key":
             raise ValueError(f"{self.attr}: no such SBM attribute")
-        if entity_type in SINGLETON_TYPES and (self.entity_key is not None or self.except_keys):
-            raise ValueError(f"{entity_type} is a singleton; drop `entity_key`/`except_keys`")
-        if self.entity_key is not None and self.except_keys:
-            raise ValueError("`except_keys` applies only to a default for every entity")
+        narrowed = self.entity_key is not None or self.except_keys or self.key_prefix is not None
+        if entity_type in SINGLETON_TYPES and narrowed:
+            raise ValueError(
+                f"{entity_type} is a singleton; drop `entity_key`/`except_keys`/`key_prefix`"
+            )
+        if self.entity_key is not None and (self.except_keys or self.key_prefix is not None):
+            raise ValueError(
+                "`except_keys` and `key_prefix` narrow a default for every entity; "
+                "they don't go with `entity_key`"
+            )
         if not _value_fits(kind, self.value):
             raise ValueError(f"{self.attr} is {kind}-valued; {self.value!r} doesn't fit")
         return self

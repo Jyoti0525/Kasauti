@@ -1,4 +1,4 @@
-# Security Baseline Model (v0.9)
+# Security Baseline Model (v0.10)
 
 Implements PLAN §8 (requirement R-01). Source of truth: `backend/kasauti/sbm/`; JSON Schema:
 `schemas/sbm.schema.json`; OpenConfig alignment: `backend/kasauti/sbm/openconfig.yaml`.
@@ -19,7 +19,7 @@ The model enforces these combinations, so an impossible fact can't be constructe
 
 ## Entities
 
-Twenty-four entity types: the eighteen in PLAN §8.1 plus six additions it needs elsewhere:
+Twenty-five entity types: the eighteen in PLAN §8.1 plus seven additions it needs elsewhere:
 
 - `LoggingPolicy` (singleton) holds the device-wide logging flags §8.1 lists beside
   `LogTarget` (timestamps, admin_logged, config_change_logged). They describe the device,
@@ -47,6 +47,13 @@ Twenty-four entity types: the eighteen in PLAN §8.1 plus six additions it needs
   lines name their own login list (`MgmtSession.login_methods`, 0.9), it holds what every vty
   line's list has in common, a line naming none using the device default: a TACACS+ default
   doesn't help lines whose list is local.
+- `Route` (0.10, `key` = how the configuration names it: the route as written, a FortiOS
+  entry `static:3`, a PAN-OS name `ip:default-to-isp`): a static route's `destination`
+  (one form, `0.0.0.0/0`), `next_hops`, `interface` and `enabled`. Role inference needs it
+  to tell which interface the default route leaves by (PLAN §12.7), computed into
+  `Interface.default_route` beside `Interface.public_address` (an IPv4 address IANA's
+  special-purpose registry calls globally reachable). Both come from
+  `Interface.addresses`, written one way for every vendor (`198.51.100.2/30`).
 - `TimePolicy` (singleton, 0.2) holds `auth_enforced`: whether the device rejects time from
   unauthenticated sources (`ntp authenticate`; OpenConfig `enable-ntp-auth`).
   `TimeSource.authenticated` only says a key is configured for that server, which isn't
@@ -84,7 +91,7 @@ rely on (PLAN §3.1, principle 5).
 
 ## Versioning
 
-`sbm_version` is `"0.9"`. Loading a document with another version fails with a pointer to
+`sbm_version` is `"0.10"`. Loading a document with another version fails with a pointer to
 `kasauti.sbm.migrations`, which upgrades stored documents step by step (one pure function per
 version change, never edited after release). 0.1 → 0.2 adds the empty sets above; 0.2 → 0.3
 adds four optional attributes (`MgmtService.access_filter`, `Interface.description`,
@@ -106,7 +113,9 @@ some destinations by `iprange`/`fqdn`, so it doesn't cover all traffic); 0.8 →
 evaluation needs from FortiOS local-in policies), `MgmtService.port` (a filter naming ports is
 matched against it), `Interface.mgmt_protocols_v6` (FortiOS `ip6-allowaccess`),
 `Interface.mgmt_restricted` (the management protocols a device filter blocks for every
-unlisted source) and `MgmtSession.login_methods` (a Cisco vty line's own login list).
+unlisted source) and `MgmtSession.login_methods` (a Cisco vty line's own login list);
+0.9 → 0.10 adds the `Route` entity, `Interface.addresses`, `Interface.public_address` and
+`Interface.default_route` (role inference from addressing and routes, M2.22).
 Everything an older document says is kept (tested).
 
 ## OpenConfig alignment

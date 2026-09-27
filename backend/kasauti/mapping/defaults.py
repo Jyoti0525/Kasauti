@@ -33,7 +33,12 @@ def apply_defaults(
     for d in sorted(defaults, key=lambda d: d.id):
         scope = VersionRange.parse(d.os_versions)
         if scope.is_any or (os_version is not None and scope.contains(os_version)):
-            target = (f"none_of:{d.none_of}", None) if d.none_of else (str(d.attr), d.entity_key)
+            if d.none_of:
+                target: tuple[str, str | None] = (f"none_of:{d.none_of}", None)
+            elif d.key_prefix is not None:
+                target = (str(d.attr), f"{d.key_prefix}*")  # its own set of entities
+            else:
+                target = (str(d.attr), d.entity_key)
             groups[target].append(d)
 
     warnings: list[str] = []
@@ -68,6 +73,11 @@ def _attribute(builder: SbmBuilder, entry: DefaultEntry, source: str) -> None:
     elif entry.entity_key is not None:
         refs = [(entity_type, entry.entity_key)]
     else:
-        refs = [r for r in builder.of_type(entity_type) if r[1] not in entry.except_keys]
+        refs = [
+            r
+            for r in builder.of_type(entity_type)
+            if r[1] not in entry.except_keys
+            and (entry.key_prefix is None or r[1].startswith(entry.key_prefix))
+        ]
     for ref in refs:
         builder.entity(ref).fact(attr).default(value, source)

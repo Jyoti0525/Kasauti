@@ -2,7 +2,7 @@
 # weaknesses catalogued in datasets/SOURCES.md (W1-W20), not from engine output.
 description: Cisco IOS XE 17.9 edge router with 20 planted weaknesses
 input: authored/cisco_ios_xe/weak.cfg
-input_sha256: 11686e9d46d70ef7a8983b168ceecc8f86fa1112d40a098dd6e67abd6d891946
+input_sha256: ba77cc7a6b22126ec539f23cc647198f19b00583afcc4d7f22e191ec10e43937
 vendor: null            # must be recognised by fingerprint
 frameworks: [nist_800_53r5]
 expected_statuses:

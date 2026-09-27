@@ -1,7 +1,9 @@
 # SBM attribute -> OpenConfig path (PLAN §8.4).
 #
 # Paths were checked against openconfig/public release models (openconfig-system,
-# -system-terminal, -system-logging, -aaa, -platform, -acl, -interfaces; fetched 2026-09-26).
+# -system-terminal, -system-logging, -aaa, -platform, -acl, -interfaces; fetched 2026-09-26;
+# -if-ip 3.10.0 and -local-routing 4.1.0, whose static routes sit under network-instance,
+# fetched 2026-09-27).
 # Anything without a real OpenConfig equivalent is listed under `x-sbm` (our extension) instead
 # of being given an invented path. A test fails if any SBM attribute is in neither list.
 
@@ -34,6 +36,10 @@ openconfig:
   FilterRule.ruleset: /acl/acl-sets/acl-set/config/name
   Interface.filters_in: /acl/interfaces/interface/ingress-acl-sets
   Interface.filters_out: /acl/interfaces/interface/egress-acl-sets
+  Interface.addresses: /interfaces/interface/subinterfaces/subinterface/{ipv4|ipv6}/addresses/address/config/{ip|prefix-length}
+  Route.destination: /network-instances/network-instance/protocols/protocol/static-routes/static/config/prefix
+  Route.next_hops: /network-instances/network-instance/protocols/protocol/static-routes/static/next-hops/next-hop/config/next-hop
+  Route.interface: /network-instances/network-instance/protocols/protocol/static-routes/static/next-hops/next-hop/interface-ref/config/interface
 
 x-sbm:
   - Device.os_family
@@ -72,6 +78,8 @@ x-sbm:
   - MgmtSession.login_methods  # OC authentication-method is device-wide, not per line
   - Interface.mgmt_protocols_v6
   - Interface.mgmt_restricted  # computed by our first-match evaluation
+  - Interface.public_address  # computed from addresses and IANA's registry
+  - Interface.default_route  # computed from static routes
   - FilterRule.interfaces  # OC binds ACL sets to interfaces, not entries
   - FilterRule.negated
   - FilterRule.narrowed
@@ -124,3 +132,4 @@ x-sbm:
   - Tunnel.kind
   - Tunnel.peer
   - Tunnel.crypto_profile
+  - Route.enabled  # OC static routes have no on/off switch

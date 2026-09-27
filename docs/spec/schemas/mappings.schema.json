@@ -4,7 +4,7 @@
       "additionalProperties": false,
       "properties": {
         "assert": {
-          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "pattern": "^[A-Z][A-Za-z0-9]+\\.[a-z][a-z0-9_]*$",
           "title": "Assert",
           "type": "string"
         },
@@ -222,7 +222,7 @@
           "title": "Map"
         },
         "members": {
-          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "pattern": "^[A-Z][A-Za-z0-9]+\\.[a-z][a-z0-9_]*$",
           "title": "Members",
           "type": "string"
         },
@@ -246,7 +246,8 @@
                 "enum": [
                   "invert",
                   "lower",
-                  "upper"
+                  "upper",
+                  "cidr"
                 ],
                 "type": "string"
               },
@@ -375,7 +376,7 @@
           "title": "If Empty"
         },
         "ref": {
-          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "pattern": "^[A-Z][A-Za-z0-9]+\\.[a-z][a-z0-9_]*$",
           "title": "Ref",
           "type": "string"
         },
@@ -500,7 +501,7 @@
           "title": "Otherwise"
         },
         "set": {
-          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "pattern": "^[A-Z][A-Za-z0-9]+\\.[a-z][a-z0-9_]*$",
           "title": "Set",
           "type": "string"
         },
@@ -524,7 +525,8 @@
                 "enum": [
                   "invert",
                   "lower",
-                  "upper"
+                  "upper",
+                  "cidr"
                 ],
                 "type": "string"
               },
@@ -607,7 +609,7 @@
           "title": "From"
         },
         "unknown": {
-          "pattern": "^[A-Z][A-Za-z]+\\.[a-z][a-z0-9_]*$",
+          "pattern": "^[A-Z][A-Za-z0-9]+\\.[a-z][a-z0-9_]*$",
           "title": "Unknown",
           "type": "string"
         },

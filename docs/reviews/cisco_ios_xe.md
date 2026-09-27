@@ -165,3 +165,24 @@ Source: [IP Access List Overview, IOS XE 16.9](https://www.cisco.com/c/en/us/td/
   Commands](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/16-9/command_reference/b_169_9300_cr/interface_and_hardware_commands.html).
 - Not read: `Model Number :` and `System Serial Number :` in Catalyst `show version`. The
   pages checked cut their example short, so the format isn't confirmed ("no quote, no pattern").
+
+## Addendum (v5.1.28, M2.22): addresses, routes and switch ports
+
+Read on 2026-09-27. These lines feed role inference only (TODO M2.22): an interface with a
+public IPv4 address, or the one a default route leaves by, is inferred untrusted, which can
+raise a finding's severity by one level with the reason shown. No rule judges them, so none
+of them can turn a verdict into PASS. Where a line says the route leaves somewhere the pack
+doesn't follow, the route's exit is *unknown* and nothing is inferred from it.
+
+| Mappings | Syntax quoted | Source |
+|---|---|---|
+| `interface-ip-address` | "ip address *ip-address mask*"; "ip address *ip-address mask* secondary" (`{a} {mask}` → `cidr`, so `203.0.113.2/30`). `no ip address` leaves the set empty | [IP Addressing Configuration Guide, IOS XE 17.x: Configuring IPv4 Addresses](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-addressing/b-ip-addressing/m_config-ipv4-addr-0.html) |
+| `interface-ipv6-address`, `-link-local` | `ipv6 address 2001:DB8:0:20::1/64`, `… eui-64`; a `link-local` address is read and ignored (it says nothing about the outside) | [IPv6 Addressing and Basic Connectivity, IOS XE 17.x](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-addressing/b-ip-addressing/m_ip6-add-basic-conn-xe.html) |
+| `ip-route-via-address`, `-via-interface`, `-via-interface-and-address` | "ip route [vrf *vrf-name*] *prefix mask* {*ip-address* \| *interface-type interface-number* [*ip-address*]} [dhcp] [global] [*distance*] [multicast] [name *next-hop-name*] [permanent \| track *number*] [tag *tag*]". Read: the three next-hop forms with distance, name and track (three optional groups at most). With `permanent` or `tag` the line is a near miss, so the route is unknown; a route in a VRF (`ip route vrf …`) isn't read | [IP Routing: Protocol-Independent Command Reference, IOS XE 17](https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_pi/command/iri-cr-book/iri-cr-a1.html) |
+| `ipv6-route-via-*` | "ipv6 route *ipv6-prefix* / *prefix-length* {*ipv6-address* \| *interface-type interface-number* [*ipv6-address*]} [*administrative-distance*] …"; example `ipv6 route ::/0 serial 2/0` | [IPv6 Routing: Static Routing, IOS XE 17.x](https://www.cisco.com/c/en/us/td/docs/routers/ios/config/17-x/ip-routing/b-ip-routing/m_ip6-route-static-xe.html) |
+| `switchport-mode`, `-dynamic` | "switchport mode {access \| dynamic {auto \| desirable} \| trunk}"; "dynamic auto … This is the default switchport mode". Only a stated mode is read, so a port left at the default isn't counted | [Catalyst 9300 Command Reference, IOS XE 17.15: Layer 2/3 Commands](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst9300/software/release/17-15/command_reference/b_1715_9300_cr/layer_2_3_commands.html) |
+
+The authored configs gained `ip route 0.0.0.0 0.0.0.0 203.0.113.1 name ISP` (hardened) and
+`ip route 0.0.0.0 0.0.0.0 203.0.113.1` (weak), the ISP side of the WAN /30. The weak config's
+weakness lines from W11 on moved down two (`datasets/SOURCES.md` updated); every verdict is
+unchanged.

@@ -107,3 +107,21 @@ Read before the configuration (PLAN §7):
   Description` header, then one row per component, `Chassis` first with the chassis serial
   and model; sub-components are indented, built-in parts show `BUILTIN` for the serial and
   fan trays none. Source: [show chassis hardware, Junos OS CLI reference](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/command/show-chassis-hardware.html).
+
+## Addendum (v5.1.28, M2.22): addresses, routes and switch ports
+
+Read on 2026-09-27. These lines feed role inference only (TODO M2.22): an interface with a
+public IPv4 address, or the one a default route leaves by, is inferred untrusted, which can
+raise a finding's severity by one level with the reason shown. No rule judges them, so none
+of them can turn a verdict into PASS. Where a line says the route leaves somewhere the pack
+doesn't follow, the route's exit is *unknown* and nothing is inferred from it.
+
+| Mappings | Syntax quoted | Source |
+|---|---|---|
+| `unit-inet-address`, `unit-inet6-address` | `set interfaces lo0 unit 0 family inet address 10.0.0.1/32`; `family inet6 address 2001:db8:1:10::1/128`. Keyed at the unit (`ge-0/0/0.0`) like the pack's other interface facts | [Configure Static Routes](https://www.juniper.net/documentation/us/en/software/junos/static-routing/topics/topic-map/config_static-routes.html) (its examples) |
+| `static-route-next-hop`, `-block`, `-block-next-hop` | `show routing-options static { route 0.0.0.0/0 next-hop 172.16.1.1; }`; IPv6 under `rib inet6.0 static { route ::/0 next-hop 2001:db8:1:1::1; }`. The context `static` covers both | same |
+| `static-route-discard`, `-reject` | "route *route-name* { (discard \| … \| next-hop [ *next-hop-address* ... ] \| next-table … \| receive \| reject); …": a discard or reject route leaves by no interface. `next-hop [ a b ]` lists and `qualified-next-hop` aren't read (the route stays unknown) | [static (Routing Options)](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/static-edit-routing-options.html) |
+| `ethernet-switching-interface-mode`, `-port-mode` | `interface-mode (access \| trunk)` at `[edit interfaces … unit … family ethernet-switching]` (ELS); `port-mode` on software without ELS | [interface-mode](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/interface-mode-edit-interfaces.html), [port-mode](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/port-mode-interfaces-qfx-series.html) |
+
+The authored configs gained `routing-options { static { route 0.0.0.0/0 next-hop
+198.51.100.1; } }`, the ISP side of the WAN /30; every verdict is unchanged.

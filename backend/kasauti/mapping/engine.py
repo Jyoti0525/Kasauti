@@ -25,6 +25,7 @@ from dataclasses import dataclass
 
 from kasauti.ingest.mask import mask_secrets
 from kasauti.mapping import effects as fx
+from kasauti.mapping.addressing import mark_addressing
 from kasauti.mapping.builder import EntityRef, FactAcc, RefRecord, SbmBuilder
 from kasauti.mapping.defaults import apply_defaults
 from kasauti.mapping.match import Captures, Compiled, tokenize_path
@@ -101,6 +102,7 @@ def apply_mappings(
         engine.builder, defaults, os_version, f"{pack_id}/" if pack_id else ""
     )
     resolve_references(engine.builder)
+    mark_addressing(engine.builder)
     stats = MappingStats(
         statements=len(tree.statements),
         mapped=engine.mapped,

@@ -530,7 +530,7 @@ Rules declare the roles and features they apply to, so a switch isn't failed on 
 ### 12.7 Severity: base × exposure, explained
 - **Base** comes from the STIG category where mapped (CAT I → High, CAT II → Medium, CAT III → Low), otherwise from our reviewed rating.
 - **Exposure modifiers**, each bounded and explainable, give the final Critical / High / Medium / Low:
-  - raised when the weakness is reachable from an **untrusted interface/zone** (inferred from zone names like untrust/outside/wan, public addressing, default-route egress; the admin can override)
+  - raised when the weakness is reachable from an **untrusted interface/zone** (inferred from zone names like untrust/outside/wan, public addressing, default-route egress; the admin can override). Public means globally reachable by IANA's IPv4 special-purpose registry (IPv4 only: inside networks use global IPv6 addresses too); default-route egress doesn't count on a switch (v5.1.28)
   - raised for perimeter-firewall roles
   - lowered when a compensating control exists (management restricted to a management subnet)
 - Every finding shows "High (base) → **Critical**: telnet allowed on `wan1` (untrusted)".
@@ -1005,6 +1005,13 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.28 (2026-09-27, M2.22 role inference from addressing and routes):** The two
+  signals §12.7 names besides zone names. SBM 0.10 adds `Interface.addresses` and a `Route`
+  entity, read by all five seed packs. An interface is untrusted when it has a public IPv4
+  address (IANA's special-purpose registry decides; IPv4 only) or when the default route
+  leaves by it (named, or next hop on its subnet), except on a switch. Routes whose exit
+  isn't read (blackhole, SD-WAN zone, object destinations) never count. Switch ports are
+  now read, so the switch role works on real configs. Verdicts on all samples unchanged.
 - **v5.1.27 (2026-09-27, M2.19 manual identity entry):** Identity source 4. A device's
   hostname, OS version, model, serial and hardware can be typed before its audit (upload
   API, or `kasauti audit --identity`). A typed value fills only a field no file gives and is

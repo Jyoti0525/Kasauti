@@ -2,7 +2,7 @@
 # datasets/SOURCES.md, not engine output.
 description: PAN-OS 11.1.2 hardened edge firewall (twin of the weak case)
 input: authored/paloalto_panos/hardened.xml
-input_sha256: 37927308ce4b29ba19ad2edbcd17e2904bf06a6e0a5bdeefa85aa73f62b475f2
+input_sha256: c79f6fb5b4fae21ee65923120642d734f6c8d67979269222c00a1ee7936a4cf5
 vendor: null
 frameworks: [nist_800_53r5]
 expected_statuses:

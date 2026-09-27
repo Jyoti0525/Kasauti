@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from kasauti.mapping.addressing import to_cidr
 from kasauti.mapping.match import Captures
 from kasauti.mapping.model import (
     AssertEffect,
@@ -128,8 +129,13 @@ def _set_value(effect: SetEffect, caps: Captures) -> Any:
 
 def _members(effect: MembersEffect, caps: Captures, *, negated: bool) -> Outcome:
     if effect.template is not None:
+        if negated and not template_slots(effect.template) <= caps.keys():
+            return SetValue(frozenset())  # Cisco `no ip address`: explicitly none
         text = _render(effect.template, caps)
-        rendered = frozenset({str(effect.map.get(text, text)) if effect.map else text})
+        item: Any = str(effect.map.get(text, text)) if effect.map else text
+        for t in effect.transform:
+            item = _transform(t, item)
+        rendered = frozenset({str(item)})
         return RemoveItems(rendered) if negated else AddItems(rendered)
     if effect.from_ not in caps:
         if negated:
@@ -177,6 +183,11 @@ def _transform(t: Transform, value: Any) -> Any:
         return str(value).lower()
     if t == "upper":
         return str(value).upper()
+    if t == "cidr":
+        try:
+            return to_cidr(str(value))
+        except ValueError as exc:
+            raise _UnreadableError(str(exc)) from exc
     if isinstance(t, UnitTransform):
         if isinstance(value, bool) or not isinstance(value, int | float):
             raise _UnreadableError(f"{value!r} is not a duration")

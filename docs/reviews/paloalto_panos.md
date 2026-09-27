@@ -190,3 +190,27 @@ base [kA10g000000Cld9CAC](https://knowledgebase.paloaltonetworks.com/KCSArticleD
 
 Fixed: the pack named this source `show version`; the PAN-OS command is `show system info`,
 which the report now names.
+
+## Addendum (v5.1.28, M2.22): addresses and routes
+
+Read on 2026-09-27. These lines feed role inference only (TODO M2.22): an interface with a
+public IPv4 address, or the one a default route leaves by, is inferred untrusted, which can
+raise a finding's severity by one level with the reason shown. No rule judges them, so none
+of them can turn a verdict into PASS. Where a line says the route leaves somewhere the pack
+doesn't follow, the route's exit is *unknown* and nothing is inferred from it.
+
+The XML paths are those of pan-os-python, Palo Alto Networks' own SDK (ISC licence), read in
+`panos/network.py` on the `develop` branch:
+
+| Mappings | Path | pan-os-python |
+|---|---|---|
+| `ethernet-ip` | `ethernet/entry/layer3/ip/entry[@name]` | `EthernetInterface`: `ip` "Layer3: Interface IPv4 addresses", `path="{mode}/ip"`, `vartype="entry"` |
+| `ethernet-ipv6` | `…/layer3/ipv6/address/entry[@name]` | `IPv6Address`: xpath `/ipv6/address` |
+| `static-route*` | `virtual-router/entry/routing-table/ip/static-route/entry` with `destination`, `interface`, `nexthop/ip-address` | `StaticRoute`: xpath `/routing-table/ip/static-route`; `destination`, `interface`, `nexthop` at `nexthop/{nexthop_type}`, type `ip-address`, `discard` or `next-vr` |
+| `static-route6*` | `…/routing-table/ipv6/static-route/entry`, `nexthop/ipv6-address` | `StaticRouteV6`: xpath `/routing-table/ipv6/static-route`; types `discard`, `ipv6-address` |
+| `static-route-next-vr`, `-discard` | a route handed to another virtual router, or dropped: its exit is *unknown* | as above |
+
+An interface address or next hop given as an address object's name isn't read: it stays
+absent, never guessed. Routes in advanced routing's logical routers aren't claimed. The
+authored configs gained a virtual router whose `default-to-isp` route leaves by `ethernet1/1`
+to `198.51.100.1` (weak: `.5`); every verdict is unchanged.

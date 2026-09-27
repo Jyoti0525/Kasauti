@@ -182,7 +182,7 @@ MatchPattern = Annotated[str, AfterValidator(_valid_match_pattern)]
 """A pattern that may contain optional groups: ``<INT:seq> <STR:a> ip any any [log]``."""
 VersionRangeText = Annotated[str, AfterValidator(validate_range)]
 SlotName = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*$")]
-AttrPath = Annotated[str, StringConstraints(pattern=r"^[A-Z][A-Za-z]+\.[a-z][a-z0-9_]*$")]
+AttrPath = Annotated[str, StringConstraints(pattern=r"^[A-Z][A-Za-z0-9]+\.[a-z][a-z0-9_]*$")]
 """``Entity.attribute``, e.g. ``Interface.mgmt_protocols``."""
 
 # --- Transforms (PLAN §9.1) -------------------------------------------------------------------
@@ -220,7 +220,7 @@ class PrependTransform(_Strict):
 
 
 Transform = (
-    Literal["invert", "lower", "upper"]
+    Literal["invert", "lower", "upper", "cidr"]
     | UnitTransform
     | SplitTransform
     | PrefixTransform
