@@ -183,7 +183,7 @@ class _Engine:
                         file=self.tree.source_file,
                         line_start=stmt.line_start,
                         line_end=stmt.line_end,
-                        raw=mask_secrets(stmt.text),
+                        raw=mask_secrets(stmt.text, stmt.path),
                     )
                 )
             if self._near_miss(stmt, path):
@@ -240,7 +240,7 @@ class _Engine:
             file=self.tree.source_file,
             line_start=stmt.line_start,
             line_end=stmt.line_end,
-            raw=mask_secrets(stmt.text),
+            raw=mask_secrets(stmt.text, stmt.path),
             mapping_id=m.id,
             mapping_version=m.provenance.version,
             approved_by=m.provenance.approved_by,

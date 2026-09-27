@@ -75,7 +75,7 @@ def _statement(raw: RawStatement, family: ShapeFamily) -> Statement:
     tokens = statement_tokens(raw.text, family)
     # The key is shown in reports and the Studio, so it's built from the masked text: a secret
     # too short to look random (``password 7 abc123``) must not leak through its pattern.
-    masked = statement_tokens(mask_secrets(raw.text), family)
+    masked = statement_tokens(mask_secrets(raw.text, raw.path), family)
     return Statement(
         path=raw.path,
         tokens=tokens,

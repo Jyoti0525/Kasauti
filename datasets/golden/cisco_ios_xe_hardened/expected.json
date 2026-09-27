@@ -1866,7 +1866,7 @@
           "file": "hardened.cfg",
           "line_start": 102,
           "line_end": 102,
-          "raw": "ntp server 10.10.10.70 key ****",
+          "raw": "ntp server 10.10.10.70 key 1",
           "mapping_id": "cisco_ios_xe/ntp-server-key",
           "mapping_version": 2,
           "approved_by": [
@@ -6799,7 +6799,7 @@
             "file": "hardened.cfg",
             "line_start": 102,
             "line_end": 102,
-            "raw": "ntp server 10.10.10.70 key ****",
+            "raw": "ntp server 10.10.10.70 key 1",
             "mapping_id": "cisco_ios_xe/ntp-server-key",
             "mapping_version": 2,
             "approved_by": [
@@ -6816,7 +6816,7 @@
               "file": "hardened.cfg",
               "line_start": 102,
               "line_end": 102,
-              "raw": "ntp server 10.10.10.70 key ****",
+              "raw": "ntp server 10.10.10.70 key 1",
               "mapping_id": "cisco_ios_xe/ntp-server-key",
               "mapping_version": 2,
               "approved_by": [
@@ -6834,7 +6834,7 @@
               "file": "hardened.cfg",
               "line_start": 102,
               "line_end": 102,
-              "raw": "ntp server 10.10.10.70 key ****",
+              "raw": "ntp server 10.10.10.70 key 1",
               "mapping_id": "cisco_ios_xe/ntp-server-key",
               "mapping_version": 2,
               "approved_by": [

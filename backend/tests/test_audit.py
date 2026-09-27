@@ -62,10 +62,19 @@ def test_two_runs_are_byte_identical_json_and_pdf(kb: KnowledgeBase) -> None:
     )
 
 
-def test_no_secret_reaches_any_output(kb: KnowledgeBase) -> None:
-    for path in (WEAK, HARDENED):
-        result = audit(read_file(path), kb)
-        assert not SECRETS.search(result.canonical_json()), path.name
+@pytest.mark.parametrize(
+    "path",
+    sorted(
+        p for p in (REPO / "datasets" / "authored").glob("*/*.*") if p.stem in ("weak", "hardened")
+    ),
+    ids=lambda p: f"{p.parent.name}/{p.name}",
+)
+def test_no_secret_reaches_any_output(kb: KnowledgeBase, path: Path) -> None:
+    """Every vendor's samples plant their secrets as PLACEHOLDER… values and the communities
+    ``public`` and ``private`` (M2.08)."""
+    assert SECRETS.search(path.read_text(encoding="utf-8")), "nothing planted to look for"
+    result = audit(read_file(path), kb)
+    assert not SECRETS.search(result.canonical_json()), SECRETS.findall(result.canonical_json())
 
 
 def test_crafted_markup_in_a_config_cannot_break_or_inject_into_the_pdf(kb: KnowledgeBase) -> None:

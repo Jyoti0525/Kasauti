@@ -716,7 +716,7 @@
           "file": "hardened.cfg",
           "line_start": 13,
           "line_end": 13,
-          "raw": "password **** length 15",
+          "raw": "password minimum length 15",
           "mapping_id": "arista_eos/password-minimum-length",
           "mapping_version": 1,
           "approved_by": [
@@ -1452,7 +1452,7 @@
           "file": "hardened.cfg",
           "line_start": 32,
           "line_end": 32,
-          "raw": "ntp server 10.30.10.70 iburst key ****",
+          "raw": "ntp server 10.30.10.70 iburst key 1",
           "mapping_id": "arista_eos/ntp-server-key",
           "mapping_version": 1,
           "approved_by": [
@@ -4182,7 +4182,7 @@
               "file": "hardened.cfg",
               "line_start": 13,
               "line_end": 13,
-              "raw": "password **** length 15",
+              "raw": "password minimum length 15",
               "mapping_id": "arista_eos/password-minimum-length",
               "mapping_version": 1,
               "approved_by": [
@@ -4768,7 +4768,7 @@
             "file": "hardened.cfg",
             "line_start": 32,
             "line_end": 32,
-            "raw": "ntp server 10.30.10.70 iburst key ****",
+            "raw": "ntp server 10.30.10.70 iburst key 1",
             "mapping_id": "arista_eos/ntp-server-key",
             "mapping_version": 1,
             "approved_by": [
@@ -4785,7 +4785,7 @@
               "file": "hardened.cfg",
               "line_start": 32,
               "line_end": 32,
-              "raw": "ntp server 10.30.10.70 iburst key ****",
+              "raw": "ntp server 10.30.10.70 iburst key 1",
               "mapping_id": "arista_eos/ntp-server-key",
               "mapping_version": 1,
               "approved_by": [
@@ -4803,7 +4803,7 @@
               "file": "hardened.cfg",
               "line_start": 32,
               "line_end": 32,
-              "raw": "ntp server 10.30.10.70 iburst key ****",
+              "raw": "ntp server 10.30.10.70 iburst key 1",
               "mapping_id": "arista_eos/ntp-server-key",
               "mapping_version": 1,
               "approved_by": [

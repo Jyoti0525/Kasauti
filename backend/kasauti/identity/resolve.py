@@ -152,7 +152,7 @@ def _from_config(tree: ConfigTree, source: IdentitySource) -> tuple[str, Evidenc
                 file=tree.source_file,
                 line_start=stmt.line_start,
                 line_end=stmt.line_end,
-                raw=mask_secrets(stmt.text),
+                raw=mask_secrets(stmt.text, stmt.path),
             )
             value = caps["value"]
             return (" ".join(value) if isinstance(value, tuple) else str(value)), ev

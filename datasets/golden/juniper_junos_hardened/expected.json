@@ -602,7 +602,7 @@
           "file": "hardened.conf",
           "line_start": 31,
           "line_end": 31,
-          "raw": "authentication-order [ tacplus password ****",
+          "raw": "authentication-order [ tacplus password ]",
           "mapping_id": "juniper_junos/authentication-order-list",
           "mapping_version": 1,
           "approved_by": [
@@ -1237,7 +1237,7 @@
           "file": "hardened.conf",
           "line_start": 63,
           "line_end": 63,
-          "raw": "server 10.20.10.70 key ****",
+          "raw": "server 10.20.10.70 key 1",
           "mapping_id": "juniper_junos/ntp-server-key",
           "mapping_version": 1,
           "approved_by": [
@@ -1446,10 +1446,10 @@
         "example": "ntp"
       },
       {
-        "pattern_key": "authentication-key <INT> **** sha256 value <STR>",
+        "pattern_key": "authentication-key <INT> type sha256 value <STR>",
         "count": 1,
         "first_line": 62,
-        "example": "authentication-key 1 **** sha256 value \"$9$PLACEHOLDER\""
+        "example": "authentication-key 1 type sha256 value \"****\""
       },
       {
         "pattern_key": "filter",
@@ -1509,7 +1509,7 @@
         "pattern_key": "privacy-key <STR>",
         "count": 1,
         "first_line": 104,
-        "example": "privacy-key \"$9$PLACEHOLDER\""
+        "example": "privacy-key \"****\""
       },
       {
         "pattern_key": "firewall",
@@ -1982,7 +1982,7 @@
               "file": "hardened.conf",
               "line_start": 31,
               "line_end": 31,
-              "raw": "authentication-order [ tacplus password ****",
+              "raw": "authentication-order [ tacplus password ]",
               "mapping_id": "juniper_junos/authentication-order-list",
               "mapping_version": 1,
               "approved_by": [
@@ -3865,7 +3865,7 @@
               "file": "hardened.conf",
               "line_start": 63,
               "line_end": 63,
-              "raw": "server 10.20.10.70 key ****",
+              "raw": "server 10.20.10.70 key 1",
               "mapping_id": "juniper_junos/ntp-server-key",
               "mapping_version": 1,
               "approved_by": [
@@ -3883,7 +3883,7 @@
               "file": "hardened.conf",
               "line_start": 63,
               "line_end": 63,
-              "raw": "server 10.20.10.70 key ****",
+              "raw": "server 10.20.10.70 key 1",
               "mapping_id": "juniper_junos/ntp-server-key",
               "mapping_version": 1,
               "approved_by": [
@@ -3910,7 +3910,7 @@
             "file": "hardened.conf",
             "line_start": 31,
             "line_end": 31,
-            "raw": "authentication-order [ tacplus password ****",
+            "raw": "authentication-order [ tacplus password ]",
             "mapping_id": "juniper_junos/authentication-order-list",
             "mapping_version": 1,
             "approved_by": [

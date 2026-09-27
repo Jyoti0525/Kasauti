@@ -1209,7 +1209,7 @@
           "file": "weak.conf",
           "line_start": 46,
           "line_end": 46,
-          "raw": "set name \"public\"",
+          "raw": "set name \"****\"",
           "mapping_id": "fortinet_fortios/snmp-community-name",
           "mapping_version": 1,
           "approved_by": [
@@ -3396,7 +3396,7 @@
               "file": "weak.conf",
               "line_start": 46,
               "line_end": 46,
-              "raw": "set name \"public\"",
+              "raw": "set name \"****\"",
               "mapping_id": "fortinet_fortios/snmp-community-name",
               "mapping_version": 1,
               "approved_by": [
@@ -3662,7 +3662,7 @@
             "file": "weak.conf",
             "line_start": 46,
             "line_end": 46,
-            "raw": "set name \"public\"",
+            "raw": "set name \"****\"",
             "mapping_id": "fortinet_fortios/snmp-community-name",
             "mapping_version": 1,
             "approved_by": [

@@ -531,9 +531,9 @@ def _patterns(unmapped: Sequence[Statement]) -> tuple[UnmappedPattern, ...]:
     counts: Counter[str] = Counter()
     first: dict[str, tuple[int, str]] = {}
     for stmt in unmapped:
-        key = stmt.pattern_key or stmt.text
+        key = stmt.pattern_key or mask_secrets(stmt.text, stmt.path)
         counts[key] += 1
-        first.setdefault(key, (stmt.line_start, mask_secrets(stmt.text)))
+        first.setdefault(key, (stmt.line_start, mask_secrets(stmt.text, stmt.path)))
     return tuple(
         UnmappedPattern(pattern_key=k, count=n, first_line=first[k][0], example=first[k][1])
         for k, n in sorted(counts.items(), key=lambda kv: (-kv[1], first[kv[0]][0]))
