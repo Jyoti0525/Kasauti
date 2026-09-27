@@ -331,6 +331,12 @@ RefTarget = Literal[
     "acl",
     "address",
     "address_group",
+    "address6",
+    "address6_group",
+    "vip",
+    "vip_group",
+    "region",
+    "external_list",
     "service",
     "service_group",
     "mgmt_profile",
@@ -341,12 +347,28 @@ RefTarget = Literal[
     "any_object",
 ]
 ExpandFrom = Literal["members", "expanded", "permitted_sources"]
+RefLiteral = Literal["address"]
 
 
 class RefEffect(_Strict):
     ref: AttrPath
     from_: SlotName = Field(alias="from")
-    target: RefTarget
+    target: RefTarget | tuple[RefTarget, ...]
+    """The kind of object the name points at, or the kinds it may be, tried in order (a
+    FortiOS ``dstaddr`` names an address, an address group, a virtual IP, …). A list slot
+    (``set srcaddr "LAN" "DMZ"``) gives one reference per name."""
+    map: dict[str, str] = Field(default_factory=dict)
+    """Names the vendor predefines, written as the value they stand for (FortiOS address
+    ``all`` -> ``any``): kept as that value, never references."""
+    builtin: tuple[str, ...] = ()
+    """Names the vendor predefines without the configuration defining them (PAN-OS
+    ``service-http``): kept as they are, never references."""
+    literal: RefLiteral | None = None
+    """``address``: a name that is an IP address, prefix or range and that no object has is a
+    value written in place (PAN-OS ``<member>10.1.1.0/24</member>``), not a reference."""
+    unread: str | None = Field(default=None, min_length=10)
+    """What else a name may point at that the pack doesn't read (PAN-OS: a country from the
+    firewall's own list). A name no object has is then *unknown*, not dangling."""
     expand: bool = False
     """The attribute takes the target's ``members`` (once the resolver has linked it) instead
     of its name: a PAN-OS interface naming its management profile gets the profile's
@@ -366,7 +388,26 @@ class RefEffect(_Strict):
     def _expand_options(self) -> Self:
         if not self.expand and (self.take != "members" or self.if_empty is not None):
             raise ValueError("`take` and `if_empty` only apply with `expand: true`")
+        if self.expand and (self.map or self.builtin or self.literal or self.unread):
+            raise ValueError("`map`, `builtin`, `literal` and `unread` don't apply with `expand`")
+        if isinstance(self.target, tuple) and not self.target:
+            raise ValueError("`target` needs at least one kind")
+        if set(self.map) & set(self.builtin):
+            raise ValueError("a name is either in `map` or in `builtin`")
         return self
+
+    @property
+    def target_kinds(self) -> tuple[str, ...]:
+        return self.target if isinstance(self.target, tuple) else (self.target,)
+
+    @property
+    def target_kind(self) -> str:
+        """As recorded on the ``Reference``: the kinds it may be, ``|``-separated."""
+        return "|".join(self.target_kinds)
+
+    def not_references(self) -> frozenset[str]:
+        """Names that stand for themselves (``map``, ``builtin``), never references."""
+        return frozenset(self.map) | frozenset(self.builtin)
 
     @property
     def attr(self) -> str:

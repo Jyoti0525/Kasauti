@@ -102,7 +102,9 @@ rules:
     title: Every reference points at something that exists
     intent: >
       A filter, access-class or policy that names a missing ACL or object usually filters
-      nothing at all, while the configuration still looks protected.
+      nothing at all, while the configuration still looks protected; a firewall policy
+      naming a missing address or service can't be checked for what it lets through. A name
+      that may point at something the pack doesn't read (a PAN-OS country) is REVIEW.
     domain: filtering
     for_each: Reference
     assert: resolved
@@ -116,4 +118,4 @@ rules:
       iso_27001_2022: derived
     fixtures:
       pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, arista_eos/hardened.cfg, paloalto_panos/hardened.xml, fortinet_fortios/hardened.conf]
-      fail: [cisco_ios_xe/fixtures/vty_acl_dangling.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg]
+      fail: [cisco_ios_xe/fixtures/vty_acl_dangling.cfg, juniper_junos/weak.conf, arista_eos/weak.cfg, fortinet_fortios/fixtures/policy_address_dangling.conf, paloalto_panos/fixtures/rule_service_dangling.xml]

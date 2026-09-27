@@ -25,12 +25,16 @@ Twenty-five entity types: the eighteen in PLAN §8.1 plus seven additions it nee
   `LogTarget` (timestamps, admin_logged, config_change_logged). They describe the device,
   not a target.
 - `ObjectDef` (`key` = `<kind>:<name>`) holds named ACLs, address/service objects and groups:
-  the targets of the `ref` primitive and the reference resolver (§9.1, v5.1).
+  the targets of the `ref` primitive and the reference resolver (§9.1, v5.1). Kinds include
+  IPv6 addresses and groups, virtual IPs and their groups (members: the external address),
+  regions and external lists (a threat feed: members fetched by the device, never read).
 - `Reference` (0.4): one statement pointing at another named thing, created by the reference
   resolver (PLAN §9.1): `source`, `attribute`, `target_kind`, `name`, `resolved`, `target`, and
   for ACL targets `permits_any` (the chain vty line → ACL → permitted sources): can a source
   the ACL doesn't name get through? Answered by ordered first-match evaluation (0.9) with the
   vendor's quoted implicit action, *unknown* where an entry that might decide wasn't read.
+  `target_kind` may list the kinds a name can be (`address|address_group|vip`); `resolved`
+  is *unknown* where the name may point at something the pack doesn't read (M2.23).
   Dangling references are ordinary facts that rules judge (REF-DANGLING-01).
 - `Ruleset` (0.9, `key` = the name entries give in `FilterRule.ruleset`): what an ordered list
   of filter entries does as a whole. `order` (`position` or `config`), `unmatched` and

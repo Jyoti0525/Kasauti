@@ -204,3 +204,44 @@ doesn't follow, the route's exit is *unknown* and nothing is inferred from it.
 The authored configs gained `config router static` `edit 1` `set gateway 198.51.100.1` (weak:
 `.5`) `set device "wan1"`, which by the quoted default is a default route; every verdict is
 unchanged.
+
+## Addendum (v5.1.29, M2.23): names in policies are references
+
+Read on 2026-09-27. Firewall and local-in policies' `srcaddr`, `dstaddr` and `service` (and the
+IPv6 local-in policy's) are now `ref` effects: each name is a `Reference`, resolved or
+dangling, and the policy is judged by what the object covers. A name the file doesn't define
+makes the policy's field *unknown* (REVIEW); before, it was taken as some addresses, so a
+permit-any behind it could pass. `all` (address) and `ALL` (service) stay values, as before.
+
+| What a name may be | Quote | Source |
+|---|---|---|
+| Policy `srcaddr` / `dstaddr` / `service` | "Source IPv4 address and address group names." / "Destination IPv4 address and address group names." / "Service and service group names." | [config firewall policy (7.4.4)](https://docs.fortinet.com/document/fortigate/7.4.4/cli-reference/333889629/config-firewall-policy) |
+| A virtual IP as destination | "To apply a virtual IP to policy in the CLI: … set dstaddr \"Internal_WebServer\"" (a `config firewall vip` entry) | [Static virtual IPs (7.4.4)](https://docs.fortinet.com/document/fortigate/7.4.4/administration-guide/510402/static-virtual-ips) |
+| A VIP group as destination | "Virtual IP addresses (VIPs) can be organized into groups. After creating the VIP group, add it to a firewall policy." `config firewall vipgrp` / `set member <vip1> <vip2> ...` | [Configuring VIP groups (7.6.4)](https://docs.fortinet.com/document/fortigate/7.6.4/administration-guide/157796/configuring-vip-groups) |
+| A threat feed | `config system external-resource` / `edit "AWS_IP_Blocklist"` / `set type address`; "In the Destination field, click the + and select AWS_IP_Blocklist"; in a local-in policy, `set srcaddr "AWS_IP_Blocklist"` | [IP address threat feed (7.4.4)](https://docs.fortinet.com/document/fortigate/7.4.4/administration-guide/891236/ip-address-threat-feed) |
+| IPv6 address objects | `set ip6 {ipv6-network}`: "IPv6 address prefix", default `::/0` | [config firewall address6 (7.4.1)](https://docs.fortinet.com/document/fortigate/7.4.1/cli-reference/229620/config-firewall-address6) |
+
+New mappings read the names (and, for VIPs, `extip`; for IPv6 addresses, `ip6`) of those
+objects. A threat feed's addresses are fetched by the FortiGate, so a policy naming one is
+*unknown* in what it covers.
+
+Known limits, none a false PASS:
+
+- An `address6` without `ip6` covers `::/0` by the quoted default, and an IPv4 address without
+  `subnet` likewise, but only for the object types that use those fields. The pack doesn't read
+  the type yet, so such an object is *unknown* (REVIEW), not assumed narrow or wide.
+
+Two gaps found while doing this, both of which could give a false PASS on FILTER-PERMIT-ANY-01,
+are closed:
+
+- A firewall policy's `srcaddr6` / `dstaddr6` weren't read, so a policy narrow in IPv4 but
+  open from `all` to `all` in IPv6 passed. They are now references to IPv6 addresses and
+  groups, added to the same `src` / `dst` ("Source IPv6 address name and address group
+  names", same CLI page). One policy's IPv4 and IPv6 halves share those sets, so a policy wide
+  in IPv4 at one end and in IPv6 at the other is taken as a permit-any: a FAIL to explain,
+  never a PASS. A `dstaddr6` name no object has may be an IPv6 virtual IP, which the pack
+  doesn't read: *unknown*, not dangling.
+- `srcaddr-negate`, `dstaddr-negate` (and their IPv6 twins) and `service-negate` weren't read
+  for firewall policies: "When enabled srcaddr specifies what the source address must NOT
+  be." Everything but a list is taken as `any` (`ip` for services), as for PAN-OS's
+  `negate-source`.

@@ -1005,6 +1005,14 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.29 (2026-09-27, M2.23 references in firewall policies):** §9.1's FortiOS and
+  PAN-OS examples are live: every address or service a policy names is a `Reference`,
+  resolved or dangling, and the policy is judged by what the object covers. A name the
+  file doesn't define now makes the policy unknown (REVIEW) instead of passing as narrow.
+  What a name may be comes from each vendor's documentation; where it may be something
+  the pack can't see (a PAN-OS country), it is unknown, not dangling. The AWS case moves to
+  M2.31 and the Huawei case to M3.28, with their packs. One golden label corrected. Two
+  FortiOS false PASSes closed on the way: IPv6 policy addresses and negated fields.
 - **v5.1.28 (2026-09-27, M2.22 role inference from addressing and routes):** The two
   signals §12.7 names besides zone names. SBM 0.10 adds `Interface.addresses` and a `Route`
   entity, read by all five seed packs. An interface is untrusted when it has a public IPv4

@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!-- Kasauti authored fixture: PAN-OS 11.1.2, a security rule whose service names "web-ports",
+     which the file doesn't define (PAN-OS predefines only service-http and service-https).
+     Fail fixture for REF-DANGLING-01. -->
+<config version="11.1.0" urldb="paloaltonetworks" detail-version="11.1.2">
+  <devices>
+    <entry name="localhost.localdomain">
+      <deviceconfig>
+        <system>
+          <hostname>PA-REFS</hostname>
+        </system>
+      </deviceconfig>
+      <vsys>
+        <entry name="vsys1">
+          <address>
+            <entry name="LAN-NET">
+              <ip-netmask>10.20.0.0/24</ip-netmask>
+            </entry>
+          </address>
+          <rulebase>
+            <security>
+              <rules>
+                <entry name="lan-to-web">
+                  <from>
+                    <member>trust</member>
+                  </from>
+                  <to>
+                    <member>untrust</member>
+                  </to>
+                  <source>
+                    <member>LAN-NET</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <application>
+                    <member>web-browsing</member>
+                  </application>
+                  <service>
+                    <member>web-ports</member>
+                  </service>
+                  <action>allow</action>
+                  <log-end>yes</log-end>
+                </entry>
+              </rules>
+            </security>
+          </rulebase>
+        </entry>
+      </vsys>
+    </entry>
+  </devices>
+</config>

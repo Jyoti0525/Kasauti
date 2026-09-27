@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "011ca73d57188d155b95df8f",
+  "audit_id": "854cf3ada031bb807c25ea01",
   "input": {
     "file": "hardened.xml",
     "sha256": "c79f6fb5b4fae21ee65923120642d734f6c8d67979269222c00a1ee7936a4cf5",
@@ -50,8 +50,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
-    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
+    "kb_version": "67a203a4b3c00caf597565d43355c437a91d96e92d0eab325f5313a73e740fca",
+    "ruleset_version": "aa3815593bd5283a1f6bba3f8ec737aa294d87409b34d0a429a77ee3988f7e28",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -768,7 +768,7 @@
           "line_end": 256,
           "raw": "member LAN-NET",
           "mapping_id": "paloalto_panos/rule-source",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -812,7 +812,7 @@
           "line_end": 283,
           "raw": "member WEB-SRV",
           "mapping_id": "paloalto_panos/rule-destination",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -1288,6 +1288,56 @@
           "raw": "authentication-profile TACACS-AUTH",
           "mapping_id": "paloalto_panos/system-authentication-profile",
           "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[FilterRule[security:lan-to-internet].src -> LAN-NET]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[FilterRule[security:lan-to-internet].src -> LAN-NET].",
+      "actual": [
+        "Reference[FilterRule[security:lan-to-internet].src -> LAN-NET].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 256,
+          "line_end": 256,
+          "raw": "member LAN-NET",
+          "mapping_id": "paloalto_panos/rule-source",
+          "mapping_version": 2,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[FilterRule[security:web-in].dst -> WEB-SRV]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[FilterRule[security:web-in].dst -> WEB-SRV].",
+      "actual": [
+        "Reference[FilterRule[security:web-in].dst -> WEB-SRV].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.xml",
+          "line_start": 283,
+          "line_end": 283,
+          "raw": "member WEB-SRV",
+          "mapping_id": "paloalto_panos/rule-destination",
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -2351,11 +2401,11 @@
         "facts": 5
       },
       {
-        "mapping": "paloalto_panos/rule-destination@1",
+        "mapping": "paloalto_panos/rule-destination@2",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 3
+        "facts": 9
       },
       {
         "mapping": "paloalto_panos/rule-from@1",
@@ -2372,18 +2422,18 @@
         "facts": 3
       },
       {
-        "mapping": "paloalto_panos/rule-service@1",
+        "mapping": "paloalto_panos/rule-service@2",
         "approved_by": [
           "maintainer"
         ],
         "facts": 3
       },
       {
-        "mapping": "paloalto_panos/rule-source@1",
+        "mapping": "paloalto_panos/rule-source@2",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 3
+        "facts": 9
       },
       {
         "mapping": "paloalto_panos/rule-to@1",
@@ -2877,7 +2927,7 @@
               "line_end": 302,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-source",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2897,7 +2947,7 @@
               "line_end": 305,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-destination",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2917,7 +2967,7 @@
               "line_end": 311,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-service",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -3088,7 +3138,7 @@
               "line_end": 256,
               "raw": "member LAN-NET",
               "mapping_id": "paloalto_panos/rule-source",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -3108,7 +3158,7 @@
               "line_end": 259,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-destination",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -3128,7 +3178,7 @@
               "line_end": 267,
               "raw": "member application-default",
               "mapping_id": "paloalto_panos/rule-service",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -3323,7 +3373,7 @@
               "line_end": 280,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-source",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -3343,7 +3393,7 @@
               "line_end": 283,
               "raw": "member WEB-SRV",
               "mapping_id": "paloalto_panos/rule-destination",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -3363,7 +3413,7 @@
               "line_end": 289,
               "raw": "member application-default",
               "mapping_id": "paloalto_panos/rule-service",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -5708,6 +5758,268 @@
         }
       },
       {
+        "key": "FilterRule[security:lan-to-internet].src -> LAN-NET",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 256,
+            "line_end": 256,
+            "raw": "member LAN-NET",
+            "mapping_id": "paloalto_panos/rule-source",
+            "mapping_version": 2,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[security:lan-to-internet]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 256,
+              "line_end": 256,
+              "raw": "member LAN-NET",
+              "mapping_id": "paloalto_panos/rule-source",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.src",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 256,
+              "line_end": 256,
+              "raw": "member LAN-NET",
+              "mapping_id": "paloalto_panos/rule-source",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "address|address_group|region|external_list",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 256,
+              "line_end": 256,
+              "raw": "member LAN-NET",
+              "mapping_id": "paloalto_panos/rule-source",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "LAN-NET",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 256,
+              "line_end": 256,
+              "raw": "member LAN-NET",
+              "mapping_id": "paloalto_panos/rule-source",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 256,
+              "line_end": 256,
+              "raw": "member LAN-NET",
+              "mapping_id": "paloalto_panos/rule-source",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[address:LAN-NET]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 256,
+              "line_end": 256,
+              "raw": "member LAN-NET",
+              "mapping_id": "paloalto_panos/rule-source",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "FilterRule[security:web-in].dst -> WEB-SRV",
+        "evidence": [
+          {
+            "file": "hardened.xml",
+            "line_start": 283,
+            "line_end": 283,
+            "raw": "member WEB-SRV",
+            "mapping_id": "paloalto_panos/rule-destination",
+            "mapping_version": 2,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[security:web-in]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 283,
+              "line_end": 283,
+              "raw": "member WEB-SRV",
+              "mapping_id": "paloalto_panos/rule-destination",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.dst",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 283,
+              "line_end": 283,
+              "raw": "member WEB-SRV",
+              "mapping_id": "paloalto_panos/rule-destination",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "address|address_group|region|external_list",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 283,
+              "line_end": 283,
+              "raw": "member WEB-SRV",
+              "mapping_id": "paloalto_panos/rule-destination",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "WEB-SRV",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 283,
+              "line_end": 283,
+              "raw": "member WEB-SRV",
+              "mapping_id": "paloalto_panos/rule-destination",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 283,
+              "line_end": 283,
+              "raw": "member WEB-SRV",
+              "mapping_id": "paloalto_panos/rule-destination",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[address:WEB-SRV]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.xml",
+              "line_start": 283,
+              "line_end": 283,
+              "raw": "member WEB-SRV",
+              "mapping_id": "paloalto_panos/rule-destination",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
         "key": "Interface[ethernet1/1].mgmt_permitted_sources -> PING-ONLY",
         "evidence": [
           {
@@ -6758,7 +7070,7 @@
             "line_end": 256,
             "raw": "member LAN-NET",
             "mapping_id": "paloalto_panos/rule-source",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -6802,7 +7114,7 @@
             "line_end": 283,
             "raw": "member WEB-SRV",
             "mapping_id": "paloalto_panos/rule-destination",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]

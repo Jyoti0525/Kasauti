@@ -5,7 +5,11 @@ line, ``set srcaddr "LAN_GRP"`` in a FortiOS policy, an address group in PAN-OS.
 the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference` entity:
 
 * **resolved or dangling**: does an object of the right kind with that name exist?
-  (``acl`` -> ``ObjectDef[acl:<name>]``; ``any_object`` accepts any kind);
+  (``acl`` -> ``ObjectDef[acl:<name>]``; ``address|address_group`` tries each kind in turn;
+  ``any_object`` accepts any kind). Where the name may point at something the pack doesn't
+  read (``unread``: a PAN-OS country), a name no object has is *unknown*, not dangling; where
+  it may be written in place (``literal: address``, a PAN-OS ``10.1.1.0/24``), it is a value
+  and no reference at all;
 * **ACL targets**: can a source the ACL doesn't name get through? That's the chain
   vty -> ACL -> permitted sources, answered by ordered first-match evaluation
   (:mod:`kasauti.policy.firstmatch`) with the vendor's quoted implicit action, and *unknown*
@@ -16,8 +20,10 @@ the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference`
   ``set service "WEB-PORTS"``): if the address object or group covers every address, ``any``
   is added to the entry's ``src``/``dst``; if the service object or group covers every
   protocol, ``ip`` is added to its ``service``. The object's line is the evidence, so a
-  catch-all hidden behind a name is still a permit-any. If the object's extent wasn't read,
-  the entry's fact becomes *unknown*: REVIEW, never an assumed-harmless PASS.
+  catch-all hidden behind a name is still a permit-any. If the object's extent wasn't read
+  (a threat feed's addresses are fetched by the device), or the pack records the name as a
+  reference and no object has it, the entry's fact becomes *unknown*: REVIEW, never an
+  assumed-harmless PASS.
 
 * **expanding references** (``ref`` with ``expand``): each target's name in the source
   attribute is replaced by the target's members (or ``take``: its ``expanded`` members or
@@ -43,13 +49,20 @@ filter naming a missing ACL filters nothing.
 
 from __future__ import annotations
 
+import ipaddress
 from dataclasses import dataclass
 
 from kasauti.mapping.builder import EntityAcc, EntityRef, FactAcc, RefRecord, SbmBuilder
 from kasauti.policy.firstmatch import Decision, Probe, evaluate
 from kasauti.sbm.facts import Evidence, FactState
 
-GROUP_KINDS = {"address_group": "address", "service_group": "service", "user_group": "auth_server"}
+GROUP_KINDS = {
+    "address_group": "address",
+    "address6_group": "address6",
+    "vip_group": "vip",
+    "service_group": "service",
+    "user_group": "auth_server",
+}
 LEAF_MEMBERS = frozenset({"user_group"})
 """Groups whose ``expanded`` holds their leaves' members (a server's kind), not leaf names."""
 CATCH_ALL = frozenset({"any", "all", "0.0.0.0/0", "0.0.0.0/0.0.0.0", "::/0"})
@@ -89,14 +102,46 @@ def resolve_references(builder: SbmBuilder) -> None:
     _device_filters(builder, objects)
 
 
-def _target_key(objects: dict[str, EntityAcc], kind: str, name: str) -> str | None:
-    if kind == "any_object":
-        return next((k for k in sorted(objects) if k.split(":", 1)[-1] == name), None)
-    key = f"{kind}:{name}"
-    return key if key in objects else None
+def _target_key(objects: dict[str, EntityAcc], kinds: str, name: str) -> str | None:
+    """The object ``name`` points at: the first of the ``|``-separated kinds that has it."""
+    for kind in kinds.split("|"):
+        if kind == "any_object":
+            found = next((k for k in sorted(objects) if k.split(":", 1)[-1] == name), None)
+        else:
+            found = f"{kind}:{name}" if f"{kind}:{name}" in objects else None
+        if found is not None:
+            return found
+    return None
+
+
+def _written_in_place(record: RefRecord) -> bool:
+    """An address, prefix or range where the vendor lets one stand for an object."""
+    return record.literal == "address" and is_address_literal(record.name)
+
+
+def is_address_literal(text: str) -> bool:
+    """``10.1.1.1``, ``10.1.1.0/24``, ``2001:db8::/32`` or ``10.1.1.1-10.1.1.9``."""
+    parts = text.split("-")
+    if len(parts) == 2:
+        return all(_address(p) is not None for p in parts)
+    try:
+        ipaddress.ip_network(text, strict=False)
+    except ValueError:
+        return False
+    return True
+
+
+def _address(text: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    try:
+        return ipaddress.ip_address(text)
+    except ValueError:
+        return None
 
 
 def _reference(builder: SbmBuilder, objects: dict[str, EntityAcc], record: RefRecord) -> None:
+    target = _target_key(objects, record.target_kind, record.name)
+    if target is None and _written_in_place(record):
+        return  # a value, not a name
     source = f"{record.source[0]}[{record.source[1]}]"
     ref = builder.entity(
         ("Reference", f"{source}.{record.attribute.split('.', 1)[1]} -> {record.name}")
@@ -107,10 +152,13 @@ def _reference(builder: SbmBuilder, objects: dict[str, EntityAcc], record: RefRe
     ref.fact("attribute").set(record.attribute, ev)
     ref.fact("target_kind").set(record.target_kind, ev)
     ref.fact("name").set(record.name, ev)
-    target = _target_key(objects, record.target_kind, record.name)
-    ref.fact("resolved").set(target is not None, ev)
     if target is None:
+        if record.unread is not None:
+            ref.fact("resolved").unknown(ev)  # perhaps what the pack doesn't read
+        else:
+            ref.fact("resolved").set(False, ev)
         return
+    ref.fact("resolved").set(True, ev)
     ref.fact("target").set(f"ObjectDef[{target}]", ev)
     if target.startswith("acl:"):
         decision = evaluate(builder, objects, target.split(":", 1)[1], Probe())
@@ -350,16 +398,25 @@ def _expand(objects: dict[str, EntityAcc], key: str, trail: set[str]) -> tuple[s
 
 def _widen_named_objects(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> None:
     """Filter entries whose ``src``/``dst``/``service`` name objects: see the module docstring.
-    A name that is no object of that family (a literal address, ``any``) is left as it is."""
-    for (etype, _), acc in sorted(builder.entities.items()):
-        if etype != "FilterRule":
+    A name the pack records as a reference is judged by the object it resolves to; other names
+    that are no object of that family (a literal address, ``any``) are left as they are."""
+    named: dict[tuple[EntityRef, str], dict[str, RefRecord]] = {}
+    for rec in builder.refs:
+        named.setdefault((rec.source, rec.attribute.split(".", 1)[1]), {})[rec.name] = rec
+    for ref, acc in sorted(builder.entities.items()):
+        if ref[0] != "FilterRule":
             continue
         for attr, family in FAMILIES.items():
             fact = acc.facts.get(attr)
             if fact is None or fact.state is not FactState.EXPLICIT:
                 continue
+            records = named.get((ref, attr), {})
             for name in sorted(fact.value):
-                extent, ev = _extent(objects, family, name)
+                record = records.get(name)
+                if record is None:
+                    extent, ev = _extent(objects, family, name)
+                else:
+                    extent, ev = _referenced_extent(objects, family, record)
                 if extent == "unknown" and ev is not None:
                     fact.unknown(ev)
                     break
@@ -367,28 +424,47 @@ def _widen_named_objects(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> 
                     fact.add(frozenset({family.widened}), ev)
 
 
+def _referenced_extent(
+    objects: dict[str, EntityAcc], family: _Family, record: RefRecord
+) -> tuple[str, Evidence | None]:
+    """The extent of the object a reference resolves to. Unresolved, it is unknown (the
+    configuration names what it doesn't define, or what the pack doesn't read), unless it
+    is an address written in place."""
+    target = _target_key(objects, record.target_kind, record.name)
+    if target is not None:
+        return _object_extent(objects, family, target)
+    if _written_in_place(record):
+        return ("any", record.evidence) if record.name in family.catch_all else ("some", None)
+    return "unknown", record.evidence
+
+
 def _extent(
     objects: dict[str, EntityAcc], family: _Family, name: str
 ) -> tuple[str, Evidence | None]:
     """``any`` (covers everything), ``some``, ``unknown`` (extent not read) or ``none`` (no
     object of this family has this name), with the deciding evidence."""
-    group = objects.get(f"{family.group}:{name}")
-    if group is not None:
-        expanded = group.facts.get("expanded")
+    for key in (f"{family.group}:{name}", f"{family.kind}:{name}"):
+        if key in objects:
+            return _object_extent(objects, family, key)
+    return "none", None
+
+
+def _object_extent(
+    objects: dict[str, EntityAcc], family: _Family, key: str
+) -> tuple[str, Evidence | None]:
+    obj = objects[key]
+    kind = key.split(":", 1)[0]
+    if kind in GROUP_KINDS:
+        expanded = obj.facts.get("expanded")
         if expanded is None or expanded.state is not FactState.EXPLICIT:
-            return "unknown", _first(expanded, group)
-        leaves = [
-            _extent(objects, family, leaf) if leaf not in family.catch_all else ("any", None)
-            for leaf in sorted(expanded.value)
-        ]
-        if any(kind == "any" for kind, _ in leaves):
-            return "any", _first(expanded, group)
-        if any(kind == "unknown" for kind, _ in leaves):
-            return "unknown", _first(expanded, group)
+            return "unknown", _first(expanded, obj)
+        leaf_kind = GROUP_KINDS[kind]
+        leaves = [_leaf_extent(objects, family, f"{leaf_kind}:{leaf}") for leaf in expanded.value]
+        if any(extent == "any" for extent, _ in leaves):
+            return "any", _first(expanded, obj)
+        if any(extent == "unknown" for extent, _ in leaves):
+            return "unknown", _first(expanded, obj)
         return "some", None
-    obj = objects.get(f"{family.kind}:{name}")
-    if obj is None:
-        return "none", None
     members = obj.facts.get("members")
     if members is None or members.state is not FactState.EXPLICIT:
         return "unknown", _first(members, obj)
@@ -398,6 +474,15 @@ def _extent(
     if members.value & family.catch_all and not limited:
         return "any", _first(members, obj)
     return "some", None
+
+
+def _leaf_extent(
+    objects: dict[str, EntityAcc], family: _Family, key: str
+) -> tuple[str, Evidence | None]:
+    """A group's expanded member: a catch-all word (``any``), or an object of the leaf kind."""
+    if key.split(":", 1)[1] in family.catch_all:
+        return "any", None
+    return _object_extent(objects, family, key) if key in objects else ("none", None)
 
 
 def _first(fact: FactAcc | None, owner: EntityAcc) -> Evidence | None:

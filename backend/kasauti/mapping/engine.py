@@ -291,19 +291,20 @@ class _Engine:
                     outcome = _combined(outcome, fact)
                 _record(fact, outcome, ev)
                 if isinstance(eff, RefEffect) and isinstance(outcome, fx.SetValue | fx.AddItems):
-                    names = outcome.items if isinstance(outcome, fx.AddItems) else {outcome.value}
                     self.builder.refs.extend(
                         RefRecord(
                             ref,
                             eff.attr,
-                            eff.target,
-                            str(n),
+                            eff.target_kind,
+                            n,
                             ev,
                             eff.expand,
                             eff.take,
                             None if eff.if_empty is None else frozenset(eff.if_empty),
+                            eff.literal,
+                            eff.unread,
                         )
-                        for n in sorted(names)
+                        for n in sorted(set(fx.ref_names(eff, hit.caps)))
                     )
 
     def _key(

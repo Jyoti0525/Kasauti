@@ -24,7 +24,7 @@ expected_statuses:
   MGMT-VTY-ACL-01: N/A      # FortiOS has no vty lines
   MGMT-VTY-ACL-02: N/A      # FortiOS has no vty lines
   MGMT-WEB-ACL-01: FAIL     # F3 HTTP and HTTPS administration: admin has no trusted hosts
-  REF-DANGLING-01: N/A      # no statement names an ACL or object by reference
+  REF-DANGLING-01: PASS     # policy 1 names address ANY-NET (dstaddr), which the file defines
   SNMP-COMMUNITY-01: FAIL     # F12 SNMP community public
   SVC-LEGACY-01: PASS     # FortiOS has no PAD, finger, BOOTP or small servers (model default)
   SVC-PROXY-ARP-01: FAIL     # F15 proxy-arp entry on wan1

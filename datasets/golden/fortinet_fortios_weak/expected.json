@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "e0b8ef07abb0eceb469ebaa7",
+  "audit_id": "97f649cd8f4fcdbbebbd2fa0",
   "input": {
     "file": "weak.conf",
     "sha256": "dfa553492c4e201c7b6defe3117908f93dee2bbd1709f3ee0ecf7c39dbb0edb8",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
-    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
+    "kb_version": "67a203a4b3c00caf597565d43355c437a91d96e92d0eab325f5313a73e740fca",
+    "ruleset_version": "aa3815593bd5283a1f6bba3f8ec737aa294d87409b34d0a429a77ee3988f7e28",
     "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -65,11 +65,11 @@
     {
       "framework": "nist_800_53r5",
       "title": "NIST SP 800-53 Rev. 5",
-      "passed": 4,
+      "passed": 5,
       "failed": 16,
       "review": 0,
-      "not_applicable": 3,
-      "compliance_pct": 20.0,
+      "not_applicable": 2,
+      "compliance_pct": 23.8,
       "coverage_pct": 100.0
     }
   ],
@@ -292,7 +292,7 @@
       "rule_id": "REF-DANGLING-01",
       "title": "Every reference points at something that exists",
       "domain": "filtering",
-      "status": "N/A",
+      "status": "PASS",
       "severity": "medium",
       "nist_800_53r5": [
         "CM-6",
@@ -360,7 +360,7 @@
     {
       "control": "AC-3",
       "title": "Access Enforcement",
-      "status": "not satisfied",
+      "status": "partially satisfied",
       "rules": [
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
@@ -479,7 +479,7 @@
     {
       "control": "CM-6",
       "title": "Configuration Settings",
-      "status": "not satisfied",
+      "status": "partially satisfied",
       "rules": [
         "REF-DANGLING-01",
         "SNMP-COMMUNITY-01"
@@ -749,7 +749,7 @@
           "line_end": 77,
           "raw": "set srcaddr \"all\"",
           "mapping_id": "fortinet_fortios/policy-srcaddr",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -760,7 +760,7 @@
           "line_end": 78,
           "raw": "set dstaddr \"ANY-NET\"",
           "mapping_id": "fortinet_fortios/policy-dstaddr",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -771,7 +771,7 @@
           "line_end": 80,
           "raw": "set service \"ALL\"",
           "mapping_id": "fortinet_fortios/policy-service",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -1161,14 +1161,28 @@
     },
     {
       "rule_id": "REF-DANGLING-01",
-      "entity_id": "Device[device]",
-      "status": "N/A",
+      "entity_id": "Reference[FilterRule[policy:1].dst -> ANY-NET]",
+      "status": "PASS",
       "severity": null,
       "severity_reason": null,
-      "reason": "Not applicable: nothing matches `Reference` on this device.",
-      "actual": [],
+      "reason": "Every reference points at something that exists: holds for Reference[FilterRule[policy:1].dst -> ANY-NET].",
+      "actual": [
+        "Reference[FilterRule[policy:1].dst -> ANY-NET].resolved = true"
+      ],
       "defaults_used": [],
-      "evidence": []
+      "evidence": [
+        {
+          "file": "weak.conf",
+          "line_start": 78,
+          "line_end": 78,
+          "raw": "set dstaddr \"ANY-NET\"",
+          "mapping_id": "fortinet_fortios/policy-dstaddr",
+          "mapping_version": 2,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -1576,11 +1590,11 @@
         "facts": 1
       },
       {
-        "mapping": "fortinet_fortios/policy-dstaddr@1",
+        "mapping": "fortinet_fortios/policy-dstaddr@2",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 1
+        "facts": 7
       },
       {
         "mapping": "fortinet_fortios/policy-dstintf@1",
@@ -1597,14 +1611,14 @@
         "facts": 1
       },
       {
-        "mapping": "fortinet_fortios/policy-service@1",
+        "mapping": "fortinet_fortios/policy-service@2",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "fortinet_fortios/policy-srcaddr@1",
+        "mapping": "fortinet_fortios/policy-srcaddr@2",
         "approved_by": [
           "maintainer"
         ],
@@ -1994,7 +2008,7 @@
               "line_end": 77,
               "raw": "set srcaddr \"all\"",
               "mapping_id": "fortinet_fortios/policy-srcaddr",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2026,7 +2040,7 @@
               "line_end": 78,
               "raw": "set dstaddr \"ANY-NET\"",
               "mapping_id": "fortinet_fortios/policy-dstaddr",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2046,7 +2060,7 @@
               "line_end": 80,
               "raw": "set service \"ALL\"",
               "mapping_id": "fortinet_fortios/policy-service",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -3400,6 +3414,137 @@
         }
       },
       {
+        "key": "FilterRule[policy:1].dst -> ANY-NET",
+        "evidence": [
+          {
+            "file": "weak.conf",
+            "line_start": 78,
+            "line_end": 78,
+            "raw": "set dstaddr \"ANY-NET\"",
+            "mapping_id": "fortinet_fortios/policy-dstaddr",
+            "mapping_version": 2,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[policy:1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "set dstaddr \"ANY-NET\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.dst",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "set dstaddr \"ANY-NET\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "address|address_group|vip|vip_group|external_list",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "set dstaddr \"ANY-NET\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "ANY-NET",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "set dstaddr \"ANY-NET\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "set dstaddr \"ANY-NET\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[address:ANY-NET]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.conf",
+              "line_start": 78,
+              "line_end": 78,
+              "raw": "set dstaddr \"ANY-NET\"",
+              "mapping_id": "fortinet_fortios/policy-dstaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
         "key": "static:1",
         "evidence": [],
         "type": "Route",
@@ -3733,7 +3878,7 @@
             "line_end": 77,
             "raw": "set srcaddr \"all\"",
             "mapping_id": "fortinet_fortios/policy-srcaddr",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -3744,7 +3889,7 @@
             "line_end": 78,
             "raw": "set dstaddr \"ANY-NET\"",
             "mapping_id": "fortinet_fortios/policy-dstaddr",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -3755,7 +3900,7 @@
             "line_end": 80,
             "raw": "set service \"ALL\"",
             "mapping_id": "fortinet_fortios/policy-service",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]

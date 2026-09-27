@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "f3d531bb6bc6d89ea5af3e35",
+  "audit_id": "6081e4af0207397e9d6efb30",
   "input": {
     "file": "weak.xml",
     "sha256": "845b94ce8f00e3c62b19f9b4435d7e0a1cf980a608d3e9a4d8fb9ca36bceb75f",
@@ -50,8 +50,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
-    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
+    "kb_version": "67a203a4b3c00caf597565d43355c437a91d96e92d0eab325f5313a73e740fca",
+    "ruleset_version": "aa3815593bd5283a1f6bba3f8ec737aa294d87409b34d0a429a77ee3988f7e28",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -726,7 +726,7 @@
           "line_end": 157,
           "raw": "member any",
           "mapping_id": "paloalto_panos/rule-source",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -737,7 +737,7 @@
           "line_end": 160,
           "raw": "member any",
           "mapping_id": "paloalto_panos/rule-destination",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -759,7 +759,7 @@
           "line_end": 166,
           "raw": "member any",
           "mapping_id": "paloalto_panos/rule-service",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -2024,7 +2024,7 @@
         "facts": 1
       },
       {
-        "mapping": "paloalto_panos/rule-destination@1",
+        "mapping": "paloalto_panos/rule-destination@2",
         "approved_by": [
           "maintainer"
         ],
@@ -2038,14 +2038,14 @@
         "facts": 1
       },
       {
-        "mapping": "paloalto_panos/rule-service@1",
+        "mapping": "paloalto_panos/rule-service@2",
         "approved_by": [
           "maintainer"
         ],
         "facts": 1
       },
       {
-        "mapping": "paloalto_panos/rule-source@1",
+        "mapping": "paloalto_panos/rule-source@2",
         "approved_by": [
           "maintainer"
         ],
@@ -2369,7 +2369,7 @@
               "line_end": 157,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-source",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2389,7 +2389,7 @@
               "line_end": 160,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-destination",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2409,7 +2409,7 @@
               "line_end": 166,
               "raw": "member any",
               "mapping_id": "paloalto_panos/rule-service",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -4584,7 +4584,7 @@
             "line_end": 157,
             "raw": "member any",
             "mapping_id": "paloalto_panos/rule-source",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -4595,7 +4595,7 @@
             "line_end": 160,
             "raw": "member any",
             "mapping_id": "paloalto_panos/rule-destination",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -4617,7 +4617,7 @@
             "line_end": 166,
             "raw": "member any",
             "mapping_id": "paloalto_panos/rule-service",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]

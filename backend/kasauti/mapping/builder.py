@@ -99,6 +99,10 @@ class RefRecord:
     """Which of the target's attributes ``expand`` takes."""
     if_empty: frozenset[str] | None = None
     """What a target listing nothing contributes (``None``: nothing)."""
+    literal: str | None = None
+    """``address``: an address, prefix or range no object has is a value, not a reference."""
+    unread: str | None = None
+    """What else the name may point at that the pack doesn't read: unfound is *unknown*."""
 
 
 @dataclass

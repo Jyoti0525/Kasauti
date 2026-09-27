@@ -370,8 +370,10 @@ class ObjectDef(Entity):
 
     type: Literal["ObjectDef"] = "ObjectDef"
     kind: StrFact = StrFact()
-    """address | address_group | service | service_group | acl | mgmt_profile | server_group |
-    user_group | auth_server | auth_profile | login_list"""
+    """address | address_group | address6 | address6_group | vip | vip_group | region |
+    external_list | service | service_group | acl | mgmt_profile | server_group | user_group |
+    auth_server | auth_profile | login_list. A virtual IP's ``members`` are its external
+    addresses; an external list's (a threat feed) are fetched by the device, never read."""
     members: SetFact = SetFact()
     expanded: SetFact = SetFact()
     """Groups only: members after recursive expansion of nested groups (0.4). Unknown if the
@@ -396,9 +398,13 @@ class Reference(Entity):
     attribute: StrFact = StrFact()
     """``MgmtSession.access_filter``"""
     target_kind: StrFact = StrFact()
-    """acl | address | address_group | service | service_group | any_object"""
+    """An ObjectDef kind, or the kinds the name may be, tried in order and ``|``-separated
+    (``address|address_group|external_list``); ``any_object`` accepts any kind."""
     name: StrFact = StrFact()
     resolved: BoolFact = BoolFact()
+    """Unknown where the name may point at something the pack doesn't read (a PAN-OS
+    country): no object having it doesn't make it dangling. A name written in place (a
+    PAN-OS address) is a value, not a reference."""
     target: StrFact = StrFact()
     """The entity it resolves to, e.g. ``ObjectDef[acl:MGMT-ACL]``."""
     permits_any: BoolFact = BoolFact()

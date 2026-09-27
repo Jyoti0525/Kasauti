@@ -447,11 +447,21 @@ mappings:
     key: security:{r}
   match: member <STR:a>
   effect:
-    members: FilterRule.src
+    ref: FilterRule.src
     from: a
+    target: [address, address_group, region, external_list]
+    literal: address
+    unread: >-
+      a country from the firewall's own list of regions, or a predefined external dynamic
+      list: neither is in the configuration
+    map:
+      any: any
+      0.0.0.0/0: any
+      ::/0: any
+      0.0.0.0-255.255.255.255: any
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -492,11 +502,21 @@ mappings:
     key: security:{r}
   match: member <STR:a>
   effect:
-    members: FilterRule.dst
+    ref: FilterRule.dst
     from: a
+    target: [address, address_group, region, external_list]
+    literal: address
+    unread: >-
+      a country from the firewall's own list of regions, or a predefined external dynamic
+      list: neither is in the configuration
+    map:
+      any: any
+      0.0.0.0/0: any
+      ::/0: any
+      0.0.0.0-255.255.255.255: any
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -559,14 +579,16 @@ mappings:
     key: security:{r}
   match: member <STR:s>
   effect:
-    members: FilterRule.service
+    ref: FilterRule.service
     from: s
+    target: [service, service_group]
+    builtin: [service-http, service-https]
     map:
       any: ip
       application-default: ip
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -791,6 +813,69 @@ mappings:
   effect:
     members: ObjectDef.members
     from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/region
+  vendor: paloalto_panos
+  context:
+  - region
+  entity:
+    type: ObjectDef
+    key: region:{n}
+  match: entry <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: region
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/region-address
+  vendor: paloalto_panos
+  context:
+  - region
+  - entry <STR:n>
+  - address
+  entity:
+    type: ObjectDef
+    key: region:{n}
+  match: member <STR:a>
+  effect:
+    members: ObjectDef.members
+    from: a
+    map:
+      0.0.0.0/0: any
+      ::/0: any
+      0.0.0.0-255.255.255.255: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: paloalto_panos/external-list
+  vendor: paloalto_panos
+  context:
+  - external-list
+  entity:
+    type: ObjectDef
+    key: external_list:{n}
+  match: entry <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: external_list
   negation: null
   provenance:
     version: 1

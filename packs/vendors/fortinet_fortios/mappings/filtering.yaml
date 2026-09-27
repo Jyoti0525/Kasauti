@@ -302,13 +302,14 @@ mappings:
     key: policy:{id}
   match: set srcaddr <LIST:a>
   effect:
-    members: FilterRule.src
+    ref: FilterRule.src
     from: a
+    target: [address, address_group, external_list]
     map:
       all: any
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -344,13 +345,14 @@ mappings:
     key: policy:{id}
   match: set dstaddr <LIST:a>
   effect:
-    members: FilterRule.dst
+    ref: FilterRule.dst
     from: a
+    target: [address, address_group, vip, vip_group, external_list]
     map:
       all: any
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -366,10 +368,170 @@ mappings:
     key: policy:{id}
   match: set service <LIST:s>
   effect:
-    members: FilterRule.service
+    ref: FilterRule.service
     from: s
+    target: [service, service_group]
     map:
       ALL: ip
+  negation: null
+  provenance:
+    version: 2
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-srcaddr6
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set srcaddr6 <LIST:a>
+  effect:
+    ref: FilterRule.src
+    from: a
+    target: [address6, address6_group]
+    map:
+      all: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-dstaddr6
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set dstaddr6 <LIST:a>
+  effect:
+    ref: FilterRule.dst
+    from: a
+    target: [address6, address6_group]
+    unread: >-
+      an IPv6 virtual IP or VIP group (config firewall vip6, vipgrp6), which the pack
+      doesn't read
+    map:
+      all: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-srcaddr-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set srcaddr-negate enable
+  effect:
+    assert: FilterRule.src
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-dstaddr-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set dstaddr-negate enable
+  effect:
+    assert: FilterRule.dst
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-srcaddr6-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set srcaddr6-negate enable
+  effect:
+    assert: FilterRule.src
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-dstaddr6-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set dstaddr6-negate enable
+  effect:
+    assert: FilterRule.dst
+    value:
+    - any
+    combine: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/policy-service-negate
+  vendor: fortinet_fortios
+  context:
+  - config firewall policy
+  - edit <INT:id>
+  entity:
+    type: FilterRule
+    key: policy:{id}
+  match: set service-negate enable
+  effect:
+    assert: FilterRule.service
+    value:
+    - ip
+    combine: any
   negation: null
   provenance:
     version: 1
@@ -553,6 +715,181 @@ mappings:
   effect:
     members: ObjectDef.members
     from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/address6
+  vendor: fortinet_fortios
+  context:
+  - config firewall address6
+  entity:
+    type: ObjectDef
+    key: address6:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: address6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/address6-ip6
+  vendor: fortinet_fortios
+  context:
+  - config firewall address6
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: address6:{n}
+  match: set ip6 <STR:a>
+  effect:
+    members: ObjectDef.members
+    from: a
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/addrgrp6
+  vendor: fortinet_fortios
+  context:
+  - config firewall addrgrp6
+  entity:
+    type: ObjectDef
+    key: address6_group:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: address6_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/addrgrp6-member
+  vendor: fortinet_fortios
+  context:
+  - config firewall addrgrp6
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: address6_group:{n}
+  match: set member <LIST:m>
+  effect:
+    members: ObjectDef.members
+    from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/vip
+  vendor: fortinet_fortios
+  context:
+  - config firewall vip
+  entity:
+    type: ObjectDef
+    key: vip:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: vip
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/vip-extip
+  vendor: fortinet_fortios
+  context:
+  - config firewall vip
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: vip:{n}
+  match: set extip <STR:e>
+  effect:
+    members: ObjectDef.members
+    from: e
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/vipgrp
+  vendor: fortinet_fortios
+  context:
+  - config firewall vipgrp
+  entity:
+    type: ObjectDef
+    key: vip_group:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: vip_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/vipgrp-member
+  vendor: fortinet_fortios
+  context:
+  - config firewall vipgrp
+  - edit <STR:n>
+  entity:
+    type: ObjectDef
+    key: vip_group:{n}
+  match: set member <LIST:m>
+  effect:
+    members: ObjectDef.members
+    from: m
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: fortinet_fortios/external-resource
+  vendor: fortinet_fortios
+  context:
+  - config system external-resource
+  entity:
+    type: ObjectDef
+    key: external_list:{n}
+  match: edit <STR:n>
+  effect:
+    assert: ObjectDef.kind
+    value: external_list
   negation: null
   provenance:
     version: 1
@@ -862,13 +1199,14 @@ mappings:
     key: local-in:{id}
   match: set srcaddr <LIST:a>
   effect:
-    members: FilterRule.src
+    ref: FilterRule.src
     from: a
+    target: [address, address_group, external_list]
     map:
       all: any
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -906,13 +1244,14 @@ mappings:
     key: local-in:{id}
   match: set dstaddr <LIST:a>
   effect:
-    members: FilterRule.dst
+    ref: FilterRule.dst
     from: a
+    target: [address, address_group, external_list]
     map:
       all: any
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -950,13 +1289,14 @@ mappings:
     key: local-in:{id}
   match: set service <LIST:s>
   effect:
-    members: FilterRule.service
+    ref: FilterRule.service
     from: s
+    target: [service, service_group]
     map:
       ALL: ip
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -1362,13 +1702,14 @@ mappings:
     key: local-in6:{id}
   match: set srcaddr <LIST:a>
   effect:
-    members: FilterRule.src
+    ref: FilterRule.src
     from: a
+    target: [address6, address6_group]
     map:
       all: any
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -1406,13 +1747,14 @@ mappings:
     key: local-in6:{id}
   match: set dstaddr <LIST:a>
   effect:
-    members: FilterRule.dst
+    ref: FilterRule.dst
     from: a
+    target: [address6, address6_group]
     map:
       all: any
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer
@@ -1450,13 +1792,14 @@ mappings:
     key: local-in6:{id}
   match: set service <LIST:s>
   effect:
-    members: FilterRule.service
+    ref: FilterRule.service
     from: s
+    target: [service, service_group]
     map:
       ALL: ip
   negation: null
   provenance:
-    version: 1
+    version: 2
     proposed_by: seed:kasauti
     approved_by:
     - maintainer

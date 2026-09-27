@@ -350,6 +350,14 @@
     "RefEffect": {
       "additionalProperties": false,
       "properties": {
+        "builtin": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Builtin",
+          "type": "array"
+        },
         "expand": {
           "default": false,
           "title": "Expand",
@@ -375,6 +383,26 @@
           "default": null,
           "title": "If Empty"
         },
+        "literal": {
+          "anyOf": [
+            {
+              "const": "address",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Literal"
+        },
+        "map": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Map",
+          "type": "object"
+        },
         "ref": {
           "pattern": "^[A-Z][A-Za-z0-9]+\\.[a-z][a-z0-9_]*$",
           "title": "Ref",
@@ -391,21 +419,56 @@
           "type": "string"
         },
         "target": {
-          "enum": [
-            "acl",
-            "address",
-            "address_group",
-            "service",
-            "service_group",
-            "mgmt_profile",
-            "server_group",
-            "user_group",
-            "auth_profile",
-            "login_list",
-            "any_object"
+          "anyOf": [
+            {
+              "enum": [
+                "acl",
+                "address",
+                "address_group",
+                "address6",
+                "address6_group",
+                "vip",
+                "vip_group",
+                "region",
+                "external_list",
+                "service",
+                "service_group",
+                "mgmt_profile",
+                "server_group",
+                "user_group",
+                "auth_profile",
+                "login_list",
+                "any_object"
+              ],
+              "type": "string"
+            },
+            {
+              "items": {
+                "enum": [
+                  "acl",
+                  "address",
+                  "address_group",
+                  "address6",
+                  "address6_group",
+                  "vip",
+                  "vip_group",
+                  "region",
+                  "external_list",
+                  "service",
+                  "service_group",
+                  "mgmt_profile",
+                  "server_group",
+                  "user_group",
+                  "auth_profile",
+                  "login_list",
+                  "any_object"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            }
           ],
-          "title": "Target",
-          "type": "string"
+          "title": "Target"
         },
         "unless": {
           "default": [],
@@ -414,6 +477,19 @@
           },
           "title": "Unless",
           "type": "array"
+        },
+        "unread": {
+          "anyOf": [
+            {
+              "minLength": 10,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unread"
         }
       },
       "required": [

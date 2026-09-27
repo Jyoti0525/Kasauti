@@ -152,8 +152,23 @@ def _members(effect: MembersEffect, caps: Captures, *, negated: bool) -> Outcome
 def _ref(effect: RefEffect, caps: Captures, kind: Type, *, negated: bool) -> Outcome:
     if negated:
         return Clear()
-    name = str(_slot(caps, effect.from_))
-    return AddItems(frozenset({name})) if kind == "set" else SetValue(name)
+    values = [effect.map.get(n, n) for n in ref_names(effect, caps, all_names=True)]
+    if kind == "set":
+        return AddItems(frozenset(values))
+    if len(values) != 1:
+        raise _UnreadableError(f"one name expected, got {len(values)}")
+    return SetValue(values[0])
+
+
+def ref_names(effect: RefEffect, caps: Captures, *, all_names: bool = False) -> list[str]:
+    """The names a ``ref`` statement gives (one per item of a list slot), without those that
+    stand for themselves (``map``, ``builtin``) unless ``all_names``."""
+    raw = _slot(caps, effect.from_)
+    names = [str(n) for n in raw] if isinstance(raw, tuple) else [str(raw)]
+    if all_names:
+        return names
+    skip = effect.not_references()
+    return [n for n in names if n not in skip]
 
 
 def _render(template: str, caps: Captures) -> str:

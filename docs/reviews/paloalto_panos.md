@@ -214,3 +214,36 @@ An interface address or next hop given as an address object's name isn't read: i
 absent, never guessed. Routes in advanced routing's logical routers aren't claimed. The
 authored configs gained a virtual router whose `default-to-isp` route leaves by `ethernet1/1`
 to `198.51.100.1` (weak: `.5`); every verdict is unchanged.
+
+## Addendum (v5.1.29, M2.23): names in rules are references
+
+Read on 2026-09-27. A security rule's `source`, `destination` and `service` members are now
+`ref` effects: each name is a `Reference`, resolved or dangling, and the rule is judged by
+what the object covers. A name that stays unresolved makes the rule's field *unknown*
+(REVIEW); before, it was taken as some addresses.
+
+| What a member may be | Quote | Source |
+|---|---|---|
+| Source / destination | "Add source addresses, address groups, or regions (default is Any)." (the same for destination) | [Building Blocks in a Security Policy Rule (11.1)](https://docs.paloaltonetworks.com/ngfw/help/11-1/policies/policies-security/building-blocks-in-a-security-policy-rule) |
+| An address written in place | "Specify a Destination IP Address or leave the value set to any." | [Create a Security Policy Rule](https://docs.paloaltonetworks.com/network-security/security-policy/administration/security-rules/create-a-security-policy-rule) |
+| A region | "You can choose from a standard list of countries or use the region settings described in this section to define custom regions"; a custom region's addresses: "x.x.x.x, x.x.x.x-y.y.y.y, x.x.x.x/n" | [Policy Object: Regions](https://docs.paloaltonetworks.com/network-security/security-policy/administration/objects/regions) |
+| An external dynamic list | "use an external dynamic list of type IP address as a source or destination address object in security rules" | [Policy Object: External Dynamic Lists](https://docs.paloaltonetworks.com/network-security/security-policy/administration/objects/external-dynamic-lists) |
+| Predefined services | "The default service is any, which allows all TCP and UDP ports. The HTTP and HTTPS services are predefined"; their names: "rules that control web-browsing traffic with the Service set to service-http and service-https" | [Policy Object: Services](https://docs.paloaltonetworks.com/network-security/security-policy/administration/objects/services); [Safely Enable Applications on Default Ports](https://docs.paloaltonetworks.com/ngfw/administration/app-id/application-default) |
+
+XML paths from pan-os-python (`panos/objects.py`, `develop` branch at commit 92ed648,
+2026-07-22): `Region` at `/region` with `address` (`vartype="member"`), `Edl` at
+`/external-list`. The pack reads custom regions (name and addresses) and external lists
+(name only: the firewall fetches their contents, so a rule naming one is *unknown* in what it
+covers).
+
+Modelling decisions:
+
+- `any`, `0.0.0.0/0`, `::/0` and `0.0.0.0-255.255.255.255` are values (`any`), as in address
+  objects; `any` and `application-default` services stay `ip`, as before; `service-http` and
+  `service-https` are predefined names, never references.
+- An address, prefix or range written in place is a value, not a reference.
+- A name no object has may be one of the firewall's standard countries, which no configuration
+  lists, so it is *unknown* (REVIEW), not dangling. A service name has no such escape: only the
+  two predefined services exist outside the configuration, so a missing service is dangling
+  (FAIL).
+- A dynamic address group's members are chosen by tags at run time: *unknown*.

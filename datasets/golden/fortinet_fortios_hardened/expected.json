@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "9a16476f3bef358d5f26e74a",
+  "audit_id": "545f811dd97abae8f7f2d2d9",
   "input": {
     "file": "hardened.conf",
     "sha256": "063ca0c4806bbbf776294c7b020f40612e1810a2d39d4c655b8ea2b0ac4d5005",
@@ -51,8 +51,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "442a27e8bfa2089b6bb25464c4d2c3c195d4c4b254db12b192a9c4575d8f12dc",
-    "ruleset_version": "6b03fc38a9fca37026598848c665d874b5229d8fbe99803205d4b8362a42a457",
+    "kb_version": "67a203a4b3c00caf597565d43355c437a91d96e92d0eab325f5313a73e740fca",
+    "ruleset_version": "aa3815593bd5283a1f6bba3f8ec737aa294d87409b34d0a429a77ee3988f7e28",
     "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -770,7 +770,7 @@
           "line_end": 123,
           "raw": "set srcaddr \"LAN-NET\"",
           "mapping_id": "fortinet_fortios/policy-srcaddr",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -781,7 +781,7 @@
           "line_end": 126,
           "raw": "set service \"HTTPS\" \"DNS\"",
           "mapping_id": "fortinet_fortios/policy-service",
-          "mapping_version": 1,
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -1153,6 +1153,81 @@
           "raw": "set remote-group \"TACACS-ADMINS\"",
           "mapping_id": "fortinet_fortios/admin-remote-group",
           "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[FilterRule[policy:1].service -> DNS]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[FilterRule[policy:1].service -> DNS].",
+      "actual": [
+        "Reference[FilterRule[policy:1].service -> DNS].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.conf",
+          "line_start": 126,
+          "line_end": 126,
+          "raw": "set service \"HTTPS\" \"DNS\"",
+          "mapping_id": "fortinet_fortios/policy-service",
+          "mapping_version": 2,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[FilterRule[policy:1].service -> HTTPS]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[FilterRule[policy:1].service -> HTTPS].",
+      "actual": [
+        "Reference[FilterRule[policy:1].service -> HTTPS].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.conf",
+          "line_start": 126,
+          "line_end": 126,
+          "raw": "set service \"HTTPS\" \"DNS\"",
+          "mapping_id": "fortinet_fortios/policy-service",
+          "mapping_version": 2,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[FilterRule[policy:1].src -> LAN-NET]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[FilterRule[policy:1].src -> LAN-NET].",
+      "actual": [
+        "Reference[FilterRule[policy:1].src -> LAN-NET].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "hardened.conf",
+          "line_start": 123,
+          "line_end": 123,
+          "raw": "set srcaddr \"LAN-NET\"",
+          "mapping_id": "fortinet_fortios/policy-srcaddr",
+          "mapping_version": 2,
           "approved_by": [
             "maintainer"
           ]
@@ -1642,7 +1717,7 @@
         "facts": 1
       },
       {
-        "mapping": "fortinet_fortios/policy-dstaddr@1",
+        "mapping": "fortinet_fortios/policy-dstaddr@2",
         "approved_by": [
           "maintainer"
         ],
@@ -1670,18 +1745,18 @@
         "facts": 2
       },
       {
-        "mapping": "fortinet_fortios/policy-service@1",
+        "mapping": "fortinet_fortios/policy-service@2",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 2
+        "facts": 14
       },
       {
-        "mapping": "fortinet_fortios/policy-srcaddr@1",
+        "mapping": "fortinet_fortios/policy-srcaddr@2",
         "approved_by": [
           "maintainer"
         ],
-        "facts": 2
+        "facts": 8
       },
       {
         "mapping": "fortinet_fortios/policy-srcintf@1",
@@ -2251,7 +2326,7 @@
               "line_end": 123,
               "raw": "set srcaddr \"LAN-NET\"",
               "mapping_id": "fortinet_fortios/policy-srcaddr",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2271,7 +2346,7 @@
               "line_end": 124,
               "raw": "set dstaddr \"all\"",
               "mapping_id": "fortinet_fortios/policy-dstaddr",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2292,7 +2367,7 @@
               "line_end": 126,
               "raw": "set service \"HTTPS\" \"DNS\"",
               "mapping_id": "fortinet_fortios/policy-service",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2473,7 +2548,7 @@
               "line_end": 134,
               "raw": "set srcaddr \"all\"",
               "mapping_id": "fortinet_fortios/policy-srcaddr",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2493,7 +2568,7 @@
               "line_end": 135,
               "raw": "set dstaddr \"all\"",
               "mapping_id": "fortinet_fortios/policy-dstaddr",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -2513,7 +2588,7 @@
               "line_end": 137,
               "raw": "set service \"ALL\"",
               "mapping_id": "fortinet_fortios/policy-service",
-              "mapping_version": 1,
+              "mapping_version": 2,
               "approved_by": [
                 "maintainer"
               ]
@@ -4827,6 +4902,399 @@
         }
       },
       {
+        "key": "FilterRule[policy:1].service -> DNS",
+        "evidence": [
+          {
+            "file": "hardened.conf",
+            "line_start": 126,
+            "line_end": 126,
+            "raw": "set service \"HTTPS\" \"DNS\"",
+            "mapping_id": "fortinet_fortios/policy-service",
+            "mapping_version": 2,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[policy:1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.service",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "service|service_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "DNS",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[service:DNS]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "FilterRule[policy:1].service -> HTTPS",
+        "evidence": [
+          {
+            "file": "hardened.conf",
+            "line_start": 126,
+            "line_end": 126,
+            "raw": "set service \"HTTPS\" \"DNS\"",
+            "mapping_id": "fortinet_fortios/policy-service",
+            "mapping_version": 2,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[policy:1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.service",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "service|service_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "HTTPS",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[service:HTTPS]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 126,
+              "line_end": 126,
+              "raw": "set service \"HTTPS\" \"DNS\"",
+              "mapping_id": "fortinet_fortios/policy-service",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "FilterRule[policy:1].src -> LAN-NET",
+        "evidence": [
+          {
+            "file": "hardened.conf",
+            "line_start": 123,
+            "line_end": 123,
+            "raw": "set srcaddr \"LAN-NET\"",
+            "mapping_id": "fortinet_fortios/policy-srcaddr",
+            "mapping_version": 2,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[policy:1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 123,
+              "line_end": 123,
+              "raw": "set srcaddr \"LAN-NET\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.src",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 123,
+              "line_end": 123,
+              "raw": "set srcaddr \"LAN-NET\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "address|address_group|external_list",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 123,
+              "line_end": 123,
+              "raw": "set srcaddr \"LAN-NET\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "LAN-NET",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 123,
+              "line_end": 123,
+              "raw": "set srcaddr \"LAN-NET\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 123,
+              "line_end": 123,
+              "raw": "set srcaddr \"LAN-NET\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[address:LAN-NET]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "hardened.conf",
+              "line_start": 123,
+              "line_end": 123,
+              "raw": "set srcaddr \"LAN-NET\"",
+              "mapping_id": "fortinet_fortios/policy-srcaddr",
+              "mapping_version": 2,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
         "key": "static:1",
         "evidence": [],
         "type": "Route",
@@ -5161,7 +5629,7 @@
             "line_end": 123,
             "raw": "set srcaddr \"LAN-NET\"",
             "mapping_id": "fortinet_fortios/policy-srcaddr",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
@@ -5172,7 +5640,7 @@
             "line_end": 126,
             "raw": "set service \"HTTPS\" \"DNS\"",
             "mapping_id": "fortinet_fortios/policy-service",
-            "mapping_version": 1,
+            "mapping_version": 2,
             "approved_by": [
               "maintainer"
             ]
