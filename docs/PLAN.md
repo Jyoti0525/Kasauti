@@ -1005,6 +1005,12 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.25 (2026-09-27, M2.17 family detection on every corpus):** A test walks
+  `datasets/` and checks every configuration against its vendor pack's family, with a clear
+  margin; a file outside a vendor's folder fails it, so corpora can't grow untested. It
+  showed FortiOS winning by 0.01 over indentation: block-edit and brace now score by their
+  own balanced pairs, and every sample wins by at least 0.10. M2.28 was reopened: its
+  Junos `set` form is still pending though the item was marked done.
 - **v5.1.24 (2026-09-27, M2.08 masking reviewed per vendor):** 129 statements across the
   five vendors, syntax checked against each vendor's reference; the M1 masker leaked 29 of
   them (among them Junos NTP and SNMPv3 privacy keys, Cisco trap-host communities after

@@ -33,10 +33,15 @@ def score_families(text: str) -> dict[ShapeFamily, float]:
 
     starts = [ln.split(None, 1)[0] for ln in lines]
     config = sum(1 for w in starts if w == "config")
-    closers = sum(1 for ln in lines if ln in ("next", "end"))
+    ends = sum(1 for ln in lines if ln == "end")
+    nexts = sum(1 for ln in lines if ln == "next")
     edits = sum(1 for w in starts if w == "edit")
-    if config and closers:
-        scores[ShapeFamily.BLOCK_EDIT] = min(1.0, 0.5 + (config + closers + edits) / n)
+    if config and ends + nexts:
+        # Every ``config`` closes with an ``end`` and every ``edit`` with a ``next``: pairs
+        # that match are this family's own mark, where indentation is anyone's (M2.17).
+        paired = _balance(config, ends) * _balance(edits, nexts)
+        density = (config + ends + nexts + edits) / n
+        scores[ShapeFamily.BLOCK_EDIT] = min(1.0, 0.5 + 0.5 * paired + density)
 
     menus = sum(1 for ln in lines if re.match(r"^/[a-z]", ln))
     if menus and any("=" in ln for ln in lines):
@@ -49,7 +54,8 @@ def score_families(text: str) -> dict[ShapeFamily, float]:
     closes = text.count("}")
     if opens and abs(opens - closes) <= max(1, opens // 50):
         brace_lines = sum(1 for ln in lines if ln.endswith(("{", "}", ";")))
-        scores[ShapeFamily.BRACE] = brace_lines / n
+        # Balanced braces lift it clear of the indentation every brace file also has.
+        scores[ShapeFamily.BRACE] = min(1.0, 0.2 + brace_lines / n)
 
     yaml_lines = sum(1 for ln in raw if _YAML_LINE.match(ln.strip()))
     scores[ShapeFamily.JSON_YAML] = 0.9 * yaml_lines / n
@@ -59,6 +65,11 @@ def score_families(text: str) -> dict[ShapeFamily, float]:
     if indented or separators:
         scores[ShapeFamily.INDENT] = min(0.9, 0.3 + (indented + 2 * separators) / n)
     return scores
+
+
+def _balance(opened: int, closed: int) -> float:
+    """1.0 when every block opened is closed, less as they differ; 1.0 when there are none."""
+    return min(opened, closed) / max(opened, closed) if opened or closed else 1.0
 
 
 def detect_family(text: str) -> ShapeFamily:

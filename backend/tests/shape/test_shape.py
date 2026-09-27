@@ -4,13 +4,42 @@ from pathlib import Path
 
 import pytest
 
+from kasauti.packs.loader import load_vendor_packs
 from kasauti.shape.base import ParseError
-from kasauti.shape.detect import detect_family
+from kasauti.shape.detect import detect_family, score_families
 from kasauti.shape.model import ShapeFamily as F
 from kasauti.shape.parse import parse_text
 from kasauti.shape.patterns import pattern_key
 
-AUTHORED = Path(__file__).resolve().parents[3] / "datasets" / "authored"
+REPO = Path(__file__).resolve().parents[3]
+DATASETS = REPO / "datasets"
+AUTHORED = DATASETS / "authored"
+FAMILIES = {v: p.manifest.shape_family for v, p in load_vendor_packs(REPO / "packs").items()}
+MARGIN = 0.05
+"""How far a corpus file's family must score above the next: a near tie means one more line of
+another shape could flip it."""
+NOT_CONFIGS = {"SOURCES.md", ".gitkeep", "case.yaml", "expected.json"}
+"""Files under ``datasets/`` that aren't configurations: the index, placeholders, and golden
+cases (which point at authored files)."""
+
+
+def _corpus() -> tuple[list[tuple[Path, F]], list[Path]]:
+    """Every configuration under ``datasets/``, with the family of the vendor pack whose folder
+    it is in; and those in no vendor's folder, which a new corpus must sort before its files
+    are tested. Command outputs (``companions/``) aren't configurations."""
+    placed, unplaced = [], []
+    for path in sorted(DATASETS.rglob("*")):
+        if not path.is_file() or path.name in NOT_CONFIGS or "companions" in path.parts:
+            continue
+        vendors = [part for part in path.relative_to(DATASETS).parts if part in FAMILIES]
+        if vendors:
+            placed.append((path, FAMILIES[vendors[0]]))
+        else:
+            unplaced.append(path)
+    return placed, unplaced
+
+
+CORPUS, UNPLACED = _corpus()
 
 
 def _rows(text: str, family: F) -> list[tuple[tuple[str, ...], str, int, int]]:
@@ -238,6 +267,26 @@ def test_yaml_aliases_are_refused() -> None:
 )
 def test_family_detection(text: str, family: F) -> None:
     assert detect_family(text) is family
+
+
+def test_every_corpus_file_is_in_a_vendor_s_folder() -> None:
+    assert len(CORPUS) >= 19, "fewer configurations than the corpus held in v5.1.25: moved?"
+    assert UNPLACED == [], "put each under datasets/<corpus>/<vendor pack>/, or say its family"
+
+
+@pytest.mark.parametrize(
+    ("path", "family"), CORPUS, ids=[str(p.relative_to(DATASETS).as_posix()) for p, _ in CORPUS]
+)
+def test_every_corpus_file_is_detected_as_its_vendor_s_family_by_a_clear_margin(
+    path: Path, family: F
+) -> None:
+    """TODO M2.17: every corpus, as it grows; a file added under a vendor's folder is tested
+    here without anyone having to remember to."""
+    text = path.read_text(encoding="utf-8")
+    assert detect_family(text) is family
+    scores = score_families(text)
+    runner_up = max(v for f, v in scores.items() if f is not family)
+    assert scores[family] - runner_up >= MARGIN, scores
 
 
 def test_48_interface_blocks_collapse_into_one_pattern() -> None:
