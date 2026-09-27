@@ -40,6 +40,86 @@ def test_other_vendors_are_not_mistaken_for_cisco(cisco: VendorPack) -> None:
     assert choose(detect_vendor(nxos_like, [cisco])) is None
 
 
+# The start of the running configuration printed in Cisco's 900 Series ISR Software
+# Configuration Guide, "Basic Router Configuration": classic IOS 15.8.
+CLASSIC_IOS = """\
+Building configuration...
+
+Current configuration : 1087 bytes
+!
+! No configuration change since last restart
+! NVRAM config last updated at 06:11:03 UTC Mon Sep 17 2018
+!
+version 15.8
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname Router
+!
+boot-start-marker
+boot-end-marker
+!
+ip cef
+!
+interface GigabitEthernet0/0
+ no ip address
+!
+line vty 0 4
+ login
+!
+end
+"""
+
+# The header of the NX-OS output in Cisco's Nexus 3600 Label Switching Configuration Guide,
+# 9.3(x), followed by lines IOS XE also has.
+NXOS = """\
+!Command: show running-config segment-routing mpls
+!Time: Fri June 21 11:22:53 2019
+
+version 9.3(1)
+service timestamps log datetime msec
+ip domain-lookup
+interface Vlan1
+!
+"""
+
+
+def test_nxos_and_classic_ios_are_ruled_out_of_ios_xe(cisco: VendorPack) -> None:
+    """M2.26: no seed pack reads NX-OS or classic IOS, and classic IOS 15 carries every IOS XE
+    signature. The pack's `excludes` keep it from claiming either; IOS XE 17 is still claimed
+    (test_cisco_configs_are_fingerprinted)."""
+    classic = detect_vendor(CLASSIC_IOS, [cisco])[0]
+    assert classic.score >= classic.min_score
+    assert [e[0] for e in classic.excluded] == ["release-15-or-earlier"]
+    assert choose([classic]) is None
+    nxos = detect_vendor(NXOS, [cisco])[0]
+    assert [(e[0], e[1]) for e in nxos.excluded] == [("nxos-version", 4), ("nxos-header", 1)]
+    note = nxos.exclusion_note()
+    assert note is not None
+    assert note.startswith("This looks like a Cisco NX-OS configuration")
+    assert note.endswith("(line 4)")
+    for newer in ("version 16.12\n", "version 17.9\n", "version 26.1\n"):
+        assert not detect_vendor(newer, [cisco])[0].excluded, newer
+
+
+def test_a_pack_ruled_out_never_wins_or_ties() -> None:
+    ruled_out = Detection("a", 2.0, 0.5, (("s", 1),), (("x", 1, "another OS"),))
+    other = Detection("b", 1.0, 0.5, (("s", 1),))
+    assert not ruled_out.confident
+    assert choose([other, ruled_out]) is other
+    level = Detection("a", 1.0, 0.5, (("s", 1),), (("x", 1, "another OS"),))
+    assert choose([other, level]) is other
+    assert choose([ruled_out]) is None
+    assert other.exclusion_note() is None
+
+
+def test_ruled_out_packs_sort_last(cisco: VendorPack) -> None:
+    arista = load_vendor_pack(REPO / "packs" / "vendors" / "arista_eos")
+    found = detect_vendor(NXOS, [cisco, arista])
+    assert [d.pack_id for d in found] == ["arista_eos", "cisco_ios_xe"]
+
+
 ALL_PACKS = load_vendor_packs(REPO / "packs")
 SAMPLES = sorted(
     p for p in AUTHORED.rglob("*") if p.is_file() and p.parent.name in {*ALL_PACKS, "companions"}

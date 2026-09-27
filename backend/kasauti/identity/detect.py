@@ -3,7 +3,8 @@
 Every signature that matches adds its weight once. The best pack wins if it reaches its
 ``min_score`` and no other pack ties with it; otherwise the operator must choose (the CLI's
 ``--vendor``), because auditing a config against the wrong vendor's mappings would produce
-confident nonsense.
+confident nonsense. A pack's ``excludes`` rule it out whatever it scores: they name another OS
+it isn't written for, whose own pack isn't installed to outscore it (NX-OS against IOS XE).
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ from dataclasses import dataclass
 
 from kasauti.ingest.mask import mask_secrets
 from kasauti.packs.loader import VendorPack
-from kasauti.packs.model import DetectSpec, InputWarning, Signature
+from kasauti.packs.model import DetectSpec, Exclusion, InputWarning, Signature
 from kasauti.rules import regex
 from kasauti.sbm.facts import Evidence
 from kasauti.shape.model import ConfigTree
@@ -31,10 +32,20 @@ class Detection:
     min_score: float
     matched: tuple[tuple[str, int], ...]
     """(signature id, 1-based line) for every signature that matched."""
+    excluded: tuple[tuple[str, int, str], ...] = ()
+    """(exclusion id, 1-based line, message) for every ``excludes`` pattern that matched."""
 
     @property
     def confident(self) -> bool:
-        return self.score >= self.min_score
+        return self.score >= self.min_score and not self.excluded
+
+    def exclusion_note(self) -> str | None:
+        """Why the pack is ruled out: the first exclusion that matched, with its line (NX-OS
+        can match two, which say the same thing)."""
+        if not self.excluded:
+            return None
+        _, line, message = self.excluded[0]
+        return f"{message} (line {line})"
 
 
 def score_pack(text: str, pack: VendorPack, tree: ConfigTree | None = None) -> Detection:
@@ -59,11 +70,17 @@ def score(
             matched.append((sig.id, line))
     weights = {s.id: s.weight for s in spec.signatures}
     total = round(sum(weights[sid] for sid, _ in matched), 6)
-    return Detection(name, total, spec.min_score, tuple(matched))
+    excluded = []
+    for ex in spec.excludes:
+        line = _match(ex, joined, tree)
+        if line is not None:
+            excluded.append((ex.id, line, ex.message))
+    return Detection(name, total, spec.min_score, tuple(matched), tuple(excluded))
 
 
 def detect_vendor(text: str, packs: Sequence[VendorPack]) -> list[Detection]:
-    """All packs, best first (ties broken by pack id, so the order is deterministic).
+    """All packs, best first (ties broken by pack id, so the order is deterministic); packs
+    ruled out by their ``excludes`` come last.
 
     A pack's shape family is parsed only if one of its signatures reads structure: a parse is
     most of what an audit costs in time and memory, and text signatures don't need one."""
@@ -72,20 +89,23 @@ def detect_vendor(text: str, packs: Sequence[VendorPack]) -> list[Detection]:
     joined = joined_lines(text)
     for pack in packs:
         tree = None
-        if any(s.kind in _STRUCTURED for s in pack.detect.signatures):
+        kinds = [s.kind for s in pack.detect.signatures] + [e.kind for e in pack.detect.excludes]
+        if any(kind in _STRUCTURED for kind in kinds):
             family = pack.manifest.shape_family
             if family not in trees:
                 trees[family] = parse_text(text, source_file="detect", family=family)
             tree = trees[family]
         out.append(score(text, pack.detect, pack.manifest.id, tree, joined))
-    return sorted(out, key=lambda d: (-d.score, d.pack_id))
+    return sorted(out, key=lambda d: (bool(d.excluded), -d.score, d.pack_id))
 
 
 def choose(detections: Sequence[Detection]) -> Detection | None:
-    """The single confident winner, or None if nothing is confident or the top two tie."""
+    """The single confident winner, or None if nothing is confident or the top two tie. A pack
+    ruled out by its ``excludes`` is never a winner, and so never ties with one."""
     if not detections or not detections[0].confident:
         return None
-    if len(detections) > 1 and detections[1].score == detections[0].score:
+    rivals = [d for d in detections[1:] if not d.excluded]
+    if rivals and rivals[0].score == detections[0].score:
         return None
     return detections[0]
 
@@ -114,7 +134,9 @@ def detection_evidence(detection: Detection, text: str, source_file: str) -> tup
     )
 
 
-def _match(sig: Signature | InputWarning, joined: str, tree: ConfigTree | None) -> int | None:
+def _match(
+    sig: Signature | InputWarning | Exclusion, joined: str, tree: ConfigTree | None
+) -> int | None:
     """The 1-based line ``sig`` first matches in ``joined`` (the text, every line break made
     ``\\n``), or None. Each kind is one pass over the text: a loop that called RE2 once per
     line spent 48 s on a file of a million blank lines (M2.07 review)."""

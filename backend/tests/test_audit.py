@@ -97,6 +97,26 @@ def test_unknown_vendor_is_an_error_not_a_guess(kb: KnowledgeBase) -> None:
         audit(read_file(WEAK), kb, vendor="nokia_sros")
 
 
+def test_a_vendor_ruled_out_is_explained_and_warned_when_forced(kb: KnowledgeBase) -> None:
+    """M2.26: classic IOS 15 fingerprints as IOS XE, but the pack's `excludes` rule it out; the
+    error says why, and an operator who chooses the pack anyway is warned."""
+    classic = decode(
+        b"version 15.8\nservice timestamps log datetime msec\nhostname R1\n!\n"
+        b"boot-start-marker\nboot-end-marker\n!\ninterface GigabitEthernet0/0\n!\n"
+        b"line vty 0 4\n transport input telnet\n!\nend\n",
+        "r.cfg",
+    )
+    with pytest.raises(AuditError, match=r"cisco_ios_xe is ruled out: The version line names"):
+        audit(classic, kb)
+    result = audit(classic, kb, vendor="cisco_ios_xe")
+    other_os = [w for w in result.warnings if "looks like another OS" in w]
+    assert len(other_os) == 1
+    assert other_os[0].endswith("(line 1)")
+    assert not any("check this is really" in w for w in result.warnings)
+    telnet = next(r for r in result.rules if r.rule_id == "MGMT-TELNET-01")
+    assert telnet.status is Status.FAIL
+
+
 def test_forcing_a_vendor_that_does_not_fingerprint_warns(kb: KnowledgeBase) -> None:
     result = audit(
         decode(b"hostname R1\nline vty 0 4\n transport input telnet\n", "r.cfg"),

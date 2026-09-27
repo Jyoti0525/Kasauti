@@ -186,3 +186,28 @@ The authored configs gained `ip route 0.0.0.0 0.0.0.0 203.0.113.1 name ISP` (har
 `ip route 0.0.0.0 0.0.0.0 203.0.113.1` (weak), the ISP side of the WAN /30. The weak config's
 weakness lines from W11 on moved down two (`datasets/SOURCES.md` updated); every verdict is
 unchanged.
+
+## Addendum (v5.1.30, M2.26): NX-OS and classic IOS
+
+Read on 2026-09-27. No seed pack reads Cisco NX-OS or classic IOS (PLAN §20.4), and a classic
+IOS 15 running configuration carries every signature in `detect.yaml`: it was claimed as
+IOS XE with full score (1.2). NX-OS scored 0.5, below the threshold, but only by margin. The
+pack now lists `excludes`; a match rules it out of fingerprinting whatever it scores, so the
+operator is asked, with the reason, and warned if they choose the pack anyway.
+
+| Exclusion | What it matches | Source |
+|---|---|---|
+| `nxos-version` | `version 9.3(1)`: a version line with the release in brackets | [Nexus 3600 NX-OS Label Switching Configuration Guide, 9.3(x): Configuring Segment Routing](https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3600/sw/93x/label-switching/b-cisco-nexus-3600-series-nx-os-label-switching-configuration-guide-93x/b-cisco-nexus-3600-series-nx-os-label-switching-configuration-guide-93x_chapter_01001.html), example output: "!Command: show running-config segment-routing mpls", "!Time: Fri June 21 11:22:53 2019", "version 9.3(1)" |
+| `nxos-header` | a line starting `!Command: show running-config` (Arista writes `! Command:`, with a space, and isn't matched) | same page |
+| `release-15-or-earlier` | a version line of release 15 or earlier, with nothing after it | [Cisco 900 Series ISR Software Configuration Guide: Basic Router Configuration](https://www.cisco.com/c/en/us/td/docs/routers/access/900/software/configuration/guide/900SCG/routconf.html), running configuration: "version 15.8", "service timestamps debug datetime msec", "boot-start-marker"; [ASR 1000 Release Notes, IOS XE 3S: Introduction](https://www.cisco.com/c/en/us/td/docs/routers/asr1000/release/notes/asr1k_rn_rel_notes/asr1k_rn_intro.html), which pairs each IOS XE 3S release with an IOS 15 release ("3.16S" with "15.5(3)S") |
+
+Why release 15 or earlier is ruled out rather than read: every default in `defaults.yaml` is
+scoped `>=16.1`, so none applies to an earlier release, and the pack describes itself as for
+IOS XE 16.x/17.x. An operator who chooses the pack for such a file gets the explicit settings
+judged and anything left at its default for review, with the warning.
+
+Not quoted: I found no Cisco page printing an IOS XE 16 or 17 running configuration with its
+`version` line (the pages checked show `show version`, not the configuration). The exclusion
+doesn't depend on it: it names only releases 15 and earlier, and a release in brackets, and
+the authored IOS XE configurations (`version 17.9`) are still claimed; version lines 16.12, 17.9
+and 26.1 are not excluded (tested).

@@ -1,6 +1,6 @@
 # Fingerprint for IOS XE running-configs (PLAN §7). Weights add up once per signature; the pack
-# is chosen only at >= min_score and with no tie. The threshold is set so that NX-OS and EOS
-# configs, which share some of these lines, stay below it until their own packs land (M2).
+# is chosen only at >= min_score and with no tie. The threshold keeps EOS configs, which share
+# some of these lines, below it; NX-OS and classic IOS are ruled out by `excludes` below.
 min_score: 0.7
 signatures:
   - {id: version-line, kind: regex, pattern: '^version \d+\.\d+', weight: 0.2}
@@ -10,3 +10,37 @@ signatures:
   - {id: ios-interface, kind: regex, pattern: '^interface (GigabitEthernet|TenGigabitEthernet|FastEthernet|Loopback|Vlan)\d', weight: 0.2}
   - {id: service-timestamps, kind: line_prefix, pattern: "service timestamps", weight: 0.1}
   - {id: ip-global, kind: regex, pattern: '^(no )?ip (http|cef|domain|ssh)', weight: 0.1}
+
+# Other Cisco OSes this pack isn't written for, and that no seed pack reads (PLAN §20.4: the
+# seeds are IOS XE, not NX-OS or classic IOS). A classic IOS 15 configuration shares every
+# signature above and would otherwise be claimed with full score; a match rules the pack out, so
+# the operator is asked, and warned if they choose the pack anyway (M2.26,
+# docs/reviews/cisco_ios_xe.md, "NX-OS and classic IOS").
+#   NX-OS: "!Command: show running-config …" then "version 9.3(1)" (Cisco Nexus 3600 NX-OS
+#     Label Switching Configuration Guide, 9.3(x), "Configuring Segment Routing")
+#   classic IOS: "version 15.8" (Cisco 900 Series ISR Software Configuration Guide, "Basic
+#     Router Configuration"); IOS XE 3S releases are each paired with an IOS 15 release,
+#     "3.16S" with "15.5(3)S" (ASR 1000 Release Notes, IOS XE 3S, "Introduction")
+excludes:
+  - id: nxos-version
+    kind: regex
+    pattern: '^version \d+\.\d+\(\d+\)'
+    message: >-
+      This looks like a Cisco NX-OS configuration: its version line names a release with the
+      maintenance number in brackets (`version 9.3(1)`), as NX-OS writes it. Kasauti has no
+      NX-OS pack, and the IOS XE pack would misread NX-OS commands
+  - id: nxos-header
+    kind: line_prefix
+    pattern: "!Command: show running-config"
+    message: >-
+      This looks like a Cisco NX-OS configuration: it starts with the `!Command: show
+      running-config` header NX-OS writes. Kasauti has no NX-OS pack, and the IOS XE pack would
+      misread NX-OS commands
+  - id: release-15-or-earlier
+    kind: regex
+    pattern: '^version (\d|1[0-5])\.\d+[ \t]*$'
+    message: >-
+      The version line names release 15 or earlier: classic IOS, or an IOS XE 3 release, which
+      Cisco pairs with an IOS 15 release. The IOS XE pack is written for IOS XE 16 and later;
+      none of its defaults covers an earlier release, so a setting left at its
+      default would be left for review

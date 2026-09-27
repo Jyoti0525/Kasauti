@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "30de9d0f3ecff51520b7b608",
+  "audit_id": "4de9eca04cfea23aca9a4aa5",
   "input": {
     "file": "hardened.cfg",
     "sha256": "42ba3c5feff684d9df92cc813e31b48dabc53071f06d828fddab8f9f85746568",
@@ -51,7 +51,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "67a203a4b3c00caf597565d43355c437a91d96e92d0eab325f5313a73e740fca",
+    "kb_version": "148674dcaedfaa9884d6c2c6e56bbaafe888fac890ff779b6321764c9fa32703",
     "ruleset_version": "aa3815593bd5283a1f6bba3f8ec737aa294d87409b34d0a429a77ee3988f7e28",
     "vendor_pack": "arista_eos@1",
     "frameworks": {

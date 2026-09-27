@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "62dff76630f9b29aa78d6a5a",
+  "audit_id": "b6f12baf12851d75768d3b86",
   "input": {
     "file": "weak.conf",
     "sha256": "9b22aa4dc497e98eb1805b20cfe6dada727b54333a33d2fc49f5c452f69e8c11",
@@ -51,7 +51,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "67a203a4b3c00caf597565d43355c437a91d96e92d0eab325f5313a73e740fca",
+    "kb_version": "148674dcaedfaa9884d6c2c6e56bbaafe888fac890ff779b6321764c9fa32703",
     "ruleset_version": "aa3815593bd5283a1f6bba3f8ec737aa294d87409b34d0a429a77ee3988f7e28",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {

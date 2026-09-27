@@ -87,10 +87,23 @@ class InputWarning(_Strict):
     message: str = Field(min_length=20)
 
 
+class Exclusion(_Strict):
+    """A pattern that says the file is another OS the pack isn't written for (Cisco NX-OS,
+    against the IOS XE pack), where no pack for that OS is installed to outscore it. A match
+    makes the fingerprint not confident, whatever it scores, so the operator is asked; if the
+    operator chooses the pack anyway, ``message`` is a warning."""
+
+    id: EntryId
+    kind: PatternKind
+    pattern: str = Field(min_length=1)
+    message: str = Field(min_length=20)
+
+
 class DetectSpec(_Strict):
     signatures: tuple[Signature, ...] = Field(min_length=1)
     min_score: float = Field(default=0.5, gt=0, le=10)
     warnings: tuple[InputWarning, ...] = ()
+    excludes: tuple[Exclusion, ...] = ()
 
 
 # --- identity.yaml (PLAN §7) -------------------------------------------------------------------

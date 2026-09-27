@@ -506,7 +506,11 @@ def _choose_pack(
             raise AuditError(f"no vendor pack {vendor!r} (installed: {known})")
         pack = kb.vendor_packs[vendor]
         detection = score_pack(artifact.text, pack)
-        if not detection.confident:
+        if (note := detection.exclusion_note()) is not None:
+            warnings.append(
+                f"the operator chose {vendor}, though the file looks like another OS: {note}"
+            )
+        elif not detection.confident:
             warnings.append(
                 f"the operator chose {vendor}; its fingerprint scored {detection.score} "
                 f"(threshold {detection.min_score}), so check this is really a {vendor} config"
@@ -516,9 +520,14 @@ def _choose_pack(
     chosen = choose(detections)
     if chosen is None:
         top = ", ".join(f"{d.pack_id}={d.score}" for d in detections[:3]) or "no packs installed"
+        ruled_out = "".join(
+            f" {d.pack_id} is ruled out: {note}."
+            for d in detections
+            if (note := d.exclusion_note()) is not None
+        )
         raise AuditError(
-            f"{artifact.name}: can't tell which vendor this is ({top}); name the vendor "
-            "explicitly (--vendor on the command line, or the upload's vendor)"
+            f"{artifact.name}: can't tell which vendor this is ({top}).{ruled_out} Name the "
+            "vendor explicitly (--vendor on the command line, or the upload's vendor)"
         )
     return kb.vendor_packs[chosen.pack_id], chosen, "fingerprint", warnings
 

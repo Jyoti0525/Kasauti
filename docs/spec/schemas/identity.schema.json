@@ -3,6 +3,14 @@
     "DetectSpec": {
       "additionalProperties": false,
       "properties": {
+        "excludes": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Exclusion"
+          },
+          "title": "Excludes",
+          "type": "array"
+        },
         "min_score": {
           "default": 0.5,
           "exclusiveMinimum": 0,
@@ -31,6 +39,46 @@
         "signatures"
       ],
       "title": "DetectSpec",
+      "type": "object"
+    },
+    "Exclusion": {
+      "additionalProperties": false,
+      "description": "A pattern that says the file is another OS the pack isn't written for (Cisco NX-OS,\nagainst the IOS XE pack), where no pack for that OS is installed to outscore it. A match\nmakes the fingerprint not confident, whatever it scores, so the operator is asked; if the\noperator chooses the pack anyway, ``message`` is a warning.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "contains",
+            "line_prefix",
+            "regex",
+            "json_key",
+            "xml_path"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 20,
+          "title": "Message",
+          "type": "string"
+        },
+        "pattern": {
+          "minLength": 1,
+          "title": "Pattern",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "pattern",
+        "message"
+      ],
+      "title": "Exclusion",
       "type": "object"
     },
     "IdentitySource": {

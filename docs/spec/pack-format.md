@@ -9,7 +9,10 @@ packs/
     pack.yaml                   manifest: shape family, negation words, comment markers, time unit
     detect.yaml                 fingerprint signatures (contains | line_prefix | regex | json_key | xml_path),
                                 and `warnings`: patterns saying the file isn't what the audit
-                                expects (a Panorama export); a match adds a warning, never a verdict
+                                expects (a Panorama export); a match adds a warning, never a verdict;
+                                and `excludes`: patterns naming another OS the pack isn't written
+                                for (NX-OS against IOS XE); a match rules the pack out of
+                                fingerprinting, and warns if the operator chooses it anyway
     identity.yaml               where hostname / os_version / model / serial / hardware appear
     defaults.yaml               vendor defaults, each with os_versions and a documented reference
     mappings/*.yaml             statements -> facts (seeded, plus learned in the Studio)
