@@ -1005,6 +1005,10 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.26 (2026-09-27, M2.18 fingerprinting across all packs):** Every sample is scored
+  against all five packs, as an upload is: whole configurations go to their own vendor (1.1 to
+  1.5 against 0.7), command outputs to none, fragments to their own vendor or to the operator,
+  and no file ever to a wrong vendor. The Junos `set` export gap stays with M2.28.
 - **v5.1.25 (2026-09-27, M2.17 family detection on every corpus):** A test walks
   `datasets/` and checks every configuration against its vendor pack's family, with a clear
   margin; a file outside a vendor's folder fails it, so corpora can't grow untested. It

@@ -11,7 +11,7 @@ import pytest
 from kasauti.identity import detect
 from kasauti.identity.detect import Detection, choose, detect_vendor
 from kasauti.identity.resolve import resolve_identity
-from kasauti.packs.loader import VendorPack, load_vendor_pack
+from kasauti.packs.loader import VendorPack, load_vendor_pack, load_vendor_packs
 from kasauti.packs.model import DetectSpec, Signature
 from kasauti.shape.model import ConfigTree
 from kasauti.shape.parse import parse_text
@@ -38,6 +38,40 @@ def test_other_vendors_are_not_mistaken_for_cisco(cisco: VendorPack) -> None:
     assert choose(detect_vendor(junos, [cisco])) is None
     nxos_like = "version 9.3(8)\nfeature ssh\nline vty\n  exec-timeout 10\n!\n"
     assert choose(detect_vendor(nxos_like, [cisco])) is None
+
+
+ALL_PACKS = load_vendor_packs(REPO / "packs")
+SAMPLES = sorted(
+    p for p in AUTHORED.rglob("*") if p.is_file() and p.parent.name in {*ALL_PACKS, "companions"}
+) + sorted(p for p in AUTHORED.glob("*/fixtures/*") if p.is_file())
+
+
+def test_the_sample_walk_finds_the_corpus() -> None:
+    assert len(SAMPLES) >= 26, "fewer samples than in v5.1.26: has the corpus moved?"
+
+
+def _vendor(path: Path) -> str:
+    return next(part for part in path.relative_to(AUTHORED).parts if part in ALL_PACKS)
+
+
+@pytest.mark.parametrize("path", SAMPLES, ids=[p.relative_to(AUTHORED).as_posix() for p in SAMPLES])
+def test_every_sample_against_every_pack(path: Path) -> None:
+    """TODO M2.18: each file scored against all five packs, as an upload is. A whole
+    configuration is claimed by its own vendor; a fragment without the device's header lines (a
+    fixture) by its own or by none, left for the operator; a command output by none. And no
+    other pack is ever confident: a wrong vendor would audit with the wrong mappings."""
+    text = path.read_text(encoding="utf-8")
+    vendor = _vendor(path)
+    found = detect_vendor(text, list(ALL_PACKS.values()))
+    chosen = choose(found)
+    assert not [d.pack_id for d in found if d.confident and d.pack_id != vendor]
+    if "companions" in path.parts:
+        assert chosen is None
+    elif "fixtures" in path.parts:
+        assert chosen is None or chosen.pack_id == vendor
+    else:
+        assert chosen is not None
+        assert chosen.pack_id == vendor
 
 
 def test_ties_are_never_resolved_by_guessing() -> None:

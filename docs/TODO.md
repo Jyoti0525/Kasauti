@@ -298,7 +298,9 @@ The PS's dataset line: *nciipc.gov.in, helpdesk1@nciipc.gov.in; CIS Benchmarks, 
   - **Where it matters:** audits don't rely on it (they parse with the chosen pack's family, and fingerprinting parses with each pack's own); it decides the family of a file no pack claims, as when the Training Studio onboards a new vendor.
 
 ### 2D · Identity (§7, R-07a)
-- [~] **M2.18** Vendor/OS fingerprinting from `detect.yaml`. *(§7, §4.4)* `@parse` Engine done early (M1) for all five signature kinds; only the Cisco pack exists yet.
+- [x] **M2.18** Vendor/OS fingerprinting from `detect.yaml`. *(§7, §4.4)* `@parse` Engine done early (M1) for all five signature kinds; done (v5.1.26) with all five packs, no new dependency.
+  - **Every sample against every pack, as an upload is scored** (`tests/identity/test_identity.py`, 26 files): each whole configuration is claimed by its own vendor, by 1.1 to 1.5 against a threshold of 0.7, while no other pack reaches it (the most any scores is 0.2, Cisco's on Junos); no command output is claimed; no file is ever claimed by the wrong vendor.
+  - **Fragments are left to the operator, on purpose:** the seven short Cisco fixtures score 0.4 to 0.5, since without `version` or `boot-start-marker` lines they could as well be NX-OS or another IOS; the audit then asks for the vendor (`--vendor`), and says when a chosen vendor's fingerprint didn't match. The one real gap, a Junos `display set` export scoring 0, is tracked under M2.28.
 - [~] **M2.19** Identity resolver, in priority order: Source 3 (config) done early (M1) with a source per field; source 2 (companion outputs) done in M2.05, before the configuration as §7 orders; manual entry pending.
   1. live facts (stretch, X.04)
   2. companion show outputs, read by each pack's `identity.yaml` (M2.05)
