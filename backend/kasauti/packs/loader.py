@@ -98,17 +98,36 @@ class _Collector:
         return None
 
 
-class _NoAliasLoader(yaml.SafeLoader):
-    """SafeLoader that refuses anchors/aliases: a few nested aliases can expand into gigabytes
-    (billion laughs). Packs are data written by people; they never need them."""
+MAX_NESTING = 64
+"""Levels of nesting a pack file may use; the deepest seed pack uses 9."""
+_LOADER: type[yaml.SafeLoader] = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+"""libyaml's loader when PyYAML has it (its wheels do): about five times faster than the pure
+Python one, which each audit's worker pays for when it loads the packs (M2.09). Same resolver
+and constructor, so the same data."""
+_OPEN = (yaml.MappingStartEvent, yaml.SequenceStartEvent)
+_CLOSE = (yaml.MappingEndEvent, yaml.SequenceEndEvent)
 
-    def compose_node(self, parent: Any, index: Any) -> Any:
-        if self.check_event(yaml.AliasEvent):
-            mark = self.peek_event().start_mark  # type: ignore[no-untyped-call]
-            raise yaml.composer.ComposerError(
-                None, None, "YAML aliases are not allowed in packs", mark
-            )
-        return super().compose_node(parent, index)
+
+def _load_yaml(text: str) -> Any:
+    """Safe-load ``text`` (no object construction) after checking its event stream: no
+    aliases, since a few nested ones expand into gigabytes (billion laughs) and packs, written
+    by people, never need them; and no nesting past :data:`MAX_NESTING`, since libyaml's
+    composer recurses in C and 5,000 levels overflow its stack, ending the process. The event
+    parser keeps no stack, and stops at the first problem."""
+    depth = 0
+    for event in yaml.parse(text, Loader=_LOADER):
+        if isinstance(event, yaml.AliasEvent):
+            problem = "YAML aliases are not allowed in packs"
+        elif isinstance(event, _OPEN):
+            depth += 1
+            if depth <= MAX_NESTING:
+                continue
+            problem = f"nested more than {MAX_NESTING} levels deep"
+        else:
+            depth -= isinstance(event, _CLOSE)
+            continue
+        raise yaml.composer.ComposerError(None, None, problem, event.start_mark)
+    return yaml.load(text, Loader=_LOADER) or {}  # noqa: S506  # nosec B506  # a SafeLoader
 
 
 def _read(path: Path) -> Any:
@@ -117,8 +136,7 @@ def _read(path: Path) -> Any:
     text = path.read_text(encoding="utf-8")
     if path.suffix == ".json":
         return json.loads(text)
-    # _NoAliasLoader is a SafeLoader subclass: no object construction, and no aliases either.
-    return yaml.load(text, Loader=_NoAliasLoader) or {}  # noqa: S506  # nosec B506
+    return _load_yaml(text)
 
 
 def _data_only(root: Path) -> list[str]:

@@ -26,7 +26,7 @@ from kasauti.db import (
 )
 from kasauti.db.migrate import MIGRATIONS, config, downgrade
 from kasauti.db.tables import metadata
-from kasauti.jobs.queue import canonical
+from kasauti.jobs.child import canonical
 from kasauti.jobs.results import decode_result
 
 LIVE_POSTGRES = "KASAUTI_TEST_POSTGRES_URL"

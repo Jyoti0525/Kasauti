@@ -42,6 +42,8 @@ from kasauti.sbm.entities import Device, Entity
 from kasauti.sbm.facts import FactState
 
 MAX_ACTUAL = 12
+NOTHING_IN_SCOPE = "Not applicable: nothing matches"
+"""How a finding begins when the rule found nothing to check, rather than a role it skips."""
 
 _ON_MISSING = {
     OnMissing.RESOLVE_DEFAULT: Status.REVIEW,
@@ -128,7 +130,7 @@ def evaluate_rule(rule: Rule, sbm: SecurityBaselineModel, ev: Evaluator) -> list
             rule,
             sbm.device,
             Status.NOT_APPLICABLE,
-            f"Not applicable: nothing matches `{scope_text}` on this device.",
+            f"{NOTHING_IN_SCOPE} `{scope_text}` on this device.",
         )
     ]
 

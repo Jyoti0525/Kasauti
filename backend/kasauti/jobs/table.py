@@ -24,21 +24,10 @@ from sqlalchemy import (
 
 from kasauti.db.schema import Base
 from kasauti.db.types import UtcDateTime
+from kasauti.jobs.child import ERROR_LIMIT
 
 PAYLOAD_LIMIT = 64 * 1024
 """Bytes of JSON: enough for references and options, too small for a configuration."""
-RESULT_LIMIT = 64 * 1024 * 1024
-"""Bytes of *compressed* result a job may return (:mod:`kasauti.jobs.results`). Measured
-2026-09-27: an audit's JSON is 31 times its configuration's size and compresses to 0.8 times
-it; the densest input found (a bare ``interface`` line after line) compresses to 2.2 times.
-So a configuration at the 20 MiB upload limit gives at most about 44 MiB: no file the upload
-accepts can fail here."""
-RESULT_EXPANDED_LIMIT = 2 * 1024 * 1024 * 1024
-"""Bytes a stored result may expand to. The densest input measured expands 92 times its size
-(1.8 GiB for 20 MiB); this bounds what a reader of a result must be ready for, and how long
-checking one can take."""
-ERROR_LIMIT = 500
-"""Characters of the error shown for a failed job."""
 
 
 class JobState(StrEnum):

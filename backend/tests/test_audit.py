@@ -990,3 +990,27 @@ def test_fortios_ipv6_management_access_counts_for_telnet(kb: KnowledgeBase) -> 
         policies="",
     )
     assert _fortios(kb, body)["MGMT-TELNET-01"] is Status.FAIL
+
+
+@pytest.mark.parametrize(
+    ("sample", "cut"),
+    [("paloalto_panos/weak.xml", 2000), ("juniper_junos/weak.conf", 900)],
+)
+def test_a_file_cut_off_mid_structure_is_left_for_review(
+    kb: KnowledgeBase, sample: str, cut: int
+) -> None:
+    """Read line by line, a PAN-OS file cut off half way failed remote logging, which the half
+    that arrived configures. A file that can't be read in its own syntax gets no verdict
+    (M2.09): what was missed, or a line read out of context, would make it a guess."""
+    whole = (REPO / "datasets" / "authored" / sample).read_bytes()
+    result = audit(decode(whole[:cut], Path(sample).name), kb)
+    assert result.input.shape_family == "flat"
+    statuses = {r.status for r in result.rules}
+    assert statuses <= {Status.REVIEW, Status.NOT_APPLICABLE}
+    for f in result.findings:
+        if f.status is Status.REVIEW and f.reason.startswith("Would be"):
+            assert "couldn't be read as" in f.reason
+            assert f.severity is not None
+    assert any("no rule is judged PASS or FAIL" in w for w in result.warnings)
+    (score,) = result.scores
+    assert (score.compliance_pct, score.coverage_pct) == (None, 0.0)

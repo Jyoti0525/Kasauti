@@ -35,7 +35,7 @@ from kasauti.packs.loader import (
     load_ruleset,
     load_vendor_pack,
 )
-from kasauti.rules.engine import evaluate_rules
+from kasauti.rules.engine import NOTHING_IN_SCOPE, evaluate_rules
 from kasauti.rules.enrich import apply_default_role, apply_inferences
 from kasauti.rules.evaluate import with_derived
 from kasauti.rules.model import Domain, Finding, Severity, Status
@@ -290,6 +290,12 @@ def audit(
     )
     sbm = with_derived(enriched, kb.ruleset.derivations)
     findings = evaluate_rules(sbm, kb.ruleset)
+    if tree.family is not pack.manifest.shape_family:
+        findings = _not_read(findings, kb.ruleset, pack.manifest.shape_family.value)
+        warnings.append(
+            "the file couldn't be read in its own syntax, so no rule is judged PASS or FAIL: "
+            "each is left for review"
+        )
     statuses = rule_statuses(kb.ruleset.rules, findings)
 
     unmapped = [s for s in mapped.unmapped if s.line_start not in ident.lines]
@@ -384,6 +390,38 @@ def audit(
             for c in companion_files.components(used, pack)
         ),
     )
+
+
+def _not_read(findings: Sequence[Finding], ruleset: RuleSet, family: str) -> tuple[Finding, ...]:
+    """The file couldn't be read in its own syntax and was read line by line instead (cut off,
+    damaged, or nested past the limit). Its structure is lost: a setting may be in it unseen, and
+    a line that was seen may be undone by one that wasn't. No verdict rests on that; each PASS,
+    FAIL, or "nothing to check" becomes REVIEW, keeping its evidence for the reviewer (M2.09).
+    A rule skipped for the device's role stays skipped: the role isn't read from the file."""
+    base = {r.id: r.severity.base for r in ruleset.rules}
+    out: list[Finding] = []
+    for f in findings:
+        guessed = f.status is Status.NOT_APPLICABLE and f.reason.startswith(NOTHING_IN_SCOPE)
+        if f.status not in (Status.PASS, Status.FAIL) and not guessed:
+            out.append(f)
+            continue
+        severity = f.severity or base[f.rule_id]
+        reason = (
+            f"Would be {f.status.value}, but the file couldn't be read as {family} syntax (see "
+            f"the warnings), so settings in it may have been missed or read out of context; "
+            f"check it against the file, or export the file again. {f.reason}"
+        )
+        out.append(
+            f.model_copy(
+                update={
+                    "status": Status.REVIEW,
+                    "severity": severity,
+                    "severity_reason": f.severity_reason or f"{severity.value.capitalize()} (base)",
+                    "reason": reason,
+                }
+            )
+        )
+    return tuple(out)
 
 
 def _pair(

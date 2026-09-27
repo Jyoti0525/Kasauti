@@ -18,8 +18,15 @@ import zlib
 from collections.abc import Iterator
 from typing import Any
 
-from kasauti.jobs.table import RESULT_EXPANDED_LIMIT
-
+RESULT_LIMIT = 64 * 1024 * 1024
+"""Bytes of *compressed* result a job may return. Measured 2026-09-27: an audit's JSON is 31
+times its configuration's size and compresses to 0.8 times it; the densest input found (a bare
+``interface`` line after line) compresses to 2.2 times. So a configuration at the 20 MiB upload
+limit gives at most about 44 MiB: no file the upload accepts can fail here."""
+RESULT_EXPANDED_LIMIT = 2 * 1024 * 1024 * 1024
+"""Bytes a stored result may expand to. The densest input measured expands 92 times its size
+(1.8 GiB for 20 MiB); this bounds what a reader of a result must be ready for, and how long
+checking one can take."""
 GZIP_MAGIC = b"\x1f\x8b"
 """How a stored result starts; a JSON text never does."""
 _GZIP = 31
@@ -34,7 +41,7 @@ _ENCODER = json.JSONEncoder(
 
 class ResultError(ValueError):
     """Stored bytes that aren't a result: damaged, not one gzip member, not a JSON object, or
-    larger than :data:`~kasauti.jobs.table.RESULT_EXPANDED_LIMIT` once expanded."""
+    larger than :data:`RESULT_EXPANDED_LIMIT` once expanded."""
 
 
 class ResultTooLargeError(ResultError):

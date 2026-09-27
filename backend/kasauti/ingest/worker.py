@@ -1,8 +1,8 @@
 """The audit job: one uploaded file, audited in a worker process (TODO M2.04).
 
-Runs in a fresh process (:mod:`kasauti.jobs.pool`). It reads the staged file, which is sealed
-(:mod:`kasauti.ingest.sealed`), deletes it, and only then decrypts it in memory and parses it.
-It decodes, audits and returns the result: the same
+Runs in a fresh process (:mod:`kasauti.jobs.pool`, :mod:`kasauti.jobs.child`). It reads the
+staged file, which is sealed (:mod:`kasauti.ingest.sealed`), deletes it, and only then
+decrypts it in memory. It decodes, audits and returns the result: the same
 :class:`~kasauti.audit.AuditResult` ``kasauti audit`` writes, in which every configuration line
 is masked. The knowledge base is loaded from the pack files each time, so an audit always names
 the exact packs it used.
@@ -21,7 +21,7 @@ from kasauti.identity.companion import COMMANDS, classify
 from kasauti.ingest.model import Artifact
 from kasauti.ingest.read import MAX_BYTES, IngestError, decode
 from kasauti.ingest.staging import SealError, delete_staged, is_id, key_id, read_once
-from kasauti.jobs.pool import JobError, worker_secret
+from kasauti.jobs.child import JobError, worker_secret
 
 STAGING_KEY_NAME = "staging"
 """The worker secret (:func:`kasauti.jobs.pool.worker_secret`) staged uploads are sealed with."""

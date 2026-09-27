@@ -11,9 +11,10 @@ from sqlalchemy.exc import StatementError
 
 from kasauti.jobs import JobInputError, JobQueue, JobState
 from kasauti.jobs import queue as queue_module
+from kasauti.jobs.child import ERROR_LIMIT
 from kasauti.jobs.queue import PAYLOAD_LIMIT
 from kasauti.jobs.results import decode_result, encode_result
-from kasauti.jobs.table import ERROR_LIMIT, jobs
+from kasauti.jobs.table import jobs
 
 T0 = dt.datetime(2026, 9, 26, 12, 0, tzinfo=dt.UTC)
 LEASE = dt.timedelta(seconds=60)

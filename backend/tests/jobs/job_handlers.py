@@ -8,7 +8,7 @@ import time
 from typing import Any
 
 from kasauti.jobs import JobError
-from kasauti.jobs.pool import worker_secret
+from kasauti.jobs.child import worker_secret
 
 LEAKED_LINE = "enable secret 5 $1$PLACEHOLDER$leaked"
 

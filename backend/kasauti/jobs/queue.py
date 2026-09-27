@@ -18,7 +18,6 @@ timed out is failed at once, not retried: the same input would do the same again
 from __future__ import annotations
 
 import datetime as dt
-import json
 import uuid
 from collections.abc import Collection
 from dataclasses import dataclass
@@ -26,16 +25,9 @@ from typing import Any
 
 from sqlalchemy import Connection, Engine, RowMapping, and_, func, insert, select, update
 
-from kasauti.jobs.table import (
-    ERROR_LIMIT,
-    FINISHED,
-    PAYLOAD_LIMIT,
-    RESULT_LIMIT,
-    JobState,
-    jobs,
-)
-
-type JsonObject = dict[str, Any]
+from kasauti.jobs.child import ERROR_LIMIT, JsonObject, canonical
+from kasauti.jobs.results import RESULT_LIMIT
+from kasauti.jobs.table import FINISHED, PAYLOAD_LIMIT, JobState, jobs
 
 DEFAULT_TIMEOUT_S = 300
 DEFAULT_MAX_ATTEMPTS = 3
@@ -71,13 +63,6 @@ class Claim:
     payload: str
     """Canonical JSON, handed to the worker process as is."""
     timeout_s: int
-
-
-def canonical(obj: JsonObject) -> str:
-    """One JSON text per value: sorted keys, no whitespace, no NaN or infinity."""
-    return json.dumps(
-        obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
-    )
 
 
 def utcnow() -> dt.datetime:

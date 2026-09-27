@@ -17,9 +17,8 @@ from kasauti.ingest.staging import Staging
 from kasauti.ingest.upload import new_id
 from kasauti.ingest.worker import STAGING_KEY_NAME, audit_file
 from kasauti.jobs import JobError
-from kasauti.jobs.pool import set_worker_secrets
-from kasauti.jobs.results import encode_result
-from kasauti.jobs.table import RESULT_LIMIT
+from kasauti.jobs.child import set_worker_secrets
+from kasauti.jobs.results import RESULT_LIMIT, encode_result
 
 REPO = Path(__file__).resolve().parents[3]
 PACKS = REPO / "packs"

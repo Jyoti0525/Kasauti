@@ -244,6 +244,14 @@ Read-only collection via NAPALM (core drivers: EOS, IOS, IOS-XR, NX-OS, Junos; c
 
 **Family detection** scores each family's structural signals (indent regularity, brace balance, `config/edit/next/end` markers, XML/JSON validity, leading `set`/`/`), and it's usually unambiguous. Vendor fingerprinting (§7) runs on top.
 
+**A file its vendor's parser rejects** (cut off, damaged, nested past 100 levels) is read by
+the flat fallback, so its lines still reach the Training Studio, but it gets no verdict: every
+PASS, FAIL, or "nothing to check" becomes REVIEW, with its evidence kept, and the report says
+why (v5.1.21). With the structure lost, a setting may be in the file unseen, and a line that
+was seen may be undone by one that wasn't; absence must never read as a verdict (§3.1,
+principle 2). A rule skipped for the device's role stays skipped: the role isn't read from
+the file.
+
 ### 6.2 Statements and pattern keys
 Every leaf becomes a **Statement** `{path: [parent blocks…], tokens, text, line_start, line_end, family}`. For example: `path = ["line vty 0 4"], text = "transport input ssh telnet"`.
 
@@ -815,7 +823,21 @@ accepted without saying why: the job's time limit grows with the file (2 min + 1
 the result is stored gzip-compressed (at most about 2.2 times the file, against a 64 MiB limit
 for a 20 MiB file), and each worker has a memory ceiling (2 GiB by default, about 10 MiB of
 dense configuration; `kasauti serve --worker-memory`). A file that needs more fails its own
-job with that message. Lowering the memory cost per fact is a performance task (M2.09).
+job with that message.
+
+**Measured 2026-09-27, v5.1.21 (M2.09).** Bulk: 100 mixed files (all five vendors from 1 to
+150 KiB, a zip with folders, and files that must be refused or fail) take 40 s end to end
+on the default 2 workers and 74 s on 1 (a machine with fewer than 4 CPUs), against the
+3-minute budget; `tests/ingest/test_bulk.py` checks it on every run. A job's fixed cost fell
+from about 2 s to 0.65 s: a worker no longer imports the database layer it never uses, and
+pack YAML is read by libyaml, not pure Python (0.44 → 0.09 s). The audit itself is 0.03 s for
+a small file and at most 1.3 s at 5,000 lines. Memory per MiB of configuration, peak
+committed: 115 MiB for a realistic dense Cisco file (was 142), 40 for the same line repeated
+(was 125); the parsed tree is a sixth of what it was. The worst case is a file where every
+line is its own entity (`interface Gi0/1`, `interface Gi0/2`, …): about 440 MiB per MiB,
+since each entity carries its facts, evidence and findings into the result. A 2 GiB worker
+still audits about 4 MiB of that, and 15 MiB of realistic configuration. Going further would
+change the stored result's data model (a compact SBM), which is its own task.
 
 ---
 
@@ -972,6 +994,17 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.21 (2026-09-27, M2.09 bulk acceptance):** R-04's acceptance test runs on every
+  build: 100 mixed files, a zip among them, each ends audited, refused with a reason, or
+  failed with a sentence, in 40 s on 2 workers (74 s on 1) against §22's 3 minutes. Per-job
+  start-up fell from about 2 s to 0.65 s without giving up a fresh process per job: the
+  worker's side of the pool moved to `kasauti.jobs.child`, which never imports SQLAlchemy or
+  Alembic, and packs are read with libyaml after a check of the event stream (no aliases, at
+  most 64 levels: libyaml's composer recurses in C, and 5,000 levels ended the process). The
+  parsed tree's statements are slotted dataclasses, not pydantic models: a sixth of the
+  memory. Found by the test: a PAN-OS file cut off half way was read line by line and still
+  failed rules it configures; a file its parser rejects now gets no verdict, only REVIEW
+  (§6.1). Worst-case memory (one entity per line) is unchanged and recorded in §22.
 - **v5.1.20 (2026-09-27, M2.07 hostile inputs):** The limits reviewed against a generated
   corpus of 7 hostile archives and 28 hostile files, through the intake, every parser and real
   worker processes (§22: 0 crashes, 0 hangs). Found and fixed: an LZMA zip entry declares its

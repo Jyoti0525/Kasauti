@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from kasauti.cli.main import main
-from kasauti.packs.loader import PackError, load_ruleset, load_vendor_pack
+from kasauti.packs.loader import MAX_NESTING, PackError, load_ruleset, load_vendor_pack
 
 REPO = Path(__file__).resolve().parents[3]
 
@@ -115,3 +115,31 @@ def test_rules_are_checked_against_derivations(tmp_path: Path) -> None:
 def test_repository_packs_are_valid(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["packs", "validate", str(REPO / "packs")]) == 0
     assert "FAIL" not in capsys.readouterr().out
+
+
+LAUGHS = "a: &a [x, x]\nb: &b [*a, *a]\nc: [*b, *b]\nsignatures: []\n"
+INDENTED = "x:\n" + "".join(f"{'  ' * i}k{i}:\n" for i in range(1, 80))
+
+
+@pytest.mark.parametrize(
+    ("text", "problem"),
+    [
+        (LAUGHS, "YAML aliases are not allowed in packs"),
+        # libyaml's composer recurses in C: this deep, it would end the process, not raise.
+        ("signatures: " + "[" * 100_000 + "]" * 100_000, "nested more than 64 levels deep"),
+        (INDENTED, "nested more than"),
+    ],
+    ids=["aliases", "brackets", "indentation"],
+)
+def test_a_hostile_pack_file_is_refused_before_it_is_built(
+    tmp_path: Path, text: str, problem: str
+) -> None:
+    with pytest.raises(PackError, match=problem):
+        load_vendor_pack(_pack(tmp_path, **{"detect.yaml": text}))
+
+
+def test_nesting_up_to_the_limit_loads(tmp_path: Path) -> None:
+    deep = "[" * (MAX_NESTING - 1) + "]" * (MAX_NESTING - 1)
+    with pytest.raises(PackError) as err:  # valid YAML, wrong shape for detect.yaml
+        load_vendor_pack(_pack(tmp_path, **{"detect.yaml": f"signatures: {deep}"}))
+    assert "nested" not in str(err.value.problems)

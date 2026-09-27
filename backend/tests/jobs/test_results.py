@@ -8,7 +8,7 @@ import zlib
 
 import pytest
 
-from kasauti.jobs.queue import canonical
+from kasauti.jobs.child import canonical
 from kasauti.jobs.results import (
     GZIP_MAGIC,
     ResultError,
