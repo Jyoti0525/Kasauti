@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "6ac365a3cff25627a3f67683",
+  "audit_id": "680fac73dc931900a5029cbc",
   "input": {
     "file": "hardened.conf",
     "sha256": "05abcfd1240c747141e1677c8e61c5bfb91db119abb34dbc269dd3f759454191",
@@ -13,7 +13,7 @@
     "pack_id": "juniper_junos",
     "pack_version": 1,
     "chosen_by": "fingerprint",
-    "score": 1.2,
+    "score": 1.6,
     "min_score": 0.7,
     "signatures": [
       "version-statement",
@@ -21,7 +21,9 @@
       "host-name",
       "junos-interface",
       "root-authentication",
-      "security-zones"
+      "security-zones",
+      "ssh-root-login",
+      "authentication-order"
     ]
   },
   "identity": {
@@ -31,7 +33,7 @@
     },
     "vendor": {
       "value": "Juniper",
-      "source": "fingerprint (6 signatures)"
+      "source": "fingerprint (8 signatures)"
     },
     "os_version": {
       "value": "23.4R1.9",
@@ -52,7 +54,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "622294cde42aa17a8dc5037fcae07e47e7afc30a722823854df0cab0e36b3e5b",
+    "kb_version": "88c279bb41e3bad3ad66902ff5d2e7b809febdbb3c7e4259dbe8d69c88ab9246",
     "ruleset_version": "1bc107babd4a42068fc94aad70d709c71832d3082a7cb925032e5428fc334df7",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
@@ -1867,6 +1869,24 @@
           },
           {
             "file": "hardened.conf",
+            "line_start": 31,
+            "line_end": 31,
+            "raw": "authentication-order [ tacplus password ];",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 37,
+            "line_end": 37,
+            "raw": "root-login deny;",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened.conf",
             "line_start": 68,
             "line_end": 68,
             "raw": "ge-0/0/0 {",
@@ -1922,6 +1942,24 @@
             "line_start": 6,
             "line_end": 6,
             "raw": "root-authentication {",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 31,
+            "line_end": 31,
+            "raw": "authentication-order [ tacplus password ];",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened.conf",
+            "line_start": 37,
+            "line_end": 37,
+            "raw": "root-login deny;",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []

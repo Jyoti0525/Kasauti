@@ -28,6 +28,7 @@ decides; it is remembered, and a later decision it could have pre-empted becomes
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import IntEnum
 
@@ -124,7 +125,7 @@ def evaluate(
         if empty in ("permit", "deny"):
             return Decision(empty == "permit", (), f"the ruleset has no entries ({empty})")
         return Decision(None, (), "the ruleset has no entries and what that does isn't quoted")
-    ordered = _ordered(rs, enabled, unread)
+    ordered = _ordered(rs, enabled, unread, builder.position)
     if ordered is None:
         ev = tuple(e.evidence[0] for e in enabled if e.evidence)[:1]
         return Decision(None, ev, "the order of its entries can't be told")
@@ -165,11 +166,16 @@ def _walk(entries: list[_Entry], unmatched: object) -> Decision:
 
 
 def _ordered(
-    rs: EntityAcc | None, entries: list[_Entry], unread: list[Evidence]
+    rs: EntityAcc | None,
+    entries: list[_Entry],
+    unread: list[Evidence],
+    position: Callable[[int], int],
 ) -> list[_Entry] | None:
     """Entries in evaluation order, with lines no mapping read as MAYBE entries of unknown
     action. ``None`` if the order can't be told."""
-    lines = [_Entry(ev.line_start, None, None, Tri.MAYBE, Tri.MAYBE, (ev,)) for ev in unread]
+    lines = [
+        _Entry(position(ev.line_start), None, None, Tri.MAYBE, Tri.MAYBE, (ev,)) for ev in unread
+    ]
     order = _value(rs.facts.get("order")) if rs else None
     if order == "config":
         return sorted([*entries, *lines], key=lambda e: e.line)
@@ -234,7 +240,7 @@ def _entry(
     action = _value(facts.get("action"))
     position = _value(facts.get("position"))
     return _Entry(
-        line=min((e.line_start for e in evidence), default=0),
+        line=min((builder.position(e.line_start) for e in evidence), default=0),
         position=position if isinstance(position, int) else None,
         action=str(action) if action is not None else None,
         some=some,

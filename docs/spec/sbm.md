@@ -84,7 +84,10 @@ max age; attempts, lockout duration).
   (`SnmpCommunity` → `cisco_ios_xe/defaults.yaml#no-snmp-communities`). Without an entry,
   "no entities of this type" means "nothing seen", never "none exist".
 - `unread`: entity type → the lines that looked like that type but couldn't be read. Rules
-  can't claim "all" or "none" over such a type.
+  can't claim "all" or "none" over such a type. For a file that holds only part of a
+  configuration, every multi-entity type has one more entry: line 1 with the raw text
+  `(beyond the part of the configuration the file holds)`, and findings name the type as
+  "more may be configured in the rest of the configuration".
 - `derived`: the derived facts, evaluated in the defaults view, with their evidence.
 
 ## Determinism

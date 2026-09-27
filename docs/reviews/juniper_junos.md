@@ -120,7 +120,7 @@ doesn't follow, the route's exit is *unknown* and nothing is inferred from it.
 |---|---|---|
 | `unit-inet-address`, `unit-inet6-address` | `set interfaces lo0 unit 0 family inet address 10.0.0.1/32`; `family inet6 address 2001:db8:1:10::1/128`. Keyed at the unit (`ge-0/0/0.0`) like the pack's other interface facts | [Configure Static Routes](https://www.juniper.net/documentation/us/en/software/junos/static-routing/topics/topic-map/config_static-routes.html) (its examples) |
 | `static-route-next-hop`, `-block`, `-block-next-hop` | `show routing-options static { route 0.0.0.0/0 next-hop 172.16.1.1; }`; IPv6 under `rib inet6.0 static { route ::/0 next-hop 2001:db8:1:1::1; }`. The context `static` covers both | same |
-| `static-route-discard`, `-reject` | "route *route-name* { (discard \| … \| next-hop [ *next-hop-address* ... ] \| next-table … \| receive \| reject); …": a discard or reject route leaves by no interface. `next-hop [ a b ]` lists and `qualified-next-hop` aren't read (the route stays unknown) | [static (Routing Options)](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/static-edit-routing-options.html) |
+| `static-route-discard`, `-reject` | "route *route-name* { (discard \| … \| next-hop [ *next-hop-address* ... ] \| next-table … \| receive \| reject); …": a discard or reject route leaves by no interface. `next-hop [ a b ]` lists, interface next hops and `qualified-next-hop` are read since v5.1.32 (addendum below) | [static (Routing Options)](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/static-edit-routing-options.html) |
 | `ethernet-switching-interface-mode`, `-port-mode` | `interface-mode (access \| trunk)` at `[edit interfaces … unit … family ethernet-switching]` (ELS); `port-mode` on software without ELS | [interface-mode](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/interface-mode-edit-interfaces.html), [port-mode](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/port-mode-interfaces-qfx-series.html) |
 
 The authored configs gained `routing-options { static { route 0.0.0.0/0 next-hop
@@ -188,10 +188,108 @@ the default `read-only` access, one with `read-write`. Every one-line community 
 block also merged into one. It now keys the header and its lines alike and siblings apart. The
 weak golden case lost its phantom read-only community, and no verdict changed.
 
-**Limits.**
-- `display set relative` prints paths from the current edit level, not from the top. Such a
-  file is a fragment: its lines are statements no mapping reads, and its fingerprint doesn't
-  claim it, so the operator must name the vendor and is warned. The same holds for a brace
-  fragment.
-- In braces, `application [ junos-ssh junos-telnet ]` in a security policy leaves the policy's
-  service unknown (REVIEW, never PASS). The `set` form reads each value.
+**Limits** as first recorded here (relative exports, brace `[ … ]` lists, `insert`/`rename`,
+the unseen list form): all closed in v5.1.32, below.
+
+## Addendum (v5.1.32, M2.28): the limits closed
+
+Read on 2026-09-27. Each limit the M2.28 addendum recorded, and each found while closing them,
+is closed here. The CLI's own wording is from Juniper's CLI User Guide: [CLI Configuration Mode
+Overview](https://www.juniper.net/documentation/us/en/software/junos/cli/topics/topic-map/cli-configuration.html)
+(below "Mode Overview"), [Modify the Configuration of a
+Device](https://www.juniper.net/documentation/us/en/software/junos/cli/topics/topic-map/modifying-configuration.html)
+("Modify"), [View the
+Configuration](https://www.juniper.net/documentation/us/en/software/junos/cli/topics/topic-map/junos-configuartion-viewing.html)
+("View") and [show \| display
+set](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/command/show-pipe-display-set.html).
+
+**Every form the CLI writes is replayed** (`kasauti/mapping/commands.py`), and the statements
+it leaves go through the splitter above:
+
+| Command or line | Juniper's words | Read as |
+|---|---|---|
+| `[edit a b]` banner | `top`: "Return to the top level of configuration command mode, which is indicated by the [edit] banner" (Mode Overview); samples print `[edit interfaces ge-0/0/0]` above each prompt | the level the next lines are relative to |
+| `user@host# …`, `user@host> show configuration …` | the samples in View and show \| display set | a prompt: the command after it is replayed, its output read |
+| `show \| display set` | "Display the configuration as a series of configuration mode commands required to re-create the configuration from the top level of the hierarchy" | full paths, at any level |
+| `show \| display set relative` | "Display a series of set commands relative to the current edit path"; sample `[edit interfaces xe-0/0/0]` … `set unit 0 family inet address …` … `deactivate unit 1` (View) | paths from the banner's level |
+| `\| display set explicit` | "the output also shows the configuration statements needed to create the hierarchy" | the extra lines are the blocks, given once |
+| `show` at a level, `show system authentication-order` | `user@host# show system authentication-order` → `authentication-order [ radius tacplus password ];` (Authentication Order page) | braces from that level; a statement shown by name is itself |
+| `edit P` | "Move inside the specified statement hierarchy. If the statement does not exist, it is created." | the level moves; P exists |
+| `up [n]`, `top`, followed by a command | "The top or up command followed by another configuration command … enables you to quickly move to the top of the hierarchy or to a level above"; `[edit protocols bgp] user@host# up 2 activate system` | the level moves, or the command runs there |
+| `exit`, `quit` | "Exit the current level of the statement hierarchy, returning to the level before the last edit command, or exit from configuration mode" | as quoted |
+| `delete P` | "All subordinate statements and identifiers contained within the specified statement path are deleted with it" | every statement under P goes |
+| `delete` alone at `[edit]` | "Delete everything under this level? [yes, no]" (Modify) | the whole configuration goes |
+| `insert P id1 (before \| after) id2` | "insert <statement-path> identifier1 (before \| after) identifier2"; "If you do not use the insert command but instead configure the identifier, the identifier is placed at the end of the list"; Juniper's quick configuration `set system authentication-order radius` / `insert system authentication-order tacplus after radius` | the statements under id1 move; a new list value is added there |
+| `rename P id1 to id2`, `copy P id1 to id2` | `rename interfaces lo0 unit 100 to unit 102`, `copy interfaces lo0 unit 100 to unit 101` (Modify); copy "duplicates that statement and the entire hierarchy of statements configured under that statement" | as quoted |
+| `load`, `rollback`, `replace`, `update`, `wildcard`, `extension` | `load`: "Your current location in the configuration hierarchy is ignored when the load operation occurs"; `rollback`: "Return to a previously committed configuration" (Mode Overview) | their result is another file or a saved configuration: in a capture, the next whole `show` gives it; otherwise the file is read line by line with the reason |
+
+**A part of a configuration is read as a part.** `display set relative`, `show` below the top,
+output filtered with `| match` (View: "search for text matching a regular expression by
+filtering output"), `ACCESS-DENIED` ("those portions of the configuration that you do not have
+permissions to view are substituted with the text ACCESS-DENIED", View), a capture that never
+shows the whole configuration, and a file of commands no export prints (`delete`, `insert`, …:
+a change to a configuration already on the device, unless it first deletes everything): each
+makes the tree partial (`ConfigTree.partial`, with the reason). The statements it shows are read
+at their level, so the same mappings read them. The audit then marks every entity type as
+possibly having more members in the rest of the configuration, the way it treats a type with
+unread statements: a witness in the file still decides (`telnet` in it is a FAIL), while "all"
+and "none" can't be true and an empty scope is REVIEW. No PASS stands, and no FAIL that rests on
+a default or on something missing. A warning names the reasons.
+
+Without a banner, lines relative to a level are placed at the one level the pack's mappings
+allow for every first word (`set host-name R1`, `set services telnet` → `[edit system]`), and
+the file is partial. Juniper's own table of top-level statements (Mode Overview, "Table 2")
+tells a file from the top apart: if a first word is one of them, nothing is inferred. When more
+than one level fits, the file is read at the top with a reason saying so, and is partial.
+
+**Recognised as Junos when it says enough.** The fingerprint also scores a relative file as it
+reads from the top, line for line. Two Junos-only statements joined the signatures:
+`root-login (allow | deny | deny-password)` at `[edit system services ssh]` ([ssh (System
+Services)](https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/root-login-edit-system.html))
+and `authentication-order` at `[edit system]`. A fragment of `[edit system]` with host name,
+authentication order and SSH settings now scores 0.8 (threshold 0.7). A file that shows too
+little to tell, whole or partial, still needs the vendor named, as the short Cisco fixtures do
+(M2.18).
+
+**Lists.** "A plus sign (+) before the statement name indicates that it can contain a set of
+values. To specify a set, include the values in brackets. For example: `set policy-options
+community my-as1-transit members [65535:10 65535:11]`" (Modify). A set of values is now one
+statement per value in both forms: `application [ junos-ssh junos-telnet ]` in braces gives the
+policy both applications (it was left unknown), and so does the bracket in a `set` line, with or
+without spaces inside the brackets. Only the pack's ordered lists (`leaf_lists`) are given back
+as one `[ … ]` statement, their values in order wherever their lines are. How `display set`
+prints a multi-value list is still not on a Juniper page; the reader no longer depends on it,
+since every form gives the same statements (test `test_bracket_lists_read_the_same_in_both_forms`).
+
+**Order.** An `insert` puts a term where first-match evaluation reads it: the tree records
+configuration order (`ConfigTree.order`) and the evaluator walks entries by it. Test: an
+accept-all term appended after `DENY-REST` leaves the lo0 filter closed; inserted before
+`ALLOW-SSH-MGMT` it lets anyone in.
+
+**Routes.** `next-hop` is "an IP address, an interface name, or an ISO network entity title
+(NET)" ([static (Routing
+Options)](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/static-edit-routing-options.html)),
+and `qualified-next-hop (address | interface-name)` adds next hops "each of which can have its
+own preference value" ([qualified-next-hop (Static
+Routes)](https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/qualified-next-hop-edit-routing-options.html)).
+Six mappings read both, one-line and in the route's block, and `next-hop [ a b ]` is read one
+value at a time; a route that names an interface and addresses leaves by each (role inference).
+The pack has 90 mappings.
+
+**Fixed along the way.**
+- The masker read `];` after `password` in `authentication-order [ tacplus password ];` as a
+  secret, so the fingerprint's evidence showed `password ****`. No secret was involved; the
+  evidence line now reads as written.
+- A 20,000-unit export took 12 seconds: the splitter worked out what may follow each path
+  anew. It now keeps that per shape of path (the context blocks each block matches), so paths
+  that differ only in names share it (3 s for the hostile case of 20,000 renamed units).
+- `insert` of a term before itself raised an error; it now changes nothing.
+
+**Checked.** Juniper's samples read as documented (relative, explicit, `show system
+authentication-order`, the authentication-order `insert` sequence, `copy`/`rename`); a whole
+configuration inside a capture (operational `show configuration`, `| display set | no-more`,
+typed changes then `rollback 0` and `show`) gives the same facts as the file; filtered,
+`ACCESS-DENIED`, answered and never-whole captures are partial; a partial `[edit system]`
+capture fails Telnet and passes nothing; hostile files (an insert, rename or copy on every line,
+a prompt on every line, paths of 200 lengths) read in linear time. Golden verdicts are
+unchanged; the Junos cases' fingerprints gained the two signatures.

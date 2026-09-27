@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "92a01e05f6d53231a72ad720",
+  "audit_id": "50ed5ca57ebb18e119c6d79e",
   "input": {
     "file": "hardened_set.conf",
     "sha256": "202d54c3c46fddc57aaf2de5c1b46d8cc2d94c21ff0feaafd43595d8f274cecb",
@@ -13,7 +13,7 @@
     "pack_id": "juniper_junos",
     "pack_version": 1,
     "chosen_by": "fingerprint",
-    "score": 1.2,
+    "score": 1.6,
     "min_score": 0.7,
     "signatures": [
       "version-statement",
@@ -21,7 +21,9 @@
       "host-name",
       "junos-interface",
       "root-authentication",
-      "security-zones"
+      "security-zones",
+      "ssh-root-login",
+      "authentication-order"
     ]
   },
   "identity": {
@@ -31,7 +33,7 @@
     },
     "vendor": {
       "value": "Juniper",
-      "source": "fingerprint (6 signatures)"
+      "source": "fingerprint (8 signatures)"
     },
     "os_version": {
       "value": "23.4R1.9",
@@ -52,7 +54,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "622294cde42aa17a8dc5037fcae07e47e7afc30a722823854df0cab0e36b3e5b",
+    "kb_version": "88c279bb41e3bad3ad66902ff5d2e7b809febdbb3c7e4259dbe8d69c88ab9246",
     "ruleset_version": "1bc107babd4a42068fc94aad70d709c71832d3082a7cb925032e5428fc334df7",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
@@ -1810,6 +1812,24 @@
           },
           {
             "file": "hardened_set.conf",
+            "line_start": 16,
+            "line_end": 16,
+            "raw": "set system authentication-order tacplus",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened_set.conf",
+            "line_start": 19,
+            "line_end": 19,
+            "raw": "set system services ssh root-login deny",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened_set.conf",
             "line_start": 34,
             "line_end": 34,
             "raw": "set interfaces ge-0/0/0 description \"WAN uplink\"",
@@ -1856,6 +1876,24 @@
             "line_start": 5,
             "line_end": 5,
             "raw": "set system root-authentication encrypted-password \"****\"",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened_set.conf",
+            "line_start": 16,
+            "line_end": 16,
+            "raw": "set system authentication-order tacplus",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "hardened_set.conf",
+            "line_start": 19,
+            "line_end": 19,
+            "raw": "set system services ssh root-login deny",
             "mapping_id": null,
             "mapping_version": null,
             "approved_by": []

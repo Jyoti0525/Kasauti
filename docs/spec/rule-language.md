@@ -84,6 +84,10 @@ ABSENT, UNKNOWN**.
 - **Unread statements.** If some statements about a type couldn't be read (`unread`), a
   quantifier over it can't conclude "all" or "none": such a result becomes UNKNOWN. A found
   witness still counts (`any` TRUE; `all`/`none` FALSE), because one bad entity is enough.
+  A file that holds only part of a configuration (`ConfigTree.partial`: shown from an edit
+  level, filtered, a change script) marks every multi-entity type unread, since the rest may
+  hold more of any of them; the audit then keeps no PASS, and no FAIL resting on a default or
+  on something missing.
 - `exists(x)` is TRUE for a known value, FALSE for an absent one and UNKNOWN for an unknown
   one. Write `not exists(...)` with care: it passes on absence.
 - `matches` runs the pattern with RE2 (linear time); an invalid pattern is a load error.

@@ -1005,6 +1005,21 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.32 (2026-09-27, M2.28 limits closed):** Every Junos file form the CLI writes is now
+  replayed as the CLI would (`kasauti/mapping/commands.py`): `[edit …]` banners, prompts and
+  command output in terminal captures, `edit`/`up`/`top`/`exit`, `insert`, `rename`, `copy`,
+  `delete` of everything, `display set relative` and `explicit`, and braces shown from a level.
+  A file that holds only part of a configuration (shown from a level, filtered, `ACCESS-DENIED`,
+  a change script) is read at its level and marked partial: every entity type may have more
+  members elsewhere, so a witness in the file still fails a rule but nothing passes. Relative
+  lines without a banner are placed at the one level the pack's mappings allow. `insert`
+  order reaches first-match evaluation (`ConfigTree.order`). `[ … ]` sets of values are one
+  statement per value in both forms (brace `application [ a b ]` had been unknown); only ordered
+  lists stay joined. Interface next hops and `qualified-next-hop` are read (90 mappings). Two
+  Junos-only fingerprint signatures (`root-login`, `authentication-order`) let a system
+  fragment be recognised. Fixed on the way: the masker hid `];` after the word `password`, and
+  a 20,000-unit export took 12 s (the splitter now keys its cache by path shape). Golden
+  verdicts unchanged.
 - **v5.1.31 (2026-09-27, M2.28 Junos `display set` exports):** A Junos configuration exported
   as `set` commands is rebuilt into the brace tree it stands for, and read by the same 84
   mappings. Each line is split where the pack's mappings expect blocks, `deactivate`/`delete`

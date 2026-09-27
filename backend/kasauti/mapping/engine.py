@@ -155,6 +155,8 @@ class _Engine:
 
     def run(self, device: Device | None) -> None:
         self.builder = SbmBuilder(device)
+        if self.tree.order is not None:
+            self.builder.line_rank = {line: i + 1 for i, line in enumerate(self.tree.order)}
         parents = {stmt.path for stmt in self.tree.statements}
         for stmt in self.tree.statements:
             self._header_lines.setdefault((*stmt.path, stmt.text), stmt.line_start)

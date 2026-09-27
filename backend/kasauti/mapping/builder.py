@@ -125,6 +125,9 @@ class SbmBuilder:
         self.unread_children: dict[EntityRef, list[Evidence]] = {}
         """Lines inside an entity's block that no mapping understood. The resolver won't
         conclude "no entry permits everyone" about an ACL with unread entries."""
+        self.line_rank: dict[int, int] = {}
+        """Source line -> its place in configuration order, when that isn't file order (a
+        Junos ``insert``, ``ConfigTree.order``); empty: file order."""
         self._device_seed = device or Device()
         dev = self.entity(("Device", "device"))
         for attr, fact in self._device_seed:
@@ -133,6 +136,11 @@ class SbmBuilder:
             dev.facts[attr] = FactAcc(
                 fact.state, fact.value, list(fact.evidence), fact.default_source
             )
+
+    def position(self, line: int) -> int:
+        """Where ``line`` comes in configuration order: first-match evaluation walks entries
+        by it."""
+        return self.line_rank.get(line, line) if self.line_rank else line
 
     def entity(self, ref: EntityRef) -> EntityAcc:
         return self.entities.setdefault(ref, EntityAcc())

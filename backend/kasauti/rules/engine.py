@@ -37,7 +37,7 @@ from kasauti.rules.evaluate import (
     merge,
 )
 from kasauti.rules.model import Finding, OnMissing, Rule, Status
-from kasauti.sbm.document import SecurityBaselineModel
+from kasauti.sbm.document import SecurityBaselineModel, unread_subject
 from kasauti.sbm.entities import Device, Entity
 from kasauti.sbm.facts import FactState
 
@@ -120,9 +120,7 @@ def evaluate_rule(rule: Rule, sbm: SecurityBaselineModel, ev: Evaluator) -> list
 
     unread = sbm.unread.get(entity_type, ())
     if unread:
-        obs = Observation(
-            f"{entity_type}: statements not understood", FactState.UNKNOWN, None, unread
-        )
+        obs = Observation(unread_subject(entity_type, unread), FactState.UNKNOWN, None, unread)
         return [_verdict(rule, sbm.device, Missing("unknown", (obs,)), question="the rule")]
     scope_text = rule.for_each
     return [

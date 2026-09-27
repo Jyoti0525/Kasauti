@@ -61,6 +61,12 @@ class ConfigTree:
     rebuilt_from: ShapeFamily | None = None
     """The file's own family, when its lines were rebuilt into this family's tree (a Junos
     ``display set`` export, read as the brace configuration it stands for)."""
+    partial: tuple[str, ...] = ()
+    """Why the file holds only part of a configuration (shown from an edit level, filtered,
+    placeholders for what the account may not view). Nothing it doesn't show may pass."""
+    order: tuple[int, ...] | None = None
+    """Source lines in configuration order, when that isn't file order (a Junos ``insert``
+    moved a term); None: file order. First-match evaluation reads it."""
 
     def __post_init__(self) -> None:
         if not _SHA256.fullmatch(self.sha256):

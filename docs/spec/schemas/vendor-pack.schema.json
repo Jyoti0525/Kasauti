@@ -13,7 +13,7 @@
     },
     "SetForm": {
       "additionalProperties": false,
-      "description": "How ``set`` commands stand for the pack's brace configuration (TODO M2.28). Each line is\nthe full path to one statement; it is split into blocks where the pack's own mappings\nexpect them (:mod:`kasauti.mapping.setform`), so the same mappings read both forms.",
+      "description": "How CLI commands stand for the pack's brace configuration (TODO M2.28). A file of\ncommands or a terminal capture is replayed (:mod:`kasauti.mapping.commands`); each\nstatement left is a path of words, split into blocks where the pack's own mappings expect\nthem (:mod:`kasauti.mapping.setform`), so the same mappings read every form.",
       "properties": {
         "leaf_lists": {
           "default": [],

@@ -30,7 +30,7 @@ from typing import Any, Literal
 from kasauti.rules import expr as ex
 from kasauti.rules import regex
 from kasauti.rules.derivation import Derivation
-from kasauti.sbm.document import SecurityBaselineModel
+from kasauti.sbm.document import SecurityBaselineModel, unread_subject
 from kasauti.sbm.entities import ENTITY_TYPES, SINGLETON_TYPES, Entity
 from kasauti.sbm.facts import Evidence, Fact, FactState
 
@@ -235,9 +235,7 @@ class Evaluator:
                 continue
             candidates.append((entity, where))
         unread = self.sbm.unread.get(q.entity, ())
-        unread_obs = Observation(
-            f"{q.entity}: statements not understood", FactState.UNKNOWN, None, unread
-        )
+        unread_obs = Observation(unread_subject(q.entity, unread), FactState.UNKNOWN, None, unread)
         if not candidates:
             return self._empty(q, members, unread_obs if unread else None)
 

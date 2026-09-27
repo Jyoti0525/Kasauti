@@ -316,6 +316,13 @@ JUNOS: list[Case] = [
         "authentication-order [ tacplus password ]",
         "authentication-order [ tacplus password ]",
     ),
+    # The whole line, as fingerprint evidence shows it: `];` is one word there.
+    (
+        (),
+        "    authentication-order [ tacplus password ];",
+        "    authentication-order [ tacplus password ];",
+    ),
+    ((), "set system authentication-order password;", "set system authentication-order password;"),
     (("system", "login", "password"), "minimum-length 15", "minimum-length 15"),
 ]
 

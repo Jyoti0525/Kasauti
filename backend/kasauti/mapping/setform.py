@@ -1,13 +1,16 @@
-"""``set`` commands rebuilt into the brace tree they stand for (TODO M2.28).
+"""Junos configuration files in any form the CLI writes, rebuilt into the brace tree (M2.28).
 
 Junos ``show configuration | display set`` prints each statement on a line of its own: the full
-path from the top of the hierarchy, as a ``set`` command. The brace form of the same
-configuration nests those words in blocks, and a pack's mappings are written for blocks
-(``context: [system, services]``, ``match: telnet``). A line doesn't say where its blocks end:
-``set system ntp server 10.0.0.1 key 1`` is one statement in ``system ntp``, while ``set system
-syslog host 10.0.0.2 any notice`` is a statement in the block ``host 10.0.0.2``. Only the
-vendor's schema knows, and the pack already records what it needs of it: its mappings' contexts
-are blocks, their patterns statements. So each line is split where the mappings expect:
+path from the top of the hierarchy, as a ``set`` command. Files carry more of the CLI than that
+(commands at an edit level, ``insert``, ``rename``, a terminal capture with its ``[edit …]``
+banners): :mod:`kasauti.mapping.commands` replays them into the statements they leave, each a
+path of words from the top. The brace form of the same configuration nests those words in
+blocks, and a pack's mappings are written for blocks (``context: [system, services]``,
+``match: telnet``). A line doesn't say where its blocks end: ``set system ntp server 10.0.0.1
+key 1`` is one statement in ``system ntp``, while ``set system syslog host 10.0.0.2 any notice``
+is a statement in the block ``host 10.0.0.2``. Only the vendor's schema knows, and the pack
+already records what it needs of it: its mappings' contexts are blocks, their patterns
+statements. So each statement is split where the mappings expect:
 
 1. If the rest of the line is a statement a mapping reads at this point of the path, it is
    that statement (``route 0.0.0.0/0 next-hop 198.51.100.1`` in ``static``, the way Junos
@@ -22,11 +25,17 @@ are blocks, their patterns statements. So each line is split where the mappings 
    read by no mapping, as it would be in braces.
 
 Every block is also a statement, given once, at the first line that opens it, as the brace
-parser gives it. ``deactivate`` makes a path inactive and ``delete`` removes it, so neither
-leaves a statement: the device ignores inactive configuration, and the brace parser drops
-``inactive:`` too. ``activate`` undoes ``deactivate``; ``protect``, ``unprotect`` and
-``annotate`` change nothing the device does. Any other command (``insert``, ``rename``) changes
-order or names in a way the lines alone don't show, so the file isn't read as ``set`` commands.
+parser gives it. Statements that came from braces keep the blocks the braces gave them.
+
+A set of values is one statement per value, in either form: "To specify a set, include the
+values in brackets" (``application [ junos-ssh junos-telnet ]``), and a ``set`` command adds one
+value at the end of the list. Only the statements the pack reads as an ordered list
+(``set_form.leaf_lists``) are given back as one ``[ … ]`` list, their values in order.
+
+A file whose paths start below the top of the hierarchy (``show | display set relative``, or
+braces shown from ``[edit system]``) is read at the level its banner names. Without a banner,
+the level is the one the pack's mappings allow for every first word, if exactly one does. Either
+way the file holds only part of a configuration, and the tree says so (``ConfigTree.partial``).
 """
 
 from __future__ import annotations
@@ -34,66 +43,138 @@ from __future__ import annotations
 from collections.abc import Collection, Iterable, Sequence
 from dataclasses import dataclass
 
+from kasauti.mapping.commands import (
+    BANNER,
+    CHANGE,
+    MOVE,
+    PROMPT,
+    Entry,
+    Replay,
+    Replayed,
+    Words,
+    brace_view,
+    normal_words,
+)
 from kasauti.mapping.match import Compiled, match_tokens
 from kasauti.mapping.model import Mapping, PatternToken, Slot, Word, parse_pattern
 from kasauti.packs.loader import VendorPack
+from kasauti.shape import brace
 from kasauti.shape.base import ParseError, RawStatement, check_depth
 from kasauti.shape.lines import logical_lines, parse_flat
 from kasauti.shape.model import ConfigTree, ShapeFamily
 from kasauti.shape.parse import build_tree, parse_text
-from kasauti.shape.tokens import tokenize
-
-SET = "set"
-_NO_EFFECT = frozenset({"protect", "unprotect", "annotate"})
+from kasauti.shape.tokens import split_lines, tokenize
 
 Block = tuple[PatternToken, ...]
+
+TOP_LEVEL = frozenset(
+    {
+        # "Table 2: Configuration Mode Top-Level Statements", CLI User Guide, CLI Configuration
+        # Mode Overview (juniper.net/documentation/us/en/software/junos/cli/topics/topic-map/
+        # cli-configuration.html).
+        "access",
+        "accounting-options",
+        "chassis",
+        "class-of-service",
+        "firewall",
+        "forwarding-options",
+        "groups",
+        "interfaces",
+        "policy-options",
+        "protocols",
+        "routing-instances",
+        "routing-options",
+        "security",
+        "snmp",
+        "system",
+        # The `set ?` completions at [edit] in "How to Add Configuration Statements and
+        # Identifiers" (…/cli/topics/topic-map/modifying-configuration.html).
+        "apply-groups",
+        # The export's first statement (docs/reviews/juniper_junos.md, fingerprint).
+        "version",
+    }
+)
+"""Statements Juniper documents at the top of the hierarchy. Juniper's table isn't every one,
+so a word missing from it says nothing; a word in it means the file's paths start at the top."""
+_END = "\x00"
+"""A word no configuration holds: after a path, it leaves every word of the path in a block."""
+_START_VERBS = frozenset({*CHANGE, *MOVE, "protect", "unprotect", "annotate"})
 
 
 def parse_config(
     text: str, pack: VendorPack, *, source_file: str, sha256: str | None = None
 ) -> ConfigTree:
     """A configuration parsed for ``pack``: in the pack's shape family, or, when the pack takes
-    ``set`` commands and the file is made of them, rebuilt into that family's tree. A file the
-    rebuild can't read is read line by line with the reason, as when a parser rejects one."""
+    ``set`` commands, replayed and rebuilt into that family's tree (module docstring). A file
+    that can't be read so is read line by line with the reason, as when a parser rejects one."""
     family = pack.manifest.shape_family
     form = pack.manifest.set_form
-    if form is None or not is_set_form(text):
+    if form is None:
         return parse_text(text, source_file=source_file, family=family, sha256=sha256)
+    reader = SetFormReader(pack.mappings, form.leaf_lists)
+    commands = is_set_form(text)
     try:
-        raws = SetFormReader(pack.mappings, form.leaf_lists).read(text)
+        replayed = reader.replay(text) if commands else reader.from_braces(text)
+        raws = reader.read(replayed.entries)
     except ParseError as err:
+        name = ShapeFamily.SET_PATH.value if commands else family.value
         return build_tree(
             parse_flat(text),
             ShapeFamily.FLAT,
             text=text,
             source_file=source_file,
             sha256=sha256,
-            warnings=[f"not valid set_path syntax ({err}); parsed line by line instead"],
+            warnings=[f"not valid {name} syntax ({err}); parsed line by line instead"],
         )
+    rebuilt = any(e.path is None for e in replayed.entries)
     return build_tree(
         raws,
         family,
         text=text,
         source_file=source_file,
         sha256=sha256,
-        rebuilt_from=ShapeFamily.SET_PATH,
+        rebuilt_from=ShapeFamily.SET_PATH if rebuilt else None,
+        partial=replayed.partial,
+        order=_order(raws) if replayed.reordered else None,
     )
 
 
 def is_set_form(text: str) -> bool:
-    """The first line that isn't blank or a comment is a ``set`` command."""
+    """The file is CLI commands or a terminal capture, not braces: its first line that isn't
+    blank or a comment is a configuration-mode command, an ``[edit …]`` banner or a prompt."""
     for _, _, line in logical_lines(text):
         if line and not line.startswith("#"):
-            return line.split(None, 1)[0] == SET
+            return _framing(line) or line.split(None, 1)[0] in _START_VERBS
     return False
 
 
-@dataclass(frozen=True, slots=True)
-class _Command:
-    seq: int
-    start: int
-    end: int
-    words: tuple[str, ...]
+def absolute_view(text: str, pack: VendorPack) -> str | None:
+    """``text`` with each line that is relative to an edit level written from the top, line
+    for line, or None if no line is relative. The fingerprint reads it, so a part of a
+    configuration shown from ``[edit system]`` is recognised as what it is."""
+    form = pack.manifest.set_form
+    if form is None:
+        return None
+    reader = SetFormReader(pack.mappings, form.leaf_lists)
+    try:
+        view = reader.view(text)
+    except ParseError:
+        return None
+    if not view:
+        return None
+    lines = split_lines(text)
+    for number, line in view.items():
+        lines[number - 1] = line
+    return "\n".join(lines)
+
+
+def _framing(line: str) -> bool:
+    return bool(BANNER.fullmatch(line) or PROMPT.fullmatch(line))
+
+
+def _order(raws: Sequence[RawStatement]) -> tuple[int, ...]:
+    """Source lines in configuration order, each where its first statement is."""
+    return tuple(dict.fromkeys(r.line_start for r in raws))
 
 
 @dataclass(slots=True)
@@ -103,15 +184,19 @@ class _Out:
     start: int
     end: int
     block: bool
+    text: str | None = None
+    """The statement as braces wrote it, if it came from braces."""
+    listed: bool = False
     values: list[str] | None = None
-    """A leaf list's values, once a second line has joined the first."""
+    """An ordered list's values, joined back into one statement."""
 
     def raw(self) -> RawStatement:
-        text = (
-            " ".join(self.words)
-            if self.values is None
-            else f"{self.words[0]} [ {' '.join(self.values)} ]"
-        )
+        if self.values is not None:
+            text = f"{self.words[0]} [ {' '.join(self.values)} ]"
+        elif self.text is not None:
+            text = self.text
+        else:
+            text = " ".join(self.words)
         return RawStatement(self.path, text, self.start, self.end)
 
 
@@ -130,30 +215,148 @@ class _Here:
 
 
 class SetFormReader:
-    """Splits ``set`` lines where ``mappings`` expect blocks (see the module docstring)."""
+    """Splits statements where ``mappings`` expect blocks (see the module docstring)."""
 
     def __init__(self, mappings: Sequence[Mapping], leaf_lists: Collection[str] = ()) -> None:
         self._leaf_lists = frozenset(leaf_lists)
         self._compiled = tuple(Compiled(m, i) for i, m in enumerate(mappings))
-        self._here: dict[tuple[tuple[str, ...], ...], _Here] = {}
+        self._here: dict[tuple[frozenset[int], ...], _Here] = {}
         contexts = {tuple(parse_pattern(p) for p in m.context) for m in mappings if m.context}
+        # Every block a context names, numbered: what follows a path depends only on which of
+        # them each of its blocks matches, so `unit 5` and `unit 6` share one answer.
+        self._patterns = tuple(sorted({b for c in contexts for b in c}, key=repr))
+        self._by_first: dict[str, list[int]] = {}
+        self._any_first: list[int] = []
+        for n, block in enumerate(self._patterns):
+            word = _first_word(block)
+            if word is None:
+                self._any_first.append(n)
+            else:
+                self._by_first.setdefault(word, []).append(n)
+        self._classes: dict[tuple[str, ...], frozenset[int]] = {}
         # Sorted, so the result never depends on set order; a context with a LIST slot has no
         # fixed length, so it can't mark where a block ends.
         self._contexts = tuple(sorted((c for c in contexts if all(_fixed(b) for b in c)), key=repr))
         self._starts = tuple(sorted({c[0] for c in self._contexts if _literal(c[0])}, key=repr))
         self._start_words = frozenset(str(_first_word(b)) for b in self._starts)
+        self._below = self._levels_below()
 
-    def read(self, text: str) -> list[RawStatement]:
+    # --- files -----------------------------------------------------------------------------
+
+    def replay(self, text: str) -> Replayed:
+        """A file of commands or a terminal capture, replayed (:mod:`commands`)."""
+        return self._replay(text).run(text)
+
+    def view(self, text: str) -> dict[int, str]:
+        """Line -> the line written from the top, for lines relative to an edit level."""
+        if is_set_form(text):
+            words = _first_words(text)
+            if words is not None and not self.infer_level(words)[0]:
+                return {}  # commands from the top, no banner: every line reads as it is
+            replay = self._replay(text)
+            replay.run(text)
+            return replay.view
+        lines = [line for line in logical_lines(text) if line[2] and not line[2].startswith("#")]
+        if not lines or not lines[0][2].endswith((";", "{")):
+            return {}  # not braces: nothing to rebuild
+        if lines[0][2].split(None, 1)[0] in TOP_LEVEL:
+            return {}  # braces from the top
+        raws = list(brace.parse(text))
+        level, _ = self.infer_level({tokenize(r.text)[0] for r in raws if not r.path})
+        return brace_view(lines, self.levels(level)) if level else {}
+
+    def from_braces(self, text: str) -> Replayed:
+        """A configuration in braces: as the braces give it, at the level it was shown from
+        if its statements start below the top."""
+        raws = list(brace.parse(text))
+        level, why = self.infer_level({tokenize(r.text)[0] for r in raws if not r.path})
+        replay = Replay(self.levels)
+        replay.add_brace(raws, level)
+        partial = [*replay.partial]
+        if level:
+            partial.append(f"its statements are from [edit {' '.join(level)}], not the top")
+        if why:
+            partial.append(why)
+        return Replayed(tuple(replay.entries), tuple(dict.fromkeys(partial)), False, level)
+
+    def _replay(self, text: str) -> Replay:
+        level: Words = ()
+        words = _first_words(text)
+        if words is not None:
+            level, why = self.infer_level(words)
+            if why:
+                replay = Replay(self.levels)
+                replay.partial.append(why)
+                return replay
+        return Replay(self.levels, level)
+
+    # --- levels ----------------------------------------------------------------------------
+
+    def levels(self, words: Words) -> list[Words]:
+        """The blocks a path of words passes through, every word in one: ``interfaces ge-0/0/0
+        unit 0`` -> ``interfaces``, ``ge-0/0/0``, ``unit 0``."""
+        if not words:
+            return []
+        blocks, rest = self.split((*words, _END), 0)
+        return [*blocks, *((w,) for w in rest[:-1])]
+
+    def infer_level(self, first: Collection[str]) -> tuple[Words, str | None]:
+        """The edit level statements starting with ``first`` words are relative to: () when
+        one of them starts at the top, or when nothing tells. The second value says why the
+        file is only part of a configuration when the level can't be told."""
+        if not first or any(w in TOP_LEVEL for w in first):
+            return (), None
+        known = [w for w in first if any(w in nxt for nxt in self._below.values())]
+        if not known:
+            return (), None
+        fits = sorted(lvl for lvl, nxt in self._below.items() if all(w in nxt for w in known))
+        if len(fits) == 1:
+            return fits[0], None
+        where = " or ".join(f"[edit {' '.join(f)}]" for f in fits) if fits else "a level"
+        return (), (
+            f"its statements start below the top of the hierarchy, at {where}, and the file "
+            "doesn't say which; export it with show configuration | display set, or keep the "
+            "[edit …] line the CLI prints above the prompt"
+        )
+
+    def _levels_below(self) -> dict[Words, frozenset[str]]:
+        """Each level a pack's mappings name from the top, all in words (``system services``),
+        with the first words of what the mappings read in it."""
+        out: dict[Words, set[str]] = {}
+        for c in self._compiled:
+            ctx = c.context
+            if not ctx or not _literal(ctx[0]) or _first_word(ctx[0]) not in TOP_LEVEL:
+                continue
+            for depth in range(1, len(ctx) + 1):
+                if not all(isinstance(p, Word) for p in ctx[depth - 1]):
+                    break
+                level = tuple(p.text for b in ctx[:depth] for p in b if isinstance(p, Word))
+                nxt = out.setdefault(level, set())
+                if depth < len(ctx):
+                    if (word := _first_word(ctx[depth])) is not None:
+                        nxt.add(word)
+                else:
+                    nxt.update(v[0].text for v in c.variants if v and isinstance(v[0], Word))
+        return {k: frozenset(v) for k, v in out.items()}
+
+    # --- statements ------------------------------------------------------------------------
+
+    def read(self, entries: Iterable[Entry]) -> list[RawStatement]:
         opened: set[tuple[str, ...]] = set()
         out: list[_Out] = []
-        for cmd in _active(text):
-            blocks, leaf = self.split(cmd.words, cmd.start)
+        for e in entries:
+            if e.path is not None and e.text is not None:
+                opened.update(e.path[: k + 1] for k in range(len(e.path)))
+                opened.add((*e.path, e.text))
+                out.append(_Out(e.path, tokenize(e.text), e.start, e.end, False, e.text, e.listed))
+                continue
+            blocks, leaf = self.split(e.words, e.start)
             headers = tuple(" ".join(b) for b in blocks)
             for k in range(len(headers)):
                 if headers[: k + 1] not in opened:
                     opened.add(headers[: k + 1])
-                    out.append(_Out(headers[:k], blocks[k], cmd.start, cmd.end, block=True))
-            out.append(_Out(headers, leaf, cmd.start, cmd.end, block=False))
+                    out.append(_Out(headers[:k], blocks[k], e.start, e.end, block=True))
+            out.append(_Out(headers, leaf, e.start, e.end, block=False, listed=e.listed))
         # A line that names a block other lines open (``set system services ssh`` beside
         # ``set system services ssh root-login deny``) is that block, already given; a line
         # given twice is one statement.
@@ -161,7 +364,7 @@ class SetFormReader:
         kept: list[_Out] = []
         for o in out:
             key = (*o.path, " ".join(o.words))
-            if not o.block and (key in opened or key in seen):
+            if key in seen or (not o.block and o.text is None and key in opened):
                 continue
             seen.add(key)
             kept.append(o)
@@ -202,8 +405,11 @@ class SetFormReader:
         return 1 if later else None
 
     def _at(self, path: tuple[tuple[str, ...], ...]) -> _Here:
-        """What can follow ``path``. Kept per path: the same paths come on line after line."""
-        here = self._here.get(path)
+        """What can follow ``path``. Kept by the context blocks each of its blocks matches: the
+        answer depends on nothing else, and paths that differ only in names (20,000 units)
+        share it."""
+        key = tuple(self._class(b) for b in path)
+        here = self._here.get(key)
         if here is not None:
             return here
         if len(self._here) >= _PATHS_KEPT:
@@ -231,79 +437,61 @@ class SetFormReader:
         # Best first: the most of a context it continues, then the most words.
         order = sorted(ranked, key=lambda r: (-r[0], -r[1], r[2]))
         here = _Here(by_word, tuple(slot_first), tuple(r[3] for r in order))
-        self._here[path] = here
+        self._here[key] = here
         return here
 
+    def _class(self, block: tuple[str, ...]) -> frozenset[int]:
+        """The context blocks ``block`` matches, by number."""
+        found = self._classes.get(block)
+        if found is None:
+            if len(self._classes) >= _PATHS_KEPT:
+                self._classes.clear()
+            candidates = (*self._by_first.get(block[0], ()), *self._any_first) if block else ()
+            found = frozenset(
+                n for n in candidates if match_tokens(self._patterns[n], block) is not None
+            )
+            self._classes[block] = found
+        return found
+
     def _join_lists(self, stmts: Iterable[_Out]) -> list[_Out]:
+        """Values of an ordered list, wherever their lines are, as one statement where the
+        first is: a ``set`` command "is placed at the end of the list"."""
         out: list[_Out] = []
+        lists: dict[tuple[tuple[str, ...], str], _Out] = {}
         for s in stmts:
-            prev = out[-1] if out else None
-            if (
-                prev is not None
-                and not s.block
-                and not prev.block
-                and len(s.words) == 2
-                and s.words[0] in self._leaf_lists
-                and s.words[1] != "["
-                and prev.path == s.path
-                and prev.words[0] == s.words[0]
-                and (prev.values is not None or len(prev.words) == 2)
-                and prev.words[-1] != "]"
-            ):
-                if prev.values is None:
-                    prev.values = [prev.words[1]]
-                prev.values.append(s.words[1])
-                prev.end = s.end
+            if s.block or len(s.words) != 2 or s.words[0] not in self._leaf_lists:
+                out.append(s)
                 continue
-            out.append(s)
+            key = (s.path, s.words[0])
+            first = lists.get(key)
+            if first is None:
+                lists[key] = s
+                out.append(s)
+                if s.listed:
+                    s.values = [s.words[1]]
+                continue
+            if first.values is None:
+                first.values = [first.words[1]]
+            first.values.append(s.words[1])
+            first.end = max(first.end, s.end)
         return out
 
 
-def _active(text: str) -> list[_Command]:
-    """The ``set`` lines that are still in the configuration and active."""
-    sets: list[_Command] = []
-    deleted: dict[tuple[str, ...], int] = {}
-    inactive: dict[tuple[str, ...], int] = {}
-    seq = 0
-    for start, end, line in logical_lines(text):
+def _first_words(text: str) -> set[str] | None:
+    """The first word of each path the file's commands name before any command moves the
+    edit level; None if the file is a capture, which names its levels itself."""
+    words: set[str] = set()
+    for _, _, line in logical_lines(text):
         if not line or line.startswith("#"):
             continue
-        seq += 1
-        verb, *rest = tokenize(line)
-        words = tuple(rest)
-        if not words:
-            raise ParseError(f"{verb!r} with nothing after it", start)
-        if verb == SET:
-            sets.append(_Command(seq, start, end, words))
-        elif verb == "delete":
-            deleted[words] = seq
-        elif verb == "deactivate":
-            inactive[words] = seq
-        elif verb == "activate":
-            inactive.pop(words, None)
-        elif verb not in _NO_EFFECT:
-            raise ParseError(
-                f"{verb!r} changes the configuration in a way its lines don't show", start
-            )
-
-    # Only the lengths a delete or deactivate has are looked up: every prefix of a line of a
-    # million words would be a million tuples, each as long as it is.
-    deleted_sizes = sorted({len(k) for k in deleted})
-    inactive_sizes = sorted({len(k) for k in inactive})
-
-    def removed_after(words: tuple[str, ...], seq: int) -> bool:
-        return any(deleted.get(words[:n], 0) > seq for n in deleted_sizes if n <= len(words))
-
-    def is_inactive(words: tuple[str, ...]) -> bool:
-        for n in inactive_sizes:
-            if n > len(words):
-                break
-            when = inactive.get(words[:n])
-            if when is not None and not removed_after(words[:n], when):
-                return True
-        return False
-
-    return [c for c in sets if not removed_after(c.words, c.seq) and not is_inactive(c.words)]
+        if _framing(line):
+            return None
+        verb, *args = normal_words(tokenize(line))
+        if verb in MOVE or verb == "edit":
+            break
+        if verb in CHANGE and args and verb not in ("insert", "rename", "copy"):
+            words.add(args[0])
+    return words
 
 
 def _fixed(block: Block) -> bool:

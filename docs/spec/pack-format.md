@@ -8,10 +8,13 @@ packs/
   vendors/<vendor_os>/          directory name == pack id (lower_snake)
     pack.yaml                   manifest: shape family, negation words, comment markers, time unit;
                                 `set_form` (brace packs only): the configuration may also come as
-                                `set` commands (Junos `display set`), rebuilt into the brace tree
-                                by splitting each line where the pack's mappings expect blocks;
-                                `leaf_lists` names statements whose one-value-per-line form is
-                                joined back into one ordered list
+                                CLI commands or a terminal capture (Junos `display set`, relative
+                                or not, `insert`/`rename`/`copy`, `[edit …]` banners), replayed
+                                and rebuilt into the brace tree by splitting each statement where
+                                the pack's mappings expect blocks; a part of a configuration is
+                                marked partial. A `[ … ]` set of values is one statement per
+                                value; `leaf_lists` names the ordered lists given back as one
+                                `[ … ]` statement, values in order
     detect.yaml                 fingerprint signatures (contains | line_prefix | regex | json_key | xml_path),
                                 and `warnings`: patterns saying the file isn't what the audit
                                 expects (a Panorama export); a match adds a warning, never a verdict;

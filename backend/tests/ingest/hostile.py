@@ -235,4 +235,18 @@ FILES = [
         lambda s: _repeat(b"set system login user u class c\ndelete system login user u\n", s),
         "a delete after every set line",
     ),
+    Case(
+        "set-inserts.conf",
+        lambda s: _repeat(
+            b"set firewall filter F term A then accept\n"
+            b"insert firewall filter F term A before term A\n",
+            s,
+        ),
+        "an insert after every set line",
+    ),
+    Case(
+        "set-capture.conf",
+        lambda s: _repeat(b"[edit system]\nuser@h# set services telnet\n", s),
+        "a banner and a prompt on every other line",
+    ),
 ]

@@ -13,6 +13,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from kasauti.ingest.mask import mask_secrets
+from kasauti.mapping.setform import absolute_view
 from kasauti.packs.loader import VendorPack
 from kasauti.packs.model import DetectSpec, Exclusion, InputWarning, Signature
 from kasauti.rules import regex
@@ -49,7 +50,22 @@ class Detection:
 
 
 def score_pack(text: str, pack: VendorPack, tree: ConfigTree | None = None) -> Detection:
-    return score(text, pack.detect, pack.manifest.id, tree)
+    found = score(text, pack.detect, pack.manifest.id, tree)
+    return _from_the_top(found, text, pack, tree)
+
+
+def _from_the_top(
+    found: Detection, text: str, pack: VendorPack, tree: ConfigTree | None
+) -> Detection:
+    """A pack that takes CLI commands also scores the file as it reads from the top of the
+    hierarchy: ``set host-name R1`` under an ``[edit system]`` banner is ``set system
+    host-name R1``, and the pack's signatures are written for that. Line numbers are the
+    file's own, line for line; the better score counts."""
+    view = absolute_view(text, pack)
+    if view is None:
+        return found
+    seen = score(view, pack.detect, pack.manifest.id, tree)
+    return seen if seen.score > found.score else found
 
 
 def score(
@@ -95,7 +111,8 @@ def detect_vendor(text: str, packs: Sequence[VendorPack]) -> list[Detection]:
             if family not in trees:
                 trees[family] = parse_text(text, source_file="detect", family=family)
             tree = trees[family]
-        out.append(score(text, pack.detect, pack.manifest.id, tree, joined))
+        found = score(text, pack.detect, pack.manifest.id, tree, joined)
+        out.append(_from_the_top(found, text, pack, tree))
     return sorted(out, key=lambda d: (bool(d.excluded), -d.score, d.pack_id))
 
 

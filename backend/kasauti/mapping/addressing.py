@@ -149,15 +149,15 @@ def _default_route(route: EntityAcc, interfaces: dict[str, EntityAcc]) -> None:
         return  # a blackhole, SD-WAN zone or other router: where it leaves isn't read
     named = _known(named_fact)
     exits: list[tuple[str, list[Evidence]]] = []
-    if isinstance(named, str):
-        if named in interfaces:
-            exits.append((named, []))
-    else:
-        hops = _known(route.facts.get("next_hops"))
-        for hop in sorted(str(h) for h in hops) if isinstance(hops, frozenset) else ():
-            found = _subnet_of(_address(hop), family, interfaces)
-            if found is not None:
-                exits.append(found)
+    if isinstance(named, str) and named in interfaces:
+        exits.append((named, []))
+    # A route may name an interface and addresses both (a Junos `next-hop [ 192.0.2.1
+    # ge-0/0/1.0 ]`): it leaves by each.
+    hops = _known(route.facts.get("next_hops"))
+    for hop in sorted(str(h) for h in hops) if isinstance(hops, frozenset) else ():
+        found = _subnet_of(_address(hop), family, interfaces)
+        if found is not None and found[0] not in (name for name, _ in exits):
+            exits.append(found)
     route_lines = [
         *route.evidence,
         *(ev for attr in ("destination", "next_hops", "interface") for ev in _lines(route, attr)),

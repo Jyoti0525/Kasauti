@@ -50,7 +50,9 @@ from kasauti.rules.scoring import (
     nist_controls,
     rule_statuses,
 )
-from kasauti.sbm.document import SecurityBaselineModel
+from kasauti.sbm.document import OUTSIDE, SecurityBaselineModel
+from kasauti.sbm.entities import ENTITY_TYPES, SINGLETON_TYPES
+from kasauti.sbm.facts import Evidence
 from kasauti.shape.model import Statement
 
 FORMAT_VERSION = 1
@@ -293,7 +295,8 @@ def audit(
         pack_id=pack.manifest.id,
         device=ident.device,
     )
-    enriched = apply_inferences(mapped.sbm, kb.ruleset.inferences, kb.ruleset.derivations)
+    base_sbm = _beyond(mapped.sbm, artifact.name) if tree.partial else mapped.sbm
+    enriched = apply_inferences(base_sbm, kb.ruleset.inferences, kb.ruleset.derivations)
     enriched = apply_default_role(
         enriched, pack.manifest.default_role, f"{pack.manifest.id}/pack.yaml#default_role"
     )
@@ -304,6 +307,13 @@ def audit(
         warnings.append(
             "the file couldn't be read in its own syntax, so no rule is judged PASS or FAIL: "
             "each is left for review"
+        )
+    elif tree.partial:
+        findings = _partial(findings, kb.ruleset)
+        warnings.append(
+            f"the file holds only part of a configuration ({'; '.join(tree.partial)}), so no "
+            "rule passes on what it doesn't show: a PASS is left for review, and a FAIL stands "
+            "only where the file's own lines show the weakness"
         )
     statuses = rule_statuses(kb.ruleset.rules, findings)
 
@@ -422,6 +432,57 @@ def _not_read(findings: Sequence[Finding], ruleset: RuleSet, family: str) -> tup
             f"Would be {f.status.value}, but the file couldn't be read as {family} syntax (see "
             f"the warnings), so settings in it may have been missed or read out of context; "
             f"check it against the file, or export the file again. {f.reason}"
+        )
+        out.append(
+            f.model_copy(
+                update={
+                    "status": Status.REVIEW,
+                    "severity": severity,
+                    "severity_reason": f.severity_reason or f"{severity.value.capitalize()} (base)",
+                    "reason": reason,
+                }
+            )
+        )
+    return tuple(out)
+
+
+def _beyond(sbm: SecurityBaselineModel, file: str) -> SecurityBaselineModel:
+    """The file is part of a configuration: of every type, more may be configured in the rest.
+    Quantifiers then treat the type as they treat one with unread statements: a witness in
+    the file still decides ("none … telnet" is false when telnet is here), "all" and "none"
+    can't be true, and an empty scope is unknown, not "nothing to check"."""
+    mark = Evidence(file=file, line_start=1, line_end=1, raw=OUTSIDE)
+    unread = dict(sbm.unread)
+    for name in ENTITY_TYPES:
+        if name != "Device" and name not in SINGLETON_TYPES:
+            unread[name] = (*unread.get(name, ()), mark)
+    return sbm.model_copy(update={"unread": dict(sorted(unread.items()))})
+
+
+def _partial(findings: Sequence[Finding], ruleset: RuleSet) -> tuple[Finding, ...]:
+    """The file is part of a configuration (``ConfigTree.partial``): shown from an edit level,
+    filtered, or with placeholders. What it shows is read as it is; what it doesn't show may be
+    anything. A PASS may rest on a setting elsewhere, and "nothing to check" on entities
+    elsewhere, so both become REVIEW. A FAIL on the file's own lines stands (``telnet`` is in
+    it); one that rests on a default or on something missing becomes REVIEW."""
+    base = {r.id: r.severity.base for r in ruleset.rules}
+    out: list[Finding] = []
+    for f in findings:
+        guessed = f.status is Status.NOT_APPLICABLE and f.reason.startswith(NOTHING_IN_SCOPE)
+        shown = (
+            f.status is Status.FAIL
+            and bool(f.evidence)
+            and not f.defaults_used
+            and not any(a.endswith((": missing", "not understood")) for a in f.actual)
+        )
+        if (f.status not in (Status.PASS, Status.FAIL) and not guessed) or shown:
+            out.append(f)
+            continue
+        severity = f.severity or base[f.rule_id]
+        reason = (
+            f"Would be {f.status.value}, but the file holds only part of the configuration "
+            f"(see the warnings), and the rest may change this; check it against the whole "
+            f"configuration. {f.reason}"
         )
         out.append(
             f.model_copy(

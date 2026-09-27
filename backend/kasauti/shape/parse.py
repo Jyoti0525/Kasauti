@@ -69,6 +69,8 @@ def build_tree(
     sha256: str | None = None,
     warnings: Iterable[str] = (),
     rebuilt_from: ShapeFamily | None = None,
+    partial: Iterable[str] = (),
+    order: tuple[int, ...] | None = None,
 ) -> ConfigTree:
     """The tree for statements a parser gave; ``text`` is what they were read from."""
     return ConfigTree(
@@ -78,6 +80,8 @@ def build_tree(
         statements=tuple(_statement(r, family) for r in raws if r.text),
         warnings=tuple(warnings),
         rebuilt_from=rebuilt_from,
+        partial=tuple(partial),
+        order=order,
     )
 
 

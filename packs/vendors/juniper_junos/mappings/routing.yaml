@@ -70,3 +70,67 @@ mappings:
   effect: {set: Route.destination, from: p, transform: [cidr]}
   negation: null
   provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+# A next hop may be an interface ("an IP address, an interface name, or an ISO network entity
+# title (NET)"; static (Routing Options)), and `qualified-next-hop (address | interface-name)`
+# adds next hops with their own preference (qualified-next-hop (Static Routes)). A list
+# `next-hop [ a b ]` is read one value at a time, like every `[ … ]` set of values.
+- id: juniper_junos/static-route-next-hop-interface
+  vendor: juniper_junos
+  context: [static]
+  entity: {type: Route, key: "{p}"}
+  match: "route <IP:p> next-hop <IFNAME:i>"
+  effect:
+  - {set: Route.destination, from: p, transform: [cidr]}
+  - {set: Route.interface, from: i}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/static-route-block-next-hop-interface
+  vendor: juniper_junos
+  context: [static, "route <IP:p>"]
+  entity: {type: Route, key: "{p}"}
+  match: "next-hop <IFNAME:i>"
+  effect: {set: Route.interface, from: i}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/static-route-qualified-next-hop
+  vendor: juniper_junos
+  context: [static]
+  entity: {type: Route, key: "{p}"}
+  match: "route <IP:p> qualified-next-hop <IP:hop>"
+  effect:
+  - {set: Route.destination, from: p, transform: [cidr]}
+  - {members: Route.next_hops, from: hop}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/static-route-block-qualified-next-hop
+  vendor: juniper_junos
+  context: [static, "route <IP:p>"]
+  entity: {type: Route, key: "{p}"}
+  match: "qualified-next-hop <IP:hop>"
+  effect: {members: Route.next_hops, from: hop}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/static-route-qualified-next-hop-interface
+  vendor: juniper_junos
+  context: [static]
+  entity: {type: Route, key: "{p}"}
+  match: "route <IP:p> qualified-next-hop <IFNAME:i>"
+  effect:
+  - {set: Route.destination, from: p, transform: [cidr]}
+  - {set: Route.interface, from: i}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}
+
+- id: juniper_junos/static-route-block-qualified-next-hop-interface
+  vendor: juniper_junos
+  context: [static, "route <IP:p>"]
+  entity: {type: Route, key: "{p}"}
+  match: "qualified-next-hop <IFNAME:i>"
+  effect: {set: Route.interface, from: i}
+  negation: null
+  provenance: {version: 1, proposed_by: "seed:kasauti", approved_by: [maintainer], signals: [manual]}

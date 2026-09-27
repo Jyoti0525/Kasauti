@@ -9,3 +9,9 @@ signatures:
   - {id: junos-interface, kind: regex, pattern: '^(\s+(ge|xe|et|ae|fe|xle|mge)-\d+/\d+/\d+ \{|set interfaces (ge|xe|et|ae|fe|xle|mge)-\d+/\d+/\d+ )', weight: 0.2}
   - {id: root-authentication, kind: regex, pattern: '(root-authentication \{|^set system root-authentication )', weight: 0.2}
   - {id: security-zones, kind: contains, pattern: "security-zone ", weight: 0.1}
+  # Junos-only statements under `system` (M2.28): `root-login (allow | deny | deny-password)` at
+  # [edit system services ssh] (ssh (System Services)); `authentication-order [ … ]` at
+  # [edit system] (Authentication Order for RADIUS, TACACS+, and Local Password). A part of a
+  # configuration shown from [edit system] is scored as it reads from the top.
+  - {id: ssh-root-login, kind: regex, pattern: '^(\s+|set system services ssh )root-login (allow|deny|deny-password)(;|$)', weight: 0.2}
+  - {id: authentication-order, kind: regex, pattern: '^(\s+|set system )authentication-order ', weight: 0.2}

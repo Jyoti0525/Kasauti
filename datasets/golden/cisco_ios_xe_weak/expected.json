@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "f3e6b081d1cedfc9d393cf74",
+  "audit_id": "de766e1a1d60e1e8a606e7e7",
   "input": {
     "file": "weak.cfg",
     "sha256": "ba77cc7a6b22126ec539f23cc647198f19b00583afcc4d7f22e191ec10e43937",
@@ -52,7 +52,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "622294cde42aa17a8dc5037fcae07e47e7afc30a722823854df0cab0e36b3e5b",
+    "kb_version": "88c279bb41e3bad3ad66902ff5d2e7b809febdbb3c7e4259dbe8d69c88ab9246",
     "ruleset_version": "1bc107babd4a42068fc94aad70d709c71832d3082a7cb925032e5428fc334df7",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {

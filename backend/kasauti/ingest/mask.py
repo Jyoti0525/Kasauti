@@ -81,7 +81,7 @@ _SKIP = re.compile(
 _NOT_SECRET = re.compile(
     r"^(generate|chain|zeroize|config-key|storage|rsa|ec|label|modulus|exchange|export|import"
     r"|pubkey-chain|\d+:\d+|internet|no-export|no-advertise|local-as|additive|none|minimum"
-    r"|encryption|[\[\]{};])$",
+    r"|encryption|[\[\]{};]+)$",
     re.IGNORECASE,
 )
 # SNMPv3 ``auth sha SECRET`` / ``priv aes 128 SECRET``: only masked when an algorithm follows.

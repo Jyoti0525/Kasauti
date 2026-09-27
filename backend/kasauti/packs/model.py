@@ -44,13 +44,15 @@ class _Strict(BaseModel):
 
 
 class SetForm(_Strict):
-    """How ``set`` commands stand for the pack's brace configuration (TODO M2.28). Each line is
-    the full path to one statement; it is split into blocks where the pack's own mappings
-    expect them (:mod:`kasauti.mapping.setform`), so the same mappings read both forms."""
+    """How CLI commands stand for the pack's brace configuration (TODO M2.28). A file of
+    commands or a terminal capture is replayed (:mod:`kasauti.mapping.commands`); each
+    statement left is a path of words, split into blocks where the pack's own mappings expect
+    them (:mod:`kasauti.mapping.setform`), so the same mappings read every form."""
 
     leaf_lists: tuple[str, ...] = ()
     """Statements that take a list of values in order (``authentication-order [ tacplus
-    password ]``). Consecutive lines giving one value each are joined back into one list."""
+    password ]``). Every ``[ … ]`` set of values is read one value at a time; these are given
+    back as one list, their values in order wherever their lines are."""
 
 
 class VendorManifest(_Strict):

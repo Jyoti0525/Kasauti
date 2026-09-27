@@ -18,6 +18,18 @@ E = TypeVar("E", bound=Entity)
 DerivedValue = bool | int | str
 
 
+OUTSIDE = "(beyond the part of the configuration the file holds)"
+"""The raw text of the evidence that marks a type ``unread`` because the file is only part of a
+configuration: entities of any type may be configured in the rest (``ConfigTree.partial``)."""
+
+
+def unread_subject(entity_type: str, evidence: tuple[Evidence, ...]) -> str:
+    """How a finding names a type with unread statements."""
+    if evidence and all(e.raw == OUTSIDE for e in evidence):
+        return f"{entity_type}: more may be configured in the rest of the configuration"
+    return f"{entity_type}: statements not understood"
+
+
 class SecurityBaselineModel(BaseModel):
     """All entities and derived facts for one device, in a canonical order.
 
