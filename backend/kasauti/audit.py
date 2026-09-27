@@ -11,8 +11,9 @@ added by the reporter, not here, for the same reason.
 from __future__ import annotations
 
 import hashlib
+import json
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -22,6 +23,7 @@ from kasauti import __version__
 from kasauti.identity import companion as companion_files
 from kasauti.identity.companion import COMMANDS, Companion
 from kasauti.identity.detect import Detection, choose, detect_vendor, input_warnings, score_pack
+from kasauti.identity.manual import ManualEntryError, clean_entered
 from kasauti.identity.resolve import companion_value, resolve_identity
 from kasauti.ingest.mask import mask_secrets
 from kasauti.ingest.model import Artifact
@@ -254,13 +256,20 @@ def audit(
     vendor: str | None = None,
     frameworks: Sequence[str] = (NIST,),
     companions: Sequence[Artifact] = (),
+    entered: Mapping[str, object] | None = None,
 ) -> AuditResult:
     """Audit ``artifact``, a configuration. ``companions`` are command outputs from the same
     device (``show version``…), read for its identity and hardware; one that isn't recognised
-    for the chosen vendor, or names another host, is listed with the reason and not used."""
+    for the chosen vendor, or names another host, is listed with the reason and not used.
+    ``entered`` are device details typed by hand (:mod:`kasauti.identity.manual`): shown in
+    the identity where no file gives them, never used to judge a rule."""
     unknown = [f for f in frameworks if f not in kb.frameworks]
     if unknown:
         raise AuditError(f"framework(s) not installed: {', '.join(unknown)}")
+    try:
+        by_hand = clean_entered(entered or {})
+    except ManualEntryError as err:
+        raise AuditError(str(err)) from None
     pack, detection, chosen_by, warnings = _choose_pack(artifact, kb, vendor)
 
     tree = parse_text(
@@ -271,10 +280,12 @@ def audit(
     )
     warnings.extend(input_warnings(artifact.text, pack, tree))
     fingerprint = detection if detection.matched else None
+    # Companions are checked against the hostname the files give, never one typed by hand.
     ident = resolve_identity(tree, pack, fingerprint, artifact.text)
     used, companion_infos = _pair(companions, pack, kb, ident.device.hostname.value, warnings)
-    if used:
-        ident = resolve_identity(tree, pack, fingerprint, artifact.text, used)
+    if used or by_hand:
+        ident = resolve_identity(tree, pack, fingerprint, artifact.text, used, entered=by_hand)
+    warnings.extend(ident.disagreements)
     mapped = apply_mappings(
         tree,
         pack.mappings,
@@ -307,6 +318,8 @@ def audit(
     )
 
     given = "".join(f"|{c.sha256}" for c in sorted(companions, key=lambda c: c.sha256))
+    if by_hand:
+        given += "|" + json.dumps(by_hand, sort_keys=True)
     return AuditResult(
         audit_id=hashlib.sha256(
             f"{artifact.sha256}|{kb.version}|{__version__}|{pack.manifest.id}{given}".encode()
@@ -328,7 +341,7 @@ def audit(
         ),
         identity={
             field: IdentityField(
-                value=getattr(ident.device, field).value,
+                value=ident.value(field),
                 source=ident.sources.get(field) or ident.missing.get(field, "not available"),
             )
             for field in ("hostname", "vendor", "os_version", "model", "serial", "hardware")

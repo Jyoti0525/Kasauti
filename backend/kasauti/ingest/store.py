@@ -7,9 +7,10 @@ dropped one by one cost one or two worker start-ups, not a hundred. If a job fai
 killed for memory or time, or crashed, by one hostile file), it is split and its files
 recognised again in smaller jobs, until the file that fails it fails alone: the others are
 still grouped. From what it finds, the files are grouped into devices
-(:mod:`kasauti.ingest.devices`), which the user can correct by hand. Starting queues one
-audit job per device, its configuration and its command outputs together, in the same
-transaction that closes the upload, so it is never half-started.
+(:mod:`kasauti.ingest.devices`), which the user can correct by hand, and for each device the
+user can type details no file gives, such as its serial number (:mod:`kasauti.identity.manual`).
+Starting queues one audit job per device, its configuration and its command outputs together,
+in the same transaction that closes the upload, so it is never half-started.
 
 Every change runs with the upload's row locked (``FOR UPDATE`` on PostgreSQL; SQLite's
 ``BEGIN IMMEDIATE`` locks the whole database), so two requests adding files at once can't
@@ -23,13 +24,14 @@ import json
 import math
 import time
 from collections.abc import Collection, Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 from sqlalchemy import Connection, Engine, and_, delete, func, insert, select, update
 
+from kasauti.identity.manual import ManualEntryError, clean_entered
 from kasauti.ingest.devices import (
     MAX_COMPANIONS,
     Kind,
@@ -115,6 +117,8 @@ class FileView:
     recognised: Recognised | None = None
     placement: Placement | None = None
     manual: bool = False
+    entered: dict[str, str] = field(default_factory=dict)
+    """Device details typed by hand, for a file that is a device (M2.19)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -128,6 +132,8 @@ class DeviceView:
     hostname: str | None
     companions: tuple[str, ...]
     """File ids."""
+    entered: dict[str, str] = field(default_factory=dict)
+    """Details typed by hand (M2.19)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -215,6 +221,7 @@ class UploadStore:
                 recognised=found[r["id"]][1] if r["accepted"] else None,
                 placement=placements.get(r["id"]),
                 manual=bool(r["manual"]),
+                entered=_entered(r["entered"]),
             )
             for r in rows
         )
@@ -228,7 +235,7 @@ class UploadStore:
             touched_at=head["touched_at"],
             started_at=head["started_at"],
             files=files,
-            devices=_devices(members, placements),
+            devices=_devices(members, placements, {r["id"]: _entered(r["entered"]) for r in rows}),
         )
         return view, bool(failed)
 
@@ -391,6 +398,38 @@ class UploadStore:
                 update(uploads).where(uploads.c.id == upload_id).values(touched_at=now or utcnow())
             )
 
+    def enter(
+        self,
+        upload_id: str,
+        file_id: str,
+        values: dict[str, object],
+        *,
+        now: dt.datetime | None = None,
+    ) -> None:
+        """Set the details typed by hand for the device ``file_id`` is (its configuration, or a
+        file audited alone), replacing any set before; ``{}`` clears them.
+        :class:`ManualEntryError` if they can't be taken, or the file is not a device."""
+        entered = clean_entered(values)
+        with self.engine.begin() as conn:
+            _require_open(_lock(conn, upload_id))
+            members = self._members(conn, upload_id)
+            me = _find(members, file_id)
+            if me.recognised is None:
+                raise UploadStateError(f"{me.name} is still being recognised; try again shortly")
+            if group(members)[file_id].device != file_id:
+                raise ManualEntryError(
+                    f"{me.name} is a command output, not a device: enter the details on the "
+                    "configuration of the device it comes from"
+                )
+            conn.execute(
+                update(upload_files)
+                .where(upload_files.c.id == file_id)
+                .values(entered=json.dumps(entered) if entered else None)
+            )
+            conn.execute(
+                update(uploads).where(uploads.c.id == upload_id).values(touched_at=now or utcnow())
+            )
+
     def discard(self, upload_id: str, *, now: dt.datetime | None = None) -> None:
         """Throw away an open upload and its files."""
         with self.engine.begin() as conn:
@@ -445,13 +484,15 @@ class UploadStore:
         now: dt.datetime,
     ) -> list[str]:
         placements = group(members)
-        sizes: dict[str, int] = dict(
-            conn.execute(
-                select(upload_files.c.id, upload_files.c.size).where(
-                    upload_files.c.upload_id == upload_id
-                )
-            ).all()
-        )
+        sizes: dict[str, int] = {}
+        entered: dict[str, dict[str, str]] = {}
+        for file_id, size, typed in conn.execute(
+            select(upload_files.c.id, upload_files.c.size, upload_files.c.entered).where(
+                upload_files.c.upload_id == upload_id
+            )
+        ).all():
+            sizes[file_id] = size
+            entered[file_id] = _entered(typed)
         by_id = {m.id: m for m in members}
         roots = [m for m in members if placements[m.id].device == m.id]
         if not roots:
@@ -470,6 +511,7 @@ class UploadStore:
                 "file": root.id,
                 "name": root.name,
                 "companions": [{"id": m.id, "name": m.name} for m in paired],
+                "entered": entered[root.id],
                 "frameworks": json.loads(head.frameworks),
                 "vendor": head.vendor,
                 "staging": str(self.staging.root.resolve()),
@@ -775,7 +817,21 @@ def _member(row: Any, found: dict[str, tuple[Recognition, Recognised | None]]) -
     )
 
 
-def _devices(members: Sequence[Member], placements: dict[str, Placement]) -> tuple[DeviceView, ...]:
+def _entered(text: str | None) -> dict[str, str]:
+    """A row's details typed by hand, checked again on the way out."""
+    if text is None:
+        return {}
+    try:
+        return clean_entered(json.loads(text))
+    except (ValueError, TypeError):  # ManualEntryError is a ValueError, as is bad JSON
+        return {}
+
+
+def _devices(
+    members: Sequence[Member],
+    placements: dict[str, Placement],
+    entered: dict[str, dict[str, str]],
+) -> tuple[DeviceView, ...]:
     by_id = {m.id: m for m in members}
     out = []
     for m in members:
@@ -793,6 +849,7 @@ def _devices(members: Sequence[Member], placements: dict[str, Placement]) -> tup
                 vendor=r.vendor,
                 hostname=r.hostname,
                 companions=tuple(c.id for c in paired),
+                entered=entered.get(m.id, {}),
             )
         )
     return tuple(out)

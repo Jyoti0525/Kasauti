@@ -272,7 +272,7 @@ Serial numbers are usually **not** in configuration files, so identity is resolv
 1. **Live facts:** NAPALM `get_facts` (vendor, model, serial, OS version, hostname).
 2. **Companion show outputs,** recognised and read by each vendor pack's `identity.yaml`: signatures scored like the vendor fingerprint, fields read by the mapping language or RE2, hardware components by RE2 records (v5.1.18; not TextFSM, ntc-templates or TTP, which run Python's backtracking `re` over device output). An output that names another host, or comes from another vendor, is refused with the reason, never mixed in.
 3. **Config headers and markers:** FortiGate `#config-version=<model>-<version>…`, Junos `version …;`, PAN-OS XML `version` attributes, Cisco `version` / `hostname`, SONiC `DEVICE_METADATA`.
-4. **Manual entry** in the UI.
+4. **Manual entry** in the UI (v5.1.27): fills only a field no file gives, marked "entered by hand"; where a file disagrees the file wins, with a warning. Typed values are shown in the device profile but are never SBM facts and never change a verdict: a typed OS version doesn't choose version-scoped defaults.
 
 Missing fields are stated explicitly ("Serial: not present in supplied artefacts; upload `show inventory` to populate"). Identity also drives **role inference** (router / switch / firewall / cloud filter / white-box), which decides rule applicability and report sections.
 
@@ -1005,6 +1005,12 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.27 (2026-09-27, M2.19 manual identity entry):** Identity source 4. A device's
+  hostname, OS version, model, serial and hardware can be typed before its audit (upload
+  API, or `kasauti audit --identity`). A typed value fills only a field no file gives and is
+  marked as entered by hand; a file that disagrees wins, with a warning. Typed values never
+  enter the SBM or change a verdict. They are checked as untrusted input: known fields,
+  128 characters, printable on one line.
 - **v5.1.26 (2026-09-27, M2.18 fingerprinting across all packs):** Every sample is scored
   against all five packs, as an upload is: whole configurations go to their own vendor (1.1 to
   1.5 against 0.7), command outputs to none, fragments to their own vendor or to the operator,

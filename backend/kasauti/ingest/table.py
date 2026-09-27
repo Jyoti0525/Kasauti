@@ -8,7 +8,8 @@ not, so the upload reports every file it was given, including the ones it refuse
 Rows hold names, sizes, hashes and reasons, never configuration text. The text itself waits in
 the staging area on disk (:mod:`kasauti.ingest.staging`) until its audit job reads it. What a
 file was recognised as (TODO M2.06) is its sort job's result; a device chosen by hand is kept
-here, and ``paired_with`` names another row of the same upload (the store keeps it so).
+here, and ``paired_with`` names another row of the same upload (the store keeps it so). So are
+device details typed by hand (TODO M2.19), on the row of the file that is the device.
 """
 
 from __future__ import annotations
@@ -105,6 +106,11 @@ upload_files = Table(
         "paired_with",
         String(36),
         comment="with manual: the configuration it goes with; null = left out",
+    ),
+    Column(
+        "entered",
+        Text,
+        comment="JSON: device details typed by hand for this device's audit (M2.19)",
     ),
     CheckConstraint("size >= 0", name="size"),
     CheckConstraint(

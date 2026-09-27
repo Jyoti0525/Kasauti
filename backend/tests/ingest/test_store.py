@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import Engine, select, update
 
+from kasauti.identity.manual import ManualEntryError
 from kasauti.ingest import store as store_module
 from kasauti.ingest.devices import How, Kind
 from kasauti.ingest.read import MAX_BYTES
@@ -438,6 +439,57 @@ def test_pairing_by_hand(store: UploadStore) -> None:
     store.pair(uid, version.id, running.id)
     store.remove_file(uid, running.id)
     assert placement(version.id) == (startup.id, How.HOSTNAME, None), "back to automatic"
+
+
+def test_details_typed_by_hand_go_to_their_device_s_audit(
+    store: UploadStore, queue: JobQueue
+) -> None:
+    """TODO M2.19: identity source 4, kept with the device until its audit is queued."""
+    uid = _open(store)
+    config = _staged(store, uid, _sample("cisco_ios_xe", "hardened.cfg"), "edge-r1.cfg")
+    version = _staged(store, uid, _sample("cisco_ios_xe", "show_version.txt"), "version.txt")
+    other = _staged(store, uid, _sample("arista_eos", "hardened.cfg"), "leaf.cfg")
+    store.add(uid, [config, version, other])
+    with pytest.raises(UploadStateError, match="still being recognised"):
+        store.enter(uid, config.id, {"serial": "FTX1234"})
+    _recognise(store)
+
+    store.enter(uid, config.id, {"serial": " FTX1234 ", "model": "C8000V"})
+    view = _view(store, uid)
+    assert {f.name: f.entered for f in view.files} == {
+        "edge-r1.cfg": {"model": "C8000V", "serial": "FTX1234"},
+        "version.txt": {},
+        "leaf.cfg": {},
+    }
+    assert [(d.name, d.entered) for d in view.devices] == [
+        ("edge-r1.cfg", {"model": "C8000V", "serial": "FTX1234"}),
+        ("leaf.cfg", {}),
+    ]
+    store.enter(uid, config.id, {"serial": "FTX9999"})
+    assert _view(store, uid).devices[0].entered == {"serial": "FTX9999"}, "replaced, not merged"
+
+    with pytest.raises(ManualEntryError, match=r"version\.txt is a command output"):
+        store.enter(uid, version.id, {"serial": "FTX1234"})
+    with pytest.raises(ManualEntryError, match="printable characters on one line only"):
+        store.enter(uid, config.id, {"serial": "FTX1\nFTX2"})
+    with pytest.raises(FileNotInUploadError):
+        store.enter(uid, new_id(), {"serial": "FTX1234"})
+    store.enter(uid, other.id, {"hardware": "7050X3"})
+    store.enter(uid, other.id, {})
+    assert _view(store, uid).devices[1].entered == {}, "{} clears"
+
+    edge, leaf = store.start(uid)
+    with store.engine.connect() as conn:
+        payloads = {
+            job_id: json.loads(text)
+            for job_id, text in conn.execute(
+                select(jobs.c.id, jobs.c.payload).where(jobs.c.id.in_([edge, leaf]))
+            ).all()
+        }
+    assert payloads[edge]["entered"] == {"serial": "FTX9999"}
+    assert payloads[leaf]["entered"] == {}
+    with pytest.raises(UploadStateError, match="has started"):
+        store.enter(uid, config.id, {})
 
 
 def test_only_command_outputs_is_nothing_to_audit(store: UploadStore) -> None:

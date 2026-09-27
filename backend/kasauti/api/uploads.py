@@ -8,6 +8,8 @@ The flow the "New audit" screen follows, and any script can too::
     GET    /api/uploads/{id}                files, refusals, devices, each audit's state
     PUT    /api/uploads/{id}/files/{file}/pairing  {"config": id or null}      -> the upload
     DELETE /api/uploads/{id}/files/{file}/pairing  back to automatic           -> the upload
+    PUT    /api/uploads/{id}/files/{file}/identity {"serial": …, "model": …}   -> the upload
+    DELETE /api/uploads/{id}/files/{file}/identity clear what was typed        -> the upload
     DELETE /api/uploads/{id}                discard the upload
     POST   /api/uploads/{id}/start          queue one audit per device         -> the upload
     GET    /api/jobs/{job}                  an audit's result
@@ -17,7 +19,9 @@ vendor, hostname), and the upload lists the devices that makes: each configurati
 command outputs that go with it (:mod:`kasauti.ingest.devices`). ``recognising`` counts files
 not yet recognised; start when it is 0 (until then, starting answers 409). An output paired
 wrongly, or not at all, is paired by hand with ``PUT .../pairing``; ``{"config": null}`` leaves
-it out of every audit.
+it out of every audit. Details no file gives (a serial number, say) are typed for a device
+with ``PUT .../identity`` on its configuration: shown in its report as entered by hand, never
+used to judge a rule (:mod:`kasauti.identity.manual`).
 
 A file is sent as the raw request body (``Content-Type: application/octet-stream``) with its
 name, percent-encoded UTF-8, in ``X-File-Name``: one request per file. A folder is its files
@@ -46,6 +50,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 
+from kasauti.identity.manual import VALUE_LIMIT, ManualEntryError
 from kasauti.ingest.devices import How, Kind
 from kasauti.ingest.store import (
     DeviceView,
@@ -118,6 +123,8 @@ class FileOut(_Model):
     """``own`` (a configuration), ``hostname``, ``name``, ``hand`` or ``alone``."""
     note: str | None
     """Why it is left out of every audit, or audited alone."""
+    entered: dict[str, str]
+    """For a file that is a device: the details typed by hand for it."""
 
 
 class DeviceOut(_Model):
@@ -128,11 +135,28 @@ class DeviceOut(_Model):
     hostname: str | None
     companions: tuple[str, ...]
     """The file ids of the command outputs audited with it."""
+    entered: dict[str, str]
+    """Details typed by hand: ``hostname``, ``os_version``, ``model``, ``serial``,
+    ``hardware``."""
 
 
 class PairingIn(_Model):
     config: uuid.UUID | None
     """The configuration to pair this command output with; null leaves it out of every audit."""
+
+
+_Typed = Annotated[str, Field(max_length=VALUE_LIMIT)] | None
+
+
+class IdentityIn(_Model):
+    """A device's details, typed by hand; each replaces what was typed before, and one left out
+    or empty is cleared. Each fills a field only if no file gives it."""
+
+    hostname: _Typed = None
+    os_version: _Typed = None
+    model: _Typed = None
+    serial: _Typed = None
+    hardware: _Typed = None
 
 
 class UploadOut(_Model):
@@ -177,7 +201,7 @@ async def _call[T](function: Callable[..., T], *args: Any, **kwargs: Any) -> T:
         raise HTTPException(404, "no such upload") from None
     except FileNotInUploadError:
         raise HTTPException(404, "no such file in this upload") from None
-    except PairingError as err:
+    except (PairingError, ManualEntryError) as err:
         raise HTTPException(422, str(err)) from None
     except UploadStateError as err:
         raise HTTPException(409, str(err)) from None
@@ -266,6 +290,28 @@ async def unpair_file(upload_id: uuid.UUID, file_id: uuid.UUID, request: Request
     return await _get(store, uid)
 
 
+@router.put(
+    "/{upload_id}/files/{file_id}/identity",
+    responses={**_RESPONSES, 422: {"description": "the details can't be taken; says why"}},
+)
+async def enter_identity(
+    upload_id: uuid.UUID, file_id: uuid.UUID, body: IdentityIn, request: Request
+) -> UploadOut:
+    store, uid = _store(request), str(upload_id)
+    await _call(store.enter, uid, str(file_id), body.model_dump(exclude_none=True))
+    return await _get(store, uid)
+
+
+@router.delete(
+    "/{upload_id}/files/{file_id}/identity",
+    responses={**_RESPONSES, 422: {"description": "the file is not a device"}},
+)
+async def clear_identity(upload_id: uuid.UUID, file_id: uuid.UUID, request: Request) -> UploadOut:
+    store, uid = _store(request), str(upload_id)
+    await _call(store.enter, uid, str(file_id), {})
+    return await _get(store, uid)
+
+
 @router.delete("/{upload_id}", status_code=204, responses=_RESPONSES)
 async def discard_upload(upload_id: uuid.UUID, request: Request) -> Response:
     await _call(_store(request).discard, str(upload_id))
@@ -332,6 +378,7 @@ def _file(f: FileView) -> FileOut:
         device=None if f.placement is None else f.placement.device,
         paired_by=None if f.placement is None else f.placement.how,
         note=None if f.placement is None else f.placement.note,
+        entered=f.entered,
     )
 
 
@@ -342,6 +389,7 @@ def _device(d: DeviceView) -> DeviceOut:
         vendor=d.vendor,
         hostname=d.hostname,
         companions=d.companions,
+        entered=d.entered,
     )
 
 

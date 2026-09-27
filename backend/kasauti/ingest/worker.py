@@ -69,6 +69,7 @@ def audit_file(payload: dict[str, Any]) -> dict[str, Any]:
             vendor=payload.get("vendor"),
             frameworks=tuple(payload["frameworks"]),
             companions=given,
+            entered=payload.get("entered"),  # checked again by audit(), like any input
         )
     except AuditError as err:
         raise JobError(_companion_message(artifact, kb) or str(err)) from None

@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 
 from kasauti import __version__
 from kasauti.audit import AuditError, AuditResult, audit, load_kb
+from kasauti.identity.manual import ENTERABLE
 from kasauti.ingest.read import IngestError, read_file
 from kasauti.packs.loader import PackError, load_framework_pack, load_ruleset, load_vendor_pack
 from kasauti.rules.model import Status
@@ -67,6 +68,19 @@ def _report(label: str, load: object) -> int:
     return 0
 
 
+def _typed(pairs: Sequence[str]) -> dict[str, str]:
+    """``--identity serial=FTX1234`` as a dict; checked by :func:`kasauti.audit.audit`."""
+    out: dict[str, str] = {}
+    for pair in pairs:
+        name, sep, value = pair.partition("=")
+        if not sep:
+            raise AuditError(f"--identity takes FIELD=VALUE, e.g. serial=FTX1234; not {name!r}")
+        if name in out:
+            raise AuditError(f"--identity {name} is given twice")
+        out[name] = value
+    return out
+
+
 def _audit(args: argparse.Namespace) -> int:
     try:
         kb = load_kb(args.packs)
@@ -78,6 +92,7 @@ def _audit(args: argparse.Namespace) -> int:
             vendor=args.vendor,
             frameworks=tuple(dict.fromkeys(FRAMEWORK_ALIASES[f] for f in args.framework)),
             companions=companions,
+            entered=_typed(args.identity),
         )
     except (IngestError, AuditError) as err:
         print(f"kasauti: {err}", file=sys.stderr)
@@ -316,6 +331,14 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="FILE",
         help="the device's `show version`, `show inventory`… output, for its serial number and "
         "hardware (repeat for each file)",
+    )
+    aud.add_argument(
+        "--identity",
+        action="append",
+        default=[],
+        metavar="FIELD=VALUE",
+        help=f"a device detail no file gives, typed by hand: {', '.join(ENTERABLE)} (repeat "
+        "for each); shown in the report as entered by hand, never used to judge a rule",
     )
     aud.add_argument("--packs", type=Path, default=Path("packs"), help="knowledge base root")
     aud.add_argument("--out", type=Path, default=Path(), help="where to write the report")

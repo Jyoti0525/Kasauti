@@ -2,7 +2,8 @@
 
 Sources in priority order: (1) live facts, (2) companion show outputs, (3) configuration
 headers and markers, (4) manual entry. (3) came with M1 and (2) with M2.05, both read by the
-pack's ``identity.yaml``; the others slot into the same function as they land. The order is
+pack's ``identity.yaml``, and (4) with M2.19 (:mod:`kasauti.identity.manual`): a field typed by
+hand fills only what no file did, and stays out of the device's facts. The order is
 PLAN §7's, whatever order a pack lists its sources in: a companion's ``17.09.04a`` is more
 exact than a configuration's ``version 17.9``. Each field records its source, and a field no
 source supplied is *stated* as missing, with what to upload to fill it.
@@ -10,11 +11,13 @@ source supplied is *stated* as missing, with what to upload to fill it.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 
 from kasauti.identity.companion import COMMANDS, Companion
 from kasauti.identity.detect import Detection, detection_evidence
+from kasauti.identity.manual import SOURCE as ENTERED_SOURCE
 from kasauti.ingest.mask import mask_secrets
 from kasauti.mapping.match import match_tokens, tokenize_path
 from kasauti.mapping.model import parse_pattern
@@ -54,6 +57,16 @@ class Identity:
     lines: frozenset[int] = frozenset()
     """Config lines identity read (``hostname``, ``version``): understood, even though no
     mapping reads them."""
+    entered: dict[str, str] = dataclass_field(default_factory=dict)
+    """Field -> the value typed by hand, for a field no file supplied. Not in ``device``: its
+    facts are what the files show, with the lines that show it."""
+    disagreements: tuple[str, ...] = ()
+    """A value typed by hand that the files contradict, said in a sentence; the files win."""
+
+    def value(self, name: str) -> str | None:
+        """What the report shows for ``name``: the files' value, else the one typed by hand."""
+        fact: Fact[str] = getattr(self.device, name)
+        return fact.value if fact.value is not None else self.entered.get(name)
 
 
 def resolve_identity(
@@ -62,7 +75,11 @@ def resolve_identity(
     detection: Detection | None,
     text: str,
     companions: Sequence[Companion] = (),
+    *,
+    entered: Mapping[str, str] | None = None,
 ) -> Identity:
+    """``entered``: fields typed by hand, already checked
+    (:func:`kasauti.identity.manual.clean_entered`)."""
     facts: dict[str, Fact[str]] = {}
     sources: dict[str, str] = {}
     lines: set[int] = set()
@@ -94,8 +111,29 @@ def resolve_identity(
                 lines.add(ev.line_start)
                 break
 
-    missing = {field: _missing_text(field, pack) for field in FIELDS if field not in facts}
-    return Identity(Device(**facts), sources, missing, frozenset(lines))  # type: ignore[arg-type]
+    by_hand: dict[str, str] = {}
+    disagreements: list[str] = []
+    for name, value in (entered or {}).items():
+        found_fact = facts.get(name)
+        if found_fact is None:
+            by_hand[name] = value
+            sources[name] = ENTERED_SOURCE
+        elif found_fact.value != value:
+            disagreements.append(
+                f"{_LABELS[name]} entered by hand ({value!r}) differs from {sources[name]} "
+                f"({found_fact.value!r}); the value in the files is used"
+            )
+    missing: dict[str, str] = {
+        f: _missing_text(f, pack) for f in FIELDS if f not in facts and f not in by_hand
+    }
+    return Identity(
+        Device(**facts),  # type: ignore[arg-type]
+        sources,
+        missing,
+        frozenset(lines),
+        by_hand,
+        tuple(disagreements),
+    )
 
 
 def companion_value(

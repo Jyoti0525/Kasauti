@@ -150,6 +150,25 @@ def test_cli_audit_reads_companion_outputs(
     assert [c["file"] for c in data["companions"]] == ["show_inventory.txt", "show_version.txt"]
 
 
+def test_cli_audit_takes_details_typed_by_hand(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """TODO M2.19: identity source 4, from the command line."""
+    base = ["audit", str(WEAK), "--packs", str(REPO / "packs"), "--out", str(tmp_path), "--no-pdf"]
+    code = main([*base, "--identity", "serial=FTX1234", "--identity", "model= C8000V "])
+    assert code == 0
+    assert "  model C8000V, serial FTX1234, release 17.9" in capsys.readouterr().out
+    data = json.loads((tmp_path / "weak.kasauti.json").read_text(encoding="utf-8"))
+    assert data["identity"]["serial"] == {
+        "value": "FTX1234",
+        "source": "entered by hand; not in the supplied files",
+    }
+    assert main([*base, "--identity", "serial"]) == 1
+    assert "--identity takes FIELD=VALUE" in capsys.readouterr().err
+    assert main([*base, "--identity", "vendor=Juniper"]) == 1
+    assert "no such device detail: vendor" in capsys.readouterr().err
+
+
 def test_cli_reports_bad_input_without_a_traceback(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

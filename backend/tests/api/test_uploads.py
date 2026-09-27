@@ -423,6 +423,7 @@ def test_devices_and_pairing_by_hand(client: TestClient) -> None:
             "vendor": "cisco_ios_xe",
             "hostname": "EDGE-R1",
             "companions": [],
+            "entered": {},
         },
         {
             "config": startup["id"],
@@ -430,6 +431,7 @@ def test_devices_and_pairing_by_hand(client: TestClient) -> None:
             "vendor": "cisco_ios_xe",
             "hostname": "EDGE-R1",
             "companions": [version["id"]],
+            "entered": {},
         },
     ]
     wrong = client.put(
@@ -450,6 +452,60 @@ def test_devices_and_pairing_by_hand(client: TestClient) -> None:
     result = client.get(f"/api/jobs/{jobs_by_name['startup.cfg']}/result").json()
     assert [(c["file"], c["used"]) for c in result["companions"]] == [("version.txt", True)]
     assert result["identity"]["serial"]["value"] is not None
+    assert client.delete(url, headers=GUARD).status_code == 409, "started: no more changes"
+
+
+def test_device_details_typed_by_hand(client: TestClient) -> None:
+    """TODO M2.19: details typed for a device before its audit are in its result: as entered by
+    hand where no file gives them, and where one does, the file's, with a warning."""
+    upload_id = _new(client)
+    companions = REPO / "datasets" / "authored" / "cisco_ios_xe" / "companions"
+    config = _send(client, upload_id, "edge-r1.cfg", WEAK.read_bytes()).json()["files"][0]
+    output = _send(client, upload_id, "version.txt", (companions / "show_version.txt").read_bytes())
+    output_id = output.json()["files"][0]["id"]
+    url = f"/api/uploads/{upload_id}/files/{config['id']}/identity"
+    _run_jobs(client)
+
+    typed = client.put(url, json={"serial": "FTX1234", "model": "C8000V"}, headers=GUARD)
+    assert typed.status_code == 200, typed.text
+    assert typed.json()["devices"][0]["entered"] == {"model": "C8000V", "serial": "FTX1234"}
+    for body, detail in (
+        ({"vendor": "Juniper"}, None),  # not a field that can be typed
+        ({"serial": "x" * 129}, None),
+        ({"serial": "FTX1\nFTX2"}, "serial: printable characters on one line only"),
+    ):
+        refused = client.put(url, json=body, headers=GUARD)
+        assert refused.status_code == 422
+        if detail is not None:
+            assert refused.json()["detail"] == detail
+    on_output = client.put(
+        f"/api/uploads/{upload_id}/files/{output_id}/identity",
+        json={"serial": "FTX1234"},
+        headers=GUARD,
+    )
+    assert on_output.status_code == 422
+    assert "version.txt is a command output, not a device" in on_output.json()["detail"]
+    assert client.put(url, json={"serial": "FTX1234"}).status_code == 403  # no guard header
+    cleared = client.delete(url, headers=GUARD).json()
+    assert cleared["devices"][0]["entered"] == {}
+    again = client.put(url, json={"serial": "FTX1234", "model": "C8000V"}, headers=GUARD)
+    assert again.status_code == 200
+
+    started = client.post(f"/api/uploads/{upload_id}/start", headers=GUARD).json()
+    _run_jobs(client)
+    result = client.get(f"/api/jobs/{started['files'][0]['job_id']}/result").json()
+    # show inventory gives the model, and wasn't sent: the typed one fills it.
+    assert result["identity"]["model"] == {
+        "value": "C8000V",
+        "source": "entered by hand; not in the supplied files",
+    }
+    # show version gives the serial: the file wins, and the audit says so.
+    assert result["identity"]["serial"]["value"] == "9KXQ2TGA7LM"
+    assert result["identity"]["serial"]["source"].startswith("`show version`")
+    assert (
+        "Serial entered by hand ('FTX1234') differs from `show version` (version.txt line 16) "
+        "('9KXQ2TGA7LM'); the value in the files is used"
+    ) in result["warnings"]
     assert client.delete(url, headers=GUARD).status_code == 409, "started: no more changes"
 
 
