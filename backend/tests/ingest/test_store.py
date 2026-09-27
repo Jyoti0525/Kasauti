@@ -464,6 +464,80 @@ def test_a_failed_sort_leaves_its_files_to_be_audited_alone(store: UploadStore) 
     assert len(store.start(uid)) == 1
 
 
+def _recognise_but_crash_on(store: UploadStore, upload_id: str, bad: str) -> list[int]:
+    """Run sort jobs in rounds, as a worker would, except that one holding ``bad`` fails as if
+    its worker crashed; each round reads the upload, as a client polling it does, which splits
+    what failed. How many jobs each round ran."""
+    sorter = JobQueue(store.engine, {SORT_KIND})
+    rounds = []
+    while claims := sorter.claim("test", 100):
+        rounds.append(len(claims))
+        for claim in claims:
+            payload = json.loads(claim.payload)
+            if bad in payload["files"]:
+                sorter.finish("test", claim.id, JobState.FAILED, error="the worker crashed")
+            else:
+                result = encode_result(sort_files(payload))
+                sorter.finish("test", claim.id, JobState.SUCCEEDED, result=result)
+        store.get(upload_id)
+    return rounds
+
+
+def test_a_failed_sort_is_split_until_the_file_that_fails_it_fails_alone(
+    store: UploadStore,
+) -> None:
+    uid = _open(store)
+    staged = [_staged(store, uid, f"hostname R{i}\n".encode(), f"r{i}.cfg") for i in range(40)]
+    staged.append(_staged(store, uid, _sample("cisco_ios_xe", "show_version.txt"), "v.txt"))
+    store.add(uid, staged)
+    bad = staged[17].id
+    # 41 files: one job; then 14 of 3 or fewer; then the 3 of the one that failed, one each.
+    assert _recognise_but_crash_on(store, uid, bad) == [1, 14, 3]
+    view = _view(store, uid)
+    assert view.recognising == 0
+    states = {f.id: f.recognition for f in view.files}
+    assert states.pop(bad) is Recognition.FAILED
+    assert set(states.values()) == {Recognition.DONE}, "every other file recognised"
+    (version,) = [f for f in view.files if f.name == "v.txt"]
+    assert version.recognised is not None
+    assert version.recognised.kind is Kind.COMPANION
+    assert len(store.start(uid)) == 41 - 1, "v.txt names EDGE-R1, which isn't here: left out"
+
+
+def test_start_splits_a_failed_sort_itself(store: UploadStore) -> None:
+    """A client that never reads the upload still gets its files recognised."""
+    uid = _open(store)
+    a = _staged(store, uid, b"hostname A\n", "a.cfg")
+    b = _staged(store, uid, b"hostname B\n", "b.cfg")
+    store.add(uid, [a, b])
+    sorter = JobQueue(store.engine, {SORT_KIND})
+    (claim,) = sorter.claim("test", 1)
+    sorter.finish("test", claim.id, JobState.FAILED, error="the worker crashed")
+    with pytest.raises(UploadStateError, match="2 files are still being recognised"):
+        store.start(uid)
+    assert len({_sort_job(store, a.id), _sort_job(store, b.id), claim.id}) == 3, "one job each"
+    _recognise(store)
+    assert len(store.start(uid)) == 2
+
+
+def test_no_split_after_a_restart(store: UploadStore) -> None:
+    """The staging key lives in memory only: after a restart no file of the job can be read,
+    alone or not, so its files are audited alone, and those audits say so."""
+    uid = _open(store)
+    store.add(uid, [_staged(store, uid, b"hostname A\n", "a.cfg")])
+    store.add(uid, [_staged(store, uid, b"hostname B\n", "b.cfg")])
+    sorter = JobQueue(store.engine, {SORT_KIND})
+    (claim,) = sorter.claim("test", 1)
+    sorter.finish("test", claim.id, JobState.FAILED, error="the server restarted")
+    payload = {**json.loads(claim.payload), "staging_key": "an earlier key"}
+    with store.engine.begin() as conn:
+        conn.execute(update(jobs).where(jobs.c.id == claim.id).values(payload=json.dumps(payload)))
+    view = _view(store, uid)
+    assert [f.recognition for f in view.files] == [Recognition.FAILED] * 2
+    assert sorter.pending() == 0, "nothing queued again"
+    assert len(store.start(uid)) == 2
+
+
 def test_a_sort_result_is_checked_like_input(store: UploadStore) -> None:
     """A worker that a hostile file took over could send back anything: entries for files it
     wasn't given, kinds that don't exist, a hostname built to break a screen."""

@@ -453,6 +453,34 @@ def test_devices_and_pairing_by_hand(client: TestClient) -> None:
     assert client.delete(url, headers=GUARD).status_code == 409, "started: no more changes"
 
 
+def test_a_file_that_kills_its_sort_worker_fails_alone(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Real worker processes: one of three files makes its worker die. The job is split, and
+    only that file is left unrecognised; the others are still grouped into their device."""
+    monkeypatch.syspath_prepend(str(Path(__file__).parent))
+    from crashing_sort import MARKER  # noqa: PLC0415
+
+    upload_id = _new(client)
+    version = REPO / "datasets" / "authored" / "cisco_ios_xe" / "companions" / "show_version.txt"
+    _send(client, upload_id, "edge-r1.cfg", WEAK.read_bytes())
+    _send(client, upload_id, "show_version.txt", version.read_bytes())
+    _send(client, upload_id, "bad.cfg", b"hostname BAD\n" + MARKER + b"\n")
+    state = client.app.state  # type: ignore[attr-defined]
+    handlers = {**HANDLERS, "sort_files": "crashing_sort:sort_or_crash"}
+    pool = WorkerPool(state.jobs, handlers, workers=2, secrets=state.worker_secrets)
+    rounds = 0
+    while (view := client.get(f"/api/uploads/{upload_id}").json())["recognising"]:
+        rounds += 1  # each read splits what failed, as a polling client's does
+        assert rounds <= 3
+        pool.run_until_idle(timeout_s=120)
+    assert rounds == 2, "the three files' job, then one job each"
+    rows = {f["name"]: f for f in view["files"]}
+    assert rows["bad.cfg"]["recognition"] == "failed"
+    assert rows["show_version.txt"]["device"] == rows["edge-r1.cfg"]["id"]
+    assert rows["show_version.txt"]["paired_by"] == "hostname"
+
+
 # -- the installed command -------------------------------------------------------------------
 
 

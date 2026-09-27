@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+from kasauti.ingest import sort
 from kasauti.ingest.devices import Kind
 from kasauti.ingest.sealed import new_key
 from kasauti.ingest.sort import recognise, sort_files
@@ -132,6 +133,24 @@ def test_a_removed_file_is_skipped_and_a_tampered_one_is_unknown(tmp_path: Path)
     data[100] ^= 0x01
     bent.write_bytes(bytes(data))
     assert sort_files(payload) == {"files": [{"id": ids["bent.cfg"], "kind": "unknown"}]}
+
+
+def test_an_error_on_one_file_makes_it_unknown_not_the_job_fail(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = (AUTHORED / "cisco_ios_xe" / "weak.cfg").read_bytes()
+    payload, ids = _job(tmp_path, {"deep.cfg": b"hostname DEEP\n", "r1.cfg": config})
+    real = sort.recognise
+
+    def fragile(data: bytes, packs: Any, vendor: str | None) -> dict[str, Any]:
+        if b"DEEP" in data:
+            raise RecursionError("maximum recursion depth exceeded")
+        return real(data, packs, vendor)
+
+    monkeypatch.setattr(sort, "recognise", fragile)
+    deep, r1 = sort_files(payload)["files"]
+    assert deep == {"id": ids["deep.cfg"], "kind": "unknown"}
+    assert (r1["id"], r1["kind"], r1["hostname"]) == (ids["r1.cfg"], "config", "EDGE-R1")
 
 
 def test_after_a_restart_the_job_says_so(tmp_path: Path) -> None:

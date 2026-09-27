@@ -10,7 +10,10 @@ later, and deletes it then (:func:`kasauti.ingest.staging.read_kept`). Only the 
 loaded, not the rules, and a configuration is parsed only as far as its hostname.
 
 A file it can't read or recognise is reported as ``unknown`` and audited on its own later, so
-the user gets that audit's own explanation; recognising never fails an upload.
+the user gets that audit's own explanation; recognising never fails an upload. An error
+recognising one file makes that file ``unknown``, not the job fail. What no handler can catch
+(the worker killed for memory or time, or crashed) fails the job, and the store splits it until
+the file that caused it fails alone (:data:`kasauti.ingest.store.SPLIT_WAYS`).
 """
 
 from __future__ import annotations
@@ -56,7 +59,11 @@ def sort_files(payload: dict[str, Any]) -> dict[str, Any]:
         except (SealError, ValueError):
             out.append({"id": file_id, "kind": Kind.UNKNOWN})
             continue
-        out.append({"id": file_id, **recognise(data, packs, vendor)})
+        try:
+            found = recognise(data, packs, vendor)
+        except Exception:  # one file the parser can't take (too deep, a bug): not the batch's
+            found = {"kind": Kind.UNKNOWN}
+        out.append({"id": file_id, **found})
         del data
     return {"files": out}
 

@@ -208,7 +208,9 @@ Each pack is **data only** (schema-validated YAML/JSON; no code, no pickle) and 
   output, vendor, hostname); every configuration is a device, and an output joins the one whose
   host it names, or whose file or folder name it shares. A tie or no match is never guessed:
   the output is left out with the reason until someone pairs it by hand. The audit checks the
-  pairing again, so another host's serial can't reach a report.
+  pairing again, so another host's serial can't reach a report. A recognising job that a
+  hostile file kills is split until that file fails alone (v5.1.23), so the rest are still
+  grouped.
 
 ### 5.2 Handling
 - Limits on size, archive entries and nesting depth; path normalisation (zip-slip); `defusedxml` (XXE, billion laughs); encoding detection; binary sniffing.
@@ -1003,6 +1005,11 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.23 (2026-09-27, M2.06 follow-up):** One hostile file no longer costs the other
+  files of its recognising job their grouping. An error on one file makes only that file
+  unrecognised; a job whose worker is killed or crashes is split into up to 16 smaller jobs,
+  and so on, until the file that caused it fails alone (1,000 files: three more rounds, 36
+  jobs at most). Tested with a real worker process that dies on one file of three.
 - **v5.1.22 (2026-09-27, M2.06 devices, server side):** Uploaded files are grouped into
   devices before the upload starts. A `sort_files` job recognises each file in a worker
   (files added while it waits join it: one job for 100 files, 2 s) and leaves it sealed for

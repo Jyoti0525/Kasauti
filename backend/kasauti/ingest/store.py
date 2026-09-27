@@ -3,10 +3,13 @@
 An upload is open while files are added, then started. As files arrive they are recognised in
 a worker (a ``sort_files`` job, :mod:`kasauti.ingest.sort`): configuration or command output,
 vendor, hostname. Files added while that job is still queued join it, so a hundred files
-dropped one by one cost one or two worker start-ups, not a hundred. From what it finds, the
-files are grouped into devices (:mod:`kasauti.ingest.devices`), which the user can correct by
-hand. Starting queues one audit job per device, its configuration and its command outputs
-together, in the same transaction that closes the upload, so it is never half-started.
+dropped one by one cost one or two worker start-ups, not a hundred. If a job fails (a worker
+killed for memory or time, or crashed, by one hostile file), it is split and its files
+recognised again in smaller jobs, until the file that fails it fails alone: the others are
+still grouped. From what it finds, the files are grouped into devices
+(:mod:`kasauti.ingest.devices`), which the user can correct by hand. Starting queues one
+audit job per device, its configuration and its command outputs together, in the same
+transaction that closes the upload, so it is never half-started.
 
 Every change runs with the upload's row locked (``FOR UPDATE`` on PostgreSQL; SQLite's
 ``BEGIN IMMEDIATE`` locks the whole database), so two requests adding files at once can't
@@ -64,6 +67,10 @@ configuration and 44 s per MiB for the densest input found, so a file at the 20 
 the same for the files it covers: it parses each configuration, though only for its hostname."""
 SORT_RESULT_LIMIT = 16 * 1024 * 1024
 """Bytes a sort job's result may expand to: a line or two per file, 1,000 files at most."""
+SPLIT_WAYS = 16
+"""A failed sort job that covered several files is split into at most this many, and so on:
+one file that fails every job it is in costs 1,000 files three more rounds of jobs, 36 jobs at
+most, and is then the only one not recognised."""
 
 
 class UploadNotFoundError(LookupError):
@@ -88,7 +95,8 @@ class Recognition(StrEnum):
     PENDING = "pending"
     DONE = "done"
     FAILED = "failed"
-    """Its sort job failed; it is treated as not recognised, and audited on its own."""
+    """A sort job failed with it alone (or after a restart, when no file can be read): it is
+    treated as not recognised, and audited on its own, which says why."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -156,10 +164,24 @@ class UploadStore:
     # -- reading ------------------------------------------------------------------------------
 
     def get(self, upload_id: str) -> UploadView | None:
+        """The upload as it stands. A failed sort job found here is split first (see
+        :meth:`_split_failed`): a repair under the upload's lock, done once by whoever reads
+        first, so the files it covered never show as failed while they can still be
+        recognised."""
+        view, failed = self._view(upload_id)
+        if failed:
+            with self.engine.begin() as conn:
+                if _lock(conn, upload_id) == UploadState.OPEN:
+                    self._split_failed(conn, upload_id, utcnow())
+            view, _ = self._view(upload_id)
+        return view
+
+    def _view(self, upload_id: str) -> tuple[UploadView | None, bool]:
+        """The upload, and whether a sort job of it has failed and should be split."""
         with self.engine.connect() as conn:
             head = conn.execute(select(uploads).where(uploads.c.id == upload_id)).mappings().first()
             if head is None:
-                return None
+                return None, False
             rows = (
                 conn.execute(
                     select(
@@ -174,7 +196,8 @@ class UploadStore:
                 .mappings()
                 .all()
             )
-            found = _recognitions(conn, rows)
+            is_open = head["state"] == UploadState.OPEN
+            found, failed = _recognitions(conn, rows, self.staging.key_id if is_open else None)
         members = [_member(r, found) for r in rows if r["accepted"]]
         placements = group(members)
         files = tuple(
@@ -195,7 +218,7 @@ class UploadStore:
             )
             for r in rows
         )
-        return UploadView(
+        view = UploadView(
             id=head["id"],
             label=head["label"],
             state=UploadState(head["state"]),
@@ -207,6 +230,7 @@ class UploadStore:
             files=files,
             devices=_devices(members, placements),
         )
+        return view, bool(failed)
 
     # -- changes ------------------------------------------------------------------------------
 
@@ -388,6 +412,7 @@ class UploadStore:
             head = conn.execute(
                 select(uploads.c.frameworks, uploads.c.vendor).where(uploads.c.id == upload_id)
             ).one()
+            self._split_failed(conn, upload_id, now)
             members = self._members(conn, upload_id)
             if not members:
                 raise UploadStateError("nothing to audit: no file in this upload was accepted")
@@ -473,8 +498,9 @@ class UploadStore:
     def _sort(
         self, conn: Connection, upload_id: str, file_ids: Collection[str], now: dt.datetime
     ) -> None:
-        """Queue ``file_ids`` to be recognised: added to the upload's sort job if one is still
-        queued, else in a new one. Runs with the upload locked, so at most one is queued."""
+        """Queue ``file_ids`` to be recognised: added to a sort job of this upload that is still
+        queued, else to a new one. Runs with the upload locked, so only this request adds to
+        it. One job at most is queued, unless a failed one was just split."""
         if not file_ids:
             return
         queued = conn.execute(
@@ -502,27 +528,56 @@ class UploadStore:
             ):
                 job_id = queued.id
         if job_id is None:
-            vendor: str | None = conn.execute(
-                select(uploads.c.vendor).where(uploads.c.id == upload_id)
-            ).scalar_one()
-            payload = {
-                "upload": upload_id,
-                "files": new,
-                "vendor": vendor,
-                "staging": str(self.staging.root.resolve()),
-                "staging_key": self.staging.key_id,
-                "packs": str(self.packs.resolve()),
-            }
-            job_id = self.queue.enqueue(
-                SORT_KIND,
-                payload,
-                timeout_s=self._sort_timeout(conn, new),
-                now=now,
-                conn=conn,
+            self._new_sort_job(conn, upload_id, new, now)
+        else:
+            conn.execute(
+                update(upload_files).where(upload_files.c.id.in_(new)).values(sort_job_id=job_id)
             )
-        conn.execute(
-            update(upload_files).where(upload_files.c.id.in_(new)).values(sort_job_id=job_id)
+
+    def _new_sort_job(
+        self, conn: Connection, upload_id: str, file_ids: list[str], now: dt.datetime
+    ) -> None:
+        vendor: str | None = conn.execute(
+            select(uploads.c.vendor).where(uploads.c.id == upload_id)
+        ).scalar_one()
+        payload = {
+            "upload": upload_id,
+            "files": file_ids,
+            "vendor": vendor,
+            "staging": str(self.staging.root.resolve()),
+            "staging_key": self.staging.key_id,
+            "packs": str(self.packs.resolve()),
+        }
+        job_id = self.queue.enqueue(
+            SORT_KIND, payload, timeout_s=self._sort_timeout(conn, file_ids), now=now, conn=conn
         )
+        conn.execute(
+            update(upload_files).where(upload_files.c.id.in_(file_ids)).values(sort_job_id=job_id)
+        )
+
+    def _split_failed(self, conn: Connection, upload_id: str, now: dt.datetime) -> None:
+        """Queue the files of each failed sort job again, in up to :data:`SPLIT_WAYS` smaller
+        jobs. A handler error on one file doesn't fail a job (:mod:`kasauti.ingest.sort`), so
+        a job fails only when its worker is killed or crashes, and any of its files may be the
+        cause: splitting until that file fails alone keeps the others recognised. Not after a
+        restart: no file of the job can be read then, alone or not. Runs with the upload
+        locked, and leaves its expiry alone, since a read that finds a failed job does this
+        too."""
+        rows = (
+            conn.execute(
+                select(upload_files)
+                .where(upload_files.c.upload_id == upload_id, upload_files.c.accepted)
+                .order_by(upload_files.c.created_at, upload_files.c.name, upload_files.c.id)
+            )
+            .mappings()
+            .all()
+        )
+        _, failed = _recognitions(conn, rows, self.staging.key_id)
+        for job_id in sorted(failed):
+            ids = [r["id"] for r in rows if r["sort_job_id"] == job_id]
+            size = math.ceil(len(ids) / SPLIT_WAYS)
+            for start in range(0, len(ids), size):
+                self._new_sort_job(conn, upload_id, ids[start : start + size], now)
 
     @staticmethod
     def _sort_timeout(conn: Connection, file_ids: Iterable[str]) -> int:
@@ -536,8 +591,7 @@ class UploadStore:
             ).scalar_one()
         return audit_timeout(size)
 
-    @staticmethod
-    def _members(conn: Connection, upload_id: str) -> list[Member]:
+    def _members(self, conn: Connection, upload_id: str) -> list[Member]:
         rows = (
             conn.execute(
                 select(upload_files)
@@ -547,7 +601,7 @@ class UploadStore:
             .mappings()
             .all()
         )
-        found = _recognitions(conn, rows)
+        found, _ = _recognitions(conn, rows, self.staging.key_id)
         return [_member(r, found) for r in rows]
 
     # -- housekeeping -------------------------------------------------------------------------
@@ -640,9 +694,11 @@ class UploadStore:
 
 
 def _recognitions(
-    conn: Connection, rows: Sequence[Any]
-) -> dict[str, tuple[Recognition, Recognised | None]]:
-    """For each accepted file, how far recognising it has got and what it found. A sort job's
+    conn: Connection, rows: Sequence[Any], key_id: str | None
+) -> tuple[dict[str, tuple[Recognition, Recognised | None]], set[str]]:
+    """For each accepted file, how far recognising it has got and what it found; and the
+    failed sort jobs to split (:meth:`UploadStore._split_failed`), whose files count as still
+    pending. With ``key_id`` None (an upload no longer open), there are none. A sort job's
     result comes from a worker that has read untrusted files, so it is checked like input: an
     entry for a file the job wasn't given, or that isn't well formed, is ignored."""
     accepted = [r for r in rows if r["accepted"]]
@@ -652,6 +708,15 @@ def _recognitions(
         if job_ids
         else {}
     )
+    failed = [i for i, state in states.items() if state == JobState.FAILED]
+    split: set[str] = set()
+    if key_id is not None and failed:
+        for job_id, text in conn.execute(
+            select(jobs.c.id, jobs.c.payload).where(jobs.c.id.in_(failed))
+        ).all():
+            payload = json.loads(text)  # written by this server, not by a worker
+            if len(payload["files"]) > 1 and payload["staging_key"] == key_id:
+                split.add(job_id)
     results: dict[str, dict[str, Recognised]] = {}
     for job_id, job_state in states.items():
         if job_state == JobState.SUCCEEDED:
@@ -665,13 +730,13 @@ def _recognitions(
     for r in accepted:
         sorter: str | None = r["sort_job_id"]
         state: str | None = None if sorter is None else states.get(sorter)
-        if state in (None, JobState.QUEUED, JobState.RUNNING):
+        if state in (None, JobState.QUEUED, JobState.RUNNING) or sorter in split:
             out[r["id"]] = (Recognition.PENDING, None)
         elif state == JobState.SUCCEEDED and sorter is not None:
             out[r["id"]] = (Recognition.DONE, results[sorter].get(r["id"], unknown))
         else:
             out[r["id"]] = (Recognition.FAILED, unknown)
-    return out
+    return out, split
 
 
 def _read_sorted(blob: bytes | None, given: Collection[str]) -> dict[str, Recognised]:
@@ -780,6 +845,7 @@ def _require_open(state: str) -> None:
 __all__ = [
     "AUDIT_KIND",
     "SORT_KIND",
+    "SPLIT_WAYS",
     "DeviceView",
     "FileNotInUploadError",
     "FileView",
