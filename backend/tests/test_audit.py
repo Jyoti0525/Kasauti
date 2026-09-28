@@ -156,6 +156,8 @@ def test_cli_audit_writes_json_and_pdf(tmp_path: Path, capsys: pytest.CaptureFix
     assert code == 0
     out = capsys.readouterr().out
     assert "compliance 0.0%, coverage 100.0%" in out
+    # The summary shows the severity the audit found: Telnet on the WAN uplink makes it Critical.
+    assert "  FAIL   critical MGMT-TELNET-01:" in out
     data = json.loads((tmp_path / "weak.kasauti.json").read_text(encoding="utf-8"))
     assert data["identity"]["hostname"]["value"] == "EDGE-R1"
     assert (tmp_path / "weak.kasauti.pdf").read_bytes().startswith(b"%PDF")

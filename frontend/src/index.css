@@ -49,45 +49,45 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #0e1113;
-    --surface: #15191c;
-    --surface-2: #191e21;
-    --surface-3: #222829;
-    --line: #283034;
-    --line-strong: #364046;
-    --text: #e9e7e1;
-    --muted: #a1a6ab;
-    --faint: #6f757b;
+/* Dark tokens. public/theme.js sets data-theme before first paint: the viewer's saved choice,
+   else the operating system's. */
+:root[data-theme="dark"] {
+  --canvas: #0e1113;
+  --surface: #15191c;
+  --surface-2: #191e21;
+  --surface-3: #222829;
+  --line: #283034;
+  --line-strong: #364046;
+  --text: #e9e7e1;
+  --muted: #a1a6ab;
+  --faint: #6f757b;
 
-    --basalt: #0a0c0e;
-    --basalt-2: #15191c;
-    --basalt-line: #22282c;
-    --on-basalt: #a9aeb3;
+  --basalt: #0a0c0e;
+  --basalt-2: #15191c;
+  --basalt-line: #22282c;
+  --on-basalt: #a9aeb3;
 
-    --brass: #d6a646;
-    --brass-ink: #e2bb68;
-    --brass-soft: #30271a;
-    --on-brass: #1a1406;
+  --brass: #d6a646;
+  --brass-ink: #e2bb68;
+  --brass-soft: #30271a;
+  --on-brass: #1a1406;
 
-    --data: #9fb0bc;
+  --data: #9fb0bc;
 
-    --pass: #45be92;
-    --pass-soft: #10281f;
-    --fail: #f06a73;
-    --fail-soft: #37181c;
-    --review: #a39ef6;
-    --review-soft: #211f3e;
-    --na: #8b9197;
-    --na-soft: #1e2326;
+  --pass: #45be92;
+  --pass-soft: #10281f;
+  --fail: #f06a73;
+  --fail-soft: #37181c;
+  --review: #a39ef6;
+  --review-soft: #211f3e;
+  --na: #8b9197;
+  --na-soft: #1e2326;
 
-    --critical: #ff8391;
-    --high: #f06a73;
-    --medium: #f09a52;
-    --low: #8b9197;
-    color-scheme: dark;
-  }
+  --critical: #ff8391;
+  --high: #f06a73;
+  --medium: #f09a52;
+  --low: #8b9197;
+  color-scheme: dark;
 }
 
 @theme inline {

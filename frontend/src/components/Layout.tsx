@@ -1,7 +1,8 @@
-import { Plus, ShieldCheck } from "lucide-react";
+import { Monitor, Moon, Plus, ShieldCheck, Sun } from "lucide-react";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useHealth } from "../api/hooks";
 import { shortHash } from "../lib/format";
+import { type ThemeChoice, useTheme } from "../lib/theme";
 import { Lockup } from "./Brand";
 import { cx } from "./ui";
 
@@ -46,6 +47,7 @@ export function Layout() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-4">
+            <ThemeSwitch />
             <span
               className="hidden items-center gap-1.5 text-xs text-on-basalt md:inline-flex"
               title="Kasauti listens on this machine only and calls no cloud service. Uploaded files are audited and deleted."
@@ -94,6 +96,43 @@ export function Layout() {
           <span className="ml-auto">No cloud calls · uploaded files are deleted after audit</span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+const THEMES: { value: ThemeChoice; label: string; Icon: typeof Sun }[] = [
+  { value: "light", label: "Light", Icon: Sun },
+  { value: "dark", label: "Dark", Icon: Moon },
+  { value: "system", label: "Match system", Icon: Monitor },
+];
+
+function ThemeSwitch() {
+  const [choice, setChoice] = useTheme();
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Colour theme"
+      className="flex items-center rounded-lg border border-basalt-line p-0.5"
+    >
+      {THEMES.map(({ value, label, Icon }) => (
+        <button
+          key={value}
+          type="button"
+          role="radio"
+          aria-checked={choice === value}
+          aria-label={label}
+          title={label}
+          onClick={() => setChoice(value)}
+          className={cx(
+            "grid size-7 place-items-center rounded-md transition-colors",
+            choice === value
+              ? "bg-basalt-2 text-brass shadow-[inset_0_0_0_1px_var(--basalt-line)]"
+              : "text-on-basalt hover:text-white",
+          )}
+        >
+          <Icon className="size-3.5" aria-hidden />
+        </button>
+      ))}
     </div>
   );
 }

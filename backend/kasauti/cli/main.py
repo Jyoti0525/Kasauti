@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from kasauti import __version__
-from kasauti.audit import AuditError, AuditResult, audit, load_kb
+from kasauti.audit import AuditError, AuditResult, audit, effective_severity, load_kb
 from kasauti.identity.manual import ENTERABLE
 from kasauti.ingest.read import IngestError, read_file
 from kasauti.packs.loader import PackError, load_framework_pack, load_ruleset, load_vendor_pack
@@ -301,9 +301,11 @@ def _print_summary(result: AuditResult, written: Sequence[Path]) -> None:
             f"  {sc.title}: compliance {comp}, coverage {cov} "
             f"({sc.passed} pass, {sc.failed} fail, {sc.review} review, {sc.not_applicable} n/a)"
         )
+    found = effective_severity(result)
     for rule in result.rules:
         if rule.status in (Status.FAIL, Status.REVIEW):
-            print(f"  {rule.status.value:<6} {rule.severity.value:<8} {rule.rule_id}: {rule.title}")
+            severity = found.get(rule.rule_id, rule.severity).value
+            print(f"  {rule.status.value:<6} {severity:<8} {rule.rule_id}: {rule.title}")
     a = result.assurance
     print(f"  understood {a.understood}/{a.statements} statements; audit {result.audit_id}")
     for warning in result.warnings:

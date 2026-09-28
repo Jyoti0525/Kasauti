@@ -39,7 +39,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from kasauti.audit import AuditResult
+from kasauti.audit import AuditResult, effective_severity
 from kasauti.rules.evaluate import display
 from kasauti.rules.model import Finding, Severity, Status
 
@@ -123,20 +123,6 @@ def render_pdf(result: AuditResult, rules_by_id: dict[str, Any], *, generated: s
 
     doc.build(story, onFirstPage=first, onLaterPages=later)
     return buf.getvalue()
-
-
-def effective_severity(r: AuditResult) -> dict[str, Severity]:
-    """Each failed rule's severity as the audit found it: that of its worst failing finding, which
-    exposure may have raised above the rule's own. The web UI counts the same way
-    (kasauti/api/audits.py, ``summarise``)."""
-    worst: dict[str, Severity] = {}
-    for f in r.findings:
-        if f.status is not Status.FAIL or f.severity is None:
-            continue
-        seen = worst.get(f.rule_id)
-        if seen is None or _SEVERITY_ORDER[f.severity] < _SEVERITY_ORDER[seen]:
-            worst[f.rule_id] = f.severity
-    return {x.rule_id: worst.get(x.rule_id, x.severity) for x in r.rules if x.status is Status.FAIL}
 
 
 # --- brand ---------------------------------------------------------------------------------------

@@ -271,6 +271,23 @@ class AuditResult(_Out):
         return self.model_dump_json(indent=2) + "\n"
 
 
+_SEVERITY_RANK = {Severity.CRITICAL: 0, Severity.HIGH: 1, Severity.MEDIUM: 2, Severity.LOW: 3}
+
+
+def effective_severity(r: AuditResult) -> dict[str, Severity]:
+    """Each failed rule's severity as the audit found it: that of its worst failing finding, which
+    exposure may have raised above the rule's own. The PDF, the CLI summary and the web UI
+    (kasauti/api/audits.py, ``summarise``) all count this way."""
+    worst: dict[str, Severity] = {}
+    for f in r.findings:
+        if f.status is not Status.FAIL or f.severity is None:
+            continue
+        seen = worst.get(f.rule_id)
+        if seen is None or _SEVERITY_RANK[f.severity] < _SEVERITY_RANK[seen]:
+            worst[f.rule_id] = f.severity
+    return {x.rule_id: worst.get(x.rule_id, x.severity) for x in r.rules if x.status is Status.FAIL}
+
+
 # --- the audit -----------------------------------------------------------------------------------
 
 

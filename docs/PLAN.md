@@ -1090,6 +1090,19 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
       from them) changed in the golden snapshots; no verdict changed.
     - The file-shape and identity-source labels were raw ids and markup ("Json Yaml",
       `` `show version` (dir/…) ``); they now read as words.
+- **v5.1.36 (2026-09-29, theme switch and CLI severity):**
+  - **Light, dark or the system's.** A three-way switch in the top bar. The choice is kept in the
+    browser (`kasauti-theme`) and applied before the first paint by `public/theme.js`, a file
+    because the CSP allows no inline script. Dark tokens now hang on `:root[data-theme="dark"]`
+    instead of the media query alone, so the viewer's choice can override the system.
+  - **The CLI summary said "high" where the audit found critical.** It printed each failed rule's
+    base severity. It now prints the effective one (`effective_severity`, moved from the PDF into
+    `kasauti/audit.py` so the CLI needn't load ReportLab), like the PDF and the web UI; a test
+    holds Telnet on the weak sample's WAN uplink to "critical".
+  - **The flaky hostile-file test.** It failed once, under a full suite run alongside slide
+    rendering. Not reproduced in 6 × 350 ingest tests run in parallel, nor in 4 parallel runs of
+    the test alone; its assertions already name the file and the job's error, so a recurrence
+    will say why.
 - **v5.1.32 (2026-09-27, M2.28 limits closed):** Every Junos file form the CLI writes is now
   replayed as the CLI would (`kasauti/mapping/commands.py`): `[edit …]` banners, prompts and
   command output in terminal captures, `edit`/`up`/`top`/`exit`, `insert`, `rename`, `copy`,
