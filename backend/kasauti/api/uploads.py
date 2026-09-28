@@ -2,6 +2,7 @@
 
 The flow the "New audit" screen follows, and any script can too::
 
+    GET    /api/uploads                     the newest uploads, briefly
     POST   /api/uploads                     {"label", "frameworks", "vendor"}  -> the upload
     POST   /api/uploads/{id}/files          one file's bytes (or a .zip)       -> its rows
     DELETE /api/uploads/{id}/files/{file}   take a file back out
@@ -45,7 +46,7 @@ from io import RawIOBase
 from typing import Annotated, Any
 from urllib.parse import unquote
 
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
@@ -58,6 +59,7 @@ from kasauti.ingest.store import (
     FileView,
     PairingError,
     Recognition,
+    UploadBrief,
     UploadNotFoundError,
     UploadStateError,
     UploadStore,
@@ -176,6 +178,20 @@ class UploadOut(_Model):
     devices: tuple[DeviceOut, ...]
 
 
+class UploadBriefOut(_Model):
+    id: str
+    label: str | None
+    state: UploadState
+    frameworks: tuple[str, ...]
+    vendor: str | None
+    created_at: dt.datetime
+    started_at: dt.datetime | None
+    accepted: int
+    refused: int
+    audits: dict[str, int]
+    """Its device audits by job state."""
+
+
 class FilesOut(_Model):
     files: tuple[FileOut, ...]
     """The rows this request added: one for a file, one per entry for a .zip."""
@@ -209,6 +225,28 @@ async def _call[T](function: Callable[..., T], *args: Any, **kwargs: Any) -> T:
         log.exception("database unavailable", error=str(err))
         raise HTTPException(503, "database unavailable") from None
     return result
+
+
+@router.get("", responses={503: {"description": "database down"}})
+async def list_uploads(
+    request: Request, limit: Annotated[int, Query(ge=1, le=500)] = 100
+) -> tuple[UploadBriefOut, ...]:
+    found: list[UploadBrief] = await _call(_store(request).recent, limit)
+    return tuple(
+        UploadBriefOut(
+            id=u.id,
+            label=u.label,
+            state=u.state,
+            frameworks=u.frameworks,
+            vendor=u.vendor,
+            created_at=u.created_at,
+            started_at=u.started_at,
+            accepted=u.accepted,
+            refused=u.refused,
+            audits=u.audits,
+        )
+        for u in found
+    )
 
 
 @router.post("", status_code=201, responses={422: {"description": "unknown framework or vendor"}})

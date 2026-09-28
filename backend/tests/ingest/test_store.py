@@ -625,3 +625,39 @@ def test_a_sort_result_is_checked_like_input(store: UploadStore) -> None:
     assert second is not None
     assert second.kind is Kind.UNKNOWN
     assert all(d.hostname != "INJECTED" for d in _view(store, uid).devices)
+
+
+def test_uploads_and_audits_are_listed_for_the_web_ui(store: UploadStore, queue: JobQueue) -> None:
+    """`recent` and `audit_jobs` (M2.76, M2.78): newest first, a device's outputs counted under
+    its one audit, discarded uploads left out, and one upload's audits by name."""
+    first = _open(store)
+    files = {
+        "b/EDGE-R1.cfg": _sample("cisco_ios_xe", "hardened.cfg"),
+        "b/show_version.txt": _sample("cisco_ios_xe", "show_version.txt"),  # names EDGE-R1
+        "a/leaf1.cfg": _sample("arista_eos", "hardened.cfg"),
+    }
+    store.add(first, [_staged(store, first, data, name) for name, data in files.items()])
+    store.add(first, [Received(new_id(), "notes.docx", 10, None, "not a text file")])
+    _recognise(store)
+    store.start(first)
+    later = utcnow() + dt.timedelta(seconds=5)
+    second = store.create(label="later", frameworks=["nist_800_53r5"], vendor=None, now=later)
+    dropped = _open(store)
+    store.discard(dropped)
+
+    listed = store.recent()
+    assert [u.id for u in listed] == [second, first]
+    brief = listed[1]
+    assert (brief.state, brief.accepted, brief.refused) == (UploadState.STARTED, 3, 1)
+    assert brief.audits == {"queued": 2}, "the command output shares its device's audit"
+    assert listed[0].audits == {}
+    assert store.recent(limit=1)[0].id == second
+
+    audits = store.audit_jobs(upload_id=first)
+    assert [(a.name, a.label, a.state) for a in audits] == [
+        ("a/leaf1.cfg", "t", JobState.QUEUED),
+        ("b/EDGE-R1.cfg", "t", JobState.QUEUED),
+    ]
+    assert store.audit_jobs(upload_id=second) == []
+    assert [a.job_id for a in store.audit_jobs()] == [a.job_id for a in audits]
+    assert len(store.audit_jobs(limit=1)) == 1

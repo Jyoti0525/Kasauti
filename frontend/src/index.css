@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/* Kasauti (कसौटी) is the touchstone: the black stone gold is tested against. Charcoal and a gold
+   streak, and the verdict colours everyone already reads (green holds, red fails, amber needs a
+   person). System fonts only: the platform makes no network calls. */
+
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --line: #e2e5ea;
+  --text: #14171c;
+  --muted: #5b6472;
+  --faint: #8a93a1;
+  --ink: #111318;
+  --ink-2: #1b1e25;
+  --ink-text: #c9ced6;
+  --gold: #b8871b;
+  --gold-soft: #f6edd8;
+  --pass: #1a7f37;
+  --pass-soft: #e3f4e8;
+  --fail: #c62a2f;
+  --fail-soft: #fce8e8;
+  --review: #a86b00;
+  --review-soft: #fdf1d9;
+  --na: #6b7380;
+  --na-soft: #eef0f3;
+  --critical: #8e0f1f;
+  --high: #c62a2f;
+  --medium: #cf6a14;
+  --low: #5b6472;
+  --focus: #b8871b;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d0f13;
+    --surface: #15181e;
+    --surface-2: #1c2028;
+    --line: #2a2f38;
+    --text: #e7eaef;
+    --muted: #9ba4b2;
+    --faint: #6d7684;
+    --ink: #0a0b0e;
+    --ink-2: #14161b;
+    --gold: #e0b04a;
+    --gold-soft: #3a2e14;
+    --pass: #4cc26d;
+    --pass-soft: #12301c;
+    --fail: #f0625f;
+    --fail-soft: #3a1717;
+    --review: #e5a92f;
+    --review-soft: #36290f;
+    --na: #8d96a3;
+    --na-soft: #22262e;
+    --critical: #ff6b7d;
+    --high: #f0625f;
+    --medium: #f0913f;
+    --low: #9ba4b2;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-text: var(--ink-text);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-pass: var(--pass);
+  --color-pass-soft: var(--pass-soft);
+  --color-fail: var(--fail);
+  --color-fail-soft: var(--fail-soft);
+  --color-review: var(--review);
+  --color-review-soft: var(--review-soft);
+  --color-na: var(--na);
+  --color-na-soft: var(--na-soft);
+  --color-critical: var(--critical);
+  --color-high: var(--high);
+  --color-medium: var(--medium);
+  --color-low: var(--low);
+  --font-mono:
+    ui-monospace, "Cascadia Mono", "Cascadia Code", "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

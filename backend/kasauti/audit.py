@@ -80,12 +80,31 @@ class KnowledgeBase:
 
 
 def load_kb(packs_root: Path) -> KnowledgeBase:
+    """The knowledge base under ``packs_root``. :class:`PackError` if a pack is invalid, or if
+    there is no vendor pack, framework or rule: a server or audit started in the wrong folder
+    must stop and say so, not run with nothing to judge by."""
     vendor = load_vendor_packs(packs_root)
     frameworks = {
         fw.catalog.framework: fw
         for fw in (load_framework_pack(d) for d in sorted((packs_root / "frameworks").glob("*/")))
     }
     ruleset = load_ruleset(packs_root / "rules", packs_root / "derivations")
+    empty = [
+        what
+        for what, found in (
+            ("vendor packs (vendors/)", vendor),
+            ("frameworks (frameworks/)", frameworks),
+            ("rules (rules/)", ruleset.rules),
+        )
+        if not found
+    ]
+    if empty:
+        raise PackError(
+            [
+                f"{packs_root}: no knowledge base here, it has no {' and no '.join(empty)}; "
+                "run from the repository root or pass --packs"
+            ]
+        )
     return KnowledgeBase(
         vendor_packs=vendor,
         ruleset=ruleset,

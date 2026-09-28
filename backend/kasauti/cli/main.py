@@ -144,6 +144,7 @@ def _serve(args: argparse.Namespace) -> int:
                 staging=args.data_dir / "staging",
                 workers=args.workers,
                 worker_memory_mib=args.worker_memory,
+                web=args.web,
             )
         )
     except PackError as err:
@@ -156,7 +157,13 @@ def _serve(args: argparse.Namespace) -> int:
         return 1
     import uvicorn  # noqa: PLC0415
 
-    print(f"kasauti {__version__}: http://127.0.0.1:{args.port}/api/health (loopback only)")
+    if (args.web / "index.html").is_file():
+        print(f"kasauti {__version__}: http://127.0.0.1:{args.port}/ (loopback only)")
+    else:
+        print(
+            f"kasauti {__version__}: http://127.0.0.1:{args.port}/api/health (loopback only); "
+            f"no web UI at {args.web} (build it with `npm run build` in frontend/)"
+        )
     uvicorn.run(
         app,
         host="127.0.0.1",  # never a name: `localhost` may also resolve to other addresses
@@ -349,6 +356,12 @@ def build_parser() -> argparse.ArgumentParser:
     srv.add_argument("--host", default="127.0.0.1", help="127.0.0.1 or localhost (the default)")
     srv.add_argument("--port", type=_port, default=8000, help="TCP port (default: 8000)")
     srv.add_argument("--packs", type=Path, default=Path("packs"), help="knowledge base root")
+    srv.add_argument(
+        "--web",
+        type=Path,
+        default=Path("frontend/dist"),
+        help="the web UI's build folder (default: frontend/dist)",
+    )
     data_help = (
         f"where the SQLite database lives (default: ${DATA_DIR_ENV} or ./var); "
         "PostgreSQL is set with $KASAUTI_DATABASE_URL instead"

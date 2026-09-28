@@ -19,8 +19,14 @@ Exposure (PLAN §17, "Exposure" and "Air gap"):
   browser's ``Sec-Fetch-Site`` must say same-origin, and an ``Origin``, when sent, must be this
   server. Sign-in sessions and their CSRF tokens join these in M5.
 * **Security headers** on every response, errors included: nothing sniffed, framed, cached or
-  sent as a referrer, and a content security policy that allows nothing (the API returns JSON;
-  the web UI, M2.75, sets its own policy).
+  sent as a referrer, and a content security policy that allows nothing for the API, which
+  returns JSON.
+* **The web UI** (M2.75) is served from the same origin, when it is built (``frontend/dist``),
+  so it needs no CORS and passes the cross-site checks as the page the server itself sent. Its
+  pages get their own policy (:data:`WEB_CSP`): scripts, styles, fonts and requests from this
+  server only, no inline script, no framing, no plugins. Only files inside the build folder
+  with a known type are served; any other path that isn't under ``/api`` gets the app's page,
+  which routes it in the browser.
 * **No interactive docs.** Swagger UI and ReDoc load their scripts from a CDN, and the platform
   makes no network calls. The OpenAPI document is served at ``/api/openapi.json``.
 
@@ -47,6 +53,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import URL, Engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -57,6 +64,7 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from kasauti import __version__
+from kasauti.api.audits import router as audits_router
 from kasauti.api.jobs import router as jobs_router
 from kasauti.api.uploads import router as uploads_router
 from kasauti.audit import KnowledgeBase, load_kb
@@ -83,6 +91,25 @@ SECURITY_HEADERS = {
     "Cache-Control": "no-store",
     "Cross-Origin-Resource-Policy": "same-origin",
 }
+WEB_CSP = (
+    "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
+    "font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; "
+    "form-action 'none'; frame-ancestors 'none'"
+)
+"""The web UI's policy. ``data:`` images are the icons the build inlines."""
+WEB_TYPES = {
+    ".html": "text/html; charset=utf-8",
+    ".js": "text/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".ico": "image/x-icon",
+    ".woff2": "font/woff2",
+    ".json": "application/json",
+    ".txt": "text/plain; charset=utf-8",
+}
+"""What the web UI's build folder may serve, typed here: the operating system's own table
+(the Windows registry, say) may call a script ``text/plain``, which ``nosniff`` then refuses."""
 UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 REQUEST_HEADER = "X-Kasauti-Request"
 HOUSEKEEPING_S = 60.0
@@ -103,6 +130,9 @@ class Settings:
     """Memory each worker may use (:mod:`kasauti.jobs.limits`)."""
     handlers: Mapping[str, str] = field(default_factory=lambda: HANDLERS)
     """Job kind to ``module:function``; :data:`kasauti.jobs.kinds.HANDLERS` unless testing."""
+    web: Path | None = None
+    """The web UI's build folder (``frontend/dist``); None, or no ``index.html`` in it, serves
+    the API alone."""
 
 
 class Health(BaseModel):
@@ -164,18 +194,10 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.worker_secrets = worker_secrets
     app.state.uploads = store
     app.state.packs = settings.packs
-    # Starlette runs the middleware added last first: the headers wrap the host check, which
-    # wraps the cross-site check, so the refusals of both carry the headers.
-    app.add_middleware(CrossSiteGuard)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
-
-    @app.middleware("http")
-    async def security_headers(
-        request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ) -> Response:
-        response = await call_next(request)
-        response.headers.update(SECURITY_HEADERS)
-        return response
+    web = (
+        settings.web.resolve() if settings.web and (settings.web / "index.html").is_file() else None
+    )
+    _guard(app, settings.allowed_hosts, web=web is not None)
 
     @app.get("/api/health", responses={503: {"description": "the database can't be read"}})
     def health() -> Health:
@@ -189,7 +211,54 @@ def create_app(settings: Settings) -> FastAPI:
 
     app.include_router(jobs_router)
     app.include_router(uploads_router)
+    app.include_router(audits_router)
+    if web is not None:
+        _serve_web(app, web)
     return app
+
+
+def _guard(app: FastAPI, allowed_hosts: tuple[str, ...], *, web: bool) -> None:
+    """The protections every request passes (module docstring); with ``web``, pages outside
+    ``/api`` get the web UI's policy. Starlette runs the middleware added last first: the
+    headers wrap the host check, which wraps the cross-site check, so the refusals of both carry
+    the headers."""
+    app.add_middleware(CrossSiteGuard)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(allowed_hosts))
+
+    @app.middleware("http")
+    async def security_headers(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        response = await call_next(request)
+        response.headers.update(SECURITY_HEADERS)
+        if web and not _is_api(request.url.path):
+            response.headers["Content-Security-Policy"] = WEB_CSP
+        return response
+
+
+def _is_api(path: str) -> bool:
+    return path == "/api" or path.startswith("/api/")
+
+
+def _serve_web(app: FastAPI, root: Path) -> None:
+    """The web UI's files, and its page for every other path outside ``/api``."""
+    index = root / "index.html"
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def web(path: str) -> Response:
+        if _is_api(f"/{path}"):
+            raise HTTPException(404, "Not Found")
+        if path:
+            try:
+                target = (root / path).resolve()
+            except (OSError, ValueError):
+                raise HTTPException(404, "Not Found") from None
+            kind = WEB_TYPES.get(target.suffix.lower())
+            if target.is_relative_to(root) and target.is_file() and kind is not None:
+                return FileResponse(target, media_type=kind)
+            if target.suffix:  # a file that isn't there, or isn't served: not the app's page
+                raise HTTPException(404, "Not Found")
+        return FileResponse(index, media_type=WEB_TYPES[".html"])
 
 
 class CrossSiteGuard:

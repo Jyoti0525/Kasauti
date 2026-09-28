@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import URL
 from sqlalchemy.exc import OperationalError
 
-from kasauti.api.app import SECURITY_HEADERS, Settings, create_app
+from kasauti.api.app import SECURITY_HEADERS, WEB_CSP, Settings, create_app
 from kasauti.audit import load_kb
 from kasauti.cli.main import main
 from kasauti.db import (
@@ -25,6 +25,7 @@ from kasauti.db import (
     upgrade,
 )
 from kasauti.jobs.limits import DEFAULT_MEMORY_MIB
+from kasauti.packs.loader import PackError
 
 REPO = Path(__file__).resolve().parents[3]
 PACKS = REPO / "packs"
@@ -268,3 +269,98 @@ def test_serve_rejects_worker_settings_out_of_range(
     with pytest.raises(SystemExit):
         main(["serve", option, value])
     assert option in capsys.readouterr().err
+
+
+# -- the web UI (M2.75) -----------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def web_client(tmp_path_factory: pytest.TempPathFactory) -> Iterator[TestClient]:
+    """An app serving a stand-in build folder, with a file beside it that must never be served."""
+    base = tmp_path_factory.mktemp("web")
+    dist = base / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<!doctype html><title>Kasauti</title>", encoding="utf-8")
+    (dist / "assets" / "app-1a2b.js").write_text("console.log(1)", encoding="utf-8")
+    (dist / "assets" / "app-1a2b.css").write_text("body{}", encoding="utf-8")
+    (dist / "assets" / "notes.py").write_text("print('source')", encoding="utf-8")
+    (base / "secret.txt").write_text("outside the build folder", encoding="utf-8")
+    var = base / "var"
+    app = create_app(
+        Settings(packs=PACKS, database=_migrated(var), staging=var / "staging", web=dist)
+    )
+    yield TestClient(app, base_url="http://127.0.0.1:8000")
+    app.state.engine.dispose()
+
+
+@pytest.mark.parametrize("path", ["/", "/audits", "/audits/3f2a/devices/9c1d", "/kb"])
+def test_every_page_path_gets_the_app_under_its_own_policy(
+    web_client: TestClient, path: str
+) -> None:
+    response = web_client.get(path)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/html; charset=utf-8"
+    assert response.text.startswith("<!doctype html>")
+    assert response.headers["Content-Security-Policy"] == WEB_CSP
+    assert "'unsafe-inline'" not in WEB_CSP
+    assert "'unsafe-eval'" not in WEB_CSP
+    assert response.headers["X-Frame-Options"] == "DENY"
+
+
+def test_built_files_are_served_with_their_own_type(web_client: TestClient) -> None:
+    script = web_client.get("/assets/app-1a2b.js")
+    assert (script.status_code, script.headers["content-type"]) == (
+        200,
+        "text/javascript; charset=utf-8",
+    )
+    assert script.headers["X-Content-Type-Options"] == "nosniff"
+    style = web_client.get("/assets/app-1a2b.css")
+    assert style.headers["content-type"] == "text/css; charset=utf-8"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/assets/missing.js",  # a missing asset is a 404, not the app's page
+        "/assets/notes.py",  # not a type the UI is built of
+        "/../secret.txt",
+        "/assets/../../secret.txt",
+        "/%2e%2e/secret.txt",
+        "/assets/%2e%2e/%2e%2e/secret.txt",
+        "/..%5csecret.txt",
+    ],
+)
+def test_nothing_outside_the_build_is_served(web_client: TestClient, path: str) -> None:
+    response = web_client.get(path)
+    assert response.status_code == 404
+    assert "outside the build folder" not in response.text
+    assert "source" not in response.text
+
+
+def test_api_paths_never_fall_back_to_the_app(web_client: TestClient) -> None:
+    missing = web_client.get("/api/no-such-route")
+    assert missing.status_code == 404
+    assert missing.headers["content-type"] == "application/json"
+    assert missing.headers["Content-Security-Policy"] == SECURITY_HEADERS["Content-Security-Policy"]
+    health = web_client.get("/api/health")
+    assert health.headers["Content-Security-Policy"] == SECURITY_HEADERS["Content-Security-Policy"]
+
+
+def test_without_a_build_only_the_api_is_served(client: TestClient) -> None:
+    assert client.get("/").status_code == 404
+    assert client.get("/audits").status_code == 404
+
+
+def test_serve_refuses_a_folder_with_no_knowledge_base(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Started from the wrong folder, the default ``packs`` isn't there: the server must stop
+    and say so, not run with no vendor pack, framework or rule and fail every audit."""
+    empty = tmp_path / "packs"
+    empty.mkdir()
+    assert main(["serve", "--packs", str(empty), "--data-dir", str(tmp_path / "var")]) == 1
+    err = capsys.readouterr().err
+    assert "no knowledge base here" in err
+    assert "no vendor packs (vendors/) and no frameworks (frameworks/) and no rules" in err
+    with pytest.raises(PackError, match="run from the repository root or pass --packs"):
+        load_kb(tmp_path / "nowhere")

@@ -155,6 +155,38 @@ class UploadView:
         return sum(f.recognition is Recognition.PENDING for f in self.files)
 
 
+@dataclass(frozen=True, slots=True)
+class UploadBrief:
+    """An upload in a list: no files, only how many, and where its audits are."""
+
+    id: str
+    label: str | None
+    state: UploadState
+    frameworks: tuple[str, ...]
+    vendor: str | None
+    created_at: dt.datetime
+    started_at: dt.datetime | None
+    accepted: int
+    refused: int
+    audits: dict[str, int]
+    """Audit jobs by state (``queued``, ``running``, ``succeeded``…)."""
+
+
+@dataclass(frozen=True, slots=True)
+class AuditJob:
+    """One device's audit: the job and the upload it came from."""
+
+    job_id: str
+    upload_id: str
+    label: str | None
+    name: str
+    """The configuration's display name."""
+    state: JobState
+    error: str | None
+    created_at: dt.datetime
+    finished_at: dt.datetime | None
+
+
 def audit_timeout(size: int) -> int:
     """Seconds an audit of ``size`` bytes may take (:data:`AUDIT_TIMEOUT_PER_MIB_S`)."""
     return AUDIT_TIMEOUT_S + math.ceil(AUDIT_TIMEOUT_PER_MIB_S * size / (1024 * 1024))
@@ -181,6 +213,96 @@ class UploadStore:
                     self._split_failed(conn, upload_id, utcnow())
             view, _ = self._view(upload_id)
         return view
+
+    def recent(self, limit: int = 100) -> list[UploadBrief]:
+        """The newest uploads first, discarded ones left out."""
+        with self.engine.connect() as conn:
+            heads = (
+                conn.execute(
+                    select(uploads)
+                    .where(uploads.c.state != UploadState.DISCARDED)
+                    .order_by(uploads.c.created_at.desc(), uploads.c.id)
+                    .limit(limit)
+                )
+                .mappings()
+                .all()
+            )
+            ids = [h["id"] for h in heads]
+            files: dict[tuple[str, bool], int] = {
+                (u, bool(a)): n
+                for u, a, n in conn.execute(
+                    select(upload_files.c.upload_id, upload_files.c.accepted, func.count())
+                    .where(upload_files.c.upload_id.in_(ids))
+                    .group_by(upload_files.c.upload_id, upload_files.c.accepted)
+                ).all()
+            }
+            audits: dict[str, dict[str, int]] = {}
+            # A device's command outputs share its job: count each job once.
+            for u, state, _job in conn.execute(
+                select(upload_files.c.upload_id, jobs.c.state, jobs.c.id)
+                .join(jobs, upload_files.c.job_id == jobs.c.id)
+                .where(upload_files.c.upload_id.in_(ids))
+                .distinct()
+            ).all():
+                counts = audits.setdefault(u, {})
+                counts[state] = counts.get(state, 0) + 1
+        return [
+            UploadBrief(
+                id=h["id"],
+                label=h["label"],
+                state=UploadState(h["state"]),
+                frameworks=tuple(json.loads(h["frameworks"])),
+                vendor=h["vendor"],
+                created_at=h["created_at"],
+                started_at=h["started_at"],
+                accepted=files.get((h["id"], True), 0),
+                refused=files.get((h["id"], False), 0),
+                audits=audits.get(h["id"], {}),
+            )
+            for h in heads
+        ]
+
+    def audit_jobs(self, *, upload_id: str | None = None, limit: int = 1000) -> list[AuditJob]:
+        """Device audits, newest first and then by name: every upload's, or one upload's."""
+        query = select(
+            jobs.c.id,
+            jobs.c.state,
+            jobs.c.error,
+            jobs.c.created_at,
+            jobs.c.finished_at,
+            jobs.c.payload,
+        ).where(jobs.c.kind == AUDIT_KIND)
+        if upload_id is not None:
+            mine = select(upload_files.c.job_id).where(upload_files.c.upload_id == upload_id)
+            query = query.where(jobs.c.id.in_(mine))
+        query = query.order_by(jobs.c.created_at.desc(), jobs.c.id).limit(limit)
+        with self.engine.connect() as conn:
+            rows = conn.execute(query).mappings().all()
+            payloads = [json.loads(r["payload"]) for r in rows]
+            labels: dict[str, str | None] = dict(
+                conn.execute(
+                    select(uploads.c.id, uploads.c.label).where(
+                        uploads.c.id.in_({str(p["upload"]) for p in payloads})
+                    )
+                ).all()
+            )
+        found = [
+            AuditJob(
+                job_id=r["id"],
+                upload_id=str(p["upload"]),
+                label=labels.get(str(p["upload"])),
+                name=str(p["name"]),
+                state=JobState(r["state"]),
+                error=r["error"],
+                created_at=r["created_at"],
+                finished_at=r["finished_at"],
+            )
+            for r, p in zip(rows, payloads, strict=True)
+        ]
+        # An upload's audits are queued together: by name within the same moment.
+        found.sort(key=lambda a: a.name)
+        found.sort(key=lambda a: a.created_at, reverse=True)
+        return found
 
     def _view(self, upload_id: str) -> tuple[UploadView | None, bool]:
         """The upload, and whether a sort job of it has failed and should be split."""

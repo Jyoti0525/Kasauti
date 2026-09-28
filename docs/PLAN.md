@@ -1041,6 +1041,25 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
       MiB. PyYAML's composer took 5 of those, and it recurses once per nesting level; libyaml's
       composer has no recursion limit at all. They now take about 4 s. A record's repeated-key
       check was quadratic; it now uses a set.
+- **v5.1.34 (2026-09-28, M2.75–M2.83 the web UI, first cut):**
+  - **Screens.** Dashboard, New audit (with pairing by hand and details typed by hand), audit
+    results, device view with the provenance drawer, knowledge base, frameworks and rules
+    (`frontend/`). The Training Studio waits for its engine (M2.62–M2.69).
+  - **Dependencies, fewer than §19.3 listed.** The runtime is React, React DOM, React Router,
+    TanStack Query and lucide. Charts are plain SVG, the drop area is our own, and the
+    configuration viewer is built from the result's evidence instead of Monaco: less code to
+    trust, and a CSP with no inline script or style. `npm run licences` applies the §19.5 policy;
+    CI gains a `web` job.
+  - **Served by `kasauti serve`**, same origin as the API, from `frontend/dist`, under its own
+    policy; only known file types inside the build folder are served.
+  - **API.** `GET /api/uploads`, `GET /api/audits` (each audit with a summary), each device's
+    PDF and an upload's zip of PDFs (M2.72), and the knowledge base (`/api/kb`).
+  - **Closed on the way:**
+    - `load_kb` accepted a folder with no packs: a server started outside the repository root
+      ran with an empty knowledge base and would have failed every audit. It now refuses to
+      start and says why.
+    - A summary counted a failing rule at its base severity while its findings, raised by
+      exposure, said critical: the dashboard now counts what the findings say.
 - **v5.1.32 (2026-09-27, M2.28 limits closed):** Every Junos file form the CLI writes is now
   replayed as the CLI would (`kasauti/mapping/commands.py`): `[edit …]` banners, prompts and
   command output in terminal captures, `edit`/`up`/`top`/`exit`, `insert`, `rename`, `copy`,

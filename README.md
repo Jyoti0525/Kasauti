@@ -9,11 +9,11 @@ A *kasauti* is the touchstone used to test whether gold is pure. Kasauti tests w
 device's configuration meets CIS, NIST SP 800-53, DISA STIG and ISO/IEC 27001, for any vendor,
 including ones it has never seen.
 
-> **Status: Milestone 1 (walking skeleton) complete.** A Cisco IOS XE configuration goes end to
-> end: parse → mappings → Security Baseline Model → 23 rules → JSON + PDF report. Parsers for all
-> seven shape families are in place. Seed packs for Cisco IOS XE, Juniper Junos, Arista EOS,
-> Fortinet FortiOS and Palo Alto PAN-OS (XML) take every default from the vendor's own documentation
-> ([review records](docs/reviews/)). Progress is tracked task by task in
+> **Status: Milestone 2 in progress.** Configurations from six vendors (Cisco IOS XE, Juniper
+> Junos, Arista EOS, Fortinet FortiOS, Palo Alto PAN-OS, and AWS security groups and network ACLs)
+> go end to end: parse → mappings → Security Baseline Model → 23 rules → JSON + PDF report, from
+> the command line or the web UI. Every vendor default is quoted from the vendor's own
+> documentation ([review records](docs/reviews/)). Progress is tracked task by task in
 > [docs/TODO.md](docs/TODO.md).
 
 ## Try it
@@ -45,7 +45,30 @@ uv run kasauti audit $C/weak.cfg --companion $C/companions/show_version.txt \
 #   model C8000V, serial 9KXQ2TGA7LM, release 17.09.04a
 ```
 
-The web API runs on this machine only (the web screens arrive with M2.75):
+### The web UI
+
+The web UI and API run on this machine only. Build the UI once (Node 20.19 or later), then serve
+it from the repository root:
+
+```bash
+(cd frontend && npm ci && npm run build)
+uv run kasauti serve --data-dir var/demo      # http://127.0.0.1:8000/
+uv run python tools/demo_seed.py              # optional, in another terminal: a 6-vendor demo fleet
+```
+
+- **Dashboard:** fleet compliance and coverage, by framework and by vendor, the checks failing
+  on most devices, and the riskiest devices.
+- **New audit:** drop files, folders or a `.zip`. Each file is recognised (vendor, host name,
+  configuration or command output). You can correct which device a command output belongs to,
+  and type details no file gives.
+- **Results:** each device's scores and identity, its PDF, or every PDF in one zip.
+- **Device view:** findings with filters, the NIST control matrix, the cited configuration lines,
+  the filtering policy, the security model and what wasn't understood. Select a finding to trace
+  it: raw line → mapping (who approved it) → fact → rule → control.
+- **Knowledge base** and **Frameworks & rules:** every mapping, vendor default and rule, with
+  its source.
+
+The API alone:
 
 ```bash
 uv run kasauti serve            # http://127.0.0.1:8000/api/health
@@ -129,7 +152,7 @@ packs/             data-only content: vendors, frameworks, rules, derivations
 datasets/          authored and third-party configs; every file listed in SOURCES.md
 eval/              evaluation harness (datasets E1–E5, metrics, reports)
 tools/             importers and CI checks (licences, rule quality, crosswalk lint)
-frontend/          web UI (from Milestone 2)
+frontend/          web UI (React, served by `kasauti serve`)
 docs/              PLAN.md, TODO.md, SECURITY.md, spec/ (language and format specs)
 ```
 
