@@ -62,10 +62,17 @@ def test_two_runs_are_byte_identical_json_and_pdf(kb: KnowledgeBase) -> None:
     )
 
 
+NO_SECRETS = frozenset({"aws_vpc"})
+"""Formats that carry no secret to plant: `describe-security-groups` and
+`describe-network-acls` return rules, IDs and descriptions, never a credential."""
+
+
 @pytest.mark.parametrize(
     "path",
     sorted(
-        p for p in (REPO / "datasets" / "authored").glob("*/*.*") if p.stem in ("weak", "hardened")
+        p
+        for p in (REPO / "datasets" / "authored").glob("*/*.*")
+        if p.stem in ("weak", "hardened") and p.parent.name not in NO_SECRETS
     ),
     ids=lambda p: f"{p.parent.name}/{p.name}",
 )

@@ -247,7 +247,8 @@
                   "invert",
                   "lower",
                   "upper",
-                  "cidr"
+                  "cidr",
+                  "network"
                 ],
                 "type": "string"
               },
@@ -358,6 +359,19 @@
           "title": "Builtin",
           "type": "array"
         },
+        "exists": {
+          "anyOf": [
+            {
+              "minLength": 10,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exists"
+        },
         "expand": {
           "default": false,
           "title": "Expand",
@@ -438,6 +452,8 @@
                 "user_group",
                 "auth_profile",
                 "login_list",
+                "security_group",
+                "prefix_list",
                 "any_object"
               ],
               "type": "string"
@@ -461,6 +477,8 @@
                   "user_group",
                   "auth_profile",
                   "login_list",
+                  "security_group",
+                  "prefix_list",
                   "any_object"
                 ],
                 "type": "string"
@@ -602,7 +620,8 @@
                   "invert",
                   "lower",
                   "upper",
-                  "cidr"
+                  "cidr",
+                  "network"
                 ],
                 "type": "string"
               },

@@ -6,6 +6,7 @@ rules:
       Logs kept only on the device are lost when it reboots and can be erased by whoever
       compromises it; a remote copy survives both.
     domain: logging
+    applies_to: [router, switch, firewall, white_box]
     for_each: Device
     assert: logging.remote_configured
     on_absent: resolve_default   # a documented default decides; with none, no remote target is the violation
@@ -27,6 +28,7 @@ rules:
       A guessable community string is a default password; a write community lets anyone
       who guesses it reconfigure the device.
     domain: snmp
+    applies_to: [router, switch, firewall, white_box]
     for_each: Device
     assert: not snmp.weak_community_present
     on_absent: resolve_default   # "no communities" is only known from the vendor default
@@ -48,6 +50,7 @@ rules:
       Log timestamps and certificate checks depend on the clock; an unauthenticated time
       source lets an attacker move it.
     domain: time
+    applies_to: [router, switch, firewall, white_box]
     # Only sources the clock is actually set from: FortiOS keeps FortiGuard's servers as an
     # implicit source (unused with `set type custom`) and can switch synchronisation off.
     # Where neither switch exists (absent), every listed server is in use.

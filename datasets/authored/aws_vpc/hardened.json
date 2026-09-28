@@ -1,0 +1,350 @@
+{
+    "SecurityGroups": [
+        {
+            "Description": "Internet-facing load balancer",
+            "GroupName": "web-lb",
+            "IpPermissions": [
+                {
+                    "FromPort": 443,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0",
+                            "Description": "HTTPS from anywhere"
+                        }
+                    ],
+                    "Ipv6Ranges": [
+                        {
+                            "CidrIpv6": "::/0",
+                            "Description": "HTTPS from anywhere"
+                        }
+                    ],
+                    "PrefixListIds": [],
+                    "ToPort": 443,
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "IpPermissionsEgress": [
+                {
+                    "FromPort": 8080,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 8080,
+                    "UserIdGroupPairs": [
+                        {
+                            "GroupId": "sg-0a2b3c4d5e6f70812",
+                            "UserId": "111122223333"
+                        }
+                    ]
+                }
+            ],
+            "OwnerId": "111122223333",
+            "GroupId": "sg-0a2b3c4d5e6f70811",
+            "SecurityGroupArn": "arn:aws:ec2:ap-south-1:111122223333:security-group/sg-0a2b3c4d5e6f70811",
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "web-lb"
+                }
+            ],
+            "VpcId": "vpc-0a1b2c3d4e5f60718"
+        },
+        {
+            "Description": "Application servers",
+            "GroupName": "app",
+            "IpPermissions": [
+                {
+                    "FromPort": 8080,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 8080,
+                    "UserIdGroupPairs": [
+                        {
+                            "Description": "From the load balancer",
+                            "GroupId": "sg-0a2b3c4d5e6f70811",
+                            "UserId": "111122223333"
+                        }
+                    ]
+                },
+                {
+                    "FromPort": 22,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "10.20.0.0/24",
+                            "Description": "Bastion subnet"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 22,
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "IpPermissionsEgress": [
+                {
+                    "FromPort": 5432,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 5432,
+                    "UserIdGroupPairs": [
+                        {
+                            "GroupId": "sg-0a2b3c4d5e6f70813",
+                            "UserId": "111122223333"
+                        }
+                    ]
+                },
+                {
+                    "FromPort": 443,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0",
+                            "Description": "Package updates over HTTPS"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 443,
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "OwnerId": "111122223333",
+            "GroupId": "sg-0a2b3c4d5e6f70812",
+            "Tags": [],
+            "VpcId": "vpc-0a1b2c3d4e5f60718"
+        },
+        {
+            "Description": "Database",
+            "GroupName": "db",
+            "IpPermissions": [
+                {
+                    "FromPort": 5432,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 5432,
+                    "UserIdGroupPairs": [
+                        {
+                            "GroupId": "sg-0a2b3c4d5e6f70812",
+                            "UserId": "111122223333"
+                        }
+                    ]
+                }
+            ],
+            "IpPermissionsEgress": [],
+            "OwnerId": "111122223333",
+            "GroupId": "sg-0a2b3c4d5e6f70813",
+            "Tags": [],
+            "VpcId": "vpc-0a1b2c3d4e5f60718"
+        },
+        {
+            "Description": "Monitoring agents",
+            "GroupName": "monitoring",
+            "IpPermissions": [
+                {
+                    "FromPort": 161,
+                    "IpProtocol": "udp",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 161,
+                    "UserIdGroupPairs": [
+                        {
+                            "Description": "Pollers in the shared-services account",
+                            "GroupId": "sg-0f9e8d7c6b5a40321",
+                            "UserId": "444455556666"
+                        }
+                    ]
+                },
+                {
+                    "FromPort": 8,
+                    "IpProtocol": "icmp",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "10.20.0.0/16"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": -1,
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "IpPermissionsEgress": [],
+            "OwnerId": "111122223333",
+            "GroupId": "sg-0a2b3c4d5e6f70814",
+            "Tags": [],
+            "VpcId": "vpc-0a1b2c3d4e5f60718"
+        },
+        {
+            "Description": "default VPC security group",
+            "GroupName": "default",
+            "IpPermissions": [],
+            "IpPermissionsEgress": [],
+            "OwnerId": "111122223333",
+            "GroupId": "sg-0a2b3c4d5e6f70810",
+            "Tags": [],
+            "VpcId": "vpc-0a1b2c3d4e5f60718"
+        }
+    ],
+    "NetworkAcls": [
+        {
+            "Associations": [],
+            "Entries": [
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": true,
+                    "Protocol": "-1",
+                    "RuleAction": "deny",
+                    "RuleNumber": 32767
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": false,
+                    "Protocol": "-1",
+                    "RuleAction": "deny",
+                    "RuleNumber": 32767
+                }
+            ],
+            "IsDefault": true,
+            "NetworkAclId": "acl-0a1b2c3d4e5f60700",
+            "Tags": [],
+            "VpcId": "vpc-0a1b2c3d4e5f60718",
+            "OwnerId": "111122223333"
+        },
+        {
+            "Associations": [
+                {
+                    "NetworkAclAssociationId": "aclassoc-0a1b2c3d4e5f60701",
+                    "NetworkAclId": "acl-0a1b2c3d4e5f60701",
+                    "SubnetId": "subnet-0a1b2c3d4e5f60701"
+                }
+            ],
+            "Entries": [
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": false,
+                    "PortRange": {
+                        "From": 443,
+                        "To": 443
+                    },
+                    "Protocol": "6",
+                    "RuleAction": "allow",
+                    "RuleNumber": 100
+                },
+                {
+                    "Egress": false,
+                    "Ipv6CidrBlock": "::/0",
+                    "PortRange": {
+                        "From": 443,
+                        "To": 443
+                    },
+                    "Protocol": "6",
+                    "RuleAction": "allow",
+                    "RuleNumber": 105
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": false,
+                    "PortRange": {
+                        "From": 1024,
+                        "To": 65535
+                    },
+                    "Protocol": "6",
+                    "RuleAction": "allow",
+                    "RuleNumber": 110
+                },
+                {
+                    "CidrBlock": "10.20.0.0/24",
+                    "Egress": false,
+                    "PortRange": {
+                        "From": 22,
+                        "To": 22
+                    },
+                    "Protocol": "6",
+                    "RuleAction": "allow",
+                    "RuleNumber": 120
+                },
+                {
+                    "CidrBlock": "10.20.0.0/16",
+                    "Egress": false,
+                    "IcmpTypeCode": {
+                        "Code": -1,
+                        "Type": 8
+                    },
+                    "Protocol": "1",
+                    "RuleAction": "allow",
+                    "RuleNumber": 130
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": false,
+                    "Protocol": "-1",
+                    "RuleAction": "deny",
+                    "RuleNumber": 32767
+                },
+                {
+                    "Egress": false,
+                    "Ipv6CidrBlock": "::/0",
+                    "Protocol": "-1",
+                    "RuleAction": "deny",
+                    "RuleNumber": 32768
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": true,
+                    "PortRange": {
+                        "From": 1024,
+                        "To": 65535
+                    },
+                    "Protocol": "6",
+                    "RuleAction": "allow",
+                    "RuleNumber": 100
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": true,
+                    "PortRange": {
+                        "From": 443,
+                        "To": 443
+                    },
+                    "Protocol": "6",
+                    "RuleAction": "allow",
+                    "RuleNumber": 110
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": true,
+                    "Protocol": "-1",
+                    "RuleAction": "deny",
+                    "RuleNumber": 32767
+                },
+                {
+                    "Egress": true,
+                    "Ipv6CidrBlock": "::/0",
+                    "Protocol": "-1",
+                    "RuleAction": "deny",
+                    "RuleNumber": 32768
+                }
+            ],
+            "IsDefault": false,
+            "NetworkAclId": "acl-0a1b2c3d4e5f60701",
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "web-subnets"
+                }
+            ],
+            "VpcId": "vpc-0a1b2c3d4e5f60718",
+            "OwnerId": "111122223333"
+        }
+    ]
+}

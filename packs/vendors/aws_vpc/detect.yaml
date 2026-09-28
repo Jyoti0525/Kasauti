@@ -1,0 +1,10 @@
+# Fingerprint for AWS CLI output (PLAN §7): the top-level keys and the IDs AWS gives security
+# groups (sg-…) and network ACLs (acl-…), in JSON ("Key": value) or YAML (Key: value).
+min_score: 0.7
+signatures:
+  - {id: security-groups, kind: regex, pattern: '"?SecurityGroups"?\s*:', weight: 0.4}
+  - {id: network-acls, kind: regex, pattern: '"?NetworkAcls"?\s*:', weight: 0.4}
+  - {id: group-id, kind: regex, pattern: '"?GroupId"?\s*:\s*"?sg-[0-9a-f]+', weight: 0.3}
+  - {id: ip-permissions, kind: regex, pattern: '"?IpPermissions(Egress)?"?\s*:', weight: 0.3}
+  - {id: network-acl-id, kind: regex, pattern: '"?NetworkAclId"?\s*:\s*"?acl-[0-9a-f]+', weight: 0.3}
+  - {id: rule-number, kind: regex, pattern: '"?RuleNumber"?\s*:\s*\d+', weight: 0.2}

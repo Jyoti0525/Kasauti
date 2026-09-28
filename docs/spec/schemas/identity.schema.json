@@ -84,6 +84,11 @@
     "IdentitySource": {
       "additionalProperties": false,
       "properties": {
+        "all_agree": {
+          "default": false,
+          "title": "All Agree",
+          "type": "boolean"
+        },
         "context": {
           "default": [],
           "items": {
@@ -91,6 +96,19 @@
           },
           "title": "Context",
           "type": "array"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z][A-Za-z0-9_.]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
         },
         "pattern": {
           "anyOf": [

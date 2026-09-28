@@ -1005,6 +1005,42 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
 - **v2:** research on LLM risk, hardware, framework availability; milestone-based phases.
 - **v3:** multi-signal semantic engine; OpenConfig; verified remediation libraries; competitor and research review.
 - **v4:** self-review: priorities (spine → pillars → stretch), platform security, blockchain decision, firewall analysis, tool corrections.
+- **v5.1.33 (2026-09-28, M2.31 AWS security groups and network ACLs):**
+  - **The pack.** A sixth seed pack, `aws_vpc`, reads a VPC's `describe-security-groups` and
+    `describe-network-acls` output as JSON or YAML: 55 mappings and six quoted defaults
+    (docs/reviews/aws_vpc.md).
+  - **Records.** A pack can read list items as records: one statement per item, fields in key
+    order (`@ FromPort 22 IpProtocol tcp ToPort 22`). A key given twice is refused, and a file
+    without one of the export's sections is partial.
+  - **First-match evaluation.**
+    - Security groups are permit-only rulesets that deny the rest.
+    - Network ACL entries are evaluated by rule number, IPv4 and IPv6 apart, with the quoted
+      asterisk deny.
+    - An entry that can't be placed in a ruleset (an unread network ACL entry) counts as an
+      unknown entry everywhere, never as missing.
+  - **References between security groups** (moved from M2.23):
+    - A group in the file resolves to it.
+    - A group AWS returns with its account exists (`ref` gains `exists`).
+    - One returned without an account was deleted (a stale rule): dangling.
+    - A named group is the instances in it, never every address.
+    - A referenced prefix list exists, but its entries aren't in the export: REVIEW.
+  - **Identity.** Identity reads a record's field (`field: VpcId`), and `all_agree` refuses a
+    hostname when an export names several VPCs.
+  - **Rules.** Every rule names the roles it covers. Only FILTER-PERMIT-ANY-01 and
+    REF-DANGLING-01 judge cloud filters.
+  - **Fixed on the way:**
+    - The "understood" count counted a line twice when both a mapping and identity read it
+      (49 of 48). It now counts statements once. Golden counts moved; verdicts didn't.
+    - A partial file's FAIL was downgraded because an attribute the vendor never has (a PAN-OS
+      rule's `applications`) was "missing". Now only attributes something could set count.
+    - A permit whose source is already every address stayed REVIEW when it also named an object
+      of unknown extent. It is now a permit-any.
+    - The `network` transform reads `10.1.2.3/0` as every address.
+    - JSON and YAML are now built from the parser's events, with libyaml's parser where PyYAML
+      has it, and nesting is bounded as it arrives. New AWS-shaped hostile files took 11 s per
+      MiB. PyYAML's composer took 5 of those, and it recurses once per nesting level; libyaml's
+      composer has no recursion limit at all. They now take about 4 s. A record's repeated-key
+      check was quadratic; it now uses a set.
 - **v5.1.32 (2026-09-27, M2.28 limits closed):** Every Junos file form the CLI writes is now
   replayed as the CLI would (`kasauti/mapping/commands.py`): `[edit …]` banners, prompts and
   command output in terminal captures, `edit`/`up`/`top`/`exit`, `insert`, `rename`, `copy`,

@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "680fac73dc931900a5029cbc",
+  "audit_id": "00704f64d9143e7a1082ba70",
   "input": {
     "file": "hardened.conf",
     "sha256": "05abcfd1240c747141e1677c8e61c5bfb91db119abb34dbc269dd3f759454191",
@@ -54,8 +54,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "88c279bb41e3bad3ad66902ff5d2e7b809febdbb3c7e4259dbe8d69c88ab9246",
-    "ruleset_version": "1bc107babd4a42068fc94aad70d709c71832d3082a7cb925032e5428fc334df7",
+    "kb_version": "7efc96188b4ba73aa903657d3ba9c487d439633782935016c0c9664aa00b06d3",
+    "ruleset_version": "ec8d927b4d7fdf57d4fe4c18b99c1322b35e9909fd16fb93876b677b97565953",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"

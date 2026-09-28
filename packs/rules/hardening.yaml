@@ -7,6 +7,7 @@ rules:
       PAD, finger, the BOOTP server and the TCP/UDP small servers are rarely needed, leak
       information or open extra ways in; every one that runs is attack surface.
     domain: services
+    applies_to: [router, switch, firewall, white_box]
     for_each: Device
     assert: not services.legacy_enabled
     on_absent: resolve_default
@@ -28,6 +29,7 @@ rules:
       read passwords from it. Cisco `service password-encryption` only applies reversible
       type 7, so it is a floor; strong hashing is checked by AAA-LOCAL-PASSWORD-HASH-01.
     domain: aaa
+    applies_to: [router, switch, firewall, white_box]
     for_each: PasswordPolicy
     assert: cleartext_passwords_encrypted
     on_absent: resolve_default
@@ -48,6 +50,7 @@ rules:
       NIST SP 800-63B-4 requires at least 15 characters for passwords used as a single factor,
       which is how device logins are used when AAA is unreachable.
     domain: aaa
+    applies_to: [router, switch, firewall, white_box]
     for_each: PasswordPolicy
     # FortiOS keeps the minimum and its on/off switch apart; elsewhere stating it enforces it.
     assert: min_length >= 15 and (not exists(enforced) or enforced)
@@ -70,6 +73,7 @@ rules:
       If the device serves a web management interface, only management networks may reach
       it; otherwise every address that can route to the device can try to log in.
     domain: management_plane
+    applies_to: [router, switch, firewall, white_box]
     for_each: MgmtService where key in [http, https] and enabled
     assert: exists(access_filter)
     on_absent: resolve_default   # a documented "web management is off" default takes it out of scope
@@ -89,6 +93,7 @@ rules:
     title: SSH management uses protocol version 2 only
     intent: SSH version 1 has known cryptographic weaknesses and must not be negotiable.
     domain: management_plane
+    applies_to: [router, switch, firewall, white_box]
     for_each: Device
     assert: not management.ssh_v1_negotiable
     on_absent: resolve_default   # the default differs by release (1.99 before IOS XE 17.10)
@@ -110,6 +115,7 @@ rules:
       A notice shown before login states that the system is for authorised use and monitored,
       which organisations need to act on misuse.
     domain: management_plane
+    applies_to: [router, switch, firewall, white_box]
     for_each: Device
     assert: management.login_banner_present
     on_absent: resolve_default   # a documented default decides; with none, no banner is the violation
@@ -131,6 +137,7 @@ rules:
       Proxy ARP lets a router answer for addresses behind it, which blurs network boundaries
       and helps an attacker reach hosts that should be out of reach.
     domain: services
+    applies_to: [router, switch, firewall, white_box]
     for_each: Interface
     assert: not proxy_arp
     on_absent: resolve_default   # on by default in IOS XE
@@ -163,8 +170,8 @@ rules:
       disa_stig: auto
       iso_27001_2022: derived
     fixtures:
-      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml]
-      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml]
+      pass: [cisco_ios_xe/hardened.cfg, juniper_junos/hardened.conf, juniper_junos/hardened_set.conf, arista_eos/hardened.cfg, fortinet_fortios/hardened.conf, paloalto_panos/hardened.xml, aws_vpc/hardened.json]
+      fail: [cisco_ios_xe/weak.cfg, juniper_junos/weak.conf, juniper_junos/weak_set.conf, arista_eos/weak.cfg, fortinet_fortios/weak.conf, paloalto_panos/weak.xml, aws_vpc/weak.json]
 
   - id: FILTER-UNTRUSTED-INGRESS-01
     title: Untrusted interfaces filter inbound traffic
@@ -199,6 +206,7 @@ rules:
       Logs are evidence only if events can be placed in time and correlated across devices;
       time-since-boot stamps can't be.
     domain: logging
+    applies_to: [router, switch, firewall, white_box]
     for_each: LoggingPolicy
     assert: timestamps
     on_absent: resolve_default
@@ -219,6 +227,7 @@ rules:
       Every configuration change, and who made it, must leave a record, so unauthorised or
       mistaken changes can be traced.
     domain: logging
+    applies_to: [router, switch, firewall, white_box]
     for_each: LoggingPolicy
     assert: config_change_logged
     on_absent: resolve_default

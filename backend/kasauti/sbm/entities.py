@@ -372,8 +372,10 @@ class ObjectDef(Entity):
     kind: StrFact = StrFact()
     """address | address_group | address6 | address6_group | vip | vip_group | region |
     external_list | service | service_group | acl | mgmt_profile | server_group | user_group |
-    auth_server | auth_profile | login_list. A virtual IP's ``members`` are its external
-    addresses; an external list's (a threat feed) are fetched by the device, never read."""
+    auth_server | auth_profile | login_list | security_group | prefix_list | network_acl. A
+    virtual IP's ``members`` are its external addresses; an external list's (a threat feed)
+    are fetched by the device, never read. An AWS security group named as a rule's source is
+    the instances in it, never every address."""
     members: SetFact = SetFact()
     expanded: SetFact = SetFact()
     """Groups only: members after recursive expansion of nested groups (0.4). Unknown if the

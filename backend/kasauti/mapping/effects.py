@@ -10,6 +10,7 @@ it lists (``ip-proto-0 -> ip``) and keeps the rest.
 
 from __future__ import annotations
 
+import ipaddress
 from dataclasses import dataclass
 from typing import Any
 
@@ -198,11 +199,8 @@ def _transform(t: Transform, value: Any) -> Any:
         return str(value).lower()
     if t == "upper":
         return str(value).upper()
-    if t == "cidr":
-        try:
-            return to_cidr(str(value))
-        except ValueError as exc:
-            raise _UnreadableError(str(exc)) from exc
+    if t in ("cidr", "network"):
+        return _address(t, str(value))
     if isinstance(t, UnitTransform):
         if isinstance(value, bool) or not isinstance(value, int | float):
             raise _UnreadableError(f"{value!r} is not a duration")
@@ -218,6 +216,17 @@ def _transform(t: Transform, value: Any) -> Any:
             raise _UnreadableError("value doesn't start with a known prefix")
         return t.prefix[max(hits, key=len)]
     raise AssertionError(f"unhandled transform {t!r}")  # pragma: no cover
+
+
+def _address(t: str, value: str) -> str:
+    """``cidr``: the address and its length written one way. ``network``: the network a prefix
+    covers, host bits cleared, so ``10.1.2.3/0`` reads as ``0.0.0.0/0``, every address."""
+    try:
+        if t == "cidr":
+            return to_cidr(value)
+        return str(ipaddress.ip_network(value, strict=False))
+    except ValueError as exc:
+        raise _UnreadableError(f"{value!r}: {exc}") from exc
 
 
 def _as_list(value: Any) -> list[Any]:

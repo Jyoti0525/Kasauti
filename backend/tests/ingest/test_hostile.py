@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import Engine
 
+from kasauti.audit import load_kb
 from kasauti.ingest.read import IngestError, decode
 from kasauti.ingest.sealed import new_key
 from kasauti.ingest.staging import STAGING_KEY_NAME, Staging
@@ -22,6 +23,7 @@ from kasauti.ingest.upload import Received, inspect, new_id
 from kasauti.jobs import JobQueue, JobState, WorkerPool
 from kasauti.jobs.kinds import HANDLERS
 from kasauti.jobs.results import decode_result
+from kasauti.mapping.setform import parse_config
 from kasauti.shape.base import MAX_DEPTH
 from kasauti.shape.model import ShapeFamily
 from kasauti.shape.parse import parse_text
@@ -110,6 +112,26 @@ def test_each_parser_takes_a_hostile_mebibyte_in_linear_time(case: Case) -> None
     assert all(len(s.path) <= MAX_DEPTH for s in tree.statements)
 
 
+@pytest.mark.parametrize(
+    "case", [c for c in FILES if _family(c) is ShapeFamily.JSON_YAML], ids=lambda c: c.name
+)
+def test_the_aws_record_reader_takes_a_hostile_mebibyte_in_linear_time(case: Case) -> None:
+    """The AWS pack reads JSON/YAML as records (M2.31): folded fields, sorted keys, and every
+    key checked for repeats."""
+    aws = load_kb(REPO / "packs").vendor_packs["aws_vpc"]
+    try:
+        artifact = decode(case.make(MIB), case.name)
+    except IngestError:
+        return
+    started = time.monotonic()
+    tree = parse_config(artifact.text, aws, source_file=case.name)
+    assert time.monotonic() - started < SECONDS, case.why
+    assert all(len(s.path) <= MAX_DEPTH for s in tree.statements)
+    if case.name == "aws-dupkeys.json":
+        assert tree.family is ShapeFamily.FLAT
+        assert "given twice" in tree.warnings[0]
+
+
 @pytest.mark.parametrize("name", ["deep.xml", "deep.json", "deep-object.json", "deep.conf"])
 def test_nesting_past_the_limit_is_read_line_by_line_with_a_warning(name: str) -> None:
     case = next(c for c in FILES if c.name == name)
@@ -132,6 +154,7 @@ VENDOR = {
     ShapeFamily.BRACE: "juniper_junos",
     ShapeFamily.INDENT: "cisco_ios_xe",
     ShapeFamily.BLOCK_EDIT: "fortinet_fortios",
+    ShapeFamily.JSON_YAML: "aws_vpc",
 }
 INTERNAL = ("internal error", "ended unexpectedly", "timed out", "unreadable result")
 

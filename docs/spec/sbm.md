@@ -27,7 +27,9 @@ Twenty-five entity types: the eighteen in PLAN §8.1 plus seven additions it nee
 - `ObjectDef` (`key` = `<kind>:<name>`) holds named ACLs, address/service objects and groups:
   the targets of the `ref` primitive and the reference resolver (§9.1, v5.1). Kinds include
   IPv6 addresses and groups, virtual IPs and their groups (members: the external address),
-  regions and external lists (a threat feed: members fetched by the device, never read).
+  regions and external lists (a threat feed: members fetched by the device, never read),
+  and AWS security groups, managed prefix lists and network ACLs (M2.31). A security group
+  named as a rule's source is the instances in it, never every address.
 - `Reference` (0.4): one statement pointing at another named thing, created by the reference
   resolver (PLAN §9.1): `source`, `attribute`, `target_kind`, `name`, `resolved`, `target`, and
   for ACL targets `permits_any` (the chain vty line → ACL → permitted sources): can a source

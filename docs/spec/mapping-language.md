@@ -88,6 +88,7 @@ Family conventions that make one language serve all shapes (fixed by the shape p
 | `{ref: …, target: login_list, expand: true, unless: [default]}` | ref | `unless` names slot values that aren't references (a Cisco line's `login authentication default` uses the device default, read elsewhere): the effect is skipped for them. Expansions into objects run first, so a named login list naming a server group is `tacacs` before a line takes it |
 | `{ref: FilterRule.src, from: a, target: [address, address_group, external_list], map: {all: any}}` | ref | a list slot gives one reference per name; with several kinds, the first that has the name wins (recorded as `address\|address_group\|external_list`). `map` and `builtin` name what the vendor predefines: `map` writes it as the value it stands for (FortiOS `all` → `any`), `builtin` keeps it as it is (PAN-OS `service-http`); neither is a reference |
 | `{ref: …, literal: address, unread: "…"}` | ref | `literal: address`: an address, prefix or range no object has is a value written in place (PAN-OS `<member>10.1.1.0/24</member>`). `unread` says what else a name may point at that the pack doesn't read (a PAN-OS country): a name no object has is then *unknown*, not dangling. A policy field whose reference dangles, or names an object whose extent isn't read, is unknown |
+| `{ref: FilterRule.src, from: id, target: security_group, exists: "…"}` | ref | `exists` says why a name no object has still points at something that exists: the export itself says so (AWS returns a referenced security group's account only while the group exists). Such a name is *resolved*, with no target. Kinds in `NARROW_KINDS` (`security_group`: the instances in a group) are narrow sources whether or not the group is in the file (M2.31) |
 | `{unknown: Entity.attr, why: "…"}` / `{…, from: n, unless: [default]}` | unknown | the statement decides the attribute in a way the pack doesn't read: the fact becomes unknown (REVIEW) with this line as evidence. With `from`/`unless`, the listed slot values leave the fact alone (Cisco `login authentication default` names the list the pack reads; another name makes the login methods unknown) |
 | `combine: any` on `set`/`assert` | set / assert | the statement adds to what others said instead of replacing it: a flag once true stays true, a set gains items (PAN-OS: a service on at the MGT port *or* in any profile is on, whatever the file order) |
 | `entity: {type, key}` | entity | the statement opens/names an entity |
@@ -108,7 +109,9 @@ a crypt hash gives its type and the hash itself is never kept; `{prepend: "tcp/"
 in front of each value, so FortiOS `tcp-portrange 443` is `tcp/443` and can't be taken for a
 UDP port; `cidr`: an address or prefix with its length written one way, `198.51.100.2/30`
 from `198.51.100.2/30` or `198.51.100.2 255.255.255.252`, IPv6 compressed in lower case; a
-bare address or a mask that isn't a contiguous netmask is unknown) → coercion to the
+bare address or a mask that isn't a contiguous netmask is unknown; `network`: the network a
+prefix covers, host bits cleared, so `10.1.2.3/0` is `0.0.0.0/0`, every address, and a map
+can then read it as `any`) → coercion to the
 attribute's type. A `members` item built from a `template` goes through its transforms too
 (Cisco `ip address {a} {mask}` → `cidr`), and its negation without values (`no ip address`)
 leaves the set explicitly empty. For `set`, a word missing from `map` makes the

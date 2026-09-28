@@ -118,6 +118,13 @@ def evaluate(
         for ref, acc in sorted(builder.entities.items())
         if ref[0] == "FilterRule" and _value(acc.facts.get("ruleset")) == ruleset
     ]
+    # An entry whose ruleset wasn't read (an AWS network ACL entry's direction is one of its
+    # fields) may belong to this one: it can't decide, but it may pre-empt what comes after.
+    entries += [
+        _unplaced(builder, ref, acc, objects, probe)
+        for ref, acc in sorted(builder.entities.items())
+        if ref[0] == "FilterRule" and not _known(acc.facts.get("ruleset"))
+    ]
     enabled = [e for e in entries if e is not None]
     unread = builder.unread_children.get(("ObjectDef", f"acl:{ruleset}"), [])
     if not entries and not unread:
@@ -247,6 +254,19 @@ def _entry(
         all=every,
         evidence=evidence,
     )
+
+
+def _unplaced(
+    builder: SbmBuilder,
+    ref: EntityRef,
+    acc: EntityAcc,
+    objects: dict[str, EntityAcc],
+    probe: Probe,
+) -> _Entry | None:
+    entry = _entry(builder, ref, acc, objects, probe)
+    if entry is None:
+        return None
+    return _Entry(entry.line, entry.position, entry.action, Tri.MAYBE, Tri.MAYBE, entry.evidence)
 
 
 def _source(fact: FactAcc | None, negated: frozenset[str] | None) -> Tri:

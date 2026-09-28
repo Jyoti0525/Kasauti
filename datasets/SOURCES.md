@@ -38,6 +38,8 @@ Apache-2.0 licence. No real device configuration was used. All secrets are place
 | `paloalto_panos/hardened.xml` | PAN-OS 11.1.2, edge firewall (XML running config) | 332 | `c79f6fb5b4fae21ee65923120642d734f6c8d67979269222c00a1ee7936a4cf5` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06, `docs/reviews/paloalto_panos.md`) |
 | `paloalto_panos/weak.xml` | PAN-OS 11.1.2, weak twin | 185 | `845b94ce8f00e3c62b19f9b4435d7e0a1cf980a608d3e9a4d8fb9ca36bceb75f` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06, `docs/reviews/paloalto_panos.md`) |
 | `paloalto_panos/fixtures/rule_service_dangling.xml` | PAN-OS 11.1.2, a security rule whose service names a service object the file doesn't define (fail fixture for REF-DANGLING-01) | 52 | `0c7422ab50d16fd67827916597f96d438ce53c9181233f95506874ef78d22366` | elements cross-checked against Palo Alto Networks docs and pan-os-python (C.06) |
+| `aws_vpc/hardened.json` | Amazon VPC, `describe-security-groups` and `describe-network-acls` merged (M2.31) | 350 | `730d44c034b958c434d89608366a046e473113ac78d549c5ec493f1bb02b833b` | structure and field names cross-checked against the AWS CLI's examples and the EC2 API Reference (C.06, `docs/reviews/aws_vpc.md`) |
+| `aws_vpc/weak.json` | Amazon VPC, weak twin | 179 | `05fef695af33a827e42a23817015bd5f0ac3304ff99944e243342055269ea188` | as above |
 | `cisco_ios_xe/companions/show_version.txt` | Cisco IOS-XE 17.9, `show version` of EDGE-R1 (Catalyst 8000V) | 23 | `150349f7e26b4081074dab5fe6cb1b9b4830300e05000dee50d73be7e0763cf9` | the lines Kasauti reads cross-checked against Cisco's IOS XE 17 `show version` example (M2.05); other lines and all values illustrative |
 | `cisco_ios_xe/companions/show_inventory.txt` | Cisco IOS-XE 17.9, `show inventory` of EDGE-R1 | 9 | `d25302e65f9a7573949d4cc0a2cb03241b3cb5b7ed0cbda8d3f825407ac18c9a` | the lines Kasauti reads cross-checked against Cisco's `show inventory` command reference (M2.05); other lines and all values illustrative |
 | `juniper_junos/companions/show_version.txt` | Junos OS 23.4, `show version` of BR-SRX1 (SRX345) | 8 | `3a83ad455b1e92de8946e9bcc1167003139cff42eb0e365335d4d099ef4b344e` | the lines Kasauti reads cross-checked against Juniper's `show version` CLI reference (M2.05); other lines and all values illustrative |
@@ -51,7 +53,8 @@ management); Juniper Junos OS user guides (system basics, login classes, SSH, sy
 firewall filters, security zones); Arista EOS user manual (connection management, user
 security, system clock and time protocols, system event logging, ACLs); Fortinet FortiOS 7.4 CLI reference,
 administration guide and log message reference; Palo Alto Networks PAN-OS 11.1 web interface
-help and administrator's guide, and element names from pan-os-python (ISC).
+help and administrator's guide, and element names from pan-os-python (ISC); the Amazon VPC User
+Guide, the EC2 API Reference and the AWS CLI command reference.
 
 ### Planted weaknesses in `cisco_ios_xe/weak.cfg`
 
@@ -175,6 +178,15 @@ a weak default (F7, F14) or a value set without its on switch (F10).
 | P13 | primary NTP server with `authentication-type none` | `symmetric-key` (SHA-1, key id 1) |
 | P14 | security rule `allow-all`: untrust → trust, any source, destination, application and service | rules naming sources, applications and `application-default`; an explicit deny-and-log |
 
+### Planted weaknesses in `aws_vpc/weak.json`
+
+| # | Weakness | Hardened twin |
+|---|---|---|
+| A1 | security group `legacy-admin` allows all protocols from `0.0.0.0/0` | every inbound rule names a port and a source (`443` from anywhere to the load balancer only; `22` from the bastion subnet) |
+| A2 | group `app` allows 8080 from `sg-0c0ffee0c0ffee001` in a peered VPC, returned with no account: that group was deleted (a stale rule) | every group named is in the file, or in another account that AWS returns with it |
+| A3 | the groups keep AWS's outbound allow-all (`-1` to `0.0.0.0/0`) | outbound rules name ports and destinations; the database group has none |
+| A4 | the default network ACL keeps rule 100, allow all, in and out | a custom network ACL allows 443, return traffic and SSH from the bastion subnet; the default ACL denies everything |
+
 ## Golden cases (`datasets/golden/`, E1)
 
 Each case holds a `case.yaml` (the input path and SHA-256, and hand-labelled verdicts for every
@@ -196,6 +208,8 @@ above, never from the engine's output.
 | `juniper_junos_hardened` | `authored/juniper_junos/hardened.conf` | 20 rules PASS, 3 N/A (no vty lines, no web management) |
 | `juniper_junos_weak_set` | `authored/juniper_junos/weak_set.conf` | the labels of `juniper_junos_weak`: the same configuration as `display set` (M2.28) |
 | `juniper_junos_hardened_set` | `authored/juniper_junos/hardened_set.conf` | the labels of `juniper_junos_hardened` (M2.28) |
+| `aws_vpc_weak` | `authored/aws_vpc/weak.json` | FILTER-PERMIT-ANY-01 FAIL (A1, A3, A4), REF-DANGLING-01 FAIL (A2); 21 N/A (rules for routers, switches, firewalls and white boxes) |
+| `aws_vpc_hardened` | `authored/aws_vpc/hardened.json` | FILTER-PERMIT-ANY-01 and REF-DANGLING-01 PASS; 21 N/A |
 
 History: on 2026-09-26 the Junos hardened config gained a login class with `idle-timeout 10` and `minimum-length 15`, and the Cisco hardened twin changed to `security passwords min-length 15` (NIST SP
 800-63B-4's minimum for single-factor passwords) and `no ip proxy-arp` on GigabitEthernet3, so

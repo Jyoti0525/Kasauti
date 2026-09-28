@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "005dde45ed9e1fb5c8ce19a6",
+  "audit_id": "be1fba48a8e738d087bfacb2",
   "input": {
     "file": "weak.cfg",
     "sha256": "03c0b8d475f96aeec21a923089f88c271174c1a4bf9b8bfc6ea66f67fd0c6a1d",
@@ -52,8 +52,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "88c279bb41e3bad3ad66902ff5d2e7b809febdbb3c7e4259dbe8d69c88ab9246",
-    "ruleset_version": "1bc107babd4a42068fc94aad70d709c71832d3082a7cb925032e5428fc334df7",
+    "kb_version": "7efc96188b4ba73aa903657d3ba9c487d439633782935016c0c9664aa00b06d3",
+    "ruleset_version": "ec8d927b4d7fdf57d4fe4c18b99c1322b35e9909fd16fb93876b677b97565953",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -1415,10 +1415,10 @@
   ],
   "assurance": {
     "statements": 33,
-    "understood": 29,
+    "understood": 28,
     "unmapped": 5,
     "near_miss": 0,
-    "understood_pct": 87.9,
+    "understood_pct": 84.8,
     "unmapped_patterns": [
       {
         "pattern_key": "no switchport",

@@ -1,0 +1,76 @@
+# What AWS does where the export says nothing (PLAN §8.2, §9.4): how security groups and network
+# ACLs behave as a whole. Quotes from the Amazon VPC User Guide, read 2026-09-28
+# (docs/reviews/aws_vpc.md). Security group rulesets are `sg:<group>:ingress|egress`; network
+# ACL rulesets are `nacl:<acl>:ingress|egress:ipv4|ipv6`.
+defaults:
+  # --- security groups -------------------------------------------------------------------------
+  - id: sg-unmatched-denied
+    attr: Ruleset.unmatched
+    key_prefix: "sg:"
+    value: deny
+    source: vendor_doc
+    reference: >-
+      Security group rules, Security group rule basics: "You can specify allow rules, but not
+      deny rules." "When you first create a security group, it has no inbound rules. Therefore,
+      no inbound traffic is allowed until you add inbound rules to the security group." Traffic
+      no allow rule matches is not allowed.
+      https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html
+
+  - id: sg-empty-denies
+    attr: Ruleset.when_empty
+    key_prefix: "sg:"
+    value: deny
+    source: vendor_doc
+    reference: >-
+      Same section: "no inbound traffic is allowed until you add inbound rules to the security
+      group", and "If your security group has no outbound rules, no outbound traffic is
+      allowed."
+      https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html
+
+  - id: sg-order-irrelevant
+    attr: Ruleset.order
+    key_prefix: "sg:"
+    value: config
+    source: curated
+    reference: >-
+      Model default: a security group's rules are allow rules only ("You can specify allow
+      rules, but not deny rules."), so the order they are listed in can't change what they
+      allow; they are evaluated in the export's order.
+      https://docs.aws.amazon.com/vpc/latest/userguide/security-group-rules.html
+
+  # --- network ACLs ----------------------------------------------------------------------------
+  - id: nacl-rule-number-order
+    attr: Ruleset.order
+    key_prefix: "nacl:"
+    value: position
+    source: vendor_doc
+    reference: >-
+      Network ACL rules: "Rule number. Rules are evaluated starting with the lowest numbered
+      rule. As soon as a rule matches traffic, it's applied regardless of any higher-numbered
+      rule that might contradict it." EC2 API NetworkAclEntry, ruleNumber: "ACL entries are
+      processed in ascending order by rule number."
+      https://docs.aws.amazon.com/vpc/latest/userguide/nacl-rules.html
+
+  - id: nacl-unmatched-denied
+    attr: Ruleset.unmatched
+    key_prefix: "nacl:"
+    value: deny
+    source: vendor_doc
+    reference: >-
+      Custom network ACLs for your VPC: "Each network ACL includes a default inbound rule and a
+      default outbound rule whose rule number is an asterisk (*). These rules ensure that if a
+      packet doesn't match any of the other rules, it's denied." "You can't delete a rule where
+      the rule number is an asterisk."
+      https://docs.aws.amazon.com/vpc/latest/userguide/custom-network-acl.html
+
+  - id: nacl-empty-denies
+    attr: Ruleset.when_empty
+    key_prefix: "nacl:"
+    value: deny
+    source: vendor_doc
+    reference: >-
+      Same page: the asterisk rules are in every network ACL and can't be deleted, so a network
+      ACL with no numbered rule for an IP version denies that version's traffic ("IPv4 and IPv6
+      traffic are evaluated separately. Therefore, none of the rules for IPv4 traffic apply to
+      IPv6 traffic.").
+      https://docs.aws.amazon.com/vpc/latest/userguide/custom-network-acl.html

@@ -38,6 +38,12 @@ the resolver turns every ``ref`` into a :class:`~kasauti.sbm.entities.Reference`
 * **lines with their own login list** (Cisco ``login authentication VTY-LOGIN``): remote
   logins are checked against what every vty line's list has in common, a line naming no list
   using the device default. ``AuthPolicy.login_methods`` becomes that shared set.
+* **security groups named as a source** (AWS ``UserIdGroupPairs``): the members of a group of
+  instances, never every address (``NARROW_KINDS``). A pair AWS returns with an account names
+  a group that exists (``exists``: AWS drops the account once a referenced group is deleted,
+  and a group in the same VPC can't be deleted while referenced): resolved, in the file or
+  not. One without an account names a deleted group (a stale rule): dangling. A managed
+  prefix list's entries are not in the export, so a rule naming one is *unknown*.
 * **filters guarding the device itself** (``Ruleset.applies_to: device``, FortiOS local-in
   policies): for each interface and management protocol it offers, is every source the
   filter doesn't list blocked, on IPv4 and, where offered, IPv6? The protocols for which it
@@ -68,6 +74,12 @@ LEAF_MEMBERS = frozenset({"user_group"})
 CATCH_ALL = frozenset({"any", "all", "0.0.0.0/0", "0.0.0.0/0.0.0.0", "::/0"})
 SERVICE_CATCH_ALL = frozenset({"ip", "any"})
 """A service object's members name what it covers; ``ip`` is every IP protocol."""
+NARROW_KINDS = frozenset({"security_group"})
+"""Kinds that stand for the members of a group of instances, never for every address: "When
+you specify a security group as the source or destination for a rule, the rule affects all
+instances that are associated with the security groups" (VPC User Guide, Security group
+referencing). Their extent is ``some`` whether or not the group is in the file, and whether or
+not it still exists (a stale reference matches nothing)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,7 +165,9 @@ def _reference(builder: SbmBuilder, objects: dict[str, EntityAcc], record: RefRe
     ref.fact("target_kind").set(record.target_kind, ev)
     ref.fact("name").set(record.name, ev)
     if target is None:
-        if record.unread is not None:
+        if record.exists is not None:
+            ref.fact("resolved").set(True, ev)  # the export says it exists; it isn't in the file
+        elif record.unread is not None:
             ref.fact("resolved").unknown(ev)  # perhaps what the pack doesn't read
         else:
             ref.fact("resolved").set(False, ev)
@@ -411,6 +425,9 @@ def _widen_named_objects(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> 
             if fact is None or fact.state is not FactState.EXPLICIT:
                 continue
             records = named.get((ref, attr), {})
+            if fact.value & family.catch_all and _plain(acc, attr):
+                # Already every address (or protocol): what else it names can't narrow it.
+                continue
             for name in sorted(fact.value):
                 record = records.get(name)
                 if record is None:
@@ -424,12 +441,23 @@ def _widen_named_objects(builder: SbmBuilder, objects: dict[str, EntityAcc]) -> 
                     fact.add(frozenset({family.widened}), ev)
 
 
+def _plain(entry: EntityAcc, attr: str) -> bool:
+    """The entry is known to match ``attr`` as listed, not its complement (``negated``)."""
+    negated = entry.facts.get("negated")
+    if negated is None or negated.state is FactState.ABSENT:
+        return True
+    known = negated.state in (FactState.EXPLICIT, FactState.VENDOR_DEFAULT)
+    return known and attr not in negated.value
+
+
 def _referenced_extent(
     objects: dict[str, EntityAcc], family: _Family, record: RefRecord
 ) -> tuple[str, Evidence | None]:
     """The extent of the object a reference resolves to. Unresolved, it is unknown (the
     configuration names what it doesn't define, or what the pack doesn't read), unless it
     is an address written in place."""
+    if set(record.target_kind.split("|")) <= NARROW_KINDS:
+        return "some", None
     target = _target_key(objects, record.target_kind, record.name)
     if target is not None:
         return _object_extent(objects, family, target)

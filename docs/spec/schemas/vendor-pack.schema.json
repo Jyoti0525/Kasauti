@@ -1,5 +1,28 @@
 {
   "$defs": {
+    "Records": {
+      "additionalProperties": false,
+      "description": "How a JSON/YAML pack's list items read (TODO M2.31). Cloud exports keep one rule's facts\nin separate fields of one object (``IpProtocol``, ``FromPort``, ``ToPort``), and a mapping\nreads one statement: each list item's scalar fields, and those of the objects inside it\n(``PortRange.From``), are rendered as one statement, ``@`` then each key and value in key\norder. Lists inside the item are rendered as before, beneath it. An object giving a key\ntwice is refused (read line by line, with the reason): readers differ on which one counts.",
+      "properties": {
+        "names": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Names",
+          "type": "object"
+        },
+        "sections": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Sections",
+          "type": "array"
+        }
+      },
+      "title": "Records",
+      "type": "object"
+    },
     "Role": {
       "enum": [
         "router",
@@ -99,6 +122,17 @@
       "minimum": 1,
       "title": "Pack Version",
       "type": "integer"
+    },
+    "records": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Records"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "set_form": {
       "anyOf": [

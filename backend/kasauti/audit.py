@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -309,7 +310,7 @@ def audit(
             "each is left for review"
         )
     elif tree.partial:
-        findings = _partial(findings, kb.ruleset)
+        findings = _partial(findings, kb.ruleset, _writable(pack, kb))
         warnings.append(
             f"the file holds only part of a configuration ({'; '.join(tree.partial)}), so no "
             "rule passes on what it doesn't show: a PASS is left for review, and a FAIL stands "
@@ -318,7 +319,8 @@ def audit(
     statuses = rule_statuses(kb.ruleset.rules, findings)
 
     unmapped = [s for s in mapped.unmapped if s.line_start not in ident.lines]
-    understood = mapped.stats.mapped + len(ident.lines)
+    # A line identity reads counts once, whether or not a mapping read it too.
+    understood = mapped.stats.mapped + len(mapped.unmapped) - len(unmapped)
     titles = (
         {c.id: c.title for c in kb.frameworks[NIST].catalog.controls}
         if NIST in kb.frameworks
@@ -414,6 +416,16 @@ def audit(
     )
 
 
+def _may_be_elsewhere(actual: str, writable: frozenset[str]) -> bool:
+    """A fact the finding lacks that the part of the file not shown could hold."""
+    if actual.endswith("not understood"):
+        return True
+    if not actual.endswith(": missing"):
+        return False
+    m = _MISSING.match(actual)
+    return m is None or m.group(1) in writable
+
+
 def _not_read(findings: Sequence[Finding], ruleset: RuleSet, family: str) -> tuple[Finding, ...]:
     """The file couldn't be read in its own syntax and was read line by line instead (cut off,
     damaged, or nested past the limit). Its structure is lost: a setting may be in it unseen, and
@@ -459,12 +471,46 @@ def _beyond(sbm: SecurityBaselineModel, file: str) -> SecurityBaselineModel:
     return sbm.model_copy(update={"unread": dict(sorted(unread.items()))})
 
 
-def _partial(findings: Sequence[Finding], ruleset: RuleSet) -> tuple[Finding, ...]:
+ENGINE_WRITES = frozenset(
+    {
+        # kasauti/mapping/resolve.py and addressing.py, from what other entities hold.
+        "attribute",
+        "default_route",
+        "expanded",
+        "login_methods",
+        "mgmt_restricted",
+        "name",
+        "permits_any",
+        "public_address",
+        "resolved",
+        "source",
+        "target",
+        "target_kind",
+    }
+)
+"""Attributes the engine fills from other entities, whatever the pack's mappings are."""
+_MISSING = re.compile(r"^[A-Za-z]+(?:\[.*\])?\.([a-z_0-9]+): missing$")
+
+
+def _writable(pack: VendorPack, kb: KnowledgeBase) -> frozenset[str]:
+    """Attribute names anything could set for this pack: its mappings, its defaults, the
+    inferences and the engine. One outside them is missing from any file of this vendor (a
+    PAN-OS rule's ``applications`` in an AWS export), so a part of the file can't hide it."""
+    names = {eff.attr.split(".", 1)[1] for m in pack.mappings for eff in m.effects}
+    names |= {d.attr.split(".", 1)[1] for d in pack.defaults.defaults if d.attr}
+    names |= {a for inf in kb.ruleset.inferences for a in inf.set}
+    return frozenset(names | ENGINE_WRITES)
+
+
+def _partial(
+    findings: Sequence[Finding], ruleset: RuleSet, writable: frozenset[str]
+) -> tuple[Finding, ...]:
     """The file is part of a configuration (``ConfigTree.partial``): shown from an edit level,
     filtered, or with placeholders. What it shows is read as it is; what it doesn't show may be
     anything. A PASS may rest on a setting elsewhere, and "nothing to check" on entities
     elsewhere, so both become REVIEW. A FAIL on the file's own lines stands (``telnet`` is in
-    it); one that rests on a default or on something missing becomes REVIEW."""
+    it); one that rests on a default, or on something missing that the rest of the file could
+    hold, becomes REVIEW."""
     base = {r.id: r.severity.base for r in ruleset.rules}
     out: list[Finding] = []
     for f in findings:
@@ -473,7 +519,7 @@ def _partial(findings: Sequence[Finding], ruleset: RuleSet) -> tuple[Finding, ..
             f.status is Status.FAIL
             and bool(f.evidence)
             and not f.defaults_used
-            and not any(a.endswith((": missing", "not understood")) for a in f.actual)
+            and not any(_may_be_elsewhere(a, writable) for a in f.actual)
         )
         if (f.status not in (Status.PASS, Status.FAIL) and not guessed) or shown:
             out.append(f)

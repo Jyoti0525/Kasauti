@@ -1,0 +1,477 @@
+# Network ACLs (describe-network-acls): numbered allow and deny entries, inbound and
+# outbound, IPv4 and IPv6 evaluated separately.
+# - Every entry is in force (enabled: true): NetworkAclEntry has no field that turns one
+#   off.
+# - The entry's header opens it; its record gives the ruleset (direction, IP version). An
+#   entry whose record matches no pattern has no ruleset and counts, unknown, in every one.
+# Seed mappings: reviewed in docs/reviews/aws_vpc.md.
+mappings:
+- id: aws_vpc/network-acl
+  vendor: aws_vpc
+  entity:
+    type: ObjectDef
+    key: network_acl:{a}
+  match: NetworkAcls <STR:a>
+  effect:
+    assert: ObjectDef.kind
+    value: network_acl
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/network-acl-record
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  entity:
+    type: ObjectDef
+    key: network_acl:{a}
+  match: '@ [IsDefault <STR:d>] NetworkAclId <STR:id> OwnerId <STR:o> VpcId <STR:v>'
+  effect:
+    assert: ObjectDef.kind
+    value: network_acl
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/network-acl-tags
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  entity:
+    type: ObjectDef
+    key: network_acl:{a}
+  match: Tags <INT:t>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/network-acl-tag
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Tags <INT:t>
+  entity:
+    type: ObjectDef
+    key: network_acl:{a}
+  match: '@ Key <STR:k> Value <STR:v>'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/network-acl-associations
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  entity:
+    type: ObjectDef
+    key: network_acl:{a}
+  match: Associations <INT:n>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/network-acl-association
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Associations <INT:n>
+  entity:
+    type: ObjectDef
+    key: network_acl:{a}
+  match: '@ NetworkAclAssociationId <STR:x> NetworkAclId <STR:y> SubnetId <STR:s>'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-entry
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: Entries <INT:i>
+  effect:
+    assert: FilterRule.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-ingress-ipv4
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ CidrBlock <IP:c> Egress false [IcmpTypeCode.Code <STR:ic> IcmpTypeCode.Type <STR:it>] [PortRange.From
+    <STR:f> PortRange.To <STR:t>] Protocol <STR:p> RuleAction <STR:act> RuleNumber <INT:n>'
+  effect:
+  - set: FilterRule.ruleset
+    template: nacl:{a}:ingress:ipv4
+  - set: FilterRule.position
+    from: n
+  - set: FilterRule.action
+    from: act
+    map:
+      allow: permit
+      deny: deny
+  - members: FilterRule.src
+    from: c
+    transform:
+    - network
+    map:
+      0.0.0.0/0: any
+  - assert: FilterRule.dst
+    value:
+    - any
+  - members: FilterRule.service
+    template: ip-proto-{p}
+    map:
+      ip-proto--1: ip
+      ip-proto-6: tcp
+      ip-proto-17: udp
+      ip-proto-1: icmp
+      ip-proto-58: icmp6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-ingress-ipv4-tcp-ports
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ CidrBlock <IP:c> Egress false PortRange.From <INT:f> PortRange.To <INT:t> Protocol 6 RuleAction
+    <STR:act> RuleNumber <INT:n>'
+  effect:
+    members: FilterRule.service
+    template: tcp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-ingress-ipv4-udp-ports
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ CidrBlock <IP:c> Egress false PortRange.From <INT:f> PortRange.To <INT:t> Protocol 17 RuleAction
+    <STR:act> RuleNumber <INT:n>'
+  effect:
+    members: FilterRule.service
+    template: udp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-ingress-ipv6
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ Egress false [IcmpTypeCode.Code <STR:ic> IcmpTypeCode.Type <STR:it>] Ipv6CidrBlock <IP:c>
+    [PortRange.From <STR:f> PortRange.To <STR:t>] Protocol <STR:p> RuleAction <STR:act> RuleNumber <INT:n>'
+  effect:
+  - set: FilterRule.ruleset
+    template: nacl:{a}:ingress:ipv6
+  - set: FilterRule.position
+    from: n
+  - set: FilterRule.action
+    from: act
+    map:
+      allow: permit
+      deny: deny
+  - members: FilterRule.src
+    from: c
+    transform:
+    - network
+    map:
+      ::/0: any
+  - assert: FilterRule.dst
+    value:
+    - any
+  - members: FilterRule.service
+    template: ip-proto-{p}
+    map:
+      ip-proto--1: ip
+      ip-proto-6: tcp
+      ip-proto-17: udp
+      ip-proto-1: icmp
+      ip-proto-58: icmp6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-ingress-ipv6-tcp-ports
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ Egress false Ipv6CidrBlock <IP:c> PortRange.From <INT:f> PortRange.To <INT:t> Protocol 6 RuleAction
+    <STR:act> RuleNumber <INT:n>'
+  effect:
+    members: FilterRule.service
+    template: tcp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-ingress-ipv6-udp-ports
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ Egress false Ipv6CidrBlock <IP:c> PortRange.From <INT:f> PortRange.To <INT:t> Protocol 17
+    RuleAction <STR:act> RuleNumber <INT:n>'
+  effect:
+    members: FilterRule.service
+    template: udp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-egress-ipv4
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ CidrBlock <IP:c> Egress true [IcmpTypeCode.Code <STR:ic> IcmpTypeCode.Type <STR:it>] [PortRange.From
+    <STR:f> PortRange.To <STR:t>] Protocol <STR:p> RuleAction <STR:act> RuleNumber <INT:n>'
+  effect:
+  - set: FilterRule.ruleset
+    template: nacl:{a}:egress:ipv4
+  - set: FilterRule.position
+    from: n
+  - set: FilterRule.action
+    from: act
+    map:
+      allow: permit
+      deny: deny
+  - members: FilterRule.dst
+    from: c
+    transform:
+    - network
+    map:
+      0.0.0.0/0: any
+  - assert: FilterRule.src
+    value:
+    - any
+  - members: FilterRule.service
+    template: ip-proto-{p}
+    map:
+      ip-proto--1: ip
+      ip-proto-6: tcp
+      ip-proto-17: udp
+      ip-proto-1: icmp
+      ip-proto-58: icmp6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-egress-ipv4-tcp-ports
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ CidrBlock <IP:c> Egress true PortRange.From <INT:f> PortRange.To <INT:t> Protocol 6 RuleAction
+    <STR:act> RuleNumber <INT:n>'
+  effect:
+    members: FilterRule.service
+    template: tcp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-egress-ipv4-udp-ports
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ CidrBlock <IP:c> Egress true PortRange.From <INT:f> PortRange.To <INT:t> Protocol 17 RuleAction
+    <STR:act> RuleNumber <INT:n>'
+  effect:
+    members: FilterRule.service
+    template: udp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-egress-ipv6
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ Egress true [IcmpTypeCode.Code <STR:ic> IcmpTypeCode.Type <STR:it>] Ipv6CidrBlock <IP:c> [PortRange.From
+    <STR:f> PortRange.To <STR:t>] Protocol <STR:p> RuleAction <STR:act> RuleNumber <INT:n>'
+  effect:
+  - set: FilterRule.ruleset
+    template: nacl:{a}:egress:ipv6
+  - set: FilterRule.position
+    from: n
+  - set: FilterRule.action
+    from: act
+    map:
+      allow: permit
+      deny: deny
+  - members: FilterRule.dst
+    from: c
+    transform:
+    - network
+    map:
+      ::/0: any
+  - assert: FilterRule.src
+    value:
+    - any
+  - members: FilterRule.service
+    template: ip-proto-{p}
+    map:
+      ip-proto--1: ip
+      ip-proto-6: tcp
+      ip-proto-17: udp
+      ip-proto-1: icmp
+      ip-proto-58: icmp6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-egress-ipv6-tcp-ports
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ Egress true Ipv6CidrBlock <IP:c> PortRange.From <INT:f> PortRange.To <INT:t> Protocol 6 RuleAction
+    <STR:act> RuleNumber <INT:n>'
+  effect:
+    members: FilterRule.service
+    template: tcp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/nacl-egress-ipv6-udp-ports
+  vendor: aws_vpc
+  context:
+  - NetworkAcls <STR:a>
+  - Entries <INT:i>
+  entity:
+    type: FilterRule
+    key: '{a}:{i}'
+  match: '@ Egress true Ipv6CidrBlock <IP:c> PortRange.From <INT:f> PortRange.To <INT:t> Protocol 17 RuleAction
+    <STR:act> RuleNumber <INT:n>'
+  effect:
+    members: FilterRule.service
+    template: udp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

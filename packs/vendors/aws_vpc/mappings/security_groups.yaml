@@ -1,0 +1,785 @@
+# Security groups (describe-security-groups): each rule of IpPermissions (inbound) and
+# IpPermissionsEgress (outbound) is one permit entry; its sources or destinations are
+# address ranges, prefix lists and other security groups.
+# - Every rule is in force (enabled: true): IpPermission has no field that turns one off.
+# - A group pair with UserId names a group that exists (AWS drops the account once the
+#   group is deleted); one without it is a stale rule, and its reference dangles.
+# - A record with a field these patterns don't name matches none of them: REVIEW.
+# Seed mappings: reviewed in docs/reviews/aws_vpc.md.
+mappings:
+- id: aws_vpc/security-group
+  vendor: aws_vpc
+  entity:
+    type: ObjectDef
+    key: security_group:{g}
+  match: SecurityGroups <STR:g>
+  effect:
+    assert: ObjectDef.kind
+    value: security_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/security-group-record
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  entity:
+    type: ObjectDef
+    key: security_group:{g}
+  match: '@ [Description <STR:d>] GroupId <STR:id> GroupName <STR:n> OwnerId <STR:o> [SecurityGroupArn
+    <STR:arn>] [VpcId <STR:v>]'
+  effect:
+    assert: ObjectDef.kind
+    value: security_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/security-group-tags
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  entity:
+    type: ObjectDef
+    key: security_group:{g}
+  match: Tags <INT:t>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/security-group-tag
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - Tags <INT:t>
+  entity:
+    type: ObjectDef
+    key: security_group:{g}
+  match: '@ Key <STR:k> Value <STR:v>'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: IpPermissions <INT:i>
+  effect:
+  - set: FilterRule.ruleset
+    template: sg:{g}:ingress
+  - assert: FilterRule.action
+    value: permit
+  - assert: FilterRule.dst
+    value:
+    - any
+  - assert: FilterRule.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-protocol
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ [FromPort <STR:f>] IpProtocol <STR:p> [ToPort <STR:t>]'
+  effect:
+    members: FilterRule.service
+    template: ip-proto-{p}
+    map:
+      ip-proto--1: ip
+      ip-proto-tcp: tcp
+      ip-proto-6: tcp
+      ip-proto-udp: udp
+      ip-proto-17: udp
+      ip-proto-icmp: icmp
+      ip-proto-1: icmp
+      ip-proto-icmpv6: icmp6
+      ip-proto-58: icmp6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-tcp-ports
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ FromPort <INT:f> IpProtocol tcp ToPort <INT:t>'
+  effect:
+    members: FilterRule.service
+    template: tcp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-tcp-ports-6
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ FromPort <INT:f> IpProtocol 6 ToPort <INT:t>'
+  effect:
+    members: FilterRule.service
+    template: tcp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-udp-ports
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ FromPort <INT:f> IpProtocol udp ToPort <INT:t>'
+  effect:
+    members: FilterRule.service
+    template: udp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-udp-ports-17
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ FromPort <INT:f> IpProtocol 17 ToPort <INT:t>'
+  effect:
+    members: FilterRule.service
+    template: udp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-ipranges
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: IpRanges <INT:r>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-ipv6ranges
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: Ipv6Ranges <INT:r>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-prefixlistids
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: PrefixListIds <INT:r>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-useridgrouppairs
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: UserIdGroupPairs <INT:r>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-cidr
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  - IpRanges <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ CidrIp <IP:c> [Description <STR:d>]'
+  effect:
+    members: FilterRule.src
+    from: c
+    transform:
+    - network
+    map:
+      0.0.0.0/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-cidr6
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  - Ipv6Ranges <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ CidrIpv6 <IP:c> [Description <STR:d>]'
+  effect:
+    members: FilterRule.src
+    from: c
+    transform:
+    - network
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-prefix-list
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  - PrefixListIds <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ [Description <STR:d>] PrefixListId <STR:p>'
+  effect:
+    ref: FilterRule.src
+    from: p
+    target: prefix_list
+    exists: 'VPC User Guide, Delete a prefix list: "To delete a prefix list, you must first remove any
+      references to it in your resources"; its entries are listed by get-managed-prefix-list-entries,
+      not in this export'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-group
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  - UserIdGroupPairs <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ [Description <STR:d>] GroupId <STR:id> [GroupName <STR:n>] UserId <STR:u> [VpcId <STR:v>]'
+  effect:
+    ref: FilterRule.src
+    from: id
+    target: security_group
+    exists: 'UserIdGroupPair.UserId: "If the referenced security group is deleted, this value is not returned",
+      and a group "can''t be referenced by a rule in another security group" when it is deleted (VPC User
+      Guide, Delete a security group)'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-group-peered
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  - UserIdGroupPairs <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ [Description <STR:d>] GroupId <STR:id> [GroupName <STR:n>] PeeringStatus <STR:ps> UserId <STR:u>
+    VpcId <STR:v> [VpcPeeringConnectionId <STR:pc>]'
+  effect:
+    ref: FilterRule.src
+    from: id
+    target: security_group
+    exists: 'UserIdGroupPair.UserId: "If the referenced security group is deleted, this value is not returned",
+      and a group "can''t be referenced by a rule in another security group" when it is deleted (VPC User
+      Guide, Delete a security group)'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-ingress-group-stale
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissions <INT:i>
+  - UserIdGroupPairs <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:ingress:{i}'
+  match: '@ [Description <STR:d>] GroupId <STR:id> [PeeringStatus <STR:ps>] VpcId <STR:v> [VpcPeeringConnectionId
+    <STR:pc>]'
+  effect:
+    ref: FilterRule.src
+    from: id
+    target: security_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: IpPermissionsEgress <INT:i>
+  effect:
+  - set: FilterRule.ruleset
+    template: sg:{g}:egress
+  - assert: FilterRule.action
+    value: permit
+  - assert: FilterRule.src
+    value:
+    - any
+  - assert: FilterRule.enabled
+    value: true
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-protocol
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ [FromPort <STR:f>] IpProtocol <STR:p> [ToPort <STR:t>]'
+  effect:
+    members: FilterRule.service
+    template: ip-proto-{p}
+    map:
+      ip-proto--1: ip
+      ip-proto-tcp: tcp
+      ip-proto-6: tcp
+      ip-proto-udp: udp
+      ip-proto-17: udp
+      ip-proto-icmp: icmp
+      ip-proto-1: icmp
+      ip-proto-icmpv6: icmp6
+      ip-proto-58: icmp6
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-tcp-ports
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ FromPort <INT:f> IpProtocol tcp ToPort <INT:t>'
+  effect:
+    members: FilterRule.service
+    template: tcp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-tcp-ports-6
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ FromPort <INT:f> IpProtocol 6 ToPort <INT:t>'
+  effect:
+    members: FilterRule.service
+    template: tcp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-udp-ports
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ FromPort <INT:f> IpProtocol udp ToPort <INT:t>'
+  effect:
+    members: FilterRule.service
+    template: udp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-udp-ports-17
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ FromPort <INT:f> IpProtocol 17 ToPort <INT:t>'
+  effect:
+    members: FilterRule.service
+    template: udp/{f}-{t}
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-ipranges
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: IpRanges <INT:r>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-ipv6ranges
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: Ipv6Ranges <INT:r>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-prefixlistids
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: PrefixListIds <INT:r>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-useridgrouppairs
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: UserIdGroupPairs <INT:r>
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-cidr
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  - IpRanges <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ CidrIp <IP:c> [Description <STR:d>]'
+  effect:
+    members: FilterRule.dst
+    from: c
+    transform:
+    - network
+    map:
+      0.0.0.0/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-cidr6
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  - Ipv6Ranges <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ CidrIpv6 <IP:c> [Description <STR:d>]'
+  effect:
+    members: FilterRule.dst
+    from: c
+    transform:
+    - network
+    map:
+      ::/0: any
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-prefix-list
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  - PrefixListIds <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ [Description <STR:d>] PrefixListId <STR:p>'
+  effect:
+    ref: FilterRule.dst
+    from: p
+    target: prefix_list
+    exists: 'VPC User Guide, Delete a prefix list: "To delete a prefix list, you must first remove any
+      references to it in your resources"; its entries are listed by get-managed-prefix-list-entries,
+      not in this export'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-group
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  - UserIdGroupPairs <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ [Description <STR:d>] GroupId <STR:id> [GroupName <STR:n>] UserId <STR:u> [VpcId <STR:v>]'
+  effect:
+    ref: FilterRule.dst
+    from: id
+    target: security_group
+    exists: 'UserIdGroupPair.UserId: "If the referenced security group is deleted, this value is not returned",
+      and a group "can''t be referenced by a rule in another security group" when it is deleted (VPC User
+      Guide, Delete a security group)'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-group-peered
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  - UserIdGroupPairs <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ [Description <STR:d>] GroupId <STR:id> [GroupName <STR:n>] PeeringStatus <STR:ps> UserId <STR:u>
+    VpcId <STR:v> [VpcPeeringConnectionId <STR:pc>]'
+  effect:
+    ref: FilterRule.dst
+    from: id
+    target: security_group
+    exists: 'UserIdGroupPair.UserId: "If the referenced security group is deleted, this value is not returned",
+      and a group "can''t be referenced by a rule in another security group" when it is deleted (VPC User
+      Guide, Delete a security group)'
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual
+- id: aws_vpc/sg-egress-group-stale
+  vendor: aws_vpc
+  context:
+  - SecurityGroups <STR:g>
+  - IpPermissionsEgress <INT:i>
+  - UserIdGroupPairs <INT:r>
+  entity:
+    type: FilterRule
+    key: '{g}:egress:{i}'
+  match: '@ [Description <STR:d>] GroupId <STR:id> [PeeringStatus <STR:ps>] VpcId <STR:v> [VpcPeeringConnectionId
+    <STR:pc>]'
+  effect:
+    ref: FilterRule.dst
+    from: id
+    target: security_group
+  negation: null
+  provenance:
+    version: 1
+    proposed_by: seed:kasauti
+    approved_by:
+    - maintainer
+    signals:
+    - manual

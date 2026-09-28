@@ -6,6 +6,7 @@ rules:
       A stolen configuration must not reveal passwords. Clear text and reversible encodings
       (Cisco type 0, 6 and 7) can be read back; MD5-crypt is too fast to resist cracking.
     domain: aaa
+    applies_to: [router, switch, firewall, white_box]
     for_each: LocalUser where not exists(hash_type) or hash_type != 'remote'   # remote accounts store no password
     assert: hash_type in [scrypt, pbkdf2-sha256, sha512-crypt, sha256-crypt, bcrypt, yescrypt]
     on_absent: review
@@ -27,6 +28,7 @@ rules:
       shared local accounts give neither. A server that is configured but that no login uses
       gives neither.
     domain: aaa
+    applies_to: [router, switch, firewall, white_box]
     for_each: Device
     assert: aaa.central_login_in_use
     on_absent: resolve_default   # a documented default decides; with none, no central login *is* the violation
@@ -50,6 +52,7 @@ rules:
       administrator unlocks it" and as "never locked out", so 0 is not taken as protection.
       Where no duration is configured at all, the account stays locked until it is unlocked.
     domain: aaa
+    applies_to: [router, switch, firewall, white_box]
     for_each: LockoutPolicy
     assert: max_attempts > 0 and max_attempts <= 5 and (not exists(lockout_s) or lockout_s > 0)
     on_absent: resolve_default   # FortiOS locks out by default; Cisco has no lockout until configured

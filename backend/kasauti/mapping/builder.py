@@ -103,6 +103,8 @@ class RefRecord:
     """``address``: an address, prefix or range no object has is a value, not a reference."""
     unread: str | None = None
     """What else the name may point at that the pack doesn't read: unfound is *unknown*."""
+    exists: str | None = None
+    """Why the target exists even where the file doesn't hold it: unfound is *resolved*."""
 
 
 @dataclass

@@ -220,7 +220,7 @@ class PrependTransform(_Strict):
 
 
 Transform = (
-    Literal["invert", "lower", "upper", "cidr"]
+    Literal["invert", "lower", "upper", "cidr", "network"]
     | UnitTransform
     | SplitTransform
     | PrefixTransform
@@ -344,6 +344,8 @@ RefTarget = Literal[
     "user_group",
     "auth_profile",
     "login_list",
+    "security_group",
+    "prefix_list",
     "any_object",
 ]
 ExpandFrom = Literal["members", "expanded", "permitted_sources"]
@@ -369,6 +371,11 @@ class RefEffect(_Strict):
     unread: str | None = Field(default=None, min_length=10)
     """What else a name may point at that the pack doesn't read (PAN-OS: a country from the
     firewall's own list). A name no object has is then *unknown*, not dangling."""
+    exists: str | None = Field(default=None, min_length=10)
+    """Why the target exists even where the file doesn't hold it: the export itself says so.
+    AWS returns a referenced security group's account "If the referenced security group is
+    deleted, this value is not returned", and a group in the same VPC can't be deleted while a
+    rule references it. A name no object has is then *resolved*, with no target."""
     expand: bool = False
     """The attribute takes the target's ``members`` (once the resolver has linked it) instead
     of its name: a PAN-OS interface naming its management profile gets the profile's
@@ -388,8 +395,12 @@ class RefEffect(_Strict):
     def _expand_options(self) -> Self:
         if not self.expand and (self.take != "members" or self.if_empty is not None):
             raise ValueError("`take` and `if_empty` only apply with `expand: true`")
-        if self.expand and (self.map or self.builtin or self.literal or self.unread):
-            raise ValueError("`map`, `builtin`, `literal` and `unread` don't apply with `expand`")
+        if self.expand and (self.map or self.builtin or self.literal or self.unread or self.exists):
+            raise ValueError(
+                "`map`, `builtin`, `literal`, `unread` and `exists` don't apply with `expand`"
+            )
+        if self.unread and self.exists:
+            raise ValueError("a name no object has is either `unread` (unknown) or `exists`")
         if isinstance(self.target, tuple) and not self.target:
             raise ValueError("`target` needs at least one kind")
         if set(self.map) & set(self.builtin):

@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "50ed5ca57ebb18e119c6d79e",
+  "audit_id": "aa585cc4c9a35fd43695dd99",
   "input": {
     "file": "hardened_set.conf",
     "sha256": "202d54c3c46fddc57aaf2de5c1b46d8cc2d94c21ff0feaafd43595d8f274cecb",
@@ -54,8 +54,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "88c279bb41e3bad3ad66902ff5d2e7b809febdbb3c7e4259dbe8d69c88ab9246",
-    "ruleset_version": "1bc107babd4a42068fc94aad70d709c71832d3082a7cb925032e5428fc334df7",
+    "kb_version": "7efc96188b4ba73aa903657d3ba9c487d439633782935016c0c9664aa00b06d3",
+    "ruleset_version": "ec8d927b4d7fdf57d4fe4c18b99c1322b35e9909fd16fb93876b677b97565953",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
       "nist_800_53r5": "5.2.0"
@@ -1263,10 +1263,10 @@
   ],
   "assurance": {
     "statements": 101,
-    "understood": 46,
+    "understood": 47,
     "unmapped": 54,
     "near_miss": 0,
-    "understood_pct": 45.5,
+    "understood_pct": 46.5,
     "unmapped_patterns": [
       {
         "pattern_key": "family inet",

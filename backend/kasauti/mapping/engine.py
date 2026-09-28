@@ -303,6 +303,7 @@ class _Engine:
                             None if eff.if_empty is None else frozenset(eff.if_empty),
                             eff.literal,
                             eff.unread,
+                            eff.exists,
                         )
                         for n in sorted(set(fx.ref_names(eff, hit.caps)))
                     )

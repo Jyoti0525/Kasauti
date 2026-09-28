@@ -1,0 +1,4476 @@
+{
+  "format_version": 1,
+  "audit_id": "0f7aa6433f37ee2a5fb7fc68",
+  "input": {
+    "file": "weak.json",
+    "sha256": "05fef695af33a827e42a23817015bd5f0ac3304ff99944e243342055269ea188",
+    "encoding": "utf-8",
+    "shape_family": "json_yaml",
+    "rebuilt_from": null,
+    "parse_warnings": []
+  },
+  "detection": {
+    "pack_id": "aws_vpc",
+    "pack_version": 1,
+    "chosen_by": "fingerprint",
+    "score": 1.9,
+    "min_score": 0.7,
+    "signatures": [
+      "security-groups",
+      "network-acls",
+      "group-id",
+      "ip-permissions",
+      "network-acl-id",
+      "rule-number"
+    ]
+  },
+  "identity": {
+    "hostname": {
+      "value": "vpc-0f1e2d3c4b5a69788",
+      "source": "config line 4"
+    },
+    "vendor": {
+      "value": "Amazon Web Services",
+      "source": "fingerprint (6 signatures)"
+    },
+    "os_version": {
+      "value": null,
+      "source": "OS version: not present in supplied artefacts"
+    },
+    "model": {
+      "value": null,
+      "source": "Model: not present in supplied artefacts"
+    },
+    "serial": {
+      "value": null,
+      "source": "Serial: not present in supplied artefacts"
+    },
+    "hardware": {
+      "value": null,
+      "source": "Hardware: not present in supplied artefacts"
+    }
+  },
+  "kb": {
+    "kasauti_version": "0.1.0",
+    "kb_version": "7efc96188b4ba73aa903657d3ba9c487d439633782935016c0c9664aa00b06d3",
+    "ruleset_version": "ec8d927b4d7fdf57d4fe4c18b99c1322b35e9909fd16fb93876b677b97565953",
+    "vendor_pack": "aws_vpc@1",
+    "frameworks": {
+      "nist_800_53r5": "5.2.0"
+    }
+  },
+  "frameworks": [
+    "nist_800_53r5"
+  ],
+  "scores": [
+    {
+      "framework": "nist_800_53r5",
+      "title": "NIST SP 800-53 Rev. 5",
+      "passed": 0,
+      "failed": 2,
+      "review": 0,
+      "not_applicable": 21,
+      "compliance_pct": 0.0,
+      "coverage_pct": 100.0
+    }
+  ],
+  "rules": [
+    {
+      "rule_id": "AAA-CENTRAL-AUTH-01",
+      "title": "Administrators authenticate against a central AAA server",
+      "domain": "aaa",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-2(1)",
+        "IA-2"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+      "title": "Local passwords are stored with a strong one-way hash",
+      "domain": "aaa",
+      "status": "N/A",
+      "severity": "high",
+      "nist_800_53r5": [
+        "IA-5(1)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-LOCKOUT-01",
+      "title": "Repeated failed logins are blocked",
+      "domain": "aaa",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
+      "title": "No password is stored in the configuration in clear text",
+      "domain": "aaa",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "IA-5(1)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+      "title": "Passwords must be at least 15 characters",
+      "domain": "aaa",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "IA-5(1)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "FILTER-PERMIT-ANY-01",
+      "title": "No filter entry permits all traffic from anywhere to anywhere",
+      "domain": "filtering",
+      "status": "FAIL",
+      "severity": "high",
+      "nist_800_53r5": [
+        "SC-7(5)",
+        "AC-4"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+      "title": "Untrusted interfaces filter inbound traffic",
+      "domain": "filtering",
+      "status": "N/A",
+      "severity": "high",
+      "nist_800_53r5": [
+        "SC-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "LOG-CONFIG-CHANGE-01",
+      "title": "Configuration changes are logged",
+      "domain": "logging",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AU-2",
+        "AU-12",
+        "CM-3"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "LOG-REMOTE-01",
+      "title": "Logs are sent to a remote log server",
+      "domain": "logging",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AU-4(1)",
+        "AU-9(2)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "LOG-TIMESTAMPS-01",
+      "title": "Log messages carry the date and time",
+      "domain": "logging",
+      "status": "N/A",
+      "severity": "low",
+      "nist_800_53r5": [
+        "AU-3",
+        "AU-8"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-BANNER-01",
+      "title": "A login banner warns against unauthorised use",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "low",
+      "nist_800_53r5": [
+        "AC-8"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-HTTP-01",
+      "title": "Unencrypted HTTP management is disabled",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "high",
+      "nist_800_53r5": [
+        "CM-7",
+        "SC-8",
+        "AC-17(2)"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-SESSION-TIMEOUT-01",
+      "title": "Idle management sessions time out within 10 minutes",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-12",
+        "SC-10"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-SSH-V2-01",
+      "title": "SSH management uses protocol version 2 only",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "high",
+      "nist_800_53r5": [
+        "AC-17(2)",
+        "SC-8",
+        "SC-13"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-TELNET-01",
+      "title": "Clear-text Telnet management is not reachable",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "high",
+      "nist_800_53r5": [
+        "CM-7",
+        "AC-17(2)",
+        "SC-8"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-01",
+      "title": "Remote management lines accept only permitted sources",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "title": "The ACL guarding remote management exists and doesn't permit everyone",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "MGMT-WEB-ACL-01",
+      "title": "Web management accepts only permitted sources",
+      "domain": "management_plane",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "AC-3",
+        "AC-17"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "title": "Every reference points at something that exists",
+      "domain": "filtering",
+      "status": "FAIL",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "CM-6",
+        "AC-3"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "SNMP-COMMUNITY-01",
+      "title": "No SNMP community is well known or writable",
+      "domain": "snmp",
+      "status": "N/A",
+      "severity": "high",
+      "nist_800_53r5": [
+        "IA-5",
+        "CM-6"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "SVC-LEGACY-01",
+      "title": "Legacy network services are disabled",
+      "domain": "services",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "CM-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "title": "Interfaces do not answer ARP for other hosts",
+      "domain": "services",
+      "status": "N/A",
+      "severity": "low",
+      "nist_800_53r5": [
+        "CM-7",
+        "SC-7"
+      ],
+      "hardening_best_practice": false
+    },
+    {
+      "rule_id": "TIME-NTP-AUTH-01",
+      "title": "Time sources are authenticated",
+      "domain": "time",
+      "status": "N/A",
+      "severity": "medium",
+      "nist_800_53r5": [
+        "SC-45(1)",
+        "IA-3(1)"
+      ],
+      "hardening_best_practice": false
+    }
+  ],
+  "controls": [
+    {
+      "control": "AC-2(1)",
+      "title": "Automated System Account Management",
+      "status": "not applicable",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ]
+    },
+    {
+      "control": "AC-3",
+      "title": "Access Enforcement",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01",
+        "REF-DANGLING-01"
+      ]
+    },
+    {
+      "control": "AC-4",
+      "title": "Information Flow Enforcement",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01"
+      ]
+    },
+    {
+      "control": "AC-7",
+      "title": "Unsuccessful Logon Attempts",
+      "status": "not applicable",
+      "rules": [
+        "AAA-LOCKOUT-01"
+      ]
+    },
+    {
+      "control": "AC-8",
+      "title": "System Use Notification",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-BANNER-01"
+      ]
+    },
+    {
+      "control": "AC-12",
+      "title": "Session Termination",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-SESSION-TIMEOUT-01"
+      ]
+    },
+    {
+      "control": "AC-17",
+      "title": "Remote Access",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01"
+      ]
+    },
+    {
+      "control": "AC-17(2)",
+      "title": "Protection of Confidentiality and Integrity Using Encryption",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01"
+      ]
+    },
+    {
+      "control": "AU-2",
+      "title": "Event Logging",
+      "status": "not applicable",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ]
+    },
+    {
+      "control": "AU-3",
+      "title": "Content of Audit Records",
+      "status": "not applicable",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ]
+    },
+    {
+      "control": "AU-4(1)",
+      "title": "Transfer to Alternate Storage",
+      "status": "not applicable",
+      "rules": [
+        "LOG-REMOTE-01"
+      ]
+    },
+    {
+      "control": "AU-8",
+      "title": "Time Stamps",
+      "status": "not applicable",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ]
+    },
+    {
+      "control": "AU-9(2)",
+      "title": "Store on Separate Physical Systems or Components",
+      "status": "not applicable",
+      "rules": [
+        "LOG-REMOTE-01"
+      ]
+    },
+    {
+      "control": "AU-12",
+      "title": "Audit Record Generation",
+      "status": "not applicable",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ]
+    },
+    {
+      "control": "CM-3",
+      "title": "Configuration Change Control",
+      "status": "not applicable",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ]
+    },
+    {
+      "control": "CM-6",
+      "title": "Configuration Settings",
+      "status": "not satisfied",
+      "rules": [
+        "REF-DANGLING-01",
+        "SNMP-COMMUNITY-01"
+      ]
+    },
+    {
+      "control": "CM-7",
+      "title": "Least Functionality",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-TELNET-01",
+        "SVC-LEGACY-01",
+        "SVC-PROXY-ARP-01"
+      ]
+    },
+    {
+      "control": "IA-2",
+      "title": "Identification and Authentication (Organizational Users)",
+      "status": "not applicable",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ]
+    },
+    {
+      "control": "IA-3(1)",
+      "title": "Cryptographic Bidirectional Authentication",
+      "status": "not applicable",
+      "rules": [
+        "TIME-NTP-AUTH-01"
+      ]
+    },
+    {
+      "control": "IA-5",
+      "title": "Authenticator Management",
+      "status": "not applicable",
+      "rules": [
+        "SNMP-COMMUNITY-01"
+      ]
+    },
+    {
+      "control": "IA-5(1)",
+      "title": "Password-based Authentication",
+      "status": "not applicable",
+      "rules": [
+        "AAA-LOCAL-PASSWORD-HASH-01",
+        "AAA-PASSWORD-ENCRYPTION-01",
+        "AAA-PASSWORD-MIN-LENGTH-01"
+      ]
+    },
+    {
+      "control": "SC-7",
+      "title": "Boundary Protection",
+      "status": "not applicable",
+      "rules": [
+        "FILTER-UNTRUSTED-INGRESS-01",
+        "SVC-PROXY-ARP-01"
+      ]
+    },
+    {
+      "control": "SC-7(5)",
+      "title": "Deny by Default — Allow by Exception",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01"
+      ]
+    },
+    {
+      "control": "SC-8",
+      "title": "Transmission Confidentiality and Integrity",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01"
+      ]
+    },
+    {
+      "control": "SC-10",
+      "title": "Network Disconnect",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-SESSION-TIMEOUT-01"
+      ]
+    },
+    {
+      "control": "SC-13",
+      "title": "Cryptographic Protection",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-SSH-V2-01"
+      ]
+    },
+    {
+      "control": "SC-45(1)",
+      "title": "Synchronization with Authoritative Time Source",
+      "status": "not applicable",
+      "rules": [
+        "TIME-NTP-AUTH-01"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "rule_id": "AAA-CENTRAL-AUTH-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "AAA-LOCKOUT-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "FILTER-PERMIT-ANY-01",
+      "entity_id": "Device[device]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "High (base)",
+      "reason": "No filter entry permits all traffic from anywhere to anywhere: is violated for the device.",
+      "actual": [
+        "filtering.permit_all_present = true",
+        "FilterRule[acl-0f1e2d3c4b5a69780:0].action = permit",
+        "FilterRule[acl-0f1e2d3c4b5a69780:0].enabled = true",
+        "FilterRule[acl-0f1e2d3c4b5a69780:0].service = {ip}",
+        "FilterRule[acl-0f1e2d3c4b5a69780:0].src = {any}",
+        "FilterRule[acl-0f1e2d3c4b5a69780:0].dst = {any}",
+        "FilterRule[acl-0f1e2d3c4b5a69780:0].applications: missing",
+        "FilterRule[acl-0f1e2d3c4b5a69780:2].action = permit",
+        "FilterRule[acl-0f1e2d3c4b5a69780:2].enabled = true",
+        "FilterRule[acl-0f1e2d3c4b5a69780:2].service = {ip}",
+        "FilterRule[acl-0f1e2d3c4b5a69780:2].src = {any}",
+        "FilterRule[acl-0f1e2d3c4b5a69780:2].dst = {any}"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.json",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "IpPermissionsEgress 0",
+          "mapping_id": "aws_vpc/sg-egress",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "@ IpProtocol -1",
+          "mapping_id": "aws_vpc/sg-egress-protocol",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "@ CidrIp 0.0.0.0/0",
+          "mapping_id": "aws_vpc/sg-egress-cidr",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 42,
+          "line_end": 42,
+          "raw": "IpPermissions 0",
+          "mapping_id": "aws_vpc/sg-ingress",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 43,
+          "line_end": 43,
+          "raw": "@ IpProtocol -1",
+          "mapping_id": "aws_vpc/sg-ingress-protocol",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 46,
+          "line_end": 47,
+          "raw": "@ CidrIp 0.0.0.0/0 Description temporary",
+          "mapping_id": "aws_vpc/sg-ingress-cidr",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 56,
+          "line_end": 56,
+          "raw": "IpPermissionsEgress 0",
+          "mapping_id": "aws_vpc/sg-egress",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 57,
+          "line_end": 57,
+          "raw": "@ IpProtocol -1",
+          "mapping_id": "aws_vpc/sg-egress-protocol",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 60,
+          "line_end": 60,
+          "raw": "@ CidrIp 0.0.0.0/0",
+          "mapping_id": "aws_vpc/sg-egress-cidr",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 115,
+          "line_end": 115,
+          "raw": "IpPermissionsEgress 0",
+          "mapping_id": "aws_vpc/sg-egress",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 116,
+          "line_end": 116,
+          "raw": "@ IpProtocol -1",
+          "mapping_id": "aws_vpc/sg-egress-protocol",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 119,
+          "line_end": 119,
+          "raw": "@ CidrIp 0.0.0.0/0",
+          "mapping_id": "aws_vpc/sg-egress-cidr",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 143,
+          "line_end": 143,
+          "raw": "Entries 0",
+          "mapping_id": "aws_vpc/nacl-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 144,
+          "line_end": 148,
+          "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction allow RuleNumber 100",
+          "mapping_id": "aws_vpc/nacl-egress-ipv4",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 157,
+          "line_end": 157,
+          "raw": "Entries 2",
+          "mapping_id": "aws_vpc/nacl-entry",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.json",
+          "line_start": 158,
+          "line_end": 162,
+          "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction allow RuleNumber 100",
+          "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "LOG-CONFIG-CHANGE-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "LOG-REMOTE-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "LOG-TIMESTAMPS-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-BANNER-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-HTTP-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-SESSION-TIMEOUT-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-SSH-V2-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-TELNET-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-02",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "MGMT-WEB-ACL-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[FilterRule[sg-0f1e2d3c4b5a69780:ingress:0].src -> sg-0f1e2d3c4b5a69780]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[FilterRule[sg-0f1e2d3c4b5a69780:ingress:0].src -> sg-0f1e2d3c4b5a69780].",
+      "actual": [
+        "Reference[FilterRule[sg-0f1e2d3c4b5a69780:ingress:0].src -> sg-0f1e2d3c4b5a69780].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.json",
+          "line_start": 14,
+          "line_end": 15,
+          "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+          "mapping_id": "aws_vpc/sg-ingress-group",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[FilterRule[sg-0f1e2d3c4b5a69782:ingress:0].src -> sg-0c0ffee0c0ffee001]",
+      "status": "FAIL",
+      "severity": "medium",
+      "severity_reason": "Medium (base)",
+      "reason": "Every reference points at something that exists: is violated for Reference[FilterRule[sg-0f1e2d3c4b5a69782:ingress:0].src -> sg-0c0ffee0c0ffee001].",
+      "actual": [
+        "Reference[FilterRule[sg-0f1e2d3c4b5a69782:ingress:0].src -> sg-0c0ffee0c0ffee001].resolved = false"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.json",
+          "line_start": 91,
+          "line_end": 95,
+          "raw": "@ Description \"Front end in the peered VPC\" GroupId sg-0c0ffee0c0ffee001 PeeringStatus active VpcId vpc-0c0ffee0c0ffee000 VpcPeeringConnectionId pcx-0c0ffee0c0ffee000",
+          "mapping_id": "aws_vpc/sg-ingress-group-stale",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "REF-DANGLING-01",
+      "entity_id": "Reference[FilterRule[sg-0f1e2d3c4b5a69782:ingress:1].src -> sg-0f1e2d3c4b5a69781]",
+      "status": "PASS",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Every reference points at something that exists: holds for Reference[FilterRule[sg-0f1e2d3c4b5a69782:ingress:1].src -> sg-0f1e2d3c4b5a69781].",
+      "actual": [
+        "Reference[FilterRule[sg-0f1e2d3c4b5a69782:ingress:1].src -> sg-0f1e2d3c4b5a69781].resolved = true"
+      ],
+      "defaults_used": [],
+      "evidence": [
+        {
+          "file": "weak.json",
+          "line_start": 108,
+          "line_end": 109,
+          "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+          "mapping_id": "aws_vpc/sg-ingress-group",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "rule_id": "SNMP-COMMUNITY-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "SVC-LEGACY-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "SVC-PROXY-ARP-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    },
+    {
+      "rule_id": "TIME-NTP-AUTH-01",
+      "entity_id": "Device[device]",
+      "status": "N/A",
+      "severity": null,
+      "severity_reason": null,
+      "reason": "Not applicable: the rule covers router, switch, firewall, white_box; this device is a cloud_filter.",
+      "actual": [],
+      "defaults_used": [],
+      "evidence": []
+    }
+  ],
+  "assurance": {
+    "statements": 48,
+    "understood": 48,
+    "unmapped": 0,
+    "near_miss": 0,
+    "understood_pct": 100.0,
+    "unmapped_patterns": [],
+    "review_findings": 0,
+    "mappings_used": [
+      {
+        "mapping": "aws_vpc/nacl-egress-ipv4@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 12
+      },
+      {
+        "mapping": "aws_vpc/nacl-entry@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 4
+      },
+      {
+        "mapping": "aws_vpc/nacl-ingress-ipv4@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 12
+      },
+      {
+        "mapping": "aws_vpc/network-acl-record@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "aws_vpc/security-group-record@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "aws_vpc/sg-egress-cidr@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "aws_vpc/sg-egress-protocol@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 3
+      },
+      {
+        "mapping": "aws_vpc/sg-egress@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 12
+      },
+      {
+        "mapping": "aws_vpc/sg-ingress-cidr@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 1
+      },
+      {
+        "mapping": "aws_vpc/sg-ingress-group-stale@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 6
+      },
+      {
+        "mapping": "aws_vpc/sg-ingress-group@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 14
+      },
+      {
+        "mapping": "aws_vpc/sg-ingress-protocol@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "aws_vpc/sg-ingress-tcp-ports@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 2
+      },
+      {
+        "mapping": "aws_vpc/sg-ingress@1",
+        "approved_by": [
+          "maintainer"
+        ],
+        "facts": 16
+      }
+    ],
+    "defaults_used": [],
+    "mappings_skipped_for_version": []
+  },
+  "sbm": {
+    "sbm_version": "0.10",
+    "device": {
+      "key": "device",
+      "evidence": [],
+      "type": "Device",
+      "hostname": {
+        "value": "vpc-0f1e2d3c4b5a69788",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 4,
+            "line_end": 36,
+            "raw": "@ Description \"default VPC security group\" GroupId sg-0f1e2d3c4b5a69780 GroupName default OwnerId 111122223333 VpcId vpc-0f1e2d3c4b5a69788",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
+        "default_source": null
+      },
+      "vendor": {
+        "value": "Amazon Web Services",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "\"SecurityGroups\": [",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 6,
+            "line_end": 6,
+            "raw": "\"IpPermissions\": [",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 14,
+            "line_end": 14,
+            "raw": "\"GroupId\": \"sg-0f1e2d3c4b5a69780\",",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 133,
+            "line_end": 133,
+            "raw": "\"NetworkAcls\": [",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 138,
+            "line_end": 138,
+            "raw": "\"NetworkAclId\": \"acl-0f1e2d3c4b5a69780\",",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 148,
+            "line_end": 148,
+            "raw": "\"RuleNumber\": 100",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
+        "default_source": null
+      },
+      "os_family": {
+        "value": "Amazon VPC",
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 2,
+            "line_end": 2,
+            "raw": "\"SecurityGroups\": [",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 6,
+            "line_end": 6,
+            "raw": "\"IpPermissions\": [",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 14,
+            "line_end": 14,
+            "raw": "\"GroupId\": \"sg-0f1e2d3c4b5a69780\",",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 133,
+            "line_end": 133,
+            "raw": "\"NetworkAcls\": [",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 138,
+            "line_end": 138,
+            "raw": "\"NetworkAclId\": \"acl-0f1e2d3c4b5a69780\",",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          },
+          {
+            "file": "weak.json",
+            "line_start": 148,
+            "line_end": 148,
+            "raw": "\"RuleNumber\": 100",
+            "mapping_id": null,
+            "mapping_version": null,
+            "approved_by": []
+          }
+        ],
+        "default_source": null
+      },
+      "os_version": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "model": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "serial": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "hardware": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "role": {
+        "value": "cloud_filter",
+        "state": "vendor_default",
+        "evidence": [],
+        "default_source": "aws_vpc/pack.yaml#default_role"
+      }
+    },
+    "entities": [
+      {
+        "key": "acl-0f1e2d3c4b5a69780:0",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "nacl:acl-0f1e2d3c4b5a69780:egress:ipv4",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 144,
+              "line_end": 148,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 100,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 144,
+              "line_end": 148,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 144,
+              "line_end": 148,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 144,
+              "line_end": 148,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 144,
+              "line_end": 148,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 144,
+              "line_end": 148,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 143,
+              "line_end": 143,
+              "raw": "Entries 0",
+              "mapping_id": "aws_vpc/nacl-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "acl-0f1e2d3c4b5a69780:1",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "nacl:acl-0f1e2d3c4b5a69780:egress:ipv4",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 151,
+              "line_end": 155,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 32767,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 151,
+              "line_end": 155,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 151,
+              "line_end": 155,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 151,
+              "line_end": 155,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 151,
+              "line_end": 155,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "deny",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 151,
+              "line_end": 155,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-egress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 150,
+              "line_end": 150,
+              "raw": "Entries 1",
+              "mapping_id": "aws_vpc/nacl-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "acl-0f1e2d3c4b5a69780:2",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "nacl:acl-0f1e2d3c4b5a69780:ingress:ipv4",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 158,
+              "line_end": 162,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 100,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 158,
+              "line_end": 162,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 158,
+              "line_end": 162,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 158,
+              "line_end": 162,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 158,
+              "line_end": 162,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 158,
+              "line_end": 162,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction allow RuleNumber 100",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 157,
+              "line_end": 157,
+              "raw": "Entries 2",
+              "mapping_id": "aws_vpc/nacl-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "acl-0f1e2d3c4b5a69780:3",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "nacl:acl-0f1e2d3c4b5a69780:ingress:ipv4",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 165,
+              "line_end": 169,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": 32767,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 165,
+              "line_end": 169,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 165,
+              "line_end": 169,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 165,
+              "line_end": 169,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 165,
+              "line_end": 169,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "deny",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 165,
+              "line_end": 169,
+              "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction deny RuleNumber 32767",
+              "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 164,
+              "line_end": 164,
+              "raw": "Entries 3",
+              "mapping_id": "aws_vpc/nacl-entry",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg-0f1e2d3c4b5a69780:egress:0",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "sg:sg-0f1e2d3c4b5a69780:egress",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 21,
+              "line_end": 21,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 21,
+              "line_end": 21,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 25,
+              "line_end": 25,
+              "raw": "@ CidrIp 0.0.0.0/0",
+              "mapping_id": "aws_vpc/sg-egress-cidr",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 22,
+              "line_end": 22,
+              "raw": "@ IpProtocol -1",
+              "mapping_id": "aws_vpc/sg-egress-protocol",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 21,
+              "line_end": 21,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 21,
+              "line_end": 21,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg-0f1e2d3c4b5a69780:ingress:0",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "sg:sg-0f1e2d3c4b5a69780:ingress",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "sg-0f1e2d3c4b5a69780"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 14,
+              "line_end": 15,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 8,
+              "line_end": 8,
+              "raw": "@ IpProtocol -1",
+              "mapping_id": "aws_vpc/sg-ingress-protocol",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 7,
+              "line_end": 7,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg-0f1e2d3c4b5a69781:egress:0",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "sg:sg-0f1e2d3c4b5a69781:egress",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 56,
+              "line_end": 56,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 56,
+              "line_end": 56,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 60,
+              "line_end": 60,
+              "raw": "@ CidrIp 0.0.0.0/0",
+              "mapping_id": "aws_vpc/sg-egress-cidr",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 57,
+              "line_end": 57,
+              "raw": "@ IpProtocol -1",
+              "mapping_id": "aws_vpc/sg-egress-protocol",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 56,
+              "line_end": 56,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 56,
+              "line_end": 56,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg-0f1e2d3c4b5a69781:ingress:0",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "sg:sg-0f1e2d3c4b5a69781:ingress",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 42,
+              "line_end": 42,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 46,
+              "line_end": 47,
+              "raw": "@ CidrIp 0.0.0.0/0 Description temporary",
+              "mapping_id": "aws_vpc/sg-ingress-cidr",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 42,
+              "line_end": 42,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 43,
+              "line_end": 43,
+              "raw": "@ IpProtocol -1",
+              "mapping_id": "aws_vpc/sg-ingress-protocol",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 42,
+              "line_end": 42,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 42,
+              "line_end": 42,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg-0f1e2d3c4b5a69782:egress:0",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "sg:sg-0f1e2d3c4b5a69782:egress",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 115,
+              "line_end": 115,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 115,
+              "line_end": 115,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 119,
+              "line_end": 119,
+              "raw": "@ CidrIp 0.0.0.0/0",
+              "mapping_id": "aws_vpc/sg-egress-cidr",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "ip"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 116,
+              "line_end": 116,
+              "raw": "@ IpProtocol -1",
+              "mapping_id": "aws_vpc/sg-egress-protocol",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 115,
+              "line_end": 115,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 115,
+              "line_end": 115,
+              "raw": "IpPermissionsEgress 0",
+              "mapping_id": "aws_vpc/sg-egress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg-0f1e2d3c4b5a69782:ingress:0",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "sg:sg-0f1e2d3c4b5a69782:ingress",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "sg-0c0ffee0c0ffee001"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 91,
+              "line_end": 95,
+              "raw": "@ Description \"Front end in the peered VPC\" GroupId sg-0c0ffee0c0ffee001 PeeringStatus active VpcId vpc-0c0ffee0c0ffee000 VpcPeeringConnectionId pcx-0c0ffee0c0ffee000",
+              "mapping_id": "aws_vpc/sg-ingress-group-stale",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "tcp/8080-8080"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 83,
+              "line_end": 88,
+              "raw": "@ FromPort 8080 IpProtocol tcp ToPort 8080",
+              "mapping_id": "aws_vpc/sg-ingress-tcp-ports",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 82,
+              "line_end": 82,
+              "raw": "IpPermissions 0",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg-0f1e2d3c4b5a69782:ingress:1",
+        "evidence": [],
+        "type": "FilterRule",
+        "ruleset": {
+          "value": "sg:sg-0f1e2d3c4b5a69782:ingress",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 99,
+              "line_end": 99,
+              "raw": "IpPermissions 1",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "position": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "name": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "src": {
+          "value": [
+            "sg-0f1e2d3c4b5a69781"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 108,
+              "line_end": 109,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "dst": {
+          "value": [
+            "any"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 99,
+              "line_end": 99,
+              "raw": "IpPermissions 1",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "service": {
+          "value": [
+            "tcp/8080-8080"
+          ],
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 100,
+              "line_end": 105,
+              "raw": "@ FromPort 8080 IpProtocol tcp ToPort 8080",
+              "mapping_id": "aws_vpc/sg-ingress-tcp-ports",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "action": {
+          "value": "permit",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 99,
+              "line_end": 99,
+              "raw": "IpPermissions 1",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "log": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "enabled": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 99,
+              "line_end": 99,
+              "raw": "IpPermissions 1",
+              "mapping_id": "aws_vpc/sg-ingress",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "zone_from": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "zone_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "applications": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "interfaces": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "negated": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "narrowed": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "network_acl:acl-0f1e2d3c4b5a69780",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 134,
+            "line_end": 134,
+            "raw": "NetworkAcls acl-0f1e2d3c4b5a69780",
+            "mapping_id": "aws_vpc/network-acl",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "network_acl",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 172,
+              "line_end": 176,
+              "raw": "@ IsDefault true NetworkAclId acl-0f1e2d3c4b5a69780 OwnerId 111122223333 VpcId vpc-0f1e2d3c4b5a69788",
+              "mapping_id": "aws_vpc/network-acl-record",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "security_group:sg-0f1e2d3c4b5a69780",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 3,
+            "line_end": 3,
+            "raw": "SecurityGroups sg-0f1e2d3c4b5a69780",
+            "mapping_id": "aws_vpc/security-group",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "security_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 4,
+              "line_end": 36,
+              "raw": "@ Description \"default VPC security group\" GroupId sg-0f1e2d3c4b5a69780 GroupName default OwnerId 111122223333 VpcId vpc-0f1e2d3c4b5a69788",
+              "mapping_id": "aws_vpc/security-group-record",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "security_group:sg-0f1e2d3c4b5a69781",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 38,
+            "line_end": 38,
+            "raw": "SecurityGroups sg-0f1e2d3c4b5a69781",
+            "mapping_id": "aws_vpc/security-group",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "security_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 39,
+              "line_end": 76,
+              "raw": "@ Description \"Legacy admin access\" GroupId sg-0f1e2d3c4b5a69781 GroupName legacy-admin OwnerId 111122223333 VpcId vpc-0f1e2d3c4b5a69788",
+              "mapping_id": "aws_vpc/security-group-record",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "security_group:sg-0f1e2d3c4b5a69782",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 78,
+            "line_end": 78,
+            "raw": "SecurityGroups sg-0f1e2d3c4b5a69782",
+            "mapping_id": "aws_vpc/security-group",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "ObjectDef",
+        "kind": {
+          "value": "security_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 79,
+              "line_end": 130,
+              "raw": "@ Description \"Application servers\" GroupId sg-0f1e2d3c4b5a69782 GroupName app OwnerId 111122223333 VpcId vpc-0f1e2d3c4b5a69788",
+              "mapping_id": "aws_vpc/security-group-record",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "members": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "expanded": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permitted_sources": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "destinations": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "FilterRule[sg-0f1e2d3c4b5a69780:ingress:0].src -> sg-0f1e2d3c4b5a69780",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 14,
+            "line_end": 15,
+            "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+            "mapping_id": "aws_vpc/sg-ingress-group",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[sg-0f1e2d3c4b5a69780:ingress:0]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 14,
+              "line_end": 15,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.src",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 14,
+              "line_end": 15,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "security_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 14,
+              "line_end": 15,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "sg-0f1e2d3c4b5a69780",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 14,
+              "line_end": 15,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 14,
+              "line_end": 15,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[security_group:sg-0f1e2d3c4b5a69780]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 14,
+              "line_end": 15,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69780 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "FilterRule[sg-0f1e2d3c4b5a69782:ingress:0].src -> sg-0c0ffee0c0ffee001",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 91,
+            "line_end": 95,
+            "raw": "@ Description \"Front end in the peered VPC\" GroupId sg-0c0ffee0c0ffee001 PeeringStatus active VpcId vpc-0c0ffee0c0ffee000 VpcPeeringConnectionId pcx-0c0ffee0c0ffee000",
+            "mapping_id": "aws_vpc/sg-ingress-group-stale",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[sg-0f1e2d3c4b5a69782:ingress:0]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 91,
+              "line_end": 95,
+              "raw": "@ Description \"Front end in the peered VPC\" GroupId sg-0c0ffee0c0ffee001 PeeringStatus active VpcId vpc-0c0ffee0c0ffee000 VpcPeeringConnectionId pcx-0c0ffee0c0ffee000",
+              "mapping_id": "aws_vpc/sg-ingress-group-stale",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.src",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 91,
+              "line_end": 95,
+              "raw": "@ Description \"Front end in the peered VPC\" GroupId sg-0c0ffee0c0ffee001 PeeringStatus active VpcId vpc-0c0ffee0c0ffee000 VpcPeeringConnectionId pcx-0c0ffee0c0ffee000",
+              "mapping_id": "aws_vpc/sg-ingress-group-stale",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "security_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 91,
+              "line_end": 95,
+              "raw": "@ Description \"Front end in the peered VPC\" GroupId sg-0c0ffee0c0ffee001 PeeringStatus active VpcId vpc-0c0ffee0c0ffee000 VpcPeeringConnectionId pcx-0c0ffee0c0ffee000",
+              "mapping_id": "aws_vpc/sg-ingress-group-stale",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "sg-0c0ffee0c0ffee001",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 91,
+              "line_end": 95,
+              "raw": "@ Description \"Front end in the peered VPC\" GroupId sg-0c0ffee0c0ffee001 PeeringStatus active VpcId vpc-0c0ffee0c0ffee000 VpcPeeringConnectionId pcx-0c0ffee0c0ffee000",
+              "mapping_id": "aws_vpc/sg-ingress-group-stale",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": false,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 91,
+              "line_end": 95,
+              "raw": "@ Description \"Front end in the peered VPC\" GroupId sg-0c0ffee0c0ffee001 PeeringStatus active VpcId vpc-0c0ffee0c0ffee000 VpcPeeringConnectionId pcx-0c0ffee0c0ffee000",
+              "mapping_id": "aws_vpc/sg-ingress-group-stale",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "FilterRule[sg-0f1e2d3c4b5a69782:ingress:1].src -> sg-0f1e2d3c4b5a69781",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 108,
+            "line_end": 109,
+            "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+            "mapping_id": "aws_vpc/sg-ingress-group",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "type": "Reference",
+        "source": {
+          "value": "FilterRule[sg-0f1e2d3c4b5a69782:ingress:1]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 108,
+              "line_end": 109,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "attribute": {
+          "value": "FilterRule.src",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 108,
+              "line_end": 109,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target_kind": {
+          "value": "security_group",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 108,
+              "line_end": 109,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "name": {
+          "value": "sg-0f1e2d3c4b5a69781",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 108,
+              "line_end": 109,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "resolved": {
+          "value": true,
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 108,
+              "line_end": 109,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "target": {
+          "value": "ObjectDef[security_group:sg-0f1e2d3c4b5a69781]",
+          "state": "explicit",
+          "evidence": [
+            {
+              "file": "weak.json",
+              "line_start": 108,
+              "line_end": 109,
+              "raw": "@ GroupId sg-0f1e2d3c4b5a69781 UserId 111122223333",
+              "mapping_id": "aws_vpc/sg-ingress-group",
+              "mapping_version": 1,
+              "approved_by": [
+                "maintainer"
+              ]
+            }
+          ],
+          "default_source": null
+        },
+        "permits_any": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "nacl:acl-0f1e2d3c4b5a69780:egress:ipv4",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": "position",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#nacl-rule-number-order"
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#nacl-unmatched-denied"
+        },
+        "when_empty": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#nacl-empty-denies"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "nacl:acl-0f1e2d3c4b5a69780:ingress:ipv4",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": "position",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#nacl-rule-number-order"
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#nacl-unmatched-denied"
+        },
+        "when_empty": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#nacl-empty-denies"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg:sg-0f1e2d3c4b5a69780:egress",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": "config",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-order-irrelevant"
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-unmatched-denied"
+        },
+        "when_empty": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-empty-denies"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg:sg-0f1e2d3c4b5a69780:ingress",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": "config",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-order-irrelevant"
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-unmatched-denied"
+        },
+        "when_empty": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-empty-denies"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg:sg-0f1e2d3c4b5a69781:egress",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": "config",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-order-irrelevant"
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-unmatched-denied"
+        },
+        "when_empty": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-empty-denies"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg:sg-0f1e2d3c4b5a69781:ingress",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": "config",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-order-irrelevant"
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-unmatched-denied"
+        },
+        "when_empty": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-empty-denies"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg:sg-0f1e2d3c4b5a69782:egress",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": "config",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-order-irrelevant"
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-unmatched-denied"
+        },
+        "when_empty": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-empty-denies"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      },
+      {
+        "key": "sg:sg-0f1e2d3c4b5a69782:ingress",
+        "evidence": [],
+        "type": "Ruleset",
+        "order": {
+          "value": "config",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-order-irrelevant"
+        },
+        "unmatched": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-unmatched-denied"
+        },
+        "when_empty": {
+          "value": "deny",
+          "state": "vendor_default",
+          "evidence": [],
+          "default_source": "aws_vpc/defaults.yaml#sg-empty-denies"
+        },
+        "applies_to": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        },
+        "family": {
+          "value": null,
+          "state": "absent",
+          "evidence": [],
+          "default_source": null
+        }
+      }
+    ],
+    "derived": {
+      "aaa.central_login_in_use": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "filtering.permit_all_present": {
+        "value": true,
+        "state": "explicit",
+        "evidence": [
+          {
+            "file": "weak.json",
+            "line_start": 21,
+            "line_end": 21,
+            "raw": "IpPermissionsEgress 0",
+            "mapping_id": "aws_vpc/sg-egress",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 22,
+            "line_end": 22,
+            "raw": "@ IpProtocol -1",
+            "mapping_id": "aws_vpc/sg-egress-protocol",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 25,
+            "line_end": 25,
+            "raw": "@ CidrIp 0.0.0.0/0",
+            "mapping_id": "aws_vpc/sg-egress-cidr",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 42,
+            "line_end": 42,
+            "raw": "IpPermissions 0",
+            "mapping_id": "aws_vpc/sg-ingress",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 43,
+            "line_end": 43,
+            "raw": "@ IpProtocol -1",
+            "mapping_id": "aws_vpc/sg-ingress-protocol",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 46,
+            "line_end": 47,
+            "raw": "@ CidrIp 0.0.0.0/0 Description temporary",
+            "mapping_id": "aws_vpc/sg-ingress-cidr",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 56,
+            "line_end": 56,
+            "raw": "IpPermissionsEgress 0",
+            "mapping_id": "aws_vpc/sg-egress",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 57,
+            "line_end": 57,
+            "raw": "@ IpProtocol -1",
+            "mapping_id": "aws_vpc/sg-egress-protocol",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 60,
+            "line_end": 60,
+            "raw": "@ CidrIp 0.0.0.0/0",
+            "mapping_id": "aws_vpc/sg-egress-cidr",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 115,
+            "line_end": 115,
+            "raw": "IpPermissionsEgress 0",
+            "mapping_id": "aws_vpc/sg-egress",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 116,
+            "line_end": 116,
+            "raw": "@ IpProtocol -1",
+            "mapping_id": "aws_vpc/sg-egress-protocol",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 119,
+            "line_end": 119,
+            "raw": "@ CidrIp 0.0.0.0/0",
+            "mapping_id": "aws_vpc/sg-egress-cidr",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 143,
+            "line_end": 143,
+            "raw": "Entries 0",
+            "mapping_id": "aws_vpc/nacl-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 144,
+            "line_end": 148,
+            "raw": "@ CidrBlock 0.0.0.0/0 Egress true Protocol -1 RuleAction allow RuleNumber 100",
+            "mapping_id": "aws_vpc/nacl-egress-ipv4",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 157,
+            "line_end": 157,
+            "raw": "Entries 2",
+            "mapping_id": "aws_vpc/nacl-entry",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          },
+          {
+            "file": "weak.json",
+            "line_start": 158,
+            "line_end": 162,
+            "raw": "@ CidrBlock 0.0.0.0/0 Egress false Protocol -1 RuleAction allow RuleNumber 100",
+            "mapping_id": "aws_vpc/nacl-ingress-ipv4",
+            "mapping_version": 1,
+            "approved_by": [
+              "maintainer"
+            ]
+          }
+        ],
+        "default_source": null
+      },
+      "logging.remote_configured": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "management.http_enabled": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "management.login_banner_present": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "management.ssh_reachable": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "management.ssh_v1_negotiable": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "management.telnet_reachable": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "services.legacy_enabled": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      },
+      "snmp.weak_community_present": {
+        "value": null,
+        "state": "absent",
+        "evidence": [],
+        "default_source": null
+      }
+    },
+    "known_empty": {},
+    "unread": {}
+  },
+  "warnings": [],
+  "companions": [],
+  "inventory": []
+}

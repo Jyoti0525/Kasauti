@@ -168,6 +168,21 @@ def _deep_yaml(size: int) -> bytes:
     return b"".join(b"  " * i + b"k:\n" for i in range(min(size // 400, 20000)))
 
 
+def _aws_rules(size: int) -> bytes:
+    rule = b'{"IpProtocol": "-1", "IpRanges": [{"CidrIp": "0.0.0.0/0"}]},'
+    body = _repeat(rule, size - 200)
+    return b'{"SecurityGroups": [{"GroupId": "sg-1", "IpPermissions": [' + body + b"{}]}]}"
+
+
+def _aws_fields(size: int) -> bytes:
+    fields = b"".join(b'"F%d": %d,' % (i, i) for i in range(size // 16))
+    return b'{"NetworkAcls": [{"NetworkAclId": "acl-1", "Entries": [{' + fields + b'"Z": 0}]}]}'
+
+
+def _aws_duplicates(size: int) -> bytes:
+    return b'{"SecurityGroups": [{"GroupId": "sg-1",' + _repeat(b'"A": 1,', size) + b'"B": 2}]}'
+
+
 def _deep_braces(size: int) -> bytes:
     depth = size // 6
     return b"system {\n" + b"a {\n" * depth + b"}\n" * (depth + 1)
@@ -209,6 +224,10 @@ FILES = [
     Case("aliases.yaml", _aliases, "a YAML alias bomb"),
     Case("tags.yaml", lambda _s: b"a: !!python/object/apply:os.system ['id']\n", "a code tag"),
     Case("deep.yaml", _deep_yaml, "YAML nested deep by indentation"),
+    # AWS CLI exports, read as records when named for the AWS pack (M2.31).
+    Case("aws-rules.json", _aws_rules, "a security group with very many rules"),
+    Case("aws-fields.json", _aws_fields, "one network ACL entry with very many fields"),
+    Case("aws-dupkeys.json", _aws_duplicates, "one key given again and again"),
     Case("deep.conf", _deep_braces, "braces nested as deep as the size allows"),
     Case("comments.conf", lambda s: _repeat(b"/* ", s), "unclosed block comments, repeated"),
     Case("quotes.conf", lambda s: _repeat(b'set a "', s), "unclosed quotes, repeated"),

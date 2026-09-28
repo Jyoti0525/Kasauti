@@ -1,0 +1,179 @@
+{
+    "SecurityGroups": [
+        {
+            "Description": "default VPC security group",
+            "GroupName": "default",
+            "IpPermissions": [
+                {
+                    "IpProtocol": "-1",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": [
+                        {
+                            "GroupId": "sg-0f1e2d3c4b5a69780",
+                            "UserId": "111122223333"
+                        }
+                    ]
+                }
+            ],
+            "IpPermissionsEgress": [
+                {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "OwnerId": "111122223333",
+            "GroupId": "sg-0f1e2d3c4b5a69780",
+            "Tags": [],
+            "VpcId": "vpc-0f1e2d3c4b5a69788"
+        },
+        {
+            "Description": "Legacy admin access",
+            "GroupName": "legacy-admin",
+            "IpPermissions": [
+                {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0",
+                            "Description": "temporary"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "IpPermissionsEgress": [
+                {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "OwnerId": "111122223333",
+            "GroupId": "sg-0f1e2d3c4b5a69781",
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "legacy-admin"
+                }
+            ],
+            "VpcId": "vpc-0f1e2d3c4b5a69788"
+        },
+        {
+            "Description": "Application servers",
+            "GroupName": "app",
+            "IpPermissions": [
+                {
+                    "FromPort": 8080,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 8080,
+                    "UserIdGroupPairs": [
+                        {
+                            "Description": "Front end in the peered VPC",
+                            "GroupId": "sg-0c0ffee0c0ffee001",
+                            "PeeringStatus": "active",
+                            "VpcId": "vpc-0c0ffee0c0ffee000",
+                            "VpcPeeringConnectionId": "pcx-0c0ffee0c0ffee000"
+                        }
+                    ]
+                },
+                {
+                    "FromPort": 8080,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "ToPort": 8080,
+                    "UserIdGroupPairs": [
+                        {
+                            "GroupId": "sg-0f1e2d3c4b5a69781",
+                            "UserId": "111122223333"
+                        }
+                    ]
+                }
+            ],
+            "IpPermissionsEgress": [
+                {
+                    "IpProtocol": "-1",
+                    "IpRanges": [
+                        {
+                            "CidrIp": "0.0.0.0/0"
+                        }
+                    ],
+                    "Ipv6Ranges": [],
+                    "PrefixListIds": [],
+                    "UserIdGroupPairs": []
+                }
+            ],
+            "OwnerId": "111122223333",
+            "GroupId": "sg-0f1e2d3c4b5a69782",
+            "Tags": [],
+            "VpcId": "vpc-0f1e2d3c4b5a69788"
+        }
+    ],
+    "NetworkAcls": [
+        {
+            "Associations": [
+                {
+                    "NetworkAclAssociationId": "aclassoc-0f1e2d3c4b5a69781",
+                    "NetworkAclId": "acl-0f1e2d3c4b5a69780",
+                    "SubnetId": "subnet-0f1e2d3c4b5a69781"
+                }
+            ],
+            "Entries": [
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": true,
+                    "Protocol": "-1",
+                    "RuleAction": "allow",
+                    "RuleNumber": 100
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": true,
+                    "Protocol": "-1",
+                    "RuleAction": "deny",
+                    "RuleNumber": 32767
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": false,
+                    "Protocol": "-1",
+                    "RuleAction": "allow",
+                    "RuleNumber": 100
+                },
+                {
+                    "CidrBlock": "0.0.0.0/0",
+                    "Egress": false,
+                    "Protocol": "-1",
+                    "RuleAction": "deny",
+                    "RuleNumber": 32767
+                }
+            ],
+            "IsDefault": true,
+            "NetworkAclId": "acl-0f1e2d3c4b5a69780",
+            "Tags": [],
+            "VpcId": "vpc-0f1e2d3c4b5a69788",
+            "OwnerId": "111122223333"
+        }
+    ]
+}

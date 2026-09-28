@@ -55,6 +55,24 @@ class SetForm(_Strict):
     back as one list, their values in order wherever their lines are."""
 
 
+class Records(_Strict):
+    """How a JSON/YAML pack's list items read (TODO M2.31). Cloud exports keep one rule's facts
+    in separate fields of one object (``IpProtocol``, ``FromPort``, ``ToPort``), and a mapping
+    reads one statement: each list item's scalar fields, and those of the objects inside it
+    (``PortRange.From``), are rendered as one statement, ``@`` then each key and value in key
+    order. Lists inside the item are rendered as before, beneath it. An object giving a key
+    twice is refused (read line by line, with the reason): readers differ on which one counts."""
+
+    names: dict[str, str] = Field(default_factory=dict)
+    """List key -> the field that names its items (``SecurityGroups: GroupId`` renders
+    ``SecurityGroups sg-0a1b``). Items of other lists, or without that field, are numbered
+    from 0 in the order the file lists them."""
+    sections: tuple[str, ...] = ()
+    """The top-level keys a whole export holds (``SecurityGroups``, ``NetworkAcls``). A file
+    without one of them holds only part of what is audited, and is read as partial: no rule
+    passes on what it doesn't show."""
+
+
 class VendorManifest(_Strict):
     format_version: Literal[1]
     id: Slug
@@ -74,12 +92,16 @@ class VendorManifest(_Strict):
     ``vendor_default``, so an inferred or admin-set role always wins (PLAN §7)."""
     set_form: SetForm | None = None
     """The configuration can also come as ``set`` commands (Junos ``display set``)."""
+    records: Records | None = None
+    """JSON/YAML only: list items read as records (a cloud export's rules)."""
     description: str = ""
 
     @model_validator(mode="after")
     def _set_form_needs_blocks(self) -> Self:
         if self.set_form is not None and self.shape_family is not ShapeFamily.BRACE:
             raise ValueError("set_form rebuilds a brace tree: shape_family must be brace")
+        if self.records is not None and self.shape_family is not ShapeFamily.JSON_YAML:
+            raise ValueError("records are for JSON/YAML packs: shape_family must be json_yaml")
         return self
 
 
@@ -150,12 +172,20 @@ class IdentitySource(_Strict):
     """Instead of ``pattern``: an RE2 expression with a named group ``value``, matched against
     each raw line, comments included. For identity that vendors print in comment headers:
     EOS ``! device: leaf1 (DCS-7050SX3, EOS-4.30.1F)``, FortiGate ``#config-version=…``."""
+    field: str | None = Field(default=None, pattern=r"^[A-Za-z][A-Za-z0-9_.]*$")
+    """Instead of ``pattern`` or ``regex``, for packs that read records (``Records``): the
+    value of this field in a record in ``context`` (``VpcId`` in ``@ … VpcId vpc-1a2b``)."""
     context: tuple[Pattern, ...] = ()
+    all_agree: bool = False
+    """Every place the field's ``all_agree`` sources find it must give the same value, or the
+    field is left unset and the report says why. An AWS export names a VPC on every group; one
+    spanning several VPCs is no single device's, and naming it after the first would mislabel
+    it."""
 
     @model_validator(mode="after")
     def _captures_value(self) -> Self:
-        if (self.pattern is None) == (self.regex is None):
-            raise ValueError("give exactly one of `pattern` and `regex`")
+        if sum(x is not None for x in (self.pattern, self.regex, self.field)) != 1:
+            raise ValueError("give exactly one of `pattern`, `regex` and `field`")
         if self.pattern is not None and "value" not in slot_names(self.pattern):
             raise ValueError(f"identity pattern {self.pattern!r} must capture a `value` slot")
         if self.regex is not None:
@@ -164,6 +194,8 @@ class IdentitySource(_Strict):
                 raise ValueError("an identity regex needs a named group (?P<value>...)")
             if self.context:
                 raise ValueError("`context` applies to patterns, not to raw-line regexes")
+        if self.field is not None and self.source != "config":
+            raise ValueError("`field` reads a configuration's records")
         return self
 
 

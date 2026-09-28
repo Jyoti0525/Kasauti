@@ -1,0 +1,8 @@
+# Where identity appears (PLAN §7). The device is the VPC: every security group and network ACL
+# names it (`VpcId`). An export spanning several VPCs is no single device's, so every group and
+# ACL must name the same one, or no hostname is taken and the report says why. An AWS export
+# has no OS version, model or serial number; those stay "not present".
+fields:
+  hostname:
+    - {source: config, context: ["SecurityGroups <STR:g>"], field: VpcId, all_agree: true}
+    - {source: config, context: ["NetworkAcls <STR:a>"], field: VpcId, all_agree: true}

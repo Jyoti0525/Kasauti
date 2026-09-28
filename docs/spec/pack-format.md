@@ -14,7 +14,15 @@ packs/
                                 the pack's mappings expect blocks; a part of a configuration is
                                 marked partial. A `[ … ]` set of values is one statement per
                                 value; `leaf_lists` names the ordered lists given back as one
-                                `[ … ]` statement, values in order
+                                `[ … ]` statement, values in order;
+                                `records` (json_yaml packs only): each list item's scalar fields
+                                are one statement, `@` and each key and value in key order
+                                (`@ FromPort 22 IpProtocol tcp ToPort 22`, nested objects as
+                                `PortRange.From`); `names` gives the field naming a list's items
+                                (`SecurityGroups: GroupId`), others are numbered from 0; a key
+                                given twice is refused (read line by line, with the reason); a
+                                file without one of `sections` (the top-level keys a whole
+                                export holds) is partial
     detect.yaml                 fingerprint signatures (contains | line_prefix | regex | json_key | xml_path),
                                 and `warnings`: patterns saying the file isn't what the audit
                                 expects (a Panorama export); a match adds a warning, never a verdict;
@@ -98,7 +106,12 @@ Rules (checked when the pack loads and when the defaults are applied):
 ## Identity and catalogs
 
 - An `identity.yaml` pattern must capture a slot named `value` (`hostname <STR:value>`).
-- A source gives either `pattern` or `regex`, never both. A `regex` is RE2 (linear time)
+- A source gives one of `pattern`, `regex` and `field`. `field` is for packs that read
+  records: the value of that field in a record in `context` (AWS `VpcId`). With `all_agree`,
+  every value the field's `all_agree` sources find must be the same, or the field is left unset
+  and the report says which values it found: an AWS export spanning several VPCs is no single
+  device's.
+- A `regex` is RE2 (linear time)
   with a named group `(?P<value>…)`, matched against each raw line, comments included. It is for
   identity that vendors print only in comments (EOS `! device: … EOS-4.30.1F)`); it takes no
   `context`, and its evidence line is masked like any other.

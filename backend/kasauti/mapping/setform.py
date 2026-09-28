@@ -58,11 +58,13 @@ from kasauti.mapping.commands import (
 from kasauti.mapping.match import Compiled, match_tokens
 from kasauti.mapping.model import Mapping, PatternToken, Slot, Word, parse_pattern
 from kasauti.packs.loader import VendorPack
+from kasauti.packs.model import Records
 from kasauti.shape import brace
 from kasauti.shape.base import ParseError, RawStatement, check_depth
 from kasauti.shape.lines import logical_lines, parse_flat
 from kasauti.shape.model import ConfigTree, ShapeFamily
 from kasauti.shape.parse import build_tree, parse_text
+from kasauti.shape.structured import parse_records
 from kasauti.shape.tokens import split_lines, tokenize
 
 Block = tuple[PatternToken, ...]
@@ -109,6 +111,8 @@ def parse_config(
     that can't be read so is read line by line with the reason, as when a parser rejects one."""
     family = pack.manifest.shape_family
     form = pack.manifest.set_form
+    if pack.manifest.records is not None:
+        return _records(text, pack.manifest.records, source_file=source_file, sha256=sha256)
     if form is None:
         return parse_text(text, source_file=source_file, family=family, sha256=sha256)
     reader = SetFormReader(pack.mappings, form.leaf_lists)
@@ -136,6 +140,35 @@ def parse_config(
         rebuilt_from=ShapeFamily.SET_PATH if rebuilt else None,
         partial=replayed.partial,
         order=_order(raws) if replayed.reordered else None,
+    )
+
+
+def _records(text: str, records: Records, *, source_file: str, sha256: str | None) -> ConfigTree:
+    """A JSON/YAML export read as records (``Records``). One that isn't valid JSON/YAML, or
+    gives a key twice, is read line by line with the reason."""
+    try:
+        raws, keys = parse_records(text, records.names)
+    except ParseError as err:
+        return build_tree(
+            parse_flat(text),
+            ShapeFamily.FLAT,
+            text=text,
+            source_file=source_file,
+            sha256=sha256,
+            warnings=[
+                f"not valid {ShapeFamily.JSON_YAML.value} syntax ({err}); "
+                "parsed line by line instead"
+            ],
+        )
+    missing = [s for s in records.sections if s not in keys]
+    partial = [f"the file doesn't hold {', '.join(missing)}"] if missing else []
+    return build_tree(
+        raws,
+        ShapeFamily.JSON_YAML,
+        text=text,
+        source_file=source_file,
+        sha256=sha256,
+        partial=partial,
     )
 
 
