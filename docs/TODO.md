@@ -1,4 +1,4 @@
-# Kasauti (कसौटी): Build TODO
+# Kasauti: Build TODO
 
 Companion to [PLAN.md](PLAN.md) v5.1 (frozen). This file turns the whole plan into tasks we can tick off. Created 2026-09-26.
 
@@ -41,7 +41,7 @@ Companion to [PLAN.md](PLAN.md) v5.1 (frozen). This file turns the whole plan in
 
 ## Decisions to close (PLAN §29)
 
-- [x] **DEC.1** Product name: **Kasauti (कसौटी)**, decided 2026-09-25.
+- [x] **DEC.1** Product name: **Kasauti**, decided 2026-09-25; English name only in the product, logo and reports (2026-09-28).
 - [x] **DEC.2** Team: **one developer + Claude**, decided 2026-09-26. Every task is ours; the tags mark work areas (§24).
 - [x] **DEC.3** NCIIPC outreach: **you**, by email only, since the site doesn't open for us (C.01). Claude drafts the email. Decided 2026-09-26.
 - [ ] **DEC.4** Does live collection make the demo? Depends on lab availability and disk. *Decide at the M5 gate* (X.04, X.05).
@@ -449,7 +449,7 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
   - eslint, prettier, Vitest
   - npm audit in CI
 
-  *(§19.3, §19.4)* `@ui` Done 2026-09-28 (v5.1.34), with fewer dependencies than listed, on purpose: the runtime is React, React DOM, React Router 7, TanStack Query and lucide (MIT/ISC), 5 packages. Charts are plain SVG (Recharts would bring Redux, Immer and more), the drop area is 100 lines of our own (it also reads dropped folders), and the configuration viewer is built from the result's evidence (Monaco needs web workers and a looser CSP to show read-only lines). Radix, Zustand and TanStack Table weren't needed. Pinned for Node ≥ 20.19 (the dev laptop's); `npm run licences` applies the Python gate's policy to all 249 locked packages; CI job `web` runs npm ci, licences, npm audit, eslint, prettier, tsc, Vitest and the build. Served by `kasauti serve` from `frontend/dist`, same origin, under its own CSP (no inline script or style, nothing from another origin); only files of a known type inside the build folder are served (tests/api/test_app.py: traversal, types, policies).
+  *(§19.3, §19.4)* `@ui` Done 2026-09-28 (v5.1.34), with fewer dependencies than listed, on purpose: the runtime is React, React DOM, React Router 7, TanStack Query and lucide (MIT/ISC), 5 packages, plus IBM Plex (OFL-1.1) since v5.1.35. Charts are plain SVG (Recharts would bring Redux, Immer and more), the drop area is 100 lines of our own (it also reads dropped folders), and the configuration viewer is built from the result's evidence (Monaco needs web workers and a looser CSP to show read-only lines). Radix, Zustand and TanStack Table weren't needed. Pinned for Node ≥ 20.19 (the dev laptop's); `npm run licences` applies the Python gate's policy to all locked packages (251), accepting SIL OFL-1.1 only for the two `@fontsource` font packages; CI job `web` runs npm ci, licences, npm audit, eslint, prettier, tsc, Vitest and the build. Served by `kasauti serve` from `frontend/dist`, same origin, under its own CSP (no inline script or style, nothing from another origin); only files of a known type inside the build folder are served (tests/api/test_app.py: traversal, types, policies). Redesigned 2026-09-28 (v5.1.35): the "basalt and brass" design system, IBM Plex bundled, the logo, a top bar, one posture panel per scope, and verdict colours kept for verdicts.
 - [x] **M2.76** Dashboard: fleet Compliance % and Coverage % per framework and per vendor, top failing controls, riskiest devices, coverage per vendor. `@ui` Done 2026-09-28 (v5.1.34): the latest audit of each device; fleet scores pool rule counts as one device's are pooled (averaging percentages would weigh a 2-rule device like a 20-rule one); failing checks count at their findings' effective severity (exposure can raise it); `GET /api/audits` gives each audit's summary, worked out once from the stored result. `tools/demo_seed.py` fills a demo database through the API.
 - [~] **M2.77** New audit: name → frameworks → scope domains → drop files (single, bulk, zip, companions) → start. `@ui` Includes M2.06's correction UI: the devices found, each file's `note`, and pairing by hand through `PUT …/pairing`; Start stays disabled while `recognising` > 0. Done 2026-09-28 (v5.1.34) except **scope domains**: the server has no audit-time domain selection yet (every rule runs; the results filter by domain). Needs `domains` on the upload, carried to `audit()`, with scores over the chosen domains only.
 - [x] **M2.78** Audit results: device list with scores, identity completeness, and signed-PDF download (single or bulk zip). `@ui` Done 2026-09-28 (v5.1.34): live while audits run; each device's PDF and the upload's zip. The PDF is unsigned until M5.14 and says so on its cover.

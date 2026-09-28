@@ -1,14 +1,21 @@
 import { useMemo, useState } from "react";
 import type { AuditResult, Entity, Fact, FactState } from "../../api/types";
-import { Mono, cx } from "../../components/ui";
+import { Card, Mono, cx } from "../../components/ui";
 import { show } from "../../lib/format";
 
 const STATE: Record<FactState, string> = {
   explicit: "text-text",
-  vendor_default: "text-gold",
+  vendor_default: "text-brass-ink",
   absent: "text-faint",
   unknown: "text-review",
 };
+
+const LEGEND: { state: FactState; label: string; dot: string }[] = [
+  { state: "explicit", label: "Configured", dot: "bg-text" },
+  { state: "vendor_default", label: "Vendor default (documented, cited)", dot: "bg-brass" },
+  { state: "absent", label: "Absent", dot: "bg-faint" },
+  { state: "unknown", label: "Unknown: waits for review, never guessed", dot: "bg-review" },
+];
 
 function isFact(v: unknown): v is Fact {
   return Boolean(v && typeof v === "object" && "state" in v && "evidence" in v);
@@ -27,71 +34,73 @@ export function Model({ result }: { result: AuditResult }) {
   const attributes = [
     ...new Set(entities.flatMap((e) => Object.keys(e).filter((k) => isFact(e[k])))),
   ];
+  const item = (active: boolean) =>
+    cx(
+      "flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-[13.5px] transition-colors",
+      active
+        ? "bg-surface font-medium shadow-[0_0_0_1px_var(--line)]"
+        : "text-muted hover:text-text",
+    );
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[14rem_1fr]">
+    <div className="grid gap-6 lg:grid-cols-[15rem_1fr]">
       <nav className="space-y-0.5" aria-label="Entity types">
+        <div className="mb-2 px-3 text-[12px] font-medium text-faint">Object types</div>
         {groups.map(([t, list]) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setType(t)}
-            className={cx(
-              "flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-sm",
-              t === type ? "bg-surface-2 font-medium" : "text-muted hover:bg-surface-2",
-            )}
-          >
+          <button key={t} type="button" onClick={() => setType(t)} className={item(t === type)}>
             {t}
-            <span className="text-xs tabular-nums text-faint">{list.length}</span>
+            <span className="figure text-[12px] text-faint">{list.length}</span>
           </button>
         ))}
+        <div className="my-2 border-t border-line" />
         <button
           type="button"
           onClick={() => setType("__derived")}
-          className={cx(
-            "mt-3 flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-sm",
-            type === "__derived" ? "bg-surface-2 font-medium" : "text-muted hover:bg-surface-2",
-          )}
+          className={item(type === "__derived")}
         >
           Derived facts
-          <span className="text-xs tabular-nums text-faint">
+          <span className="figure text-[12px] text-faint">
             {Object.keys(result.sbm.derived).length}
           </span>
         </button>
       </nav>
 
       <div className="min-w-0">
-        <div className="mb-2 flex flex-wrap gap-3 text-[11px] text-muted">
-          <span>
-            Values: <b className="font-medium text-text">explicit</b> (configured)
-          </span>
-          <span className="text-gold">vendor default (documented, cited)</span>
-          <span className="text-faint">absent</span>
-          <span className="text-review">unknown (REVIEW, never guessed)</span>
+        <div className="mb-3 flex flex-wrap gap-x-5 gap-y-1 text-[12.5px] text-muted">
+          {LEGEND.map((l) => (
+            <span key={l.state} className="inline-flex items-center gap-1.5">
+              <span className={cx("size-2 rounded-full", l.dot)} aria-hidden />
+              {l.label}
+            </span>
+          ))}
         </div>
-        {type === "__derived" ? (
-          <div className="overflow-x-auto rounded-xl border border-line bg-surface">
-            <table className="w-full text-sm">
+        <Card bodyClass="p-0 overflow-x-auto">
+          {type === "__derived" ? (
+            <table className="data compact">
+              <thead>
+                <tr>
+                  <th>Fact</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
               <tbody>
                 {Object.entries(result.sbm.derived).map(([name, fact]) => (
-                  <tr key={name} className="border-b border-line last:border-0">
-                    <td className="px-4 py-2 font-mono text-xs">{name}</td>
-                    <td className={cx("px-4 py-2 font-mono text-xs", STATE[fact.state])}>
+                  <tr key={name}>
+                    <td className="font-mono text-[12.5px]">{name}</td>
+                    <td className={cx("font-mono text-[12.5px]", STATE[fact.state])}>
                       {show(fact.value)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-line bg-surface">
-            <table className="w-full text-xs">
-              <thead className="text-left text-muted">
-                <tr className="border-b border-line bg-surface-2">
-                  <th className="sticky left-0 bg-surface-2 px-3 py-2 font-medium">key</th>
+          ) : (
+            <table className="data compact">
+              <thead>
+                <tr>
+                  <th className="sticky left-0 z-10">Key</th>
                   {attributes.map((a) => (
-                    <th key={a} className="whitespace-nowrap px-3 py-2 font-medium">
+                    <th key={a} className="font-mono text-[11.5px]">
                       {a}
                     </th>
                   ))}
@@ -99,9 +108,9 @@ export function Model({ result }: { result: AuditResult }) {
               </thead>
               <tbody>
                 {entities.map((e) => (
-                  <tr key={e.key} className="border-b border-line last:border-0">
-                    <td className="sticky left-0 bg-surface px-3 py-1.5">
-                      <Mono>{e.key}</Mono>
+                  <tr key={e.key}>
+                    <td className="sticky left-0 bg-surface">
+                      <Mono className="font-medium">{e.key}</Mono>
                     </td>
                     {attributes.map((a) => {
                       const f = e[a];
@@ -109,7 +118,7 @@ export function Model({ result }: { result: AuditResult }) {
                         <td
                           key={a}
                           className={cx(
-                            "max-w-64 truncate whitespace-nowrap px-3 py-1.5 font-mono",
+                            "max-w-64 truncate whitespace-nowrap font-mono text-[12.5px]",
                             isFact(f) && STATE[f.state],
                           )}
                           title={
@@ -126,8 +135,8 @@ export function Model({ result }: { result: AuditResult }) {
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+          )}
+        </Card>
       </div>
     </div>
   );

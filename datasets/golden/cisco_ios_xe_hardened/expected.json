@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "77cf807087955ff1067356c1",
+  "audit_id": "bc4d0602f764a0096245e055",
   "input": {
     "file": "hardened.cfg",
     "sha256": "65b2f470f0a4bb9d4c52e2021ee3b700b88e59fcd6bb57d381ad89242c4d9e65",
@@ -53,8 +53,8 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "7efc96188b4ba73aa903657d3ba9c487d439633782935016c0c9664aa00b06d3",
-    "ruleset_version": "ec8d927b4d7fdf57d4fe4c18b99c1322b35e9909fd16fb93876b677b97565953",
+    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
       "nist_800_53r5": "5.2.0"

@@ -1,11 +1,22 @@
-import { Download, FileJson, Fingerprint } from "lucide-react";
+import { Download, FileJson } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import { useAudits, usePackName, useResult } from "../api/hooks";
 import type { Finding } from "../api/types";
-import { Ring, toneFor, VerdictBar } from "../components/charts";
-import { Card, ErrorBox, LinkButton, Loading, PageHeader, Tabs, cx } from "../components/ui";
-import { shortHash, titleCase } from "../lib/format";
+import { Posture } from "../components/charts";
+import {
+  Card,
+  ErrorBox,
+  LinkButton,
+  Loading,
+  PageHeader,
+  Tabs,
+  Tag,
+  cx,
+  type Crumb,
+} from "../components/ui";
+import { failedBySeverity } from "../lib/fleet";
+import { shortHash, sourceLabel, titleCase } from "../lib/format";
 import { Config } from "./device/Config";
 import { Findings } from "./device/Findings";
 import { Model } from "./device/Model";
@@ -13,6 +24,8 @@ import { Provenance } from "./device/Provenance";
 import { Controls, Coverage, Policy } from "./device/Tabs";
 
 type Tab = "findings" | "controls" | "config" | "policy" | "model" | "coverage";
+
+const IDENTITY = ["hostname", "vendor", "os_version", "model", "serial", "hardware"];
 
 export function DevicePage() {
   const { jobId } = useParams();
@@ -31,88 +44,81 @@ export function DevicePage() {
   const score = r.scores[0];
   const counts = (s: string) => r.rules.filter((x) => x.status === s).length;
   const hostname = r.identity.hostname?.value;
+  const os = r.identity.os_version?.value;
   const filterRules = r.sbm.entities.filter((e) => e.type === "FilterRule").length;
+  const crumbs: Crumb[] = [{ label: "Audits", to: "/audits" }];
+  if (audit)
+    crumbs.push({ label: audit.label ?? "Untitled audit", to: `/uploads/${audit.upload_id}` });
 
   return (
     <>
       <PageHeader
-        eyebrow={
-          audit ? (
-            <Link to={`/uploads/${audit.upload_id}`} className="hover:underline">
-              {audit.label ?? "Untitled audit"}
-            </Link>
-          ) : (
-            "Device"
-          )
-        }
+        crumbs={crumbs}
         title={hostname ?? r.input.file}
-        subtitle={`${packName(r.detection.pack_id)}${r.identity.os_version?.value ? ` ${r.identity.os_version.value}` : ""} · ${r.input.file}`}
+        meta={
+          <>
+            <span className="font-medium text-text">
+              {packName(r.detection.pack_id)}
+              {os && <span className="font-normal text-muted"> {os}</span>}
+            </span>
+            <Tag>{r.input.file}</Tag>
+          </>
+        }
         actions={
           <>
             <LinkButton
               href={`/api/jobs/${jobId}/result`}
               download={`${(hostname ?? r.input.file).replace(/[^A-Za-z0-9._-]+/g, "_")}.kasauti.json`}
             >
-              <FileJson className="size-4" /> JSON
+              <FileJson /> JSON
             </LinkButton>
             <LinkButton href={`/api/jobs/${jobId}/report.pdf`} download variant="primary">
-              <Download className="size-4" /> PDF report
+              <Download /> PDF report
             </LinkButton>
           </>
         }
       />
 
-      <div className="mb-6 grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
-          <div className="flex items-center justify-around gap-4">
-            <div className="text-center">
-              <Ring
-                value={score?.compliance_pct ?? null}
-                tone={toneFor(score?.compliance_pct ?? null)}
-                label="compliance"
-              />
-            </div>
-            <div className="text-center">
-              <Ring value={score?.coverage_pct ?? null} tone="gold" label="coverage" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <VerdictBar
-              pass={counts("PASS")}
-              fail={counts("FAIL")}
-              review={counts("REVIEW")}
-              na={counts("N/A")}
-            />
-            <div className="mt-2 flex justify-between text-xs text-muted">
-              <span className="text-fail">{counts("FAIL")} fail</span>
-              <span className="text-review">{counts("REVIEW")} review</span>
-              <span className="text-pass">{counts("PASS")} pass</span>
-              <span>{counts("N/A")} n/a</span>
-            </div>
-          </div>
-          <p className="mt-3 text-[11px] leading-relaxed text-faint">
-            {score?.title}. Verified against Kasauti's model of the device, not on hardware.
-          </p>
-        </Card>
+      <Posture
+        framework={score?.title ?? "NIST SP 800-53 Rev. 5"}
+        compliance={score?.compliance_pct ?? null}
+        coverage={score?.coverage_pct ?? null}
+        counts={{
+          pass: counts("PASS"),
+          fail: counts("FAIL"),
+          review: counts("REVIEW"),
+          na: counts("N/A"),
+        }}
+        severity={failedBySeverity(r)}
+        understood={r.assurance.understood_pct}
+        scope="on this device, judged against Kasauti's model of its configuration"
+      />
 
-        <Card title="Identity" className="lg:col-span-1" bodyClass="py-3">
-          <dl className="space-y-1.5 text-sm">
-            {["hostname", "vendor", "os_version", "model", "serial", "hardware"].map((k) => {
+      <div className="mb-8 grid gap-6 lg:grid-cols-12">
+        <Card
+          title="Identity"
+          description="What the files say this device is, and where each value came from."
+          className="lg:col-span-7"
+        >
+          <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+            {IDENTITY.map((k) => {
               const f = r.identity[k];
               return (
-                <div key={k} className="grid grid-cols-[6.5rem_1fr] gap-2">
-                  <dt className="text-muted">{titleCase(k)}</dt>
-                  <dd className="min-w-0">
+                <div key={k} className="min-w-0">
+                  <dt className="text-[12px] font-medium text-muted">{titleCase(k)}</dt>
+                  <dd className="mt-0.5">
                     {f?.value ? (
-                      <span title={f.source} className="font-medium">
-                        {f.value}
-                      </span>
+                      <>
+                        <div className="truncate font-semibold">{f.value}</div>
+                        <div className="truncate text-[12px] text-faint" title={f.source}>
+                          {sourceLabel(f.source)}
+                        </div>
+                      </>
                     ) : (
-                      <span className="text-xs text-faint" title={f?.source}>
-                        not in the files
-                      </span>
+                      <div className="text-[13px] text-faint" title={f?.source}>
+                        Not in the files
+                      </div>
                     )}
-                    {f?.value && <div className="truncate text-[11px] text-faint">{f.source}</div>}
                   </dd>
                 </div>
               );
@@ -120,36 +126,45 @@ export function DevicePage() {
           </dl>
         </Card>
 
-        <Card title="How it was read" className="lg:col-span-1" bodyClass="py-3">
-          <dl className="space-y-2 text-sm">
+        <Card
+          title="How it was read"
+          description="Enough to reproduce this audit exactly."
+          className="lg:col-span-5"
+        >
+          <dl className="space-y-3 text-[13.5px]">
             <Row label="Vendor pack">
-              {r.kb.vendor_pack}{" "}
-              <span className="text-xs text-muted">
+              <span className="font-medium">{r.kb.vendor_pack.replace("@", " v")}</span>
+              <span className="text-muted">
+                {" "}
                 · {r.detection.chosen_by}
                 {r.detection.score !== null &&
-                  ` (score ${r.detection.score} ≥ ${r.detection.min_score})`}
+                  `, score ${r.detection.score} (threshold ${r.detection.min_score})`}
               </span>
             </Row>
-            <Row label="Signatures">
-              <span className="inline-flex items-center gap-1 text-xs text-muted">
-                <Fingerprint className="size-3.5" /> {r.detection.signatures.join(", ") || "–"}
+            <Row label="Recognised by">
+              <span className="flex flex-wrap gap-1">
+                {r.detection.signatures.length
+                  ? r.detection.signatures.map((s) => <Tag key={s}>{s}</Tag>)
+                  : "–"}
               </span>
             </Row>
             <Row label="Understood">
-              {r.assurance.understood}/{r.assurance.statements} statements
+              <span className="figure">
+                {r.assurance.understood} of {r.assurance.statements} statements
+              </span>
             </Row>
             <Row label="File SHA-256">
-              <span className="font-mono text-xs" title={r.input.sha256}>
+              <span className="font-mono text-[12.5px]" title={r.input.sha256}>
                 {shortHash(r.input.sha256, 16)}…
               </span>
             </Row>
             <Row label="Knowledge base">
-              <span className="font-mono text-xs" title={r.kb.kb_version}>
+              <span className="font-mono text-[12.5px]" title={r.kb.kb_version}>
                 {shortHash(r.kb.kb_version, 16)}…
               </span>
             </Row>
             <Row label="Audit id">
-              <span className="font-mono text-xs">{r.audit_id}</span>
+              <span className="font-mono text-[12.5px]">{r.audit_id}</span>
             </Row>
           </dl>
         </Card>
@@ -183,9 +198,9 @@ export function DevicePage() {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[6.5rem_1fr] gap-2">
+    <div className="grid grid-cols-[7.5rem_1fr] gap-3">
       <dt className="text-muted">{label}</dt>
-      <dd className="min-w-0 break-words">{children}</dd>
+      <dd className="min-w-0 wrap-break-word">{children}</dd>
     </div>
   );
 }

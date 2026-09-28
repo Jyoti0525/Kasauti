@@ -1,7 +1,18 @@
-import { Search } from "lucide-react";
+import { MousePointerClick } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { AuditResult, Finding, Severity, Status } from "../../api/types";
-import { Chip, Empty, Mono, SeverityBadge, StatusBadge } from "../../components/ui";
+import {
+  Card,
+  Chip,
+  Empty,
+  Mono,
+  SearchBox,
+  SEVERITY_TEXT,
+  SeverityBadge,
+  SeverityGlyph,
+  StatusBadge,
+  Tag,
+} from "../../components/ui";
 import { titleCase } from "../../lib/format";
 
 const STATUSES: Status[] = ["FAIL", "REVIEW", "PASS", "N/A"];
@@ -60,24 +71,27 @@ export function Findings({
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {STATUSES.map((s) => (
           <Chip key={s} active={statuses.has(s)} onClick={() => toggle(statuses, s, setStatuses)}>
-            {s} · {count(s)}
+            {s === "N/A" ? "N/A" : s.charAt(0) + s.slice(1).toLowerCase()}
+            <span className="figure opacity-70">{count(s)}</span>
           </Chip>
         ))}
-        <span className="mx-1 h-4 w-px bg-line" />
+        <span className="mx-1.5 h-5 w-px bg-line" aria-hidden />
         {SEVERITIES.map((s) => (
           <Chip
             key={s}
             active={severities.has(s)}
             onClick={() => toggle(severities, s, setSeverities)}
           >
-            {s}
+            <SeverityGlyph severity={s} className={severities.has(s) ? "" : SEVERITY_TEXT[s]} />
+            <span className="capitalize">{s}</span>
           </Chip>
         ))}
+        <span className="mx-1.5 h-5 w-px bg-line" aria-hidden />
         <select
           aria-label="Domain"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
-          className="rounded-full border border-line bg-surface px-2.5 py-0.5 text-xs"
+          className="field h-7! w-auto! rounded-full! text-[12.5px]!"
         >
           <option value="">All domains</option>
           {domains.map((d) => (
@@ -90,7 +104,7 @@ export function Findings({
           aria-label="NIST control"
           value={control}
           onChange={(e) => setControl(e.target.value)}
-          className="rounded-full border border-line bg-surface px-2.5 py-0.5 text-xs"
+          className="field h-7! w-auto! rounded-full! text-[12.5px]!"
         >
           <option value="">All NIST controls</option>
           {controls.map((c) => (
@@ -99,29 +113,26 @@ export function Findings({
             </option>
           ))}
         </select>
-        <label className="ml-auto flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2 py-1">
-          <Search className="size-3.5 text-faint" aria-hidden />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search findings, lines…"
-            className="w-52 bg-transparent text-sm outline-none"
-          />
-        </label>
+        <SearchBox
+          value={query}
+          onChange={setQuery}
+          placeholder="Search checks, objects, lines"
+          className="min-w-52 flex-1"
+        />
       </div>
 
-      {shown.length === 0 ? (
-        <Empty title="No finding matches these filters" />
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-line bg-surface">
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted">
-              <tr className="border-b border-line bg-surface-2">
-                <th className="px-4 py-2 font-medium">Verdict</th>
-                <th className="px-3 py-2 font-medium">Severity</th>
-                <th className="px-3 py-2 font-medium">Check</th>
-                <th className="px-3 py-2 font-medium">Where</th>
-                <th className="px-4 py-2 font-medium">Evidence</th>
+      <Card bodyClass="p-0">
+        {shown.length === 0 ? (
+          <Empty title="No finding matches these filters" />
+        ) : (
+          <table className="data">
+            <thead>
+              <tr>
+                <th className="w-28">Verdict</th>
+                <th className="w-28">Severity</th>
+                <th>Check</th>
+                <th>Object</th>
+                <th>Evidence</th>
               </tr>
             </thead>
             <tbody>
@@ -130,37 +141,37 @@ export function Findings({
                 return (
                   <tr
                     key={`${f.rule_id}:${f.entity_id}:${i}`}
+                    data-link
                     onClick={() => onOpen(f)}
                     onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onOpen(f)}
                     tabIndex={0}
-                    className="cursor-pointer border-b border-line align-top last:border-0 hover:bg-surface-2"
                   >
-                    <td className="px-4 py-2.5">
+                    <td>
                       <StatusBadge status={f.status} />
                     </td>
-                    <td className="px-3 py-2.5">
+                    <td className="pt-3.5!">
                       <SeverityBadge severity={f.severity} />
                     </td>
-                    <td className="px-3 py-2.5">
+                    <td>
                       <div className="font-medium">{r?.title ?? f.rule_id}</div>
-                      <div className="mt-0.5 flex flex-wrap gap-x-2 text-[11px] text-faint">
-                        <span className="font-mono">{f.rule_id}</span>
-                        {r && r.nist_800_53r5.length > 0 && (
-                          <span>NIST {r.nist_800_53r5.join(", ")}</span>
-                        )}
+                      <div className="mt-1 flex flex-wrap items-center gap-1">
+                        <span className="mr-1 font-mono text-[11.5px] text-faint">{f.rule_id}</span>
+                        {r?.nist_800_53r5.map((c) => (
+                          <Tag key={c}>{c}</Tag>
+                        ))}
                       </div>
                     </td>
-                    <td className="px-3 py-2.5">
+                    <td>
                       <Mono className="text-muted">{f.entity_id}</Mono>
                     </td>
-                    <td className="max-w-sm px-4 py-2.5">
+                    <td className="max-w-sm">
                       {f.evidence[0] ? (
-                        <div className="truncate font-mono text-[12px] text-muted">
-                          <span className="text-faint">{f.evidence[0].line_start}: </span>
-                          {f.evidence[0].raw}
+                        <div className="flex min-w-0 items-baseline gap-2 font-mono text-[12.5px]">
+                          <span className="shrink-0 text-faint">{f.evidence[0].line_start}</span>
+                          <span className="truncate">{f.evidence[0].raw.trim()}</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-faint">
+                        <span className="text-[12.5px] italic text-faint">
                           {f.defaults_used.length ? "vendor default" : "not configured"}
                         </span>
                       )}
@@ -170,9 +181,10 @@ export function Findings({
               })}
             </tbody>
           </table>
-        </div>
-      )}
-      <p className="mt-3 text-xs text-muted">
+        )}
+      </Card>
+      <p className="mt-3 flex items-center gap-1.5 text-[12.5px] text-muted">
+        <MousePointerClick className="size-3.5" aria-hidden />
         Select a finding to trace it from the configuration line to the control.
       </p>
     </div>

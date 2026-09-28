@@ -1,66 +1,20 @@
-// Small charts drawn as plain SVG and elements: no chart library, no inline <style>.
+// Small charts drawn as plain elements: no chart library, no inline <style> element.
 
+import { Check, Eye, Minus, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { cx } from "./ui";
+import type { Severity } from "../api/types";
+import { pct } from "../lib/format";
+import { SEVERITY_TEXT, SeverityGlyph, cx } from "./ui";
 
-/** A ring showing a percentage, with the figure in the middle. */
-export function Ring({
-  value,
-  size = 112,
-  stroke = 10,
-  tone = "gold",
-  label,
-}: {
-  value: number | null;
-  size?: number;
-  stroke?: number;
-  tone?: "gold" | "pass" | "fail" | "review";
-  label?: ReactNode;
-}) {
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const shown = value ?? 0;
-  const colour = {
-    gold: "stroke-gold",
-    pass: "stroke-pass",
-    fail: "stroke-fail",
-    review: "stroke-review",
-  }[tone];
-  return (
-    <div
-      className="relative inline-flex items-center justify-center"
-      style={{ width: size, height: size }}
-    >
-      <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          strokeWidth={stroke}
-          className="stroke-surface-2"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={c * (1 - shown / 100)}
-          className={cx(colour, "transition-[stroke-dashoffset] duration-700")}
-        />
-      </svg>
-      <div className="absolute text-center">
-        <div className="text-xl font-semibold tabular-nums">
-          {value === null ? "–" : `${Math.round(value)}%`}
-        </div>
-        {label && <div className="text-[11px] text-muted">{label}</div>}
-      </div>
-    </div>
-  );
-}
+export type Tone = "pass" | "fail" | "review" | "brass" | "data";
+
+const FILL: Record<Tone, string> = {
+  pass: "bg-pass",
+  fail: "bg-fail",
+  review: "bg-review",
+  brass: "bg-brass",
+  data: "bg-data",
+};
 
 /** A tone for a compliance percentage. */
 export function toneFor(pct: number | null): "pass" | "fail" | "review" {
@@ -70,72 +24,53 @@ export function toneFor(pct: number | null): "pass" | "fail" | "review" {
   return "fail";
 }
 
-/** One horizontal bar per row, value out of `max` (100 by default). */
-export function Bars({
-  rows,
+/** One value out of `max` as a thin bar. */
+export function Meter({
+  value,
   max = 100,
-  format = (v) => `${v.toFixed(1)}%`,
+  tone,
+  className,
 }: {
-  rows: {
-    label: ReactNode;
-    value: number | null;
-    hint?: ReactNode;
-    tone?: "pass" | "fail" | "review" | "gold";
-  }[];
+  value: number | null;
   max?: number;
-  format?: (v: number) => string;
+  tone?: Tone;
+  className?: string;
 }) {
+  const t = tone ?? toneFor(value);
   return (
-    <ul className="space-y-3">
-      {rows.map((row, i) => {
-        const tone = row.tone ?? toneFor(row.value);
-        const fill = { pass: "bg-pass", fail: "bg-fail", review: "bg-review", gold: "bg-gold" }[
-          tone
-        ];
-        return (
-          <li key={i}>
-            <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
-              <span className="truncate">{row.label}</span>
-              <span className="shrink-0 tabular-nums text-muted">
-                {row.value === null ? "–" : format(row.value)}
-                {row.hint && <span className="ml-2 text-xs text-faint">{row.hint}</span>}
-              </span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-surface-2">
-              <div
-                className={cx("h-full rounded-full transition-[width] duration-700", fill)}
-                style={{ width: `${Math.max(0, Math.min(100, ((row.value ?? 0) / max) * 100))}%` }}
-              />
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+    <div className={cx("h-1.5 overflow-hidden rounded-full bg-surface-3", className)}>
+      <div
+        className={cx("h-full rounded-full transition-[width] duration-700", FILL[t])}
+        style={{ width: `${Math.max(0, Math.min(100, ((value ?? 0) / max) * 100))}%` }}
+      />
+    </div>
   );
 }
 
-/** One bar split into PASS / FAIL / REVIEW / N/A. */
+/** One bar split into FAIL / REVIEW / PASS / N/A, each segment set apart by a hairline. */
 export function VerdictBar({
   pass = 0,
   fail = 0,
   review = 0,
   na = 0,
+  className = "h-2",
 }: {
   pass?: number;
   fail?: number;
   review?: number;
   na?: number;
+  className?: string;
 }) {
   const total = pass + fail + review + na || 1;
   const parts = [
-    { n: fail, cls: "bg-fail", label: "FAIL" },
-    { n: review, cls: "bg-review", label: "REVIEW" },
-    { n: pass, cls: "bg-pass", label: "PASS" },
-    { n: na, cls: "bg-na/40", label: "N/A" },
+    { n: fail, cls: "bg-fail", label: "fail" },
+    { n: review, cls: "bg-review", label: "review" },
+    { n: pass, cls: "bg-pass", label: "pass" },
+    { n: na, cls: "bg-line-strong", label: "not applicable" },
   ];
   return (
     <div
-      className="flex h-2 w-full overflow-hidden rounded-full bg-surface-2"
+      className={cx("flex w-full gap-[2px] overflow-hidden rounded-full bg-surface-3", className)}
       role="img"
       aria-label={parts.map((p) => `${p.n} ${p.label}`).join(", ")}
     >
@@ -148,15 +83,172 @@ export function VerdictBar({
   );
 }
 
-export function Legend({ items }: { items: { cls: string; label: ReactNode }[] }) {
+const VERDICTS = [
+  { key: "fail", label: "Fail", icon: <X />, cls: "text-fail" },
+  { key: "review", label: "Review", icon: <Eye />, cls: "text-review" },
+  { key: "pass", label: "Pass", icon: <Check />, cls: "text-pass" },
+  { key: "na", label: "N/A", icon: <Minus />, cls: "text-na" },
+] as const;
+
+type Counts = { pass: number; fail: number; review: number; na: number };
+
+/** The four verdict counts, each with its shape. */
+export function VerdictCounts({ counts }: { counts: Counts }) {
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-      {items.map((it, i) => (
-        <span key={i} className="inline-flex items-center gap-1.5">
-          <span className={cx("size-2 rounded-full", it.cls)} aria-hidden />
-          {it.label}
-        </span>
+    <dl className="grid grid-cols-4 gap-3">
+      {VERDICTS.map((v) => (
+        <div key={v.key}>
+          <dt
+            className={cx(
+              "flex items-center gap-1 text-[12px] font-medium [&>svg]:size-3.5 [&>svg]:stroke-[2.75]",
+              v.cls,
+            )}
+          >
+            {v.icon}
+            {v.label}
+          </dt>
+          <dd className="figure mt-0.5 text-[22px] font-semibold">{counts[v.key]}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+const SEVERITIES: Severity[] = ["critical", "high", "medium", "low"];
+
+/** Failed checks by severity, one cell each. */
+export function SeverityStrip({ counts }: { counts: Partial<Record<Severity, number>> }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4">
+      {SEVERITIES.map((s, i) => (
+        <div
+          key={s}
+          className={cx(
+            "flex items-center gap-3 px-5 py-3.5",
+            i > 0 && "sm:border-l sm:border-line",
+          )}
+        >
+          <SeverityGlyph severity={s} className={cx("h-4 w-5", SEVERITY_TEXT[s])} />
+          <div>
+            <div className="figure text-[19px] font-semibold leading-none">{counts[s] ?? 0}</div>
+            <div className="mt-1 text-[12px] capitalize text-muted">{s}</div>
+          </div>
+        </div>
       ))}
     </div>
+  );
+}
+
+/** The headline of a fleet, an upload or a device: how much holds, what fails and how badly,
+ * and how far the figures can be trusted. */
+export function Posture({
+  framework,
+  compliance,
+  coverage,
+  counts,
+  severity,
+  understood,
+  scope,
+}: {
+  framework: string;
+  compliance: number | null;
+  coverage: number | null;
+  counts: Counts;
+  severity: Partial<Record<Severity, number>>;
+  understood?: number | null;
+  scope: ReactNode;
+}) {
+  const judged = counts.pass + counts.fail;
+  const tone = toneFor(compliance);
+  return (
+    <section className="mb-6 overflow-hidden rounded-xl border border-line bg-surface">
+      <div className="grid gap-y-6 p-5 lg:grid-cols-12 lg:gap-x-8 lg:p-6">
+        <div className="lg:col-span-4">
+          <div className="text-[13px] font-medium text-muted">Compliance · {framework}</div>
+          <div className="mt-1 flex items-baseline gap-3">
+            <span className="figure text-[52px] font-semibold leading-none">
+              {compliance === null ? "–" : `${compliance.toFixed(1)}`}
+              <span className="ml-0.5 text-[28px] text-muted">%</span>
+            </span>
+          </div>
+          <Meter value={compliance} tone={tone} className="mt-4 max-w-72" />
+          <p className="mt-3 text-[13px] text-muted">
+            {counts.pass} of {judged} judged checks hold {scope}.
+          </p>
+        </div>
+
+        <div className="lg:col-span-5 lg:border-l lg:border-line lg:pl-8">
+          <div className="text-[13px] font-medium text-muted">Every check, by verdict</div>
+          <VerdictBar {...counts} className="mt-3 h-2.5" />
+          <div className="mt-4">
+            <VerdictCounts counts={counts} />
+          </div>
+        </div>
+
+        <div className="space-y-4 lg:col-span-3 lg:border-l lg:border-line lg:pl-8">
+          <Figure
+            label="Coverage"
+            value={coverage}
+            hint="of checks judged from the files alone; the rest wait for a person"
+          />
+          {understood !== undefined && (
+            <Figure
+              label="Configuration understood"
+              value={understood}
+              hint="of statements read by an approved mapping"
+            />
+          )}
+        </div>
+      </div>
+      <div className="border-t border-line bg-surface-2">
+        <div className="flex items-center justify-between px-5 pt-3 text-[12px] font-medium text-muted">
+          Failed checks by severity
+          <span className="figure text-muted">{counts.fail} failed</span>
+        </div>
+        <SeverityStrip counts={severity} />
+      </div>
+    </section>
+  );
+}
+
+function Figure({ label, value, hint }: { label: string; value: number | null; hint: string }) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="text-[13px] font-medium text-muted">{label}</span>
+        <span className="figure text-[19px] font-semibold">{pct(value)}</span>
+      </div>
+      <Meter value={value} tone="data" className="mt-2" />
+      <p className="mt-1.5 text-[12px] leading-snug text-faint">{hint}</p>
+    </div>
+  );
+}
+
+/** n of total, as a row of dots: how many devices a check fails on. */
+export function DotCount({ n, total }: { n: number; total: number }) {
+  if (total > 12) {
+    return (
+      <span className="inline-flex items-center gap-2" aria-label={`${n} of ${total}`}>
+        <Meter value={n} max={total} tone="fail" className="w-16" />
+        <span className="figure text-[13px] text-muted">
+          {n}/{total}
+        </span>
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-2" aria-label={`${n} of ${total}`}>
+      <span className="flex gap-[3px]" aria-hidden>
+        {Array.from({ length: total }, (_, i) => (
+          <span
+            key={i}
+            className={cx("size-2 rounded-[2px]", i < n ? "bg-fail" : "bg-surface-3")}
+          />
+        ))}
+      </span>
+      <span className="figure text-[13px] text-muted">
+        {n}/{total}
+      </span>
+    </span>
   );
 }

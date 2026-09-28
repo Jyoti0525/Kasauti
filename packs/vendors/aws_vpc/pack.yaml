@@ -18,9 +18,10 @@ records:
   # `aws ec2 describe-security-groups` and `aws ec2 describe-network-acls`, their outputs
   # merged into one object (docs/reviews/aws_vpc.md). A file with only one of them is partial.
   sections: [SecurityGroups, NetworkAcls]
+# Seed pack (PLAN §20.4, TODO M2.31), reviewed in docs/reviews/aws_vpc.md. The description
+# below is shown to users (knowledge base screen), so it carries no plan references.
 description: >
-  Seed pack (PLAN §20.4, TODO M2.31) for a VPC's security groups and network ACLs, as the AWS
-  CLI prints them (`describe-security-groups`, `describe-network-acls`). Security groups hold
-  allow rules only; network ACL entries are numbered, allow or deny, and evaluated lowest
-  number first. Reviewed against the Amazon VPC User Guide and the EC2 API Reference:
-  docs/reviews/aws_vpc.md.
+  A VPC's security groups and network ACLs, as the AWS CLI prints them
+  (`describe-security-groups`, `describe-network-acls`). Security groups hold allow rules only;
+  network ACL entries are numbered, allow or deny, and evaluated lowest number first. Reviewed
+  against the Amazon VPC User Guide and the EC2 API Reference.

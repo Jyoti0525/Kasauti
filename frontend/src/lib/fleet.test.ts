@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { AuditOut, ScoreOut, Summary } from "../api/types";
-import { byVendor, latestPerDevice, pool, riskiest, topFailing } from "./fleet";
+import type { AuditOut, AuditResult, Finding, ScoreOut, Summary } from "../api/types";
+import {
+  byVendor,
+  failedBySeverity,
+  latestPerDevice,
+  pool,
+  riskiest,
+  severityTotals,
+  topFailing,
+} from "./fleet";
 
 function score(passed: number, failed: number, review = 0, na = 0): ScoreOut {
   return {
@@ -96,6 +104,41 @@ describe("fleet scores", () => {
     expect(topFailing(devices)).toEqual([
       { rule: expect.objectContaining({ rule_id: "R-1" }), devices: 2 },
     ]);
+    expect(severityTotals(devices.map((d) => d.summary))).toEqual({ critical: 1, high: 1, low: 2 });
+  });
+});
+
+describe("the most common failures", () => {
+  it("show a check at its worst severity on any device", () => {
+    const high = audit("a", "cisco_ios_xe", "A", score(0, 1), ["TELNET", { high: 1 }]);
+    const critical = audit("b", "cisco_ios_xe", "B", score(0, 1), ["TELNET", { critical: 1 }]);
+    const rule = critical.summary?.rules[0];
+    if (rule) rule.severity = "critical"; // exposed on B's untrusted interface
+    const [top] = topFailing(latestPerDevice([high, critical]));
+    expect(top?.devices).toBe(2);
+    expect(top?.rule.severity).toBe("critical");
+  });
+});
+
+describe("a device's failures by severity", () => {
+  it("count each failing rule once, at its worst failing finding", () => {
+    const f = (rule_id: string, status: Finding["status"], severity: Finding["severity"]) =>
+      ({ rule_id, status, severity }) as Finding;
+    const result = {
+      rules: [
+        { rule_id: "HTTP", status: "FAIL", severity: "high" },
+        { rule_id: "SNMP", status: "FAIL", severity: "medium" },
+        { rule_id: "NTP", status: "PASS", severity: "low" },
+      ],
+      findings: [
+        f("HTTP", "FAIL", "high"),
+        f("HTTP", "FAIL", "critical"), // exposed on an untrusted interface: raised
+        f("HTTP", "PASS", "high"),
+        f("SNMP", "FAIL", "medium"),
+        f("NTP", "PASS", "low"),
+      ],
+    } as unknown as AuditResult;
+    expect(failedBySeverity(result)).toEqual({ critical: 1, medium: 1 });
   });
 });
 
@@ -106,5 +149,15 @@ describe("labels", () => {
     expect(titleCase("os_version")).toBe("OS Version");
     expect(titleCase("management_plane")).toBe("Management Plane");
     expect(titleCase("cloud_filter")).toBe("Cloud Filter");
+  });
+});
+
+describe("identity sources", () => {
+  it("read without markup or folders", async () => {
+    const { sourceLabel } = await import("./format");
+    expect(sourceLabel("`show version` (cisco_ios_xe/companions/show_version.txt)")).toBe(
+      "show version (show_version.txt)",
+    );
+    expect(sourceLabel("fingerprint (6 signatures)")).toBe("fingerprint (6 signatures)");
   });
 });

@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 import pytest
 
+from kasauti.api.audits import summarise
 from kasauti.audit import AuditError, KnowledgeBase, audit, load_kb
 from kasauti.cli.main import main
 from kasauti.ingest.read import decode, read_file
-from kasauti.report.pdf import render_pdf
+from kasauti.report.pdf import effective_severity, render_pdf
 from kasauti.rules.model import Status
 
 REPO = Path(__file__).resolve().parents[2]
@@ -1069,3 +1071,23 @@ def test_a_file_cut_off_mid_structure_is_left_for_review(
     assert any("no rule is judged PASS or FAIL" in w for w in result.warnings)
     (score,) = result.scores
     assert (score.compliance_pct, score.coverage_pct) == (None, 0.0)
+
+
+@pytest.mark.parametrize(
+    "sample",
+    sorted(
+        p
+        for p in (REPO / "datasets" / "authored").glob("*/*")
+        if p.is_file() and p.stem in {"weak", "weak_set"}
+    ),
+    ids=lambda p: f"{p.parent.name}/{p.name}",
+)
+def test_the_report_and_the_web_ui_count_failures_alike(sample: Path, kb: KnowledgeBase) -> None:
+    """A failed rule counts at its worst finding's severity (exposure raises it) in the PDF's
+    summary and top risks exactly as on the dashboard, which reads ``summarise``."""
+
+    result = audit(read_file(sample), kb)
+    pdf = Counter(s.value for s in effective_severity(result).values())
+    web = summarise(json.loads(result.canonical_json())).failed_by_severity
+    assert dict(pdf) == {k: v for k, v in web.items() if v}
+    assert sum(pdf.values()) == sum(1 for r in result.rules if r.status is Status.FAIL)

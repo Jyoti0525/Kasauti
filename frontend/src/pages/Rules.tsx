@@ -1,8 +1,20 @@
-import { CheckCircle2, ExternalLink, Search, XCircle } from "lucide-react";
+import { Check, ChevronDown, ExternalLink, X } from "lucide-react";
 import { useState } from "react";
 import { useKb } from "../api/hooks";
 import type { RuleOut } from "../api/types";
-import { Card, Chip, ErrorBox, Loading, Mono, PageHeader, SeverityBadge } from "../components/ui";
+import {
+  Card,
+  Chip,
+  ErrorBox,
+  Loading,
+  Mono,
+  PageHeader,
+  Prose,
+  SearchBox,
+  SeverityBadge,
+  Tag,
+  cx,
+} from "../components/ui";
 import { titleCase } from "../lib/format";
 
 /** Frameworks and rules (TODO M2.83): each rule, the controls it gives evidence for, and the
@@ -29,63 +41,70 @@ export function Rules() {
   return (
     <>
       <PageHeader
-        title="Frameworks & rules"
-        subtitle="Every rule is written once against the vendor-neutral model, so it judges every vendor the same way."
+        title="Rules and frameworks"
+        subtitle="Each rule is written once, against the vendor-neutral model, so it judges every vendor the same way, and each cites the framework controls it gives evidence for."
       />
-      <div className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {frameworks.map((f) => (
           <Card key={f.id}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="font-semibold">{f.title}</div>
-                <div className="mt-0.5 text-xs text-muted">
+                <div className="text-[15px] font-semibold">{f.title}</div>
+                <div className="mt-1 text-[12.5px] text-muted">
                   Release {f.version} · {f.controls} controls · {f.licence}
                 </div>
               </div>
-              <span className="rounded bg-pass-soft px-1.5 py-0.5 text-[11px] font-semibold text-pass">
-                enabled
+              <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md bg-pass-soft px-2 py-0.5 text-[12px] font-semibold text-pass">
+                <Check className="size-3.5" strokeWidth={2.75} /> In use
               </span>
             </div>
             <a
               href={f.source_url}
               target="_blank"
               rel="noreferrer noopener"
-              className="mt-3 inline-flex items-center gap-1 text-xs text-muted hover:text-text"
+              className="mt-4 inline-flex items-center gap-1 text-[12.5px] text-muted hover:text-text"
             >
-              Imported from the official catalogue on {f.retrieved}{" "}
-              <ExternalLink className="size-3" />
+              Imported from the official catalogue, {f.retrieved}
+              <ExternalLink className="size-3.5" />
             </a>
           </Card>
         ))}
-        <Card className="border-dashed">
-          <div className="font-semibold text-muted">CIS · DISA STIG · ISO 27001</div>
-          <p className="mt-1 text-xs text-muted">
-            Arrive through the crosswalk hub from the NIST anchors (TODO M3), each mapping reviewed.
+        <div className="rounded-xl border border-dashed border-line-strong p-5">
+          <div className="text-[15px] font-semibold text-muted">
+            CIS Benchmarks · DISA STIG · ISO/IEC 27001
+          </div>
+          <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
+            Coming through a reviewed crosswalk from the NIST SP 800-53 controls each rule already
+            cites, one mapping at a time.
           </p>
-        </Card>
+        </div>
       </div>
 
-      <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <Chip active={!domain} onClick={() => setDomain("")}>
-          All · {rules.length}
+          All <span className="figure opacity-70">{rules.length}</span>
         </Chip>
         {domains.map((d) => (
           <Chip key={d} active={domain === d} onClick={() => setDomain(domain === d ? "" : d)}>
-            {titleCase(d)} · {rules.filter((r) => r.domain === d).length}
+            {titleCase(d)}{" "}
+            <span className="figure opacity-70">{rules.filter((r) => r.domain === d).length}</span>
           </Chip>
         ))}
-        <label className="ml-auto flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2 py-1">
-          <Search className="size-3.5 text-faint" aria-hidden />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search rules or controls…"
-            className="w-56 bg-transparent text-sm outline-none"
-          />
-        </label>
+        <SearchBox
+          value={query}
+          onChange={setQuery}
+          placeholder="Search rules or controls"
+          className="ml-auto w-72"
+        />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-line bg-surface">
+      <Card bodyClass="p-0">
+        <div className="grid grid-cols-[1fr_7.5rem_14rem_1.5rem] gap-4 border-b border-line bg-surface-2 px-5 py-2.5 text-[12px] font-medium text-muted">
+          <span>Rule</span>
+          <span>Severity</span>
+          <span>NIST SP 800-53</span>
+          <span />
+        </div>
         {shown.map((r) => (
           <RuleRow
             key={r.id}
@@ -95,7 +114,7 @@ export function Rules() {
             titles={control_titles}
           />
         ))}
-      </div>
+      </Card>
     </>
   );
 }
@@ -118,60 +137,79 @@ function RuleRow({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="grid w-full grid-cols-[1fr_6rem_12rem] items-center gap-3 px-5 py-3 text-left hover:bg-surface-2"
+        className={cx(
+          "grid w-full grid-cols-[1fr_7.5rem_14rem_1.5rem] items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-surface-2",
+          open && "bg-surface-2",
+        )}
       >
         <div className="min-w-0">
           <div className="font-medium">{r.title}</div>
-          <div className="font-mono text-[11px] text-faint">{r.id}</div>
+          <div className="font-mono text-[11.5px] text-faint">{r.id}</div>
         </div>
         <SeverityBadge severity={r.severity} />
-        <div className="truncate font-mono text-xs text-muted">
-          {nist.length ? nist.join(", ") : r.hardening_best_practice ? "best practice" : "–"}
+        <div className="flex flex-wrap gap-1">
+          {nist.length ? (
+            nist.map((c) => <Tag key={c}>{c}</Tag>)
+          ) : (
+            <span className="text-[12.5px] text-muted">
+              {r.hardening_best_practice ? "Hardening best practice" : "–"}
+            </span>
+          )}
         </div>
+        <ChevronDown
+          className={cx("size-4 text-faint transition-transform", open && "rotate-180")}
+          aria-hidden
+        />
       </button>
       {open && (
-        <div className="grid gap-4 bg-surface-2/60 px-5 py-4 text-sm lg:grid-cols-2">
+        <div className="grid gap-6 border-t border-line bg-surface-2 px-5 py-5 text-[13.5px] lg:grid-cols-2">
           <div>
-            <p>{r.intent}</p>
-            <div className="mt-3 rounded-md border border-line bg-surface px-3 py-2 font-mono text-[12px]">
+            <p className="leading-relaxed">
+              <Prose text={r.intent} />
+            </p>
+            <div className="mt-4 rounded-lg bg-basalt px-4 py-3 font-mono text-[12.5px] leading-6 text-[#f1ede2] ring-1 ring-basalt-line">
               <div>
-                <span className="text-faint">for each </span>
+                <span className="text-brass">for each </span>
                 {r.for_each}
               </div>
               <div>
-                <span className="text-faint">assert </span>
+                <span className="text-brass">assert </span>
                 {r.assertion}
               </div>
             </div>
-            <div className="mt-3 text-xs text-muted">
-              Applies to: {r.applies_to.map(titleCase).join(", ")}
+            <div className="mt-3 text-[12.5px] text-muted">
+              Applies to {r.applies_to.map(titleCase).join(", ")}
             </div>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-5">
             <div>
-              <div className="mb-1 text-xs font-medium text-muted">NIST SP 800-53 Rev. 5</div>
-              <ul className="space-y-0.5">
+              <div className="mb-1.5 text-[12px] font-medium text-muted">
+                NIST SP 800-53 Rev. 5 controls
+              </div>
+              <ul className="space-y-1">
                 {nist.map((c) => (
-                  <li key={c}>
-                    <Mono className="font-medium">{c}</Mono>{" "}
+                  <li key={c} className="flex gap-2">
+                    <Mono className="w-16 shrink-0 font-medium">{c}</Mono>
                     <span className="text-muted">{titles[c]}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <div className="mb-1 text-xs font-medium text-muted">
-                Fixtures (proved in CI on every change)
+              <div className="mb-1.5 text-[12px] font-medium text-muted">
+                Proved on every change against sample configurations
               </div>
-              <ul className="space-y-0.5 font-mono text-[12px]">
+              <ul className="space-y-1 font-mono text-[12.5px]">
                 {r.fixtures_pass.map((f) => (
-                  <li key={f} className="flex items-center gap-1.5">
-                    <CheckCircle2 className="size-3.5 text-pass" aria-label="passes" /> {f}
+                  <li key={f} className="flex items-center gap-2">
+                    <Check className="size-3.5 text-pass" strokeWidth={2.75} aria-label="passes" />
+                    {f}
                   </li>
                 ))}
                 {r.fixtures_fail.map((f) => (
-                  <li key={f} className="flex items-center gap-1.5">
-                    <XCircle className="size-3.5 text-fail" aria-label="fails" /> {f}
+                  <li key={f} className="flex items-center gap-2">
+                    <X className="size-3.5 text-fail" strokeWidth={2.75} aria-label="fails" />
+                    {f}
                   </li>
                 ))}
               </ul>

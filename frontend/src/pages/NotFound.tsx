@@ -1,14 +1,16 @@
 import { Compass } from "lucide-react";
 import { Link } from "react-router";
-import { Empty } from "../components/ui";
+import { Card, Empty } from "../components/ui";
 
 export function NotFound() {
   return (
-    <Empty icon={<Compass className="size-8" />} title="Nothing here">
-      That page doesn't exist.{" "}
-      <Link to="/" className="font-medium text-gold underline">
-        Back to the dashboard
-      </Link>
-    </Empty>
+    <Card>
+      <Empty icon={<Compass />} title="Nothing here">
+        That page doesn't exist.{" "}
+        <Link to="/" className="font-medium text-brass-ink underline">
+          Back to the overview
+        </Link>
+      </Empty>
+    </Card>
   );
 }

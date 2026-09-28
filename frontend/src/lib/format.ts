@@ -64,3 +64,9 @@ export function show(value: unknown): string {
   if (typeof value === "object") return JSON.stringify(value);
   return String(value);
 }
+
+/** Where an identity value came from, for people: "`show version` (dir/show_version.txt)" reads
+ * as "show version (show_version.txt)"; the full text stays in the tooltip. */
+export function sourceLabel(source: string): string {
+  return source.replace(/`/g, "").replace(/\(([^()]*\/)?([^/()]+)\)/, "($2)");
+}

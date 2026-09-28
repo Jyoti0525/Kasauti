@@ -1,19 +1,28 @@
-import { ArrowRight, Plus, ServerCog, ShieldAlert } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { ArrowRight, ChevronRight, ServerCog } from "lucide-react";
+import { Link } from "react-router";
 import { useAudits, useKb, usePackName } from "../api/hooks";
-import { Bars, Legend, Ring, toneFor, VerdictBar } from "../components/charts";
+import { DotCount, Meter, Posture } from "../components/charts";
 import {
-  Button,
   Card,
   Empty,
   ErrorBox,
   JobBadge,
   Loading,
   PageHeader,
+  SEVERITY_TEXT,
   SeverityBadge,
-  Stat,
+  SeverityGlyph,
+  Tag,
+  cx,
 } from "../components/ui";
-import { byFramework, byVendor, latestPerDevice, riskiest, topFailing } from "../lib/fleet";
+import {
+  byFramework,
+  byVendor,
+  latestPerDevice,
+  riskiest,
+  severityTotals,
+  topFailing,
+} from "../lib/fleet";
 import { ago, pct } from "../lib/format";
 
 const NIST = "nist_800_53r5";
@@ -22,27 +31,28 @@ export function Dashboard() {
   const audits = useAudits();
   const kb = useKb();
   const packName = usePackName();
-  const navigate = useNavigate();
 
   if (audits.isPending) return <Loading what="Loading the fleet" />;
   if (audits.isError) return <ErrorBox error={audits.error} />;
 
   const devices = latestPerDevice(audits.data);
-  const newAudit = (
-    <Button variant="primary" onClick={() => navigate("/audits/new")}>
-      <Plus className="size-4" /> New audit
-    </Button>
-  );
   if (devices.length === 0) {
     return (
       <>
-        <PageHeader title="Fleet compliance" actions={newAudit} />
+        <PageHeader title="Fleet overview" />
         <Card>
-          <Empty icon={<ServerCog className="size-10" />} title="No device audited yet">
-            Drop configuration files from any of the installed vendors (Cisco, Juniper, Arista, Palo
-            Alto, Fortinet, AWS) and Kasauti scores each against NIST SP 800-53, showing the
-            evidence line behind every verdict.
-            <div className="mt-4">{newAudit}</div>
+          <Empty icon={<ServerCog />} title="No device audited yet">
+            Drop configuration files from any installed vendor (Cisco, Juniper, Arista, Palo Alto,
+            Fortinet, AWS) and Kasauti scores each one against NIST SP 800-53, with the evidence
+            line behind every verdict.
+            <div className="mt-5">
+              <Link
+                to="/audits/new"
+                className="inline-flex h-9 items-center rounded-lg bg-brass px-4 text-[13.5px] font-semibold text-on-brass"
+              >
+                Start the first audit
+              </Link>
+            </div>
           </Empty>
         </Card>
       </>
@@ -52,154 +62,206 @@ export function Dashboard() {
   const frameworks = byFramework(devices);
   const primary = frameworks.get(NIST) ?? [...frameworks.values()][0];
   // Worst first: the vendor needing attention leads.
-  const vendors = new Map(
-    [...byVendor(devices, NIST)].sort(
-      (a, b) => (a[1].compliance_pct ?? -1) - (b[1].compliance_pct ?? -1),
-    ),
+  const vendors = [...byVendor(devices, NIST)].sort(
+    (a, b) => (a[1].compliance_pct ?? -1) - (b[1].compliance_pct ?? -1),
   );
-  const failing = topFailing(devices);
-  const risky = riskiest(devices);
-  const sev = devices.reduce(
-    (n, d) => {
-      for (const [k, v] of Object.entries(d.summary.failed_by_severity))
-        n[k] = (n[k] ?? 0) + (v ?? 0);
-      return n;
-    },
-    {} as Record<string, number>,
-  );
+  const failing = topFailing(devices, 6);
+  const risky = riskiest(devices, 5);
   const understood = devices
     .map((d) => d.summary.understood_pct)
     .filter((v): v is number => v !== null);
   const controlsOf = (ruleId: string) =>
     kb.data?.rules.find((r) => r.id === ruleId)?.controls[NIST] ?? [];
+  const latest = audits.data.reduce<string | null>(
+    (t, a) => (a.finished_at && (!t || a.finished_at > t) ? a.finished_at : t),
+    null,
+  );
+  const failedOn = (pack: string) =>
+    devices
+      .filter((d) => d.summary.pack === pack)
+      .reduce(
+        (n, d) =>
+          n +
+          (d.summary.failed_by_severity.critical ?? 0) +
+          (d.summary.failed_by_severity.high ?? 0),
+        0,
+      );
 
   return (
     <>
       <PageHeader
-        title="Fleet compliance"
-        subtitle={`${devices.length} device${devices.length === 1 ? "" : "s"} · latest audit of each · ${vendors.size} vendor${vendors.size === 1 ? "" : "s"}`}
-        actions={newAudit}
+        title="Fleet overview"
+        meta={
+          <>
+            <span>
+              {devices.length} device{devices.length === 1 ? "" : "s"} · {vendors.length} vendor
+              {vendors.length === 1 ? "" : "s"}
+            </span>
+            <span>Latest audit of each device</span>
+            {latest && <span>Updated {ago(latest)}</span>}
+          </>
+        }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat
-          label="Compliance · NIST SP 800-53"
-          value={pct(primary?.compliance_pct ?? null)}
-          hint={`${primary?.passed ?? 0} passed of ${(primary?.passed ?? 0) + (primary?.failed ?? 0)} judged`}
-          tone={toneFor(primary?.compliance_pct ?? null)}
-        />
-        <Stat
-          label="Coverage"
-          value={pct(primary?.coverage_pct ?? null)}
-          hint={`${primary?.review ?? 0} need a person to review`}
-          tone="gold"
-        />
-        <Stat
-          label="Failed checks"
-          value={primary?.failed ?? 0}
-          hint={
-            <span className="flex gap-3">
-              <span className="text-critical">{sev.critical ?? 0} critical</span>
-              <span className="text-high">{sev.high ?? 0} high</span>
-              <span className="text-medium">{sev.medium ?? 0} medium</span>
-            </span>
-          }
-          tone="fail"
-        />
-        <Stat
-          label="Configuration understood"
-          value={pct(
-            understood.length ? understood.reduce((a, b) => a + b, 0) / understood.length : null,
+      <Posture
+        framework={primary?.title ?? "NIST SP 800-53 Rev. 5"}
+        compliance={primary?.compliance_pct ?? null}
+        coverage={primary?.coverage_pct ?? null}
+        counts={{
+          pass: primary?.passed ?? 0,
+          fail: primary?.failed ?? 0,
+          review: primary?.review ?? 0,
+          na: primary?.not_applicable ?? 0,
+        }}
+        severity={severityTotals(devices.map((d) => d.summary))}
+        understood={
+          understood.length ? understood.reduce((a, b) => a + b, 0) / understood.length : null
+        }
+        scope={`across ${devices.length} device${devices.length === 1 ? "" : "s"}`}
+      />
+
+      <div className="mb-6 grid gap-6 lg:grid-cols-12">
+        <Card
+          title="By vendor"
+          description="Weakest first. Scores pool rule counts, so a small device can't skew them."
+          className="lg:col-span-7"
+          bodyClass="p-0"
+        >
+          <table className="data">
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th className="w-[38%]">Compliance</th>
+                <th className="text-right">Coverage</th>
+                <th className="text-right">Critical + high</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vendors.map(([pack, p]) => (
+                <tr key={pack}>
+                  <td>
+                    <div className="font-medium">{packName(pack)}</div>
+                    <div className="text-[12px] text-muted">
+                      {p.devices} device{p.devices === 1 ? "" : "s"}
+                    </div>
+                  </td>
+                  <td className="align-middle">
+                    <div className="flex items-center gap-3">
+                      <Meter value={p.compliance_pct} className="flex-1" />
+                      <span className="figure w-14 text-right font-semibold">
+                        {pct(p.compliance_pct)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="figure text-right align-middle text-muted">
+                    {pct(p.coverage_pct)}
+                  </td>
+                  <td className="figure text-right align-middle">
+                    {failedOn(pack) ? (
+                      <span className="font-semibold text-fail">{failedOn(pack)}</span>
+                    ) : (
+                      <span className="text-faint">0</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+
+        <Card
+          title="Needs attention"
+          description="Devices ranked by failed checks, weighted by severity."
+          className="lg:col-span-5"
+          bodyClass="px-2 pb-2"
+        >
+          {risky.length === 0 ? (
+            <Empty title="No device fails a check" />
+          ) : (
+            <ol>
+              {risky.map((d, i) => {
+                const s = d.summary;
+                const score = s.scores.find((x) => x.framework === NIST) ?? s.scores[0];
+                return (
+                  <li key={d.key}>
+                    <Link
+                      to={`/devices/${d.audit.job_id}`}
+                      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-surface-2"
+                    >
+                      <span className="figure w-4 text-[12px] text-faint">{i + 1}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-semibold">{s.hostname ?? d.audit.name}</div>
+                        <div className="truncate text-[12.5px] text-muted">{packName(s.pack)}</div>
+                      </div>
+                      <div className="flex items-center gap-3 text-[12.5px]">
+                        {(["critical", "high"] as const).map((sev) =>
+                          s.failed_by_severity[sev] ? (
+                            <span
+                              key={sev}
+                              className={cx("inline-flex items-center gap-1", SEVERITY_TEXT[sev])}
+                              title={`${s.failed_by_severity[sev]} ${sev}`}
+                            >
+                              <SeverityGlyph severity={sev} />
+                              <span className="figure font-semibold">
+                                {s.failed_by_severity[sev]}
+                              </span>
+                            </span>
+                          ) : null,
+                        )}
+                      </div>
+                      <span className="figure w-12 text-right font-semibold">
+                        {pct(score?.compliance_pct ?? null, 0)}
+                      </span>
+                      <ChevronRight
+                        className="size-4 text-faint transition-transform group-hover:translate-x-0.5"
+                        aria-hidden
+                      />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ol>
           )}
-          hint="lines read by an approved mapping"
-        />
-      </div>
-
-      <div className="mb-6 grid gap-6 lg:grid-cols-5">
-        <Card title="By framework" className="lg:col-span-2">
-          <div className="space-y-6">
-            {[...frameworks].map(([id, f]) => (
-              <div key={id} className="flex items-center gap-6">
-                <Ring
-                  value={f.compliance_pct}
-                  tone={toneFor(f.compliance_pct)}
-                  label="compliance"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="font-medium">{f.title}</div>
-                  <div className="mt-1 text-sm text-muted">
-                    Coverage {pct(f.coverage_pct)} · {f.devices} device{f.devices === 1 ? "" : "s"}
-                  </div>
-                  <div className="mt-3">
-                    <VerdictBar
-                      pass={f.passed}
-                      fail={f.failed}
-                      review={f.review}
-                      na={f.not_applicable}
-                    />
-                  </div>
-                  <div className="mt-2">
-                    <Legend
-                      items={[
-                        { cls: "bg-fail", label: `${f.failed} fail` },
-                        { cls: "bg-review", label: `${f.review} review` },
-                        { cls: "bg-pass", label: `${f.passed} pass` },
-                        { cls: "bg-na/40", label: `${f.not_applicable} n/a` },
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-            <p className="text-xs leading-relaxed text-muted">
-              <b className="font-medium text-text">Compliance</b> is what held among the checks that
-              could be judged. <b className="font-medium text-text">Coverage</b> is how many could
-              be judged at all; the rest are REVIEW, never guessed as PASS.
-            </p>
-          </div>
-        </Card>
-
-        <Card title="By vendor · NIST SP 800-53" className="lg:col-span-3">
-          <Bars
-            rows={[...vendors].map(([pack, p]) => ({
-              label: packName(pack),
-              value: p.compliance_pct,
-              hint: `coverage ${pct(p.coverage_pct, 0)} · ${p.devices} dev`,
-            }))}
-          />
         </Card>
       </div>
 
-      <div className="mb-6 grid gap-6 lg:grid-cols-5">
-        <Card title="Top failing checks" className="lg:col-span-3" bodyClass="p-0">
+      <div className="grid gap-6 lg:grid-cols-12">
+        <Card
+          title="Most common failures"
+          description="Checks that fail on the most devices, the most severe first."
+          className="lg:col-span-7"
+          bodyClass="p-0"
+        >
           {failing.length === 0 ? (
             <Empty title="Nothing fails">Every judged check holds on every device.</Empty>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs text-muted">
-                <tr className="border-b border-line">
-                  <th className="px-5 py-2 font-medium">Check</th>
-                  <th className="px-3 py-2 font-medium">Severity</th>
-                  <th className="px-3 py-2 font-medium">NIST controls</th>
-                  <th className="px-5 py-2 text-right font-medium">Devices</th>
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>Check</th>
+                  <th>Severity</th>
+                  <th>Devices</th>
                 </tr>
               </thead>
               <tbody>
                 {failing.map(({ rule, devices: n }) => (
-                  <tr key={rule.rule_id} className="border-b border-line last:border-0">
-                    <td className="px-5 py-2.5">
+                  <tr key={rule.rule_id}>
+                    <td>
                       <div className="font-medium">{rule.title}</div>
-                      <div className="font-mono text-[11px] text-faint">{rule.rule_id}</div>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        <Tag className="border-transparent bg-transparent px-0 text-faint">
+                          {rule.rule_id}
+                        </Tag>
+                        {controlsOf(rule.rule_id).map((c) => (
+                          <Tag key={c}>{c}</Tag>
+                        ))}
+                      </div>
                     </td>
-                    <td className="px-3 py-2.5">
+                    <td className="whitespace-nowrap">
                       <SeverityBadge severity={rule.severity} />
                     </td>
-                    <td className="px-3 py-2.5 font-mono text-xs text-muted">
-                      {controlsOf(rule.rule_id).join(", ") || "–"}
-                    </td>
-                    <td className="px-5 py-2.5 text-right tabular-nums">
-                      <span className="font-semibold text-fail">{n}</span>
-                      <span className="text-faint"> / {devices.length}</span>
+                    <td className="whitespace-nowrap">
+                      <DotCount n={n} total={devices.length} />
                     </td>
                   </tr>
                 ))}
@@ -208,83 +270,40 @@ export function Dashboard() {
           )}
         </Card>
 
-        <Card title="Riskiest devices" className="lg:col-span-2" bodyClass="p-2">
-          {risky.length === 0 ? (
-            <Empty icon={<ShieldAlert className="size-8" />} title="No failing device" />
-          ) : (
-            <ul>
-              {risky.map((d) => {
-                const s = d.summary;
-                const score = s.scores.find((x) => x.framework === NIST) ?? s.scores[0];
-                return (
-                  <li key={d.key}>
-                    <Link
-                      to={`/devices/${d.audit.job_id}`}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-surface-2"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate font-medium">{s.hostname ?? d.audit.name}</div>
-                        <div className="truncate text-xs text-muted">{packName(s.pack)}</div>
-                      </div>
-                      <div className="text-right text-xs">
-                        <div className="font-semibold tabular-nums">
-                          {pct(score?.compliance_pct ?? null, 0)}
-                        </div>
-                        <div className="text-fail">
-                          {(s.failed_by_severity.critical ?? 0) + (s.failed_by_severity.high ?? 0)}{" "}
-                          high+
-                        </div>
-                      </div>
-                      <ArrowRight className="size-4 text-faint" aria-hidden />
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-5">
-        <Card title="Coverage per vendor" className="lg:col-span-2">
-          <Bars
-            rows={[...vendors].map(([pack, p]) => ({
-              label: packName(pack),
-              value: p.coverage_pct,
-              tone: "gold" as const,
-            }))}
-          />
-        </Card>
         <Card
           title="Recent audits"
-          className="lg:col-span-3"
-          bodyClass="p-0"
+          className="lg:col-span-5"
+          bodyClass="px-2 pb-2"
           action={
-            <Link to="/audits" className="text-xs font-medium text-muted hover:text-text">
-              All audits →
+            <Link
+              to="/audits"
+              className="inline-flex items-center gap-1 text-[13px] font-medium text-muted hover:text-text"
+            >
+              All audits <ArrowRight className="size-3.5" aria-hidden />
             </Link>
           }
         >
           <ul>
-            {audits.data.slice(0, 6).map((a) => (
-              <li key={a.job_id} className="border-b border-line last:border-0">
+            {audits.data.slice(0, 7).map((a) => (
+              <li key={a.job_id}>
                 <Link
                   to={a.state === "succeeded" ? `/devices/${a.job_id}` : `/uploads/${a.upload_id}`}
-                  className="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-surface-2"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-surface-2"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{a.summary?.hostname ?? a.name}</div>
-                    <div className="truncate text-xs text-muted">
-                      {a.label ?? "Untitled audit"} · {a.name}
+                    <div className="truncate text-[12.5px] text-muted">
+                      {a.label ?? "Untitled audit"}
                     </div>
                   </div>
-                  {a.summary && (
-                    <span className="w-14 text-right tabular-nums">
+                  {a.summary ? (
+                    <span className="figure w-12 text-right font-semibold">
                       {pct(a.summary.scores[0]?.compliance_pct ?? null, 0)}
                     </span>
+                  ) : (
+                    <JobBadge state={a.state} />
                   )}
-                  <JobBadge state={a.state} />
-                  <span className="w-20 text-right text-xs text-faint">
+                  <span className="w-20 text-right text-[12px] text-faint">
                     {ago(a.finished_at ?? a.created_at)}
                   </span>
                 </Link>

@@ -14,6 +14,7 @@ Output is byte-reproducible (ReportLab's invariant mode), given the same audit a
 
 from __future__ import annotations
 
+import re
 from collections import Counter
 from collections.abc import Sequence
 from io import BytesIO
@@ -44,16 +45,34 @@ from kasauti.rules.model import Finding, Severity, Status
 
 _SEVERITY_ORDER = {Severity.CRITICAL: 0, Severity.HIGH: 1, Severity.MEDIUM: 2, Severity.LOW: 3}
 _STATUS_ORDER = {Status.FAIL: 0, Status.REVIEW: 1, Status.PASS: 2, Status.NOT_APPLICABLE: 3}
+# The web UI's palette (frontend/src/index.css): verdicts in jade, vermilion and indigo; basalt and
+# brass for the brand only.
 _STATUS_COLOUR = {
-    Status.PASS: colors.HexColor("#1b7f3b"),
-    Status.FAIL: colors.HexColor("#b3261e"),
-    Status.REVIEW: colors.HexColor("#9a6700"),
-    Status.NOT_APPLICABLE: colors.HexColor("#5f6368"),
+    Status.PASS: colors.HexColor("#177a59"),
+    Status.FAIL: colors.HexColor("#c3303d"),
+    Status.REVIEW: colors.HexColor("#5850c4"),
+    Status.NOT_APPLICABLE: colors.HexColor("#7b8086"),
 }
-_INK = colors.HexColor("#1f2328")
-_MUTED = colors.HexColor("#57606a")
-_RULE = colors.HexColor("#d0d7de")
-_HEAD_BG = colors.HexColor("#f3f4f6")
+_INK = colors.HexColor("#16191c")
+_MUTED = colors.HexColor("#5c6167")
+_RULE = colors.HexColor("#e3e0d8")
+_HEAD_BG = colors.HexColor("#f4f3ef")
+_BASALT = colors.HexColor("#13171a")
+_ON_BASALT = colors.HexColor("#b9bec3")
+_BRASS = colors.HexColor("#c8972f")
+
+# The Kasauti mark (frontend/src/components/Brand.tsx), on a 64-unit square: the touchstone and
+# the streak rubbed across it.
+_STONE = (
+    "M13.6 7.4C23.4 2.9 43.1 2.6 53.2 8.1C60.1 11.9 61.6 22.6 61.2 34.8C60.8 48.9 54.9 58.6 39.6 "
+    "60.3C26.9 61.7 11.8 60.4 6.1 51.9C2.2 46.1 2.1 29.6 3.6 21.4C4.6 15.3 8.2 9.9 13.6 7.4Z"
+)
+_STREAK = (
+    "M17.3 32.4C18.3 31.6 19.5 31.8 20.4 32.6L27.2 38.4L45.9 18.9C46.9 17.9 48.5 18 49.3 19.1C49.9 "
+    "19.9 49.8 21 49.2 21.8L30.4 46.4C29.1 48.1 26.6 48.3 25 46.8L16.8 36.1C16 35 16.2 33.3 17.3 "
+    "32.4Z"
+)
+_PATH_TOKEN = re.compile(r"[MCLZ]|-?\d*\.?\d+")
 
 
 def render_pdf(result: AuditResult, rules_by_id: dict[str, Any], *, generated: str) -> bytes:
@@ -66,7 +85,7 @@ def render_pdf(result: AuditResult, rules_by_id: dict[str, Any], *, generated: s
         pagesize=A4,
         leftMargin=18 * mm,
         rightMargin=18 * mm,
-        topMargin=18 * mm,
+        topMargin=24 * mm,
         bottomMargin=18 * mm,
         title=f"Kasauti compliance report: {_safe(hostname)}",
         author="Kasauti",
@@ -94,8 +113,105 @@ def render_pdf(result: AuditResult, rules_by_id: dict[str, Any], *, generated: s
         canvas.drawRightString(A4[0] - 18 * mm, 10 * mm, f"page {canvas.getPageNumber()}")
         canvas.restoreState()
 
-    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    def first(canvas: Any, doc_: Any) -> None:
+        _cover_band(canvas, generated)
+        footer(canvas, doc_)
+
+    def later(canvas: Any, doc_: Any) -> None:
+        _running_head(canvas, _safe(hostname))
+        footer(canvas, doc_)
+
+    doc.build(story, onFirstPage=first, onLaterPages=later)
     return buf.getvalue()
+
+
+def effective_severity(r: AuditResult) -> dict[str, Severity]:
+    """Each failed rule's severity as the audit found it: that of its worst failing finding, which
+    exposure may have raised above the rule's own. The web UI counts the same way
+    (kasauti/api/audits.py, ``summarise``)."""
+    worst: dict[str, Severity] = {}
+    for f in r.findings:
+        if f.status is not Status.FAIL or f.severity is None:
+            continue
+        seen = worst.get(f.rule_id)
+        if seen is None or _SEVERITY_ORDER[f.severity] < _SEVERITY_ORDER[seen]:
+            worst[f.rule_id] = f.severity
+    return {x.rule_id: worst.get(x.rule_id, x.severity) for x in r.rules if x.status is Status.FAIL}
+
+
+# --- brand ---------------------------------------------------------------------------------------
+
+
+def _mark(canvas: Any, x: float, y: float, size: float) -> None:
+    """Draw the Kasauti mark with its lower-left corner at (x, y), ``size`` points square."""
+    for d, colour in ((_STONE, colors.HexColor("#1f2428")), (_STREAK, colors.HexColor("#d9a93f"))):
+        canvas.setFillColor(colour)
+        canvas.drawPath(_svg_path(canvas, d, x, y, size / 64), stroke=0, fill=1)
+
+
+def _svg_path(canvas: Any, d: str, x: float, y: float, scale: float) -> Any:
+    """An absolute M/L/C/Z SVG path as a ReportLab path, flipped so SVG's y runs up the page."""
+    path = canvas.beginPath()
+    tokens = _PATH_TOKEN.findall(d)
+
+    def point(i: int) -> tuple[float, float]:
+        return x + float(tokens[i]) * scale, y + (64 - float(tokens[i + 1])) * scale
+
+    i = 0
+    while i < len(tokens):
+        op = tokens[i]
+        if op == "M":
+            path.moveTo(*point(i + 1))
+            i += 3
+        elif op == "L":
+            path.lineTo(*point(i + 1))
+            i += 3
+        elif op == "C":
+            path.curveTo(*point(i + 1), *point(i + 3), *point(i + 5))
+            i += 7
+        elif op == "Z":
+            path.close()
+            i += 1
+        else:
+            raise ValueError(f"unsupported path token {op!r}")
+    return path
+
+
+def _cover_band(canvas: Any, generated: str) -> None:
+    """The first page's basalt band: the mark, the name and what the document is."""
+    width, height = A4
+    band = 16 * mm
+    canvas.saveState()
+    canvas.setFillColor(_BASALT)
+    canvas.rect(0, height - band, width, band, stroke=0, fill=1)
+    canvas.setFillColor(_BRASS)
+    canvas.rect(0, height - band - 0.8, width, 0.8, stroke=0, fill=1)
+    _mark(canvas, 18 * mm, height - band + 3.5 * mm, 9 * mm)
+    canvas.setFillColor(colors.white)
+    canvas.setFont("Helvetica-Bold", 13)
+    canvas.drawString(30 * mm, height - band + 6.2 * mm, "Kasauti")
+    canvas.setFillColor(_ON_BASALT)
+    canvas.setFont("Helvetica", 8)
+    canvas.drawRightString(
+        width - 18 * mm, height - band + 6.6 * mm, f"Compliance report | {generated}"
+    )
+    canvas.restoreState()
+
+
+def _running_head(canvas: Any, host: str) -> None:
+    """Later pages: the mark and the device, over a brass hairline."""
+    width, height = A4
+    canvas.saveState()
+    _mark(canvas, 18 * mm, height - 14 * mm, 5 * mm)
+    canvas.setFillColor(_MUTED)
+    canvas.setFont("Helvetica-Bold", 8)
+    canvas.drawString(25 * mm, height - 12.4 * mm, "Kasauti")
+    canvas.setFont("Helvetica", 8)
+    canvas.drawRightString(width - 18 * mm, height - 12.4 * mm, host)
+    canvas.setStrokeColor(_BRASS)
+    canvas.setLineWidth(0.5)
+    canvas.line(18 * mm, height - 16 * mm, width - 18 * mm, height - 16 * mm)
+    canvas.restoreState()
 
 
 # --- styles and helpers --------------------------------------------------------------------------
@@ -205,7 +321,7 @@ def _pct(value: float | None) -> str:
 def _cover(r: AuditResult, s: _Styles, generated: str) -> list[Any]:
     host = r.identity["hostname"].value or r.input.file
     out: list[Any] = [
-        _p("Kasauti compliance report", s.title),
+        _p("Compliance report", s.title),
         _p(f"{host}: security configuration audit", s.h2),
         Spacer(1, 4 * mm),
         _p("Device profile", s.h1),
@@ -309,27 +425,44 @@ def _summary(r: AuditResult, s: _Styles) -> list[Any]:
                 s.body,
             )
         )
-    fails = [f for f in r.findings if f.status is Status.FAIL]
-    counts = Counter(f.severity for f in fails)
-    out += [Spacer(1, 3 * mm), _p("Failed findings by severity", s.h2)]
+    effective = effective_severity(r)
+    checks = Counter(effective.values())
+    findings = Counter(f.severity for f in r.findings if f.status is Status.FAIL)
+    out += [Spacer(1, 3 * mm), _p("Failures by severity", s.h2)]
     out.append(
         _table(
             [
-                [_p(sev.value.capitalize(), s.cell) for sev in Severity],
-                [_p(str(counts.get(sev, 0)), s.cell) for sev in Severity],
+                [_p("", s.cell), *(_p(sev.value.capitalize(), s.cell) for sev in Severity)],
+                [
+                    _p("Failed checks", s.cell),
+                    *(_p(str(checks.get(sev, 0)), s.cell) for sev in Severity),
+                ],
+                [
+                    _p("Failed findings", s.cell),
+                    *(_p(str(findings.get(sev, 0)), s.cell) for sev in Severity),
+                ],
             ],
-            (43.5 * mm,) * 4,
+            (34 * mm, *(35 * mm,) * 4),
+        )
+    )
+    out.append(
+        _p(
+            "A check counts once, at the severity of its worst finding; a finding is one object "
+            "(an interface, a user, a line) that fails it. Exposure, such as a service reachable "
+            "from an untrusted interface, can raise a finding above the rule's own severity.",
+            s.small,
         )
     )
     out += [Spacer(1, 3 * mm), _p("Top risks", s.h2)]
     top = sorted(
         (x for x in r.rules if x.status is Status.FAIL),
-        key=lambda x: (_SEVERITY_ORDER[x.severity], x.rule_id),
+        key=lambda x: (_SEVERITY_ORDER[effective[x.rule_id]], x.rule_id),
     )[:5]
     if not top:
         out.append(_p("No rule failed.", s.body))
     for i, rule in enumerate(top, 1):
-        out.append(_p(f"{i}. [{rule.severity.value}] {rule.title} ({rule.rule_id})", s.body))
+        sev = effective[rule.rule_id]
+        out.append(_p(f"{i}. [{sev.value}] {rule.title} ({rule.rule_id})", s.body))
     out.append(PageBreak())
     return out
 

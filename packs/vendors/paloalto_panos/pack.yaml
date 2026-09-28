@@ -11,9 +11,11 @@ pack_version: 1
 negation_words: []
 time_unit: minutes
 default_role: firewall
+# Seed pack (PLAN §20.4, TODO M2.30), reviewed in docs/reviews/paloalto_panos.md. The
+# description below is shown to users (knowledge base screen), so it carries no plan references.
 description: >
-  Seed pack (PLAN §20.4, TODO M2.30) for Palo Alto Networks firewall running configurations
-  (`running-config.xml`, `show config running` as XML). Management is reached through the MGT
-  port (its service switches and permitted IPs) or through interface management profiles;
-  security rules match zones, addresses, applications and services. Reviewed against Palo
-  Alto Networks' documentation: docs/reviews/paloalto_panos.md.
+  Palo Alto Networks firewall running configurations (`running-config.xml`,
+  `show config running` as XML). Management is reached through the MGT port (its service
+  switches and permitted IPs) or through interface management profiles; security rules match
+  zones, addresses, applications and services. Reviewed against Palo Alto Networks'
+  documentation.

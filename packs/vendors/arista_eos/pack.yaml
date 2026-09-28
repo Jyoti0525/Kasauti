@@ -9,7 +9,9 @@ negation_words: ["no"]   # not "default": it resets a setting, which isn't the s
 comment_markers: ["!"]
 time_unit: minutes
 default_role: switch
+# Seed pack (PLAN §20.4, TODO M2.27), reviewed in docs/reviews/arista_eos.md. The description
+# below is shown to users (knowledge base screen), so it carries no plan references.
 description: >
-  Seed pack (PLAN §20.4, TODO M2.27) for Arista EOS running-configs. Management access lives in
+  Arista EOS running configurations. Management access lives in
   `management ssh|telnet|console|api` blocks rather than vty lines; ACL addresses use prefix
-  notation. Reviewed against Arista's documentation: docs/reviews/arista_eos.md.
+  notation. Reviewed against Arista's documentation.

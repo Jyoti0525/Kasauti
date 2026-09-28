@@ -1,6 +1,6 @@
-import { FolderUp, UploadCloud } from "lucide-react";
+import { FilePlus2, FolderUp, UploadCloud } from "lucide-react";
 import { useRef, useState, type DragEvent } from "react";
-import { cx } from "./ui";
+import { Button, cx } from "./ui";
 
 export interface Picked {
   file: File;
@@ -15,9 +15,12 @@ const MAX_ENTRIES = 5000;
 export function DropZone({
   onFiles,
   disabled,
+  vendors,
 }: {
   onFiles: (files: Picked[]) => void;
   disabled?: boolean;
+  /** The installed vendor packs, by name. */
+  vendors?: string[];
 }) {
   const [over, setOver] = useState(false);
   const files = useRef<HTMLInputElement>(null);
@@ -48,37 +51,41 @@ export function DropZone({
       onDragLeave={() => setOver(false)}
       onDrop={onDrop}
       className={cx(
-        "flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
-        over ? "border-gold bg-gold-soft" : "border-line bg-surface",
+        "flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-12 text-center transition-colors",
+        over ? "border-brass bg-brass-soft" : "border-line-strong bg-surface",
         disabled && "opacity-60",
       )}
     >
-      <UploadCloud className="mb-3 size-10 text-faint" aria-hidden />
-      <div className="font-medium">Drop configuration files, folders or a .zip here</div>
-      <div className="mt-1 max-w-lg text-sm text-muted">
+      <div
+        className={cx(
+          "mb-4 flex size-14 items-center justify-center rounded-2xl transition-colors",
+          over ? "bg-brass text-on-brass" : "bg-brass-soft text-brass-ink",
+        )}
+      >
+        <UploadCloud className="size-7" aria-hidden />
+      </div>
+      <div className="text-[16px] font-semibold">
+        {over ? "Drop to add them" : "Drop configuration files, folders or a .zip"}
+      </div>
+      <div className="mt-1.5 max-w-lg text-[13.5px] leading-relaxed text-muted">
         Running configurations, and optionally each device's{" "}
-        <span className="font-mono">show version</span> /{" "}
-        <span className="font-mono">show inventory</span> output for its serial number and hardware.
-        The vendor is recognised from the file itself.
+        <span className="font-mono text-[12.5px] text-text">show version</span> or{" "}
+        <span className="font-mono text-[12.5px] text-text">show inventory</span> output for its
+        serial number and hardware. The vendor is recognised from each file itself.
       </div>
-      <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => files.current?.click()}
-          className="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm font-medium hover:bg-surface-2"
-        >
-          Choose files
-        </button>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => folder.current?.click()}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-sm font-medium hover:bg-surface-2"
-        >
-          <FolderUp className="size-4" aria-hidden /> Choose a folder
-        </button>
+      <div className="mt-5 flex gap-2">
+        <Button disabled={disabled} onClick={() => files.current?.click()}>
+          <FilePlus2 /> Choose files
+        </Button>
+        <Button disabled={disabled} onClick={() => folder.current?.click()}>
+          <FolderUp /> Choose a folder
+        </Button>
       </div>
+      {vendors && vendors.length > 0 && (
+        <div className="mt-4 max-w-xl text-[12px] leading-relaxed text-faint">
+          Recognises {vendors.join(" · ")}
+        </div>
+      )}
       <input
         ref={files}
         type="file"

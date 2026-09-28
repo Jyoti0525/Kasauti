@@ -1,8 +1,8 @@
-import { FolderOpen, Plus } from "lucide-react";
+import { ChevronRight, FolderOpen } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { useUploads } from "../api/hooks";
 import type { UploadBrief } from "../api/types";
-import { Button, Card, Empty, ErrorBox, Loading, PageHeader, cx } from "../components/ui";
+import { Card, Empty, ErrorBox, Loading, PageHeader, cx } from "../components/ui";
 import { ago, when } from "../lib/format";
 
 export function Audits() {
@@ -10,58 +10,64 @@ export function Audits() {
   const navigate = useNavigate();
   if (uploads.isPending) return <Loading what="Loading audits" />;
   if (uploads.isError) return <ErrorBox error={uploads.error} />;
+  const target = (u: UploadBrief) =>
+    u.state === "open" ? `/audits/new/${u.id}` : `/uploads/${u.id}`;
   return (
     <>
       <PageHeader
         title="Audits"
-        subtitle="Every upload, newest first. An upload is audited device by device."
-        actions={
-          <Button variant="primary" onClick={() => navigate("/audits/new")}>
-            <Plus className="size-4" /> New audit
-          </Button>
-        }
+        subtitle="Every upload, newest first. Each is audited device by device, in its own sandboxed worker."
       />
       <Card bodyClass="p-0">
         {uploads.data.length === 0 ? (
-          <Empty icon={<FolderOpen className="size-10" />} title="No audit yet" />
+          <Empty icon={<FolderOpen />} title="No audit yet">
+            <Link to="/audits/new" className="font-medium text-brass-ink underline">
+              Start the first one
+            </Link>
+          </Empty>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted">
-              <tr className="border-b border-line">
-                <th className="px-5 py-2.5 font-medium">Audit</th>
-                <th className="px-3 py-2.5 font-medium">Files</th>
-                <th className="px-3 py-2.5 font-medium">Devices</th>
-                <th className="px-3 py-2.5 font-medium">State</th>
-                <th className="px-5 py-2.5 text-right font-medium">Created</th>
+          <table className="data">
+            <thead>
+              <tr>
+                <th>Audit</th>
+                <th>Files</th>
+                <th>Devices</th>
+                <th>Status</th>
+                <th className="text-right">Created</th>
+                <th className="w-10" aria-label="Open" />
               </tr>
             </thead>
             <tbody>
               {uploads.data.map((u) => (
-                <tr key={u.id} className="border-b border-line last:border-0 hover:bg-surface-2">
-                  <td className="px-5 py-3">
+                <tr key={u.id} data-link onClick={() => navigate(target(u))}>
+                  <td>
                     <Link
-                      to={u.state === "open" ? `/audits/new/${u.id}` : `/uploads/${u.id}`}
-                      className="font-medium hover:underline"
+                      to={target(u)}
+                      className="font-semibold"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {u.label ?? "Untitled audit"}
                     </Link>
-                    <div className="font-mono text-[11px] text-faint">{u.id.slice(0, 8)}</div>
+                    <div className="font-mono text-[11.5px] text-faint">{u.id.slice(0, 8)}</div>
                   </td>
-                  <td className="px-3 py-3 tabular-nums">
+                  <td className="figure align-middle">
                     {u.accepted}
                     {u.refused > 0 && <span className="text-fail"> +{u.refused} refused</span>}
                   </td>
-                  <td className="px-3 py-3">
+                  <td className="align-middle">
                     <AuditCounts audits={u.audits} />
                   </td>
-                  <td className="px-3 py-3">
-                    <UploadStateBadge state={u.state} />
+                  <td className="align-middle">
+                    <UploadState state={u.state} />
                   </td>
                   <td
-                    className="px-5 py-3 text-right text-xs text-muted"
+                    className="text-right align-middle text-[13px] text-muted"
                     title={when(u.created_at)}
                   >
                     {ago(u.created_at)}
+                  </td>
+                  <td className="align-middle">
+                    <ChevronRight className="size-4 text-faint" aria-hidden />
                   </td>
                 </tr>
               ))}
@@ -75,36 +81,37 @@ export function Audits() {
 
 function AuditCounts({ audits }: { audits: UploadBrief["audits"] }) {
   const parts = [
-    { n: audits.succeeded, label: "done", cls: "text-pass" },
+    { n: audits.succeeded, label: "audited", cls: "text-text" },
     {
       n: (audits.queued ?? 0) + (audits.running ?? 0) || undefined,
-      label: "running",
-      cls: "text-gold",
+      label: "in progress",
+      cls: "text-brass-ink",
     },
     { n: audits.failed, label: "failed", cls: "text-fail" },
   ].filter((p) => p.n);
   if (!parts.length) return <span className="text-faint">–</span>;
   return (
-    <span className="flex gap-3 text-xs">
+    <span className="flex gap-3 text-[13px]">
       {parts.map((p) => (
         <span key={p.label} className={p.cls}>
-          {p.n} {p.label}
+          <span className="figure font-semibold">{p.n}</span> {p.label}
         </span>
       ))}
     </span>
   );
 }
 
-function UploadStateBadge({ state }: { state: UploadBrief["state"] }) {
-  const cls = {
-    open: "bg-gold-soft text-gold",
-    started: "bg-pass-soft text-pass",
-    discarded: "bg-na-soft text-na",
-    expired: "bg-na-soft text-na",
+function UploadState({ state }: { state: UploadBrief["state"] }) {
+  const s = {
+    open: { dot: "bg-brass", label: "Taking files" },
+    started: { dot: "bg-pass", label: "Started" },
+    discarded: { dot: "bg-na", label: "Discarded" },
+    expired: { dot: "bg-na", label: "Expired" },
   }[state];
   return (
-    <span className={cx("rounded px-1.5 py-0.5 text-[11px] font-semibold", cls)}>
-      {state === "open" ? "taking files" : state}
+    <span className="inline-flex items-center gap-1.5 text-[13px] text-muted">
+      <span className={cx("size-2 rounded-full", s.dot)} aria-hidden />
+      {s.label}
     </span>
   );
 }

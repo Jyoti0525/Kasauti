@@ -1,7 +1,7 @@
-# Kasauti (कसौटी)
+# Kasauti
 
 **AI-Driven Multi-Vendor Network Security Compliance Auditor**
-*हर डिवाइस, हर मानक की कसौटी पर*: every device, held to every standard.
+*Every device, held to every standard.*
 
 Smart India Hackathon 2026 · Problem statement 26155 · National Technical Research Organisation (NTRO)
 

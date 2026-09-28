@@ -85,7 +85,7 @@ rules:
     intent: >
       An access-class only protects the vty lines if the ACL it names exists and actually
       narrows the sources. A missing ACL or one that permits any source leaves the lines open.
-      This follows the chain vty line -> ACL -> permitted sources (PLAN §9.1).
+      This follows the chain vty line -> ACL -> permitted sources.
     domain: management_plane
     applies_to: [router, switch, firewall, white_box]
     for_each: Reference where attribute == 'MgmtSession.access_filter'

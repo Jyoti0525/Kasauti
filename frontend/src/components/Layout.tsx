@@ -1,122 +1,99 @@
-import {
-  BookOpen,
-  FlaskConical,
-  History,
-  LayoutDashboard,
-  Lock,
-  Plus,
-  ScrollText,
-} from "lucide-react";
-import { NavLink, Outlet } from "react-router";
+import { Plus, ShieldCheck } from "lucide-react";
+import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { useHealth } from "../api/hooks";
 import { shortHash } from "../lib/format";
+import { Lockup } from "./Brand";
 import { cx } from "./ui";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/audits/new", label: "New audit", icon: Plus },
-  { to: "/audits", label: "Audits", icon: History, end: true },
-  { to: "/knowledge", label: "Knowledge base", icon: BookOpen },
-  { to: "/rules", label: "Frameworks & rules", icon: ScrollText },
+  { to: "/", label: "Overview", end: true },
+  { to: "/audits", label: "Audits", end: false, also: ["/uploads", "/devices"] },
+  { to: "/knowledge", label: "Knowledge base", end: false },
+  { to: "/rules", label: "Rules", end: false },
 ];
-
-export function Logo() {
-  return (
-    <div className="flex items-center gap-2.5">
-      <svg viewBox="0 0 32 32" className="size-8" aria-hidden>
-        <rect width="32" height="32" rx="7" fill="#1d2027" />
-        <path d="M8 23.5 L23.5 8" stroke="#e0b04a" strokeWidth="3.2" strokeLinecap="round" />
-        <path
-          d="M11 25 L25 11"
-          stroke="#b8871b"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          opacity=".7"
-        />
-      </svg>
-      <div className="leading-tight">
-        <div className="font-semibold tracking-tight text-white">
-          Kasauti <span className="font-normal text-[#e0b04a]">कसौटी</span>
-        </div>
-        <div className="text-[11px] text-ink-text/70">Network compliance auditor</div>
-      </div>
-    </div>
-  );
-}
 
 export function Layout() {
   const health = useHealth();
+  const { pathname } = useLocation();
+  const onNewAudit = pathname.startsWith("/audits/new");
   return (
-    <div className="flex min-h-full">
-      <aside className="w-60 shrink-0 bg-ink text-ink-text">
-        <div className="sticky top-0 flex h-screen flex-col">
-          <div className="px-5 pb-6 pt-5">
-            <Logo />
-          </div>
-          <nav className="flex-1 space-y-0.5 px-3" aria-label="Main">
-            {NAV.map(({ to, label, icon: Icon, end }) => (
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-30 border-b border-basalt-line bg-basalt text-on-basalt">
+        <div className="mx-auto flex h-14 max-w-[1320px] items-center gap-8 px-6">
+          <Link to="/" aria-label="Kasauti, overview" className="shrink-0 rounded-md">
+            <Lockup />
+          </Link>
+          <nav className="flex h-full items-stretch gap-1" aria-label="Main">
+            {NAV.map(({ to, label, end, also }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={end}
-                className={({ isActive }) =>
-                  cx(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive
-                      ? "bg-white/10 font-medium text-white"
-                      : "hover:bg-white/5 hover:text-white",
-                  )
-                }
+                className={({ isActive }) => {
+                  const active =
+                    !onNewAudit && (isActive || (also ?? []).some((p) => pathname.startsWith(p)));
+                  return cx(
+                    "relative flex items-center px-3 text-[13.5px] font-medium transition-colors",
+                    "after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full",
+                    active
+                      ? "text-white after:bg-brass"
+                      : "text-on-basalt hover:text-white after:bg-transparent",
+                  );
+                }}
               >
-                {({ isActive }) => (
-                  <>
-                    <Icon className={cx("size-4", isActive && "text-[#e0b04a]")} aria-hidden />
-                    {label}
-                  </>
-                )}
+                {label}
               </NavLink>
             ))}
-            <div
-              className="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-ink-text/45"
-              title="The Training Studio, where unknown configuration lines are taught, comes next (TODO M2.62–M2.69)"
-            >
-              <FlaskConical className="size-4" aria-hidden />
-              Training Studio
-              <span className="ml-auto rounded bg-white/10 px-1.5 text-[10px] uppercase tracking-wide">
-                next
-              </span>
-            </div>
           </nav>
-          <div className="m-3 rounded-lg bg-white/5 p-3 text-[11px] leading-relaxed">
-            <div className="mb-1.5 flex items-center gap-1.5 font-medium text-white">
-              <Lock className="size-3" aria-hidden /> Loopback only · no cloud calls
-            </div>
-            {health.data ? (
-              <dl className="grid grid-cols-[auto_1fr] gap-x-2 text-ink-text/75">
-                <dt>Knowledge base</dt>
-                <dd className="truncate font-mono" title={health.data.kb_version}>
-                  {shortHash(health.data.kb_version, 10)}
-                </dd>
-                <dt>Vendor packs</dt>
-                <dd>{health.data.vendor_packs.length}</dd>
-                <dt>Frameworks</dt>
-                <dd>{health.data.frameworks.length}</dd>
-                <dt>Version</dt>
-                <dd>{health.data.kasauti_version}</dd>
-              </dl>
-            ) : (
-              <div className="text-ink-text/60">
-                {health.isError ? "Server unreachable" : "Connecting…"}
-              </div>
-            )}
+          <div className="ml-auto flex items-center gap-4">
+            <span
+              className="hidden items-center gap-1.5 text-xs text-on-basalt md:inline-flex"
+              title="Kasauti listens on this machine only and calls no cloud service. Uploaded files are audited and deleted."
+            >
+              <ShieldCheck className="size-3.5 text-pass" aria-hidden />
+              Runs on this machine only
+            </span>
+            <Link
+              to="/audits/new"
+              className={cx(
+                "inline-flex items-center gap-1.5 rounded-lg bg-brass px-3 py-1.5 text-[13px] font-semibold text-on-brass shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition hover:brightness-110",
+                onNewAudit && "ring-2 ring-brass/40 ring-offset-2 ring-offset-basalt",
+              )}
+            >
+              <Plus className="size-4" strokeWidth={2.5} aria-hidden /> New audit
+            </Link>
           </div>
         </div>
-      </aside>
-      <main className="min-w-0 flex-1">
-        <div className="mx-auto max-w-7xl px-8 py-8">
-          <Outlet />
-        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-[1320px] flex-1 px-6 pb-12 pt-8">
+        <Outlet />
       </main>
+
+      <footer className="border-t border-line">
+        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-5 gap-y-1 px-6 py-4 text-xs text-faint">
+          {health.data ? (
+            <>
+              <span>Kasauti {health.data.kasauti_version}</span>
+              <span title={health.data.kb_version}>
+                Knowledge base{" "}
+                <span className="font-mono">{shortHash(health.data.kb_version, 10)}</span>
+              </span>
+              <span>{health.data.vendor_packs.length} vendor packs</span>
+              <span>
+                {health.data.frameworks.length} framework
+                {health.data.frameworks.length === 1 ? "" : "s"}
+              </span>
+              <span>Database: {health.data.database}</span>
+            </>
+          ) : (
+            <span className={health.isError ? "text-fail" : undefined}>
+              {health.isError ? "The Kasauti server is not answering." : "Connecting…"}
+            </span>
+          )}
+          <span className="ml-auto">No cloud calls · uploaded files are deleted after audit</span>
+        </div>
+      </footer>
     </div>
   );
 }

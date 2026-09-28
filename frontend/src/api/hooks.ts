@@ -20,12 +20,16 @@ export function useKb() {
   });
 }
 
-/** A vendor pack's display name, from the installed packs (its id until they load). */
+/** A vendor pack's display name, from the installed packs (its id until they load). A long name
+ * ("Amazon VPC security groups and network ACLs") gives way to its OS family in tables and
+ * headings; the knowledge base shows it in full. */
 export function usePackName(): (id: string | null | undefined) => string {
   const { data } = useKb();
   return (id) => {
     if (!id) return "–";
-    return data?.vendors.find((v) => v.id === id)?.name ?? id;
+    const v = data?.vendors.find((x) => x.id === id);
+    if (!v) return id;
+    return v.name.length > 32 ? v.os_family : v.name;
   };
 }
 

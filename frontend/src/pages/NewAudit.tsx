@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  Check,
   CheckCircle2,
   FileText,
   Loader2,
@@ -36,6 +37,7 @@ export function NewAudit() {
   const health = useHealth();
   const kb = useKb();
   const upload = useUpload(uploadId);
+  const packName = usePackName();
 
   const [label, setLabel] = useState("");
   const [frameworks, setFrameworks] = useState<string[]>(["nist_800_53r5"]);
@@ -111,16 +113,16 @@ export function NewAudit() {
   if (u && u.state !== "open") {
     return (
       <>
-        <PageHeader title={u.label ?? "Audit"} />
+        <PageHeader crumbs={[{ label: "Audits", to: "/audits" }]} title={u.label ?? "Audit"} />
         <Card>
           <p className="text-sm">
-            This upload is <b>{u.state}</b>.{" "}
+            This audit has {u.state === "started" ? "started" : `been ${u.state}`}.{" "}
             {u.state === "started" ? (
-              <Link className="font-medium text-gold underline" to={`/uploads/${u.id}`}>
+              <Link className="font-medium text-brass-ink underline" to={`/uploads/${u.id}`}>
                 See its results
               </Link>
             ) : (
-              <Link className="font-medium text-gold underline" to="/audits/new">
+              <Link className="font-medium text-brass-ink underline" to="/audits/new">
                 Start a new audit
               </Link>
             )}
@@ -133,12 +135,14 @@ export function NewAudit() {
   const installed = health.data?.frameworks ?? [];
   const busy = sending.some((s) => s.state === "sending");
   const canStart = Boolean(u && u.accepted > 0 && u.recognising === 0 && !busy);
+  const step = !u ? 1 : u.devices.length === 0 ? 2 : 3;
 
   return (
     <>
       <PageHeader
+        crumbs={[{ label: "Audits", to: "/audits" }]}
         title={u ? (u.label ?? "New audit") : "New audit"}
-        subtitle="Name it, choose frameworks, drop the files, check the devices found, start."
+        subtitle="Describe the audit, add the files, check the devices Kasauti found, then start."
         actions={
           u && (
             <>
@@ -147,36 +151,35 @@ export function NewAudit() {
                 onClick={() => discard.mutate()}
                 disabled={discard.isPending}
               >
-                <Trash2 className="size-4" /> Discard
+                <Trash2 /> Discard
               </Button>
               <Button
                 variant="primary"
                 onClick={() => start.mutate()}
                 disabled={!canStart || start.isPending}
               >
-                {start.isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Play className="size-4" />
-                )}
+                {start.isPending ? <Loader2 className="animate-spin" /> : <Play />}
                 Start audit
                 {u.devices.length > 0 &&
-                  ` · ${u.devices.length} device${u.devices.length === 1 ? "" : "s"}`}
+                  ` of ${u.devices.length} device${u.devices.length === 1 ? "" : "s"}`}
               </Button>
             </>
           )
         }
       />
+
+      <Stepper step={step} />
+
       {(error || start.error || discard.error) && (
-        <div className="mb-4">
+        <div className="mb-5">
           <ErrorBox error={error ?? start.error ?? discard.error} />
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-1">
-          <Card title="1 · Audit">
-            <label className="block text-sm font-medium" htmlFor="label">
+      <div className="grid gap-6 lg:grid-cols-12">
+        <div className="space-y-6 lg:col-span-4">
+          <Card title="Audit details" description={u ? "Fixed once files are added." : undefined}>
+            <label className="block text-[13px] font-medium" htmlFor="label">
               Name
             </label>
             <input
@@ -185,34 +188,53 @@ export function NewAudit() {
               disabled={Boolean(u)}
               onChange={(e) => setLabel(e.target.value)}
               maxLength={200}
-              placeholder="e.g. Branch routers, Q3 review"
-              className="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm disabled:bg-surface-2"
+              placeholder="e.g. Branch routers, quarterly review"
+              className="field mt-1.5"
             />
-            <fieldset className="mt-4">
-              <legend className="text-sm font-medium">2 · Frameworks</legend>
-              <div className="mt-2 space-y-1.5">
-                {installed.map((f) => (
-                  <label key={f} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      disabled={Boolean(u)}
-                      checked={u ? u.frameworks.includes(f) : frameworks.includes(f)}
-                      onChange={(e) =>
-                        setFrameworks((cur) =>
-                          e.target.checked ? [...cur, f] : cur.filter((x) => x !== f),
-                        )
-                      }
-                    />
-                    {kb.data?.frameworks.find((x) => x.id === f)?.title ?? f}
-                  </label>
-                ))}
+            <fieldset className="mt-5">
+              <legend className="text-[13px] font-medium">Frameworks</legend>
+              <div className="mt-1.5 space-y-2">
+                {installed.map((f) => {
+                  const on = u ? u.frameworks.includes(f) : frameworks.includes(f);
+                  return (
+                    <label
+                      key={f}
+                      className={cx(
+                        "flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-2.5 text-[13.5px] transition-colors has-disabled:cursor-default",
+                        on ? "border-brass/60 bg-brass-soft/60" : "border-line-strong/70",
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-0.5 size-4 accent-brass"
+                        disabled={Boolean(u)}
+                        checked={on}
+                        onChange={(e) =>
+                          setFrameworks((cur) =>
+                            e.target.checked ? [...cur, f] : cur.filter((x) => x !== f),
+                          )
+                        }
+                      />
+                      <span>
+                        <span className="font-medium">
+                          {kb.data?.frameworks.find((x) => x.id === f)?.title ?? f}
+                        </span>
+                        {f === "nist_800_53r5" && (
+                          <span className="mt-0.5 block text-[12px] text-muted">
+                            The anchor: every rule cites these controls
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
-              <p className="mt-2 text-xs text-muted">
-                Every rule is anchored to NIST SP 800-53 Rev. 5. CIS, DISA STIG and ISO 27001 arrive
-                through the crosswalk (M3).
+              <p className="mt-2 text-[12px] leading-relaxed text-muted">
+                CIS Benchmarks, DISA STIG and ISO/IEC 27001 follow through a reviewed crosswalk from
+                these controls.
               </p>
             </fieldset>
-            <label className="mt-4 block text-sm font-medium" htmlFor="vendor">
+            <label className="mt-5 block text-[13px] font-medium" htmlFor="vendor">
               Vendor
             </label>
             <select
@@ -220,7 +242,7 @@ export function NewAudit() {
               value={u ? (u.vendor ?? "") : vendor}
               disabled={Boolean(u)}
               onChange={(e) => setVendor(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm disabled:bg-surface-2"
+              className="field mt-1.5"
             >
               <option value="">Recognise each file automatically</option>
               {kb.data?.vendors.map((v) => (
@@ -233,8 +255,12 @@ export function NewAudit() {
           {sending.length > 0 && <SendLog sending={sending} />}
         </div>
 
-        <div className="space-y-6 lg:col-span-2">
-          <DropZone onFiles={onFiles} disabled={!u && frameworks.length === 0} />
+        <div className="space-y-6 lg:col-span-8">
+          <DropZone
+            onFiles={onFiles}
+            disabled={!u && frameworks.length === 0}
+            vendors={kb.data?.vendors.map((v) => packName(v.id))}
+          />
           {u && <Files upload={u} onChange={refresh} />}
           {u && u.devices.length > 0 && <Devices upload={u} onChange={refresh} />}
         </div>
@@ -243,14 +269,54 @@ export function NewAudit() {
   );
 }
 
+const STEPS = ["Describe the audit", "Add files", "Check devices", "Start"];
+
+function Stepper({ step }: { step: number }) {
+  return (
+    <ol className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Progress">
+      {STEPS.map((label, i) => {
+        const n = i + 1;
+        const done = n < step;
+        const current = n === step;
+        return (
+          <li
+            key={label}
+            aria-current={current ? "step" : undefined}
+            className={cx(
+              "flex items-center gap-2.5 border-t-2 pt-3 text-[13px]",
+              done ? "border-pass" : current ? "border-brass" : "border-line",
+            )}
+          >
+            <span
+              className={cx(
+                "flex size-5 items-center justify-center rounded-full text-[11px] font-semibold",
+                done
+                  ? "bg-pass text-white"
+                  : current
+                    ? "bg-brass text-on-brass"
+                    : "bg-surface-3 text-muted",
+              )}
+            >
+              {done ? <Check className="size-3" strokeWidth={3} /> : n}
+            </span>
+            <span className={cx(current ? "font-semibold" : done ? "text-text" : "text-muted")}>
+              {label}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 function SendLog({ sending }: { sending: Sending[] }) {
   const sent = sending.filter((s) => s.state === "sent").length;
   const failed = sending.filter((s) => s.state === "error");
   return (
     <Card title={`Sending · ${sent}/${sending.length}`}>
-      <div className="h-1.5 overflow-hidden rounded-full bg-surface-2">
+      <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
         <div
-          className="h-full bg-gold transition-[width]"
+          className="h-full bg-brass transition-[width]"
           style={{ width: `${(100 * sent) / sending.length}%` }}
         />
       </div>
@@ -316,7 +382,7 @@ function FileIcon({ file }: { file: FileOut }) {
   if (file.recognition === "pending")
     return <Loader2 className="size-4 shrink-0 animate-spin text-faint" aria-label="recognising" />;
   if (file.kind === "config")
-    return <Server className="size-4 shrink-0 text-gold" aria-label="configuration" />;
+    return <Server className="size-4 shrink-0 text-brass-ink" aria-label="configuration" />;
   if (file.kind === "companion")
     return <Terminal className="size-4 shrink-0 text-muted" aria-label="command output" />;
   return <FileText className="size-4 shrink-0 text-faint" aria-label="not recognised" />;
@@ -353,7 +419,11 @@ function Devices({ upload, onChange }: { upload: Upload; onChange: () => void })
 
   return (
     <>
-      <Card title={`3 · Devices found · ${configs.length}`} bodyClass="p-0">
+      <Card
+        title={`Devices found · ${configs.length}`}
+        description="One audit per configuration. Add details no file gives, such as an asset-register serial."
+        bodyClass="p-0"
+      >
         {pair.error && (
           <div className="p-4">
             <ErrorBox error={pair.error} />
@@ -373,7 +443,11 @@ function Devices({ upload, onChange }: { upload: Upload; onChange: () => void })
         </ul>
       </Card>
       {outputs.length > 0 && (
-        <Card title="Command outputs · which device each belongs to" bodyClass="p-0">
+        <Card
+          title="Command outputs"
+          description="Which device each belongs to. Kasauti pairs them by the host name they show, or by file or folder name; change any pairing here."
+          bodyClass="p-0"
+        >
           <ul>
             {outputs.map((f) => {
               const value = f.paired_by === "hand" ? (f.device ?? "none") : "auto";
@@ -395,7 +469,7 @@ function Devices({ upload, onChange }: { upload: Upload; onChange: () => void })
                     aria-label={`Device for ${f.name}`}
                     value={value}
                     onChange={(e) => pair.mutate({ file: f.id, to: e.target.value })}
-                    className="rounded-lg border border-line bg-surface px-2 py-1 text-sm"
+                    className="field h-8 w-auto text-[13px]"
                   >
                     <option value="auto">Automatic</option>
                     {configs.map((d) => (
@@ -444,7 +518,7 @@ function DeviceRow({
   return (
     <li className="border-b border-line px-5 py-3 last:border-0">
       <div className="flex items-center gap-3">
-        <Server className="size-4 text-gold" aria-hidden />
+        <Server className="size-4 text-brass-ink" aria-hidden />
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium">{device.hostname ?? device.name}</div>
           <div className="truncate text-xs text-muted">
@@ -483,7 +557,7 @@ function DeviceRow({
                   value={values[field] ?? ""}
                   onChange={(e) => setValues({ ...values, [field]: e.target.value })}
                   maxLength={200}
-                  className="mt-1 w-full rounded-md border border-line bg-surface px-2 py-1.5 text-sm font-normal"
+                  className="field mt-1 h-9 font-normal"
                 />
               </label>
             ))}

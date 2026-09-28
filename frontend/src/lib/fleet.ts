@@ -6,7 +6,7 @@
 // all. Averaging the devices' percentages instead would let a device with 2 applicable rules
 // count as much as one with 20.
 
-import type { AuditOut, RuleBrief, ScoreOut, Severity, Summary } from "../api/types";
+import type { AuditOut, AuditResult, RuleBrief, ScoreOut, Severity, Summary } from "../api/types";
 
 export interface Device {
   key: string;
@@ -94,6 +94,35 @@ export function risk(summary: Summary): number {
   );
 }
 
+/** One device's failed rules by severity, as the server's summaries count them
+ * (backend/kasauti/api/audits.py): each failing rule once, at the severity of its worst failing
+ * finding, which exposure may have raised above the rule's own. */
+export function failedBySeverity(result: AuditResult): Partial<Record<Severity, number>> {
+  const worst = new Map<string, Severity>();
+  for (const f of result.findings) {
+    if (f.status !== "FAIL" || !f.severity) continue;
+    const seen = worst.get(f.rule_id);
+    if (!seen || SEVERITY_WEIGHT[f.severity] > SEVERITY_WEIGHT[seen])
+      worst.set(f.rule_id, f.severity);
+  }
+  const out: Partial<Record<Severity, number>> = {};
+  for (const r of result.rules) {
+    if (r.status !== "FAIL") continue;
+    const sev = worst.get(r.rule_id) ?? r.severity;
+    out[sev] = (out[sev] ?? 0) + 1;
+  }
+  return out;
+}
+
+/** Failed rules by severity, summed over `summaries`. */
+export function severityTotals(summaries: Summary[]): Partial<Record<Severity, number>> {
+  const out: Partial<Record<Severity, number>> = {};
+  for (const s of summaries)
+    for (const [sev, n] of Object.entries(s.failed_by_severity) as [Severity, number][])
+      out[sev] = (out[sev] ?? 0) + n;
+  return out;
+}
+
 export function riskiest(devices: Device[], limit = 5): Device[] {
   return [...devices]
     .filter((d) => risk(d.summary) > 0)
@@ -109,15 +138,19 @@ export interface FailingRule {
 /** Rules failing on the most devices, the most severe first among equals. */
 export function topFailing(devices: Device[], limit = 8): FailingRule[] {
   const counts = new Map<string, FailingRule>();
+  const weight = (r: RuleBrief) => (r.severity ? SEVERITY_WEIGHT[r.severity] : 0);
   for (const d of devices) {
     for (const r of d.summary.rules) {
       if (r.status !== "FAIL") continue;
       const found = counts.get(r.rule_id);
-      if (found) found.devices += 1;
-      else counts.set(r.rule_id, { rule: r, devices: 1 });
+      if (!found) counts.set(r.rule_id, { rule: r, devices: 1 });
+      else {
+        found.devices += 1;
+        // Shown at its worst on any device: exposure raises it on some devices, not others.
+        if (weight(r) > weight(found.rule)) found.rule = r;
+      }
     }
   }
-  const weight = (r: RuleBrief) => (r.severity ? SEVERITY_WEIGHT[r.severity] : 0);
   return [...counts.values()]
     .sort(
       (a, b) =>

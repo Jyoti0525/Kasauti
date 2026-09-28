@@ -9,7 +9,10 @@ negation_words: ["no"]
 comment_markers: ["!"]
 time_unit: minutes
 default_role: router
+# Seed pack (PLAN §20.4, TODO M1.09 / M2.26); trainer additions go through the Training
+# Studio's four-eyes approval (TODO M3.24). The description below is shown to users (knowledge
+# base screen), so it carries no plan references.
 description: >
-  Seed pack (PLAN §20.4, TODO M1.09 / M2.26) for Cisco IOS XE 16.x/17.x running-configs.
-  Mappings are seed content approved through repository review ("maintainer"); anything a
-  trainer adds later goes through the Training Studio's four-eyes approval (TODO M3.24).
+  Cisco IOS XE 16.x and 17.x running configurations. Mappings are seed content approved
+  through repository review ("maintainer"); anything a trainer adds later needs a second
+  person's approval in the Training Studio.

@@ -1,80 +1,114 @@
 @import "tailwindcss";
 
-/* Kasauti (कसौटी) is the touchstone: the black stone gold is tested against. Charcoal and a gold
-   streak, and the verdict colours everyone already reads (green holds, red fails, amber needs a
-   person). System fonts only: the platform makes no network calls. */
+/* Basalt and brass. A kasauti is the black touchstone an assayer streaks gold across to prove it:
+   basalt frames the product, brass marks the brand and the one action that matters on a screen,
+   and nothing else. Verdicts get their own hues, chosen never to be mistaken for the brand or for
+   each other: jade holds, vermilion fails, indigo waits for a person. Severity is one ramp, from
+   oxblood to slate. Every verdict also carries a shape, so no reading depends on colour alone.
+
+   Type is IBM Plex (SIL OFL-1.1), bundled with the build: the platform makes no network calls. */
 
 :root {
-  --bg: #f5f6f8;
+  --canvas: #f4f3ef;
   --surface: #ffffff;
-  --surface-2: #f0f2f5;
-  --line: #e2e5ea;
-  --text: #14171c;
-  --muted: #5b6472;
-  --faint: #8a93a1;
-  --ink: #111318;
-  --ink-2: #1b1e25;
-  --ink-text: #c9ced6;
-  --gold: #b8871b;
-  --gold-soft: #f6edd8;
-  --pass: #1a7f37;
-  --pass-soft: #e3f4e8;
-  --fail: #c62a2f;
-  --fail-soft: #fce8e8;
-  --review: #a86b00;
-  --review-soft: #fdf1d9;
-  --na: #6b7380;
-  --na-soft: #eef0f3;
-  --critical: #8e0f1f;
-  --high: #c62a2f;
-  --medium: #cf6a14;
-  --low: #5b6472;
-  --focus: #b8871b;
+  --surface-2: #f8f7f4;
+  --surface-3: #eceae4;
+  --line: #e3e0d8;
+  --line-strong: #cfcbc1;
+  --text: #16191c;
+  --muted: #5c6167;
+  --faint: #8b9095;
+
+  --basalt: #13171a;
+  --basalt-2: #1c2125;
+  --basalt-line: #2a3035;
+  --on-basalt: #b9bec3;
+
+  --brass: #c8972f;
+  --brass-ink: #8a6417;
+  --brass-soft: #f5ecd6;
+  --on-brass: #1a1406;
+
+  --data: #34414b;
+
+  --pass: #177a59;
+  --pass-soft: #e2f1ea;
+  --fail: #c3303d;
+  --fail-soft: #fae7e8;
+  --review: #5850c4;
+  --review-soft: #ebe9fa;
+  --na: #7b8086;
+  --na-soft: #eeede9;
+
+  --critical: #7d1b2a;
+  --high: #c3303d;
+  --medium: #c96a1e;
+  --low: #7b8086;
+
+  --focus: #c8972f;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d0f13;
-    --surface: #15181e;
-    --surface-2: #1c2028;
-    --line: #2a2f38;
-    --text: #e7eaef;
-    --muted: #9ba4b2;
-    --faint: #6d7684;
-    --ink: #0a0b0e;
-    --ink-2: #14161b;
-    --gold: #e0b04a;
-    --gold-soft: #3a2e14;
-    --pass: #4cc26d;
-    --pass-soft: #12301c;
-    --fail: #f0625f;
-    --fail-soft: #3a1717;
-    --review: #e5a92f;
-    --review-soft: #36290f;
-    --na: #8d96a3;
-    --na-soft: #22262e;
-    --critical: #ff6b7d;
-    --high: #f0625f;
-    --medium: #f0913f;
-    --low: #9ba4b2;
+    --canvas: #0e1113;
+    --surface: #15191c;
+    --surface-2: #191e21;
+    --surface-3: #222829;
+    --line: #283034;
+    --line-strong: #364046;
+    --text: #e9e7e1;
+    --muted: #a1a6ab;
+    --faint: #6f757b;
+
+    --basalt: #0a0c0e;
+    --basalt-2: #15191c;
+    --basalt-line: #22282c;
+    --on-basalt: #a9aeb3;
+
+    --brass: #d6a646;
+    --brass-ink: #e2bb68;
+    --brass-soft: #30271a;
+    --on-brass: #1a1406;
+
+    --data: #9fb0bc;
+
+    --pass: #45be92;
+    --pass-soft: #10281f;
+    --fail: #f06a73;
+    --fail-soft: #37181c;
+    --review: #a39ef6;
+    --review-soft: #211f3e;
+    --na: #8b9197;
+    --na-soft: #1e2326;
+
+    --critical: #ff8391;
+    --high: #f06a73;
+    --medium: #f09a52;
+    --low: #8b9197;
     color-scheme: dark;
   }
 }
 
 @theme inline {
-  --color-bg: var(--bg);
+  --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-faint: var(--faint);
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-ink-text: var(--ink-text);
-  --color-gold: var(--gold);
-  --color-gold-soft: var(--gold-soft);
+  --color-basalt: var(--basalt);
+  --color-basalt-2: var(--basalt-2);
+  --color-basalt-line: var(--basalt-line);
+  --color-on-basalt: var(--on-basalt);
+  --color-brass: var(--brass);
+  --color-brass-ink: var(--brass-ink);
+  --color-brass-soft: var(--brass-soft);
+  --color-on-brass: var(--on-brass);
+  --color-data: var(--data);
   --color-pass: var(--pass);
   --color-pass-soft: var(--pass-soft);
   --color-fail: var(--fail);
@@ -87,27 +121,110 @@
   --color-high: var(--high);
   --color-medium: var(--medium);
   --color-low: var(--low);
+  --font-sans:
+    "IBM Plex Sans Variable", "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
   --font-mono:
-    ui-monospace, "Cascadia Mono", "Cascadia Code", "SF Mono", Menlo, Consolas, "Liberation Mono",
-    monospace;
+    "IBM Plex Mono", ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
 }
 
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
-  background: var(--bg);
+  background: var(--canvas);
   color: var(--text);
-  font-feature-settings: "cv11", "ss01";
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brass) 35%, transparent);
 }
 
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@layer components {
+  /* One table style everywhere: quiet header, hairline rows, generous first and last columns. */
+  .data {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13.5px;
+  }
+  .data thead th {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 9px 12px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .data tbody td {
+    border-bottom: 1px solid var(--line);
+    padding: 11px 12px;
+    vertical-align: top;
+  }
+  .data tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  .data th:first-child,
+  .data td:first-child {
+    padding-left: 20px;
+  }
+  .data th:last-child,
+  .data td:last-child {
+    padding-right: 20px;
+  }
+  .data tbody tr[data-link] {
+    cursor: pointer;
+  }
+  .data tbody tr[data-link]:hover td {
+    background: var(--surface-2);
+  }
+  .data.compact tbody td {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .field {
+    background: var(--surface);
+    border: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+    border-radius: 8px;
+    font-size: 14px;
+    height: 38px;
+    padding: 0 12px;
+    width: 100%;
+  }
+  .field:focus {
+    border-color: var(--brass);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brass) 20%, transparent);
+    outline: none;
+  }
+  .field:disabled {
+    background: var(--surface-2);
+    color: var(--muted);
+  }
+  select.field {
+    padding-right: 28px;
+  }
+}
+
+/* A figure people compare: numbers line up. */
+.figure {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 @media (prefers-reduced-motion: reduce) {

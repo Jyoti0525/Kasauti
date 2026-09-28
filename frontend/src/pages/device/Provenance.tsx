@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 import { useKb, useVendor } from "../../api/hooks";
 import type { AuditResult, Evidence, Finding } from "../../api/types";
 import { Drawer } from "../../components/Drawer";
-import { Mono, SeverityBadge, StatusBadge } from "../../components/ui";
+import { Mono, Prose, SeverityBadge, StatusBadge, Tag, cx } from "../../components/ui";
 
 export function Provenance({
   finding,
@@ -47,14 +47,15 @@ export function Provenance({
         <span className="flex flex-wrap items-center gap-2">
           <StatusBadge status={finding.status} />
           <SeverityBadge severity={finding.severity} />
-          <Mono className="text-faint">{finding.rule_id}</Mono>
+          <span className="mx-1 h-4 w-px bg-line" aria-hidden />
+          <Mono className="text-muted">{finding.rule_id}</Mono>
           <span className="text-faint">on</span>
-          <Mono>{finding.entity_id}</Mono>
+          <Tag>{finding.entity_id}</Tag>
         </span>
       }
     >
-      <ol className="relative space-y-6 border-l border-line pl-6">
-        <Step icon={<FileCode2 />} title="Raw configuration line" n={1}>
+      <ol className="relative ml-3 space-y-7 border-l-2 border-dashed border-line-strong pl-8">
+        <Step icon={<FileCode2 />} title="Configuration lines" n={1}>
           {finding.evidence.length === 0 ? (
             <p className="text-sm text-muted">
               No line: the verdict rests on what the configuration <i>doesn't</i> say
@@ -62,20 +63,29 @@ export function Provenance({
               setting is judged by the rule's policy for absence, never assumed safe.
             </p>
           ) : (
-            <ul className="space-y-2">
-              {finding.evidence.map((e, i) => (
-                <li key={i} className="overflow-hidden rounded-lg border border-line">
-                  <div className="flex items-center justify-between bg-surface-2 px-3 py-1 text-[11px] text-muted">
-                    <span className="font-mono">
-                      {e.file}:{e.line_start}
-                      {e.line_end !== e.line_start && `–${e.line_end}`}
-                    </span>
+            <div className="space-y-3">
+              {byFile(finding.evidence).map(([file, lines]) => (
+                <div
+                  key={file}
+                  className="overflow-hidden rounded-lg bg-basalt ring-1 ring-basalt-line"
+                >
+                  <div className="flex items-center justify-between border-b border-basalt-line px-4 py-2 text-[12px] text-on-basalt">
+                    <span className="font-mono">{file}</span>
                     <span>secrets masked</span>
                   </div>
-                  <pre className="overflow-x-auto px-3 py-2 font-mono text-[12.5px]">{e.raw}</pre>
-                </li>
+                  <div className="overflow-x-auto py-2 font-mono text-[13px] leading-6 text-[#f1ede2]">
+                    {lines.map((e, i) => (
+                      <div key={i} className="flex">
+                        <span className="w-12 shrink-0 select-none pr-3 text-right text-on-basalt/50">
+                          {e.line_start}
+                        </span>
+                        <span className="whitespace-pre pr-4">{e.raw}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </Step>
 
@@ -91,7 +101,7 @@ export function Provenance({
                   <li key={key} className="text-sm">
                     <Mono className="font-medium">{key}</Mono>
                     {m && (
-                      <div className="mt-1 rounded-md bg-surface-2 px-2 py-1 font-mono text-[12px] text-muted">
+                      <div className="mt-1.5 rounded-md border border-line bg-surface-2 px-2.5 py-1.5 font-mono text-[12.5px] text-muted">
                         {m.context.length > 0 && (
                           <span className="text-faint">{m.context.join(" › ")} › </span>
                         )}
@@ -118,7 +128,7 @@ export function Provenance({
             <ul className="space-y-1">
               {finding.actual.map((a, i) => (
                 <li key={i}>
-                  <Mono className="rounded bg-surface-2 px-1.5 py-0.5">{a}</Mono>
+                  <Mono className="rounded-md border border-line bg-surface-2 px-2 py-1">{a}</Mono>
                 </li>
               ))}
             </ul>
@@ -149,8 +159,10 @@ export function Provenance({
           <p className="text-sm">{finding.reason}</p>
           {rule && (
             <div className="mt-2 space-y-1 text-xs text-muted">
-              <p>{rule.intent}</p>
-              <div className="rounded-md bg-surface-2 px-2 py-1.5 font-mono text-[12px]">
+              <p>
+                <Prose text={rule.intent} />
+              </p>
+              <div className="rounded-md border border-line bg-surface-2 px-2.5 py-2 font-mono text-[12.5px] text-text">
                 <div>
                   <span className="text-faint">for each </span>
                   {rule.for_each}
@@ -185,8 +197,9 @@ export function Provenance({
 
         <Step icon={<Hammer />} title="Fix and verification" n={6} muted>
           <p className="text-sm text-muted">
-            Vendor-specific remediation with pre-checks, rollback and a re-audit of the fixed model
-            arrives in M4 (TODO M4.16). Kasauti never pushes a change to a device.
+            Vendor-specific remediation, with pre-checks, a rollback plan and a re-audit of the
+            fixed configuration, comes in the next release. Kasauti never pushes a change to a
+            device.
           </p>
         </Step>
       </ol>
@@ -210,16 +223,30 @@ function Step({
   return (
     <li className="relative">
       <span
-        className={`absolute -left-[37px] flex size-6 items-center justify-center rounded-full border border-line bg-surface [&>svg]:size-3.5 ${muted ? "text-faint" : "text-gold"}`}
+        className={cx(
+          "absolute -left-[47px] -top-1 flex size-7 items-center justify-center rounded-full border [&>svg]:size-3.5",
+          muted
+            ? "border-line bg-surface-2 text-faint"
+            : "border-brass/40 bg-brass-soft text-brass-ink",
+        )}
       >
         {icon}
       </span>
-      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
-        {n} · {title}
+      <div className="mb-2.5 flex items-baseline gap-2">
+        <span className="figure text-[12px] font-medium text-faint">0{n}</span>
+        <span className={cx("text-[14px] font-semibold", muted && "text-muted")}>{title}</span>
       </div>
       {children}
     </li>
   );
+}
+
+/** Evidence grouped by file, each file's lines in order. */
+function byFile(evidence: Evidence[]): [string, Evidence[]][] {
+  const files = new Map<string, Evidence[]>();
+  for (const e of evidence) files.set(e.file, [...(files.get(e.file) ?? []), e]);
+  for (const lines of files.values()) lines.sort((a, b) => a.line_start - b.line_start);
+  return [...files];
 }
 
 /** The first evidence item of each mapping (id and version) among `evidence`. */

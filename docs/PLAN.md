@@ -1,10 +1,10 @@
-# Kasauti (कसौटी): Master Plan
+# Kasauti: Master Plan
 
 **SIH 2026 · PS 26155 · AI-Driven Multi-Vendor Network Security Compliance Auditor**
 National Technical Research Organisation (NTRO) · Software · Blockchain & Cybersecurity
 
-> **Kasauti (कसौटी)**: AI-Driven Multi-Vendor Network Security Compliance Auditor
-> *हर डिवाइस, हर मानक की कसौटी पर* ("every device, held to every standard")
+> **Kasauti**: AI-Driven Multi-Vendor Network Security Compliance Auditor
+> *Every device, held to every standard.*
 >
 > A *kasauti* is the touchstone used to test whether gold is pure. "कसौटी पर खरा उतरना" means "to pass the test, to meet the standard", which is exactly the question compliance asks of every device: does it meet CIS, NIST, STIG and ISO? The name was chosen by the team on 2026-09-25. No existing software product by that name was found.
 
@@ -970,7 +970,7 @@ kasauti/
 | Other teams converge on similar ideas | Depth (evaluation, governance, verification, trust) is hard to copy; keep the repo private until submission |
 
 ## 29. Open decisions
-1. ~~Product name~~: decided, **Kasauti (कसौटी)**.
+1. ~~Product name~~: decided, **Kasauti**; since 2026-09-28 the product shows the English name only (no Devanagari in the UI, reports or titles).
 2. ~~Team size and names~~: decided, **one developer + Claude** (§24).
 3. ~~NCIIPC outreach owner~~: decided, the developer, by email (§20.5).
 4. Whether live collection makes the demo (depends on lab availability and disk).
@@ -1060,6 +1060,36 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
       start and says why.
     - A summary counted a failing rule at its base severity while its findings, raised by
       exposure, said critical: the dashboard now counts what the findings say.
+- **v5.1.35 (2026-09-28, the web UI redesigned, brand and logo):**
+  - **Identity.** "Basalt and brass", after the touchstone: basalt frames the product, and brass
+    marks the brand and the single primary action on a screen, nothing else. The logo is a basalt
+    slab with a brass streak drawn as a tick and two fainter earlier streaks
+    (`frontend/src/components/Brand.tsx`, the favicon and the PDF header share its geometry).
+    The product is named in English only: no Devanagari in the UI, reports or titles.
+  - **Colour does one job.** Verdicts get their own hues (jade PASS, vermilion FAIL, indigo
+    REVIEW, slate N/A). Amber is gone, because it read like the brand gold. Severity is a single
+    ramp shown as a four-bar glyph. Every verdict also has a shape, so no reading depends on
+    colour. A firewall's permit and deny are neutral, since an action is not a verdict. The PDF
+    uses the same palette.
+  - **Type.** IBM Plex Sans and Plex Mono (SIL OFL-1.1, from IBM's repository), bundled with the
+    build, so the air-gapped rule still holds. The npm licence gate accepts OFL-1.1 for
+    `@fontsource` font packages only.
+  - **Layout.** A top bar replaces the sidebar. One "posture" panel replaces the rows of equal
+    stat cards: compliance, every check by verdict, coverage, the share of each file understood,
+    and failed checks by severity. The overview, an upload's results and the device view all use
+    it. The device view has breadcrumbs, identity with readable sources and a basalt
+    configuration viewer. The provenance drawer is a numbered chain with one code panel per file.
+    New audit shows a step indicator. The knowledge-base table no longer overflows.
+  - **Closed on the way:**
+    - The PDF's top risks ranked failed rules by their base severity, while the findings
+      (raised by exposure) and the dashboard said critical. The PDF now ranks and counts by
+      effective severity (`effective_severity`), with failed checks and failed findings shown
+      apart. A test holds the PDF and the web summary to the same counts on every weak sample.
+    - Vendor-pack descriptions and one rule intent showed plan and TODO references to users.
+      Those now live in YAML comments. Only the KB and ruleset hashes (and the audit ids derived
+      from them) changed in the golden snapshots; no verdict changed.
+    - The file-shape and identity-source labels were raw ids and markup ("Json Yaml",
+      `` `show version` (dir/…) ``); they now read as words.
 - **v5.1.32 (2026-09-27, M2.28 limits closed):** Every Junos file form the CLI writes is now
   replayed as the CLI would (`kasauti/mapping/commands.py`): `[edit …]` banners, prompts and
   command output in terminal captures, `edit`/`up`/`top`/`exit`, `insert`, `rename`, `copy`,

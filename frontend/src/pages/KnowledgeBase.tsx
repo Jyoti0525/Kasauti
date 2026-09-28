@@ -1,9 +1,33 @@
-import { BadgeCheck, Search } from "lucide-react";
+import { BadgeCheck, Clock } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { useKb, useVendor } from "../api/hooks";
-import { Card, ErrorBox, Loading, Mono, PageHeader, Tabs, cx } from "../components/ui";
+import { Meter } from "../components/charts";
+import {
+  Card,
+  ErrorBox,
+  Loading,
+  Mono,
+  PageHeader,
+  Prose,
+  SearchBox,
+  Tabs,
+  Tag,
+  cx,
+} from "../components/ui";
 import { shortHash, show, titleCase } from "../lib/format";
+
+// The structural families (backend/kasauti/shape/model.py, ShapeFamily), for people.
+const SHAPES: Record<string, string> = {
+  indent: "Indented CLI",
+  brace: "Curly-brace hierarchy",
+  set_path: "Set commands",
+  block_edit: "config / edit blocks",
+  path_command: "Path commands",
+  xml: "XML",
+  json_yaml: "JSON or YAML",
+  flat: "Flat lines",
+};
 
 /** Vendor packs and their mappings (TODO M2.82). Versions are kept per mapping; history,
  * diffs and rollback arrive with M3.27, signatures with M5.08. */
@@ -17,42 +41,48 @@ export function KnowledgeBase() {
     <>
       <PageHeader
         title="Knowledge base"
-        subtitle={
-          <>
-            What Kasauti knows about each vendor: how to recognise its files, how each configuration
-            line maps into the vendor-neutral model, and the vendor's documented defaults. Version{" "}
-            <span className="font-mono">{shortHash(kb.data.kb_version, 12)}</span>.
-          </>
+        subtitle="What Kasauti knows about each vendor: how to recognise its files, how each configuration line maps into the vendor-neutral model, and the vendor's documented defaults."
+        meta={
+          <span title={kb.data.kb_version}>
+            Version <span className="font-mono">{shortHash(kb.data.kb_version, 12)}</span>
+          </span>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
-        <nav className="space-y-2" aria-label="Vendor packs">
-          {kb.data.vendors.map((v) => (
-            <Link
-              key={v.id}
-              to={`/knowledge/${v.id}`}
-              className={cx(
-                "block rounded-xl border px-4 py-3 transition-colors",
-                v.id === selected
-                  ? "border-gold bg-surface"
-                  : "border-line bg-surface hover:border-faint",
-              )}
-            >
-              <div className="font-medium">{v.name}</div>
-              <div className="mt-0.5 text-xs text-muted">
-                {v.mappings} mappings · {v.defaults} defaults · v{v.pack_version}
-              </div>
-              <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-2">
-                <div
-                  className="h-full bg-pass"
-                  style={{ width: `${(100 * v.approved) / Math.max(1, v.mappings)}%` }}
-                />
-              </div>
-              <div className="mt-1 text-[11px] text-faint">
-                {v.approved}/{v.mappings} approved
-              </div>
-            </Link>
-          ))}
+      <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
+        <nav className="space-y-1.5" aria-label="Vendor packs">
+          {kb.data.vendors.map((v) => {
+            const active = v.id === selected;
+            return (
+              <Link
+                key={v.id}
+                to={`/knowledge/${v.id}`}
+                aria-current={active ? "page" : undefined}
+                className={cx(
+                  "relative block rounded-xl border px-4 py-3 transition-colors",
+                  active
+                    ? "border-line-strong bg-surface shadow-[inset_3px_0_0_var(--brass)]"
+                    : "border-transparent hover:border-line hover:bg-surface",
+                )}
+              >
+                <div className="text-[12px] text-muted">{v.vendor}</div>
+                <div className="font-semibold">{v.os_family}</div>
+                <div className="mt-2 flex items-center gap-2">
+                  <Meter
+                    value={v.approved}
+                    max={Math.max(1, v.mappings)}
+                    tone="pass"
+                    className="flex-1"
+                  />
+                  <span className="figure text-[12px] text-muted">
+                    {v.approved}/{v.mappings}
+                  </span>
+                </div>
+                <div className="mt-1 text-[12px] text-faint">
+                  mappings approved · {v.defaults} defaults
+                </div>
+              </Link>
+            );
+          })}
         </nav>
         {selected && <VendorDetailView packId={selected} />}
       </div>
@@ -74,29 +104,26 @@ function VendorDetailView({ packId }: { packId: string }) {
   );
   return (
     <div className="min-w-0">
-      <Card className="mb-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold">{vendor.name}</h2>
-            <p className="mt-1 max-w-2xl text-sm text-muted">{vendor.description}</p>
-          </div>
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-            <dt className="text-muted">Pack</dt>
-            <dd className="font-mono text-xs">
+      <Card className="mb-6">
+        <div className="text-[12.5px] text-muted">{vendor.vendor}</div>
+        <h2 className="text-[20px] font-semibold tracking-[-0.01em]">{vendor.name}</h2>
+        <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-muted">
+          <Prose text={vendor.description} />
+        </p>
+        <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-line pt-4 sm:grid-cols-4">
+          <Fact label="Pack">
+            <Mono>
               {vendor.id} v{vendor.pack_version}
-            </dd>
-            <dt className="text-muted">File shape</dt>
-            <dd>{titleCase(vendor.shape_family)}</dd>
-            <dt className="text-muted">Fingerprints</dt>
-            <dd>{vendor.signatures}</dd>
-            {vendor.default_role && (
-              <>
-                <dt className="text-muted">Device role</dt>
-                <dd>{titleCase(vendor.default_role)}</dd>
-              </>
-            )}
-          </dl>
-        </div>
+            </Mono>
+          </Fact>
+          <Fact label="File shape">
+            {SHAPES[vendor.shape_family] ?? titleCase(vendor.shape_family)}
+          </Fact>
+          <Fact label="Fingerprints">{vendor.signatures}</Fact>
+          <Fact label="Device role">
+            {vendor.default_role ? titleCase(vendor.default_role) : "From the configuration"}
+          </Fact>
+        </dl>
       </Card>
       <Tabs
         value={tab}
@@ -108,98 +135,108 @@ function VendorDetailView({ packId }: { packId: string }) {
       />
       {tab === "mappings" ? (
         <>
-          <label className="mb-3 flex w-80 items-center gap-1.5 rounded-lg border border-line bg-surface px-2 py-1">
-            <Search className="size-3.5 text-faint" aria-hidden />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search patterns…"
-              className="w-full bg-transparent text-sm outline-none"
-            />
-          </label>
-          <div className="overflow-hidden rounded-xl border border-line bg-surface">
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs text-muted">
-                <tr className="border-b border-line bg-surface-2">
-                  <th className="px-4 py-2 font-medium">Mapping</th>
-                  <th className="px-3 py-2 font-medium">Pattern</th>
-                  <th className="px-3 py-2 font-medium">Writes</th>
-                  <th className="px-4 py-2 font-medium">Approval</th>
+          <SearchBox
+            value={query}
+            onChange={setQuery}
+            placeholder="Search patterns and objects"
+            className="mb-4 w-full max-w-sm"
+          />
+          <Card bodyClass="p-0 overflow-x-auto">
+            <table className="data">
+              <thead>
+                <tr>
+                  <th className="w-[22%]">Mapping</th>
+                  <th>Pattern</th>
+                  <th className="w-[28%]">Writes</th>
+                  <th className="w-36">Approval</th>
                 </tr>
               </thead>
               <tbody>
                 {shown.map((m) => (
-                  <tr key={m.id} className="border-b border-line align-top last:border-0">
-                    <td className="px-4 py-2">
-                      <Mono className="font-medium">{m.id.split("/")[1]}</Mono>
-                      <div className="text-[11px] text-faint">
+                  <tr key={m.id}>
+                    <td>
+                      <Mono className="font-medium wrap-break-word">{m.id.split("/")[1]}</Mono>
+                      <div className="text-[12px] text-faint">
                         v{m.version}
                         {m.os_versions !== "*" && ` · OS ${m.os_versions}`}
                       </div>
                     </td>
-                    <td className="max-w-md px-3 py-2">
+                    <td className="min-w-64">
                       {m.context.length > 0 && (
-                        <div className="truncate font-mono text-[11px] text-faint">
+                        <div className="font-mono text-[11.5px] text-faint wrap-break-word">
                           {m.context.join(" › ")} ›
                         </div>
                       )}
-                      <div className="break-words font-mono text-[12px]">{m.match}</div>
+                      <div className="font-mono text-[12.5px] wrap-break-word">{m.match}</div>
                     </td>
-                    <td className="px-3 py-2 text-xs text-muted">
+                    <td className="text-[12.5px] text-muted">
                       {m.entity && <div className="font-medium text-text">{m.entity}</div>}
                       {m.effects.map((e, i) => (
-                        <div key={i} className="font-mono text-[11px]">
+                        <div key={i} className="font-mono text-[11.5px] wrap-break-word">
                           {effectText(e)}
                         </div>
                       ))}
                     </td>
-                    <td className="px-4 py-2 text-xs">
+                    <td className="text-[12.5px]">
                       {m.approved_by.length ? (
                         <span className="inline-flex items-center gap-1 text-pass">
-                          <BadgeCheck className="size-3.5" /> {m.approved_by.join(", ")}
+                          <BadgeCheck className="size-4 shrink-0" /> {m.approved_by.join(", ")}
                         </span>
                       ) : (
-                        <span className="text-review">awaiting approval</span>
+                        <span className="inline-flex items-center gap-1 text-review">
+                          <Clock className="size-4 shrink-0" /> awaiting approval
+                        </span>
                       )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
         </>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-line bg-surface">
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted">
-              <tr className="border-b border-line bg-surface-2">
-                <th className="px-4 py-2 font-medium">Default</th>
-                <th className="px-3 py-2 font-medium">Attribute = value</th>
-                <th className="px-4 py-2 font-medium">Source</th>
+        <Card bodyClass="p-0 overflow-x-auto">
+          <table className="data">
+            <thead>
+              <tr>
+                <th className="w-[26%]">Default</th>
+                <th>Attribute and value</th>
+                <th className="w-[40%]">Source</th>
               </tr>
             </thead>
             <tbody>
               {defaults.map((d) => (
-                <tr key={d.id} className="border-b border-line align-top last:border-0">
-                  <td className="px-4 py-2">
-                    <Mono className="font-medium">{d.id}</Mono>
+                <tr key={d.id}>
+                  <td>
+                    <Mono className="font-medium wrap-break-word">{d.id}</Mono>
                     {d.os_versions !== "*" && (
-                      <div className="text-[11px] text-faint">OS {d.os_versions}</div>
+                      <div className="text-[12px] text-faint">OS {d.os_versions}</div>
                     )}
                   </td>
-                  <td className="px-3 py-2 font-mono text-xs">
-                    {d.attr ?? "–"} = {show(d.value)}
+                  <td>
+                    <Tag className="text-text">
+                      {d.attr ?? "–"} = {show(d.value)}
+                    </Tag>
                   </td>
-                  <td className="max-w-md px-4 py-2 text-xs text-muted">
+                  <td className="text-[12.5px] text-muted">
                     <div className="font-medium text-text">{titleCase(d.source)}</div>
-                    <div className="break-words">{d.reference}</div>
+                    <div className="wrap-break-word">{d.reference}</div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
+    </div>
+  );
+}
+
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-[12px] font-medium text-muted">{label}</dt>
+      <dd className="mt-0.5 text-[14px]">{children}</dd>
     </div>
   );
 }

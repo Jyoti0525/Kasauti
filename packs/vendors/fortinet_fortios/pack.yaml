@@ -12,8 +12,10 @@ negation_words: []
 comment_markers: ["#"]
 time_unit: minutes
 default_role: firewall
+# Seed pack (PLAN §20.4, TODO M2.29), reviewed in docs/reviews/fortinet_fortios.md. The
+# description below is shown to users (knowledge base screen), so it carries no plan references.
 description: >
-  Seed pack (PLAN §20.4, TODO M2.29) for FortiGate configuration files (`show` output and
-  backups, `config … / edit … / set … / next / end`). Management access is granted per
-  interface (`allowaccess`); traffic between interfaces is denied unless a firewall policy
-  accepts it. Reviewed against Fortinet's documentation: docs/reviews/fortinet_fortios.md.
+  FortiGate configuration files (`show` output and backups,
+  `config … / edit … / set … / next / end`). Management access is granted per interface
+  (`allowaccess`); traffic between interfaces is denied unless a firewall policy accepts it.
+  Reviewed against Fortinet's documentation.

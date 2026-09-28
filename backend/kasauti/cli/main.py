@@ -315,7 +315,7 @@ def _print_summary(result: AuditResult, written: Sequence[Path]) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="kasauti",
-        description="Kasauti (कसौटी): multi-vendor network security compliance auditor",
+        description="Kasauti: multi-vendor network security compliance auditor",
     )
     parser.add_argument("--version", action="version", version=f"kasauti {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
