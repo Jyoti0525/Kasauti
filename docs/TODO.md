@@ -619,7 +619,7 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
 
   *(§4.4, §17, §18.1)* `@sec`
 - [ ] **M5.09** Models: safetensors only, with a SHA-256 manifest checked at start-up. *(§17)* `@sec`
-- [ ] **M5.10** Network exposure: localhost by default. When exposed: TLS, CSP, HSTS and the other security headers. Ollama bound to 127.0.0.1. *(§17)* `@sec`
+- [~] **M5.10** Network exposure: localhost by default. When exposed: TLS, CSP, HSTS and the other security headers. Ollama bound to 127.0.0.1. *(§17)* `@sec` Partly done 2026-09-30 (v5.6.0): `kasauti serve --public https://name` for a host's HTTPS front end (the Render demonstration link): that name only, its `https://` origin, Secure cookie, HSTS; CSP and the other headers as before. Open: TLS served by Kasauti itself for a LAN install, and MFA (M5.03) before a real deployment.
 - [ ] **M5.11** Air gap: offline installer, bundled models, signed offline updates for packs and catalogs. *(§17, §1.2 test 5)* `@sec`
 
 ### 5D · Signatures and the transparency log (§15.3, §16)

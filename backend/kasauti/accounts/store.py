@@ -121,7 +121,8 @@ class AccountStore:
         if done.rowcount != 1:
             raise AccountError(f"no account {username!r}")
         found = self.get(username)
-        assert found is not None  # noqa: S101 - just updated
+        if found is None:  # deleted between the update and this read
+            raise AccountError(f"no account {username!r}")
         return found
 
     def ensure_demo(self) -> None:

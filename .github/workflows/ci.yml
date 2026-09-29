@@ -143,7 +143,7 @@ jobs:
           uv export --all-groups --no-emit-project --format requirements-txt -o locked.txt
           uv run pip-audit -r locked.txt --no-deps --disable-pip --strict --progress-spinner off
       - name: Static security analysis
-        run: uv run bandit -c pyproject.toml -r backend/kasauti tools eval/harness -q
+        run: uv run bandit -c pyproject.toml -r backend/kasauti tools eval/harness deploy -q
       # Reviewed false positives are listed one by one, by fingerprint, in .gitleaksignore.
       # --verbose prints where each finding is (the value itself stays redacted).
       - name: Secrets in history

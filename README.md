@@ -115,6 +115,19 @@ supports, and any vendor default it relied on. A missing or unreadable fact is n
 as a pass: it becomes REVIEW, and the report says so. `datasets/authored/cisco_ios_xe/hardened.cfg`
 is the same router with every weakness fixed.
 
+### A public demonstration link
+
+`deploy/Dockerfile` packs the web UI, the API and its workers into one container; `render.yaml`
+deploys it on Render's free plan (New → Blueprint → this repository). The container runs
+`kasauti serve --public <its https:// address> --demo-accounts`, which answers to that one name,
+marks the session cookie Secure and sends HSTS, then fills itself with the demonstration fleet.
+Its disk isn't kept: every restart is a fresh demonstration. The same image runs anywhere:
+
+```sh
+docker build -f deploy/Dockerfile -t kasauti .
+docker run -p 8000:8000 -e KASAUTI_PUBLIC_URL=https://kasauti.example.org kasauti
+```
+
 ## What it does (target design)
 
 1. **Reads configurations by their shape, not their vendor.** Seven structural families cover

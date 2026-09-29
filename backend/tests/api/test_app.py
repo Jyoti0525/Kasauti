@@ -14,7 +14,7 @@ from sqlalchemy import URL
 from sqlalchemy.exc import OperationalError
 
 from kasauti.accounts import DEMO_ACCOUNTS
-from kasauti.api.app import SECURITY_HEADERS, WEB_CSP, Settings, create_app
+from kasauti.api.app import SECURITY_HEADERS, WEB_CSP, Settings, create_app, public_origin
 from kasauti.audit import load_kb
 from kasauti.cli.main import main
 from kasauti.db import (
@@ -134,6 +134,107 @@ def test_serve_binds_the_loopback_address_without_revealing_the_server(
             "log_level": "info",
         }
     ]
+
+
+@pytest.mark.parametrize(
+    ("text", "origin"),
+    [
+        ("https://Kasauti.example.org", "https://kasauti.example.org"),
+        ("https://kasauti.example.org/", "https://kasauti.example.org"),
+        ("https://kasauti.example.org:8443", "https://kasauti.example.org:8443"),
+    ],
+)
+def test_a_public_origin_is_an_https_name_and_nothing_else(text: str, origin: str) -> None:
+    assert public_origin(text) == origin
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "http://kasauti.example.org",  # plain HTTP: the cookie and passwords would travel in clear
+        "https://kasauti.example.org/app",
+        "https://user@kasauti.example.org",
+        "https://kasauti.example.org?x=1",
+        "https://kasauti.example.org:99999",
+        "kasauti.example.org",
+    ],
+)
+def test_anything_else_is_not_a_public_origin(text: str) -> None:
+    with pytest.raises(ValueError, match=r"public origin|port"):
+        public_origin(text)
+
+
+PUBLIC = "https://kasauti.example.org"
+
+
+@pytest.fixture(scope="module")
+def public_client(tmp_path_factory: pytest.TempPathFactory) -> Iterator[TestClient]:
+    var = tmp_path_factory.mktemp("public")
+    app = create_app(
+        Settings(
+            packs=PACKS,
+            database=_migrated(var),
+            staging=var / "staging",
+            demo_accounts=True,
+            public_origin=PUBLIC,
+        )
+    )
+    with TestClient(app, base_url="http://kasauti.example.org") as client:
+        yield client
+    app.state.engine.dispose()
+
+
+@pytest.mark.parametrize(
+    ("host", "status"),
+    [
+        ("kasauti.example.org", 200),
+        ("127.0.0.1:7860", 200),  # the host's own checks, from inside the machine
+        ("attacker.example", 400),
+        ("kasauti.example.org.attacker.example", 400),
+    ],
+)
+def test_a_public_server_answers_to_its_own_name(
+    public_client: TestClient, host: str, status: int
+) -> None:
+    response = public_client.get("/api/health", headers={"host": host})
+    assert response.status_code == status
+    assert response.headers["Strict-Transport-Security"] == "max-age=31536000"
+
+
+def test_a_public_server_takes_its_https_origin_as_its_own(public_client: TestClient) -> None:
+    body = {"username": "asha", "password": DEMO_ACCOUNTS[0][3]}
+    guard = {"X-Kasauti-Request": "1", "Sec-Fetch-Site": "same-origin"}
+    other = public_client.post(
+        "/api/auth/login", json=body, headers={**guard, "Origin": "http://kasauti.example.org"}
+    )
+    assert (other.status_code, other.json()) == (403, {"detail": "cross-origin request refused"})
+    own = public_client.post("/api/auth/login", json=body, headers={**guard, "Origin": PUBLIC})
+    assert own.status_code == 200
+    assert "secure" in own.headers["set-cookie"].lower()  # HTTPS in front, so never sent in clear
+
+
+def test_a_loopback_server_sends_no_hsts(client: TestClient) -> None:
+    assert "strict-transport-security" not in client.get("/api/health").headers
+
+
+def test_serve_public_listens_everywhere_for_its_name_only(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[tuple[Any, dict[str, Any]]] = []
+    monkeypatch.setattr(uvicorn, "run", lambda app, **kw: calls.append((app, kw)))
+    args = ["serve", "--public", PUBLIC, "--port", "7860", "--packs", str(PACKS)]
+    assert main([*args, "--data-dir", str(tmp_path)]) == 0
+    [(app, kw)] = calls
+    assert (kw["host"], kw["port"], kw["proxy_headers"]) == ("0.0.0.0", 7860, False)  # noqa: S104
+    assert app.state.secure_cookie is True
+    app.state.engine.dispose()
+
+
+def test_serve_refuses_a_public_address_that_isnt_https(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["serve", "--public", "http://kasauti.example.org"]) == 2
+    assert "not a public origin" in capsys.readouterr().err
 
 
 def test_serve_rejects_a_port_that_isnt_one(capsys: pytest.CaptureFixture[str]) -> None:

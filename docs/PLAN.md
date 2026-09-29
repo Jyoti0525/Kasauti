@@ -1105,6 +1105,24 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
     rendering. Not reproduced in 6 × 350 ingest tests run in parallel, nor in 4 parallel runs of
     the test alone; its assertions already name the file and the job's error, so a recurrence
     will say why.
+- **v5.6.0 (2026-09-30, a public demonstration link: M5.10 in part):**
+  - **`kasauti serve --public https://name`.** For a host whose HTTPS front end publishes the
+    server (Render's free plan here). It listens on every interface but answers only to that name
+    (and loopback, for the host's own checks); a browser's `Origin` must be that `https://`
+    origin; the session cookie is Secure; every response carries HSTS. Anything that isn't an
+    `https://name[:port]` is refused before the server starts. Without `--public` nothing changes:
+    loopback only.
+  - **One container.** `deploy/Dockerfile` builds the web UI (`npm ci`, Vite) and installs the
+    locked Python dependencies (`uv sync --frozen --no-dev`) on pinned base images, as user 1000.
+    `deploy/start.py` starts the server with the demo accounts and seeds the demonstration fleet
+    through the API (`tools/demo_seed.py`, which now returns the Secure cookie to its own loopback
+    server only). `render.yaml` deploys it: one worker, as the free plan has 0.1 CPU and 512 MB.
+    The disk isn't kept, so every wake-up is a fresh demonstration.
+  - **Measured locally in public mode:** the page loads under the public name, sign-in returns
+    `Secure` + HSTS, another host name gets 400, and the demo fleet (6 devices) seeds in a few
+    seconds on the development laptop (the free plan's 0.1 CPU will be slower).
+  - Also: the account store's last `assert` is now a real check (bandit B101), and CI's bandit and
+    mypy cover `deploy/`.
 - **v5.5.0 (2026-09-29, team accounts: M5.03-M5.05 in part):**
   - **Sign in, sign up, sign out.** One team, one workspace: every account sees the same fleet,
     and its role says what it may change (`viewer` < `auditor` < `trainer` < `approver` <

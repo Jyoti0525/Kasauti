@@ -103,7 +103,8 @@ def _start(request: Request, response: Response, account: Account) -> AccountOut
         path="/",
         httponly=True,
         samesite="strict",
-        secure=request.url.scheme == "https",
+        # A public server's front end speaks HTTPS even though it talks to us in plain HTTP.
+        secure=request.app.state.secure_cookie or request.url.scheme == "https",
     )
     return _out(account)
 

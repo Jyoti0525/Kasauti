@@ -6,9 +6,12 @@ jobs M2.03); this module sets up what every route inherits.
 
 Exposure (PLAN §17, "Exposure" and "Air gap"):
 
-* **Loopback only.** ``kasauti serve`` binds 127.0.0.1 and refuses any other address. MFA and
-  TLS arrive in M5; serving configurations to the LAN before then would hand them to anyone who
-  can reach the port.
+* **Loopback only,** unless started as a public demonstration. ``kasauti serve`` binds 127.0.0.1
+  and refuses any other address: serving configurations to the LAN over plain HTTP would hand
+  them to anyone who can reach the port. ``kasauti serve --public https://name`` is for a host
+  that puts the server behind its own HTTPS front (a demonstration link): it answers to that one
+  name, takes that ``https://`` origin as its own, marks the session cookie Secure and sends HSTS
+  (:attr:`Settings.public_origin`).
 * **Signed in.** Every route under ``/api`` but ``/api/health`` and sign-in itself needs a team
   account's session, and a change needs a role that may make it (:mod:`kasauti.api.auth`).
 * **Host allow-list.** A web page on any site can make a browser send requests to
@@ -53,6 +56,7 @@ from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
@@ -118,6 +122,9 @@ WEB_TYPES = {
 }
 """What the web UI's build folder may serve, typed here: the operating system's own table
 (the Windows registry, say) may call a script ``text/plain``, which ``nosniff`` then refuses."""
+HSTS = "max-age=31536000"
+"""Sent by a public server only: its front end speaks HTTPS, so the browser should never try
+plain HTTP for it again. A loopback server has no TLS to insist on."""
 UNSAFE_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 REQUEST_HEADER = "X-Kasauti-Request"
 HOUSEKEEPING_S = 60.0
@@ -150,6 +157,31 @@ class Settings:
     passwords on the sign-in page. For demonstrations only."""
     signup: bool = True
     """Anyone who can open the sign-in page may make an account (role: auditor)."""
+    public_origin: str | None = None
+    """``https://name`` when a host's HTTPS front end publishes this server (see the module
+    docstring and :func:`public_origin`); None for a loopback server. When set it replaces
+    ``allowed_hosts`` with that name and the loopback names (the host's own health checks and
+    tools inside the machine)."""
+
+
+def public_origin(text: str) -> str:
+    """``text`` as a public origin (``https://name`` or ``https://name:port``, lower-case), or
+    ValueError. Nothing else: no path, no user, no plain HTTP."""
+    url = urlsplit(text.strip())
+    try:
+        port = url.port
+    except ValueError:
+        raise ValueError(f"{text!r} has a port that isn't one") from None
+    if (
+        url.scheme != "https"
+        or not url.hostname
+        or url.username is not None
+        or url.path.strip("/")
+        or url.query
+        or url.fragment
+    ):
+        raise ValueError(f"{text!r} is not a public origin such as https://kasauti.example.org")
+    return f"https://{url.hostname}" + (f":{port}" if port else "")
 
 
 class Health(BaseModel):
@@ -220,7 +252,7 @@ def create_app(settings: Settings) -> FastAPI:
     web = (
         settings.web.resolve() if settings.web and (settings.web / "index.html").is_file() else None
     )
-    _guard(app, settings.allowed_hosts, web=web is not None)
+    _expose(app, settings, web=web is not None)
 
     @app.get("/api/health", responses={503: {"description": "the database can't be read"}})
     def health() -> Health:
@@ -257,12 +289,25 @@ def _routes(app: FastAPI, settings: Settings) -> None:
     app.include_router(studio_router, dependencies=[Depends(needs(Role.TRAINER))])
 
 
-def _guard(app: FastAPI, allowed_hosts: tuple[str, ...], *, web: bool) -> None:
+def _expose(app: FastAPI, settings: Settings, *, web: bool) -> None:
+    """The names this server answers to and the checks every request passes: loopback, or a
+    public origin's one name (module docstring)."""
+    origin = settings.public_origin
+    hosts = settings.allowed_hosts
+    if origin is not None:
+        hosts = (urlsplit(origin).hostname or "", *LOOPBACK_HOSTS)
+    app.state.secure_cookie = origin is not None
+    _guard(app, hosts, web=web, origin=origin)
+
+
+def _guard(
+    app: FastAPI, allowed_hosts: tuple[str, ...], *, web: bool, origin: str | None = None
+) -> None:
     """The protections every request passes (module docstring); with ``web``, pages outside
-    ``/api`` get the web UI's policy. Starlette runs the middleware added last first: the
-    headers wrap the host check, which wraps the cross-site check, so the refusals of both carry
-    the headers."""
-    app.add_middleware(CrossSiteGuard)
+    ``/api`` get the web UI's policy, and with a public ``origin``, HSTS. Starlette runs the
+    middleware added last first: the headers wrap the host check, which wraps the cross-site
+    check, so the refusals of both carry the headers."""
+    app.add_middleware(CrossSiteGuard, origin=origin)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(allowed_hosts))
 
     @app.middleware("http")
@@ -273,6 +318,8 @@ def _guard(app: FastAPI, allowed_hosts: tuple[str, ...], *, web: bool) -> None:
         response.headers.update(SECURITY_HEADERS)
         if web and not _is_api(request.url.path):
             response.headers["Content-Security-Policy"] = WEB_CSP
+        if origin is not None:
+            response.headers["Strict-Transport-Security"] = HSTS
         return response
 
 
@@ -305,25 +352,27 @@ class CrossSiteGuard:
     """Refuses a state-changing request a web page on another site could have made the browser
     send (see the module docstring). Plain ASGI, so request bodies stream through untouched."""
 
-    def __init__(self, app: ASGIApp) -> None:
+    def __init__(self, app: ASGIApp, origin: str | None = None) -> None:
         self.app = app
+        self.origin = origin
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] == "http" and scope["method"] in UNSAFE_METHODS:
-            reason = cross_site(Headers(scope=scope))
+            reason = cross_site(Headers(scope=scope), self.origin)
             if reason is not None:
                 await JSONResponse({"detail": reason}, status_code=403)(scope, receive, send)
                 return
         await self.app(scope, receive, send)
 
 
-def cross_site(headers: Headers) -> str | None:
-    """Why this state-changing request is refused, or None."""
+def cross_site(headers: Headers, public: str | None = None) -> str | None:
+    """Why this state-changing request is refused, or None. A browser's ``Origin`` must be this
+    server: the ``public`` origin when there is one, else ``http://`` and the host it asked for."""
     site = headers.get("sec-fetch-site")
     if site is not None and site not in {"same-origin", "none"}:
         return "cross-site request refused"
     origin = headers.get("origin")
-    if origin is not None and origin != f"http://{headers.get('host', '')}":
+    if origin is not None and origin != (public or f"http://{headers.get('host', '')}"):
         return "cross-origin request refused"
     if headers.get(REQUEST_HEADER.lower()) != "1":
         return f"requests that change something need the header {REQUEST_HEADER}: 1"

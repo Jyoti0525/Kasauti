@@ -130,16 +130,25 @@ def _audit(args: argparse.Namespace) -> int:
 def _serve(args: argparse.Namespace) -> int:
     """Run the web API on the loopback interface. Any other address is refused until MFA and
     TLS exist (TODO M5.03, M5.10, PLAN §17): passwords alone, over plain HTTP, would guard
-    configurations on the LAN."""
-    if args.host not in LOOPBACK_NAMES:
+    configurations on the LAN. The exception is ``--public https://name``: a host that puts the
+    server behind its own HTTPS front end, for a demonstration link (:mod:`kasauti.api.app`)."""
+    from kasauti.api.app import Settings, create_app, public_origin  # noqa: PLC0415 - web only
+    from kasauti.db import SchemaError  # noqa: PLC0415
+
+    public = None
+    if args.public is not None:
+        try:
+            public = public_origin(args.public)
+        except ValueError as err:
+            print(f"kasauti: --public: {err}", file=sys.stderr)
+            return 2
+    elif args.host not in LOOPBACK_NAMES:
         print(
             f"kasauti: serve listens on the loopback interface only (127.0.0.1), not {args.host}. "
             "Serving to the network needs MFA and TLS, which arrive in M5.",
             file=sys.stderr,
         )
         return 2
-    from kasauti.api.app import Settings, create_app  # noqa: PLC0415 - web stack only here
-    from kasauti.db import SchemaError  # noqa: PLC0415
 
     try:
         url = _database(args.data_dir)
@@ -157,6 +166,7 @@ def _serve(args: argparse.Namespace) -> int:
                 web=args.web,
                 demo_accounts=args.demo_accounts,
                 signup=not args.no_signup,
+                public_origin=public,
             )
         )
     except PackError as err:
@@ -169,18 +179,23 @@ def _serve(args: argparse.Namespace) -> int:
         return 1
     import uvicorn  # noqa: PLC0415
 
+    where = f"{public}/ (public, behind the host's HTTPS; port {args.port} on every interface)"
+    if public is None:
+        where = f"http://127.0.0.1:{args.port}/ (loopback only)"
     if (args.web / "index.html").is_file():
-        print(f"kasauti {__version__}: http://127.0.0.1:{args.port}/ (loopback only)")
+        print(f"kasauti {__version__}: {where}")
         if args.demo_accounts:
             print("  demo accounts on: their passwords are shown on the sign-in page")
     else:
         print(
-            f"kasauti {__version__}: http://127.0.0.1:{args.port}/api/health (loopback only); "
+            f"kasauti {__version__}: {where}, API only; "
             f"no web UI at {args.web} (build it with `npm run build` in frontend/)"
         )
     uvicorn.run(
         app,
-        host="127.0.0.1",  # never a name: `localhost` may also resolve to other addresses
+        # Never a name: `localhost` may also resolve to other addresses. Every interface only
+        # for --public, where the host's HTTPS front end is the only way in.
+        host="0.0.0.0" if public else "127.0.0.1",  # noqa: S104  # nosec B104
         port=args.port,
         server_header=False,
         proxy_headers=False,
@@ -460,6 +475,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-signup",
         action="store_true",
         help="no sign-up on the sign-in page: accounts are made with `kasauti account add`",
+    )
+    srv.add_argument(
+        "--public",
+        metavar="URL",
+        help="serve a demonstration link: the https:// address a host's HTTPS front end "
+        "publishes this server at; listens on every interface and answers to that name only",
     )
 
     acc = sub.add_parser("account", help="team accounts: add one, or change a role")

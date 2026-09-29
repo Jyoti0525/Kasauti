@@ -59,6 +59,17 @@ FLEET: dict[str, list[str]] = {
 }
 
 
+class _LoopbackPolicy(http.cookiejar.DefaultCookiePolicy):
+    """A public server (``kasauti serve --public``) marks its session cookie Secure, for the
+    browsers that reach it through the host's HTTPS; this script reaches the same server over
+    loopback HTTP, inside the machine, and :class:`Api` only ever talks to loopback."""
+
+    def return_ok_secure(
+        self, cookie: http.cookiejar.Cookie, request: urllib.request.Request
+    ) -> bool:
+        return True
+
+
 class Api:
     def __init__(self, base: str) -> None:
         # Parsed, not prefix-matched: "http://127.0.0.1:8000@elsewhere" is a userinfo, not a host.
@@ -75,7 +86,7 @@ class Api:
         self.base = base.rstrip("/")
         # The session cookie, kept in memory for this run only.
         self.opener = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
+            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar(_LoopbackPolicy()))
         )
 
     def call(

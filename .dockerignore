@@ -1,0 +1,13 @@
+# Only what deploy/Dockerfile copies needs to reach the build.
+.git
+.venv
+.playwright-mcp
+**/__pycache__
+**/node_modules
+frontend/dist
+var
+docs
+eval
+backend/tests
+datasets/*
+!datasets/authored

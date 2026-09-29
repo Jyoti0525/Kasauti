@@ -91,7 +91,7 @@ strict = true
 mypy_path = ["backend", "eval", "tools"]
 plugins = ["pydantic.mypy"]
 warn_unreachable = true
-files = ["backend/kasauti", "eval/harness", "tools"]
+files = ["backend/kasauti", "eval/harness", "tools", "deploy"]
 
 [[tool.mypy.overrides]]
 module = ["re2"]            # google-re2 ships no type information; wrapped in kasauti.rules.regex

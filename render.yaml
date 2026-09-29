@@ -1,0 +1,15 @@
+# Kasauti's public demonstration link on Render (free plan): deploy/Dockerfile, one small
+# container. Render publishes it over HTTPS at RENDER_EXTERNAL_URL, which deploy/start.py hands to
+# `kasauti serve --public`. The free plan sleeps after 15 minutes without visitors and wakes on
+# the next one (about a minute); its disk is not kept, so each start is a fresh demonstration.
+services:
+  - type: web
+    name: kasauti
+    runtime: docker
+    plan: free
+    dockerfilePath: ./deploy/Dockerfile
+    dockerContext: .
+    autoDeploy: true
+    envVars:
+      - key: KASAUTI_WORKERS
+        value: "1"
