@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "53b7cd878c1f8083746f313c",
+  "audit_id": "7c3439ea2273de7697fc5fa4",
   "input": {
     "file": "weak.cfg",
     "sha256": "ba77cc7a6b22126ec539f23cc647198f19b00583afcc4d7f22e191ec10e43937",
@@ -52,15 +52,19 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
+    "kb_version": "c0e30bfcb5fa67b8d8e12b89e55145dcf92ffd2f286b74169026d65abe99ed90",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
+      "disa_stig": "Y26M07",
+      "iso_27001_2022": "2022",
       "nist_800_53r5": "5.2.0"
     }
   },
   "frameworks": [
-    "nist_800_53r5"
+    "nist_800_53r5",
+    "disa_stig",
+    "iso_27001_2022"
   ],
   "scores": [
     {
@@ -71,7 +75,36 @@
       "review": 0,
       "not_applicable": 2,
       "compliance_pct": 0.0,
-      "coverage_pct": 100.0
+      "coverage_pct": 100.0,
+      "note": "",
+      "benchmarks": []
+    },
+    {
+      "framework": "disa_stig",
+      "title": "DISA STIG",
+      "passed": 0,
+      "failed": 18,
+      "review": 1,
+      "not_applicable": 1,
+      "compliance_pct": 0.0,
+      "coverage_pct": 94.7,
+      "note": "",
+      "benchmarks": [
+        "Cisco IOS XE Router NDM V3R7",
+        "Cisco IOS XE Router RTR V3R5"
+      ]
+    },
+    {
+      "framework": "iso_27001_2022",
+      "title": "ISO/IEC 27001:2022",
+      "passed": 0,
+      "failed": 20,
+      "review": 0,
+      "not_applicable": 2,
+      "compliance_pct": 0.0,
+      "coverage_pct": 100.0,
+      "note": "",
+      "benchmarks": []
     }
   ],
   "rules": [
@@ -85,7 +118,17 @@
         "AC-2(1)",
         "IA-2"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-001370"
+        ],
+        "iso_27001_2022": [
+          "A.5.16",
+          "A.5.18",
+          "A.8.2"
+        ]
+      }
     },
     {
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
@@ -96,7 +139,12 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "AAA-LOCKOUT-01",
@@ -107,7 +155,15 @@
       "nist_800_53r5": [
         "AC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000150"
+        ],
+        "iso_27001_2022": [
+          "A.8.5"
+        ]
+      }
     },
     {
       "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
@@ -118,7 +174,15 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000620"
+        ],
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
@@ -129,7 +193,15 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000550"
+        ],
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "FILTER-PERMIT-ANY-01",
@@ -141,7 +213,13 @@
         "SC-7(5)",
         "AC-4"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.22"
+        ]
+      }
     },
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
@@ -152,7 +230,16 @@
       "nist_800_53r5": [
         "SC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-RT-000330"
+        ],
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.22"
+        ]
+      }
     },
     {
       "rule_id": "LOG-CONFIG-CHANGE-01",
@@ -165,7 +252,17 @@
         "AU-12",
         "CM-3"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-001270",
+          "CISC-ND-000210"
+        ],
+        "iso_27001_2022": [
+          "A.8.15",
+          "A.8.32"
+        ]
+      }
     },
     {
       "rule_id": "LOG-REMOTE-01",
@@ -177,7 +274,15 @@
         "AU-4(1)",
         "AU-9(2)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-001450"
+        ],
+        "iso_27001_2022": [
+          "A.8.15"
+        ]
+      }
     },
     {
       "rule_id": "LOG-TIMESTAMPS-01",
@@ -189,7 +294,16 @@
         "AU-3",
         "AU-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000280"
+        ],
+        "iso_27001_2022": [
+          "A.8.15",
+          "A.8.17"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-BANNER-01",
@@ -200,7 +314,15 @@
       "nist_800_53r5": [
         "AC-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000160"
+        ],
+        "iso_27001_2022": [
+          "A.8.5"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-HTTP-01",
@@ -213,7 +335,15 @@
         "SC-8",
         "AC-17(2)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000470"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
@@ -225,7 +355,15 @@
         "AC-12",
         "SC-10"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000720"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-SSH-V2-01",
@@ -238,7 +376,16 @@
         "SC-8",
         "SC-13"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-001210"
+        ],
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.24"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-TELNET-01",
@@ -251,7 +398,16 @@
         "AC-17(2)",
         "SC-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000470",
+          "CISC-ND-001210"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-VTY-ACL-01",
@@ -263,7 +419,16 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000140"
+        ],
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-VTY-ACL-02",
@@ -275,7 +440,16 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000140"
+        ],
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-WEB-ACL-01",
@@ -287,7 +461,16 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000140"
+        ],
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "REF-DANGLING-01",
@@ -299,7 +482,12 @@
         "CM-6",
         "AC-3"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.9"
+        ]
+      }
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -311,7 +499,16 @@
         "IA-5",
         "CM-6"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-001130"
+        ],
+        "iso_27001_2022": [
+          "A.5.17",
+          "A.8.9"
+        ]
+      }
     },
     {
       "rule_id": "SVC-LEGACY-01",
@@ -322,7 +519,15 @@
       "nist_800_53r5": [
         "CM-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-000470"
+        ],
+        "iso_27001_2022": [
+          "A.8.19"
+        ]
+      }
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
@@ -334,7 +539,15 @@
         "CM-7",
         "SC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-RT-000380"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "TIME-NTP-AUTH-01",
@@ -346,19 +559,29 @@
         "SC-45(1)",
         "IA-3(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "CISC-ND-001150"
+        ]
+      }
     }
   ],
   "controls": [
     {
+      "framework": "nist_800_53r5",
       "control": "AC-2(1)",
       "title": "Automated System Account Management",
       "status": "not satisfied",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-3",
       "title": "Access Enforcement",
       "status": "not satisfied",
@@ -367,41 +590,61 @@
         "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01",
         "REF-DANGLING-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-4",
       "title": "Information Flow Enforcement",
       "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-7",
       "title": "Unsuccessful Logon Attempts",
       "status": "not satisfied",
       "rules": [
         "AAA-LOCKOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-8",
       "title": "System Use Notification",
       "status": "not satisfied",
       "rules": [
         "MGMT-BANNER-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-12",
       "title": "Session Termination",
       "status": "not satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-17",
       "title": "Remote Access",
       "status": "not satisfied",
@@ -409,9 +652,13 @@
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-17(2)",
       "title": "Protection of Confidentiality and Integrity Using Encryption",
       "status": "not satisfied",
@@ -419,74 +666,110 @@
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-2",
       "title": "Event Logging",
       "status": "not satisfied",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-3",
       "title": "Content of Audit Records",
       "status": "not satisfied",
       "rules": [
         "LOG-TIMESTAMPS-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-4(1)",
       "title": "Transfer to Alternate Storage",
       "status": "not satisfied",
       "rules": [
         "LOG-REMOTE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-8",
       "title": "Time Stamps",
       "status": "not satisfied",
       "rules": [
         "LOG-TIMESTAMPS-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-9(2)",
       "title": "Store on Separate Physical Systems or Components",
       "status": "not satisfied",
       "rules": [
         "LOG-REMOTE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-12",
       "title": "Audit Record Generation",
       "status": "not satisfied",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-3",
       "title": "Configuration Change Control",
       "status": "not satisfied",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-6",
       "title": "Configuration Settings",
       "status": "not satisfied",
       "rules": [
         "REF-DANGLING-01",
         "SNMP-COMMUNITY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-7",
       "title": "Least Functionality",
       "status": "not satisfied",
@@ -495,33 +778,49 @@
         "MGMT-TELNET-01",
         "SVC-LEGACY-01",
         "SVC-PROXY-ARP-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-2",
       "title": "Identification and Authentication (Organizational Users)",
       "status": "not satisfied",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-3(1)",
       "title": "Cryptographic Bidirectional Authentication",
       "status": "not satisfied",
       "rules": [
         "TIME-NTP-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-5",
       "title": "Authenticator Management",
       "status": "not satisfied",
       "rules": [
         "SNMP-COMMUNITY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-5(1)",
       "title": "Password-based Authentication",
       "status": "not satisfied",
@@ -529,26 +828,38 @@
         "AAA-LOCAL-PASSWORD-HASH-01",
         "AAA-PASSWORD-ENCRYPTION-01",
         "AAA-PASSWORD-MIN-LENGTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-7",
       "title": "Boundary Protection",
       "status": "not satisfied",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-7(5)",
       "title": "Deny by Default — Allow by Exception",
       "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-8",
       "title": "Transmission Confidentiality and Integrity",
       "status": "not satisfied",
@@ -556,31 +867,442 @@
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-10",
       "title": "Network Disconnect",
       "status": "not satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-13",
       "title": "Cryptographic Protection",
       "status": "not satisfied",
       "rules": [
         "MGMT-SSH-V2-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-45(1)",
       "title": "Synchronization with Authoritative Time Source",
       "status": "not satisfied",
       "rules": [
         "TIME-NTP-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000140",
+      "title": "The Cisco router must be configured to enforce approved authorizations for controlling the flow of management information within the device based on control policies.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000150",
+      "title": "The Cisco router must be configured to enforce the limit of three consecutive invalid logon attempts, after which time it must lock out the user account from accessing the device for 15 minutes.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCKOUT-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000160",
+      "title": "The Cisco router must be configured to display the Standard Mandatory DoD Notice and Consent Banner before granting access to the device.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-BANNER-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000210",
+      "title": "The Cisco device must be configured to audit all administrator activity.",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000280",
+      "title": "The Cisco router must produce audit records containing information to establish when (date and time) the events occurred.",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000470",
+      "title": "The Cisco router must be configured to prohibit the use of all unnecessary and nonsecure functions and services.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-TELNET-01",
+        "SVC-LEGACY-01"
+      ],
+      "severity": "high",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000550",
+      "title": "The Cisco router must be configured to enforce a minimum 15-character password length.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-PASSWORD-MIN-LENGTH-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000620",
+      "title": "The Cisco router must only store cryptographic representations of passwords.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-PASSWORD-ENCRYPTION-01"
+      ],
+      "severity": "high",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-000720",
+      "title": "The Cisco router must be configured to terminate all network connections associated with device management after five minutes of inactivity.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-SESSION-TIMEOUT-01"
+      ],
+      "severity": "high",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-001130",
+      "title": "The Cisco router must be configured to authenticate SNMP messages using a FIPS-validated Keyed-Hash Message Authentication Code (HMAC).",
+      "status": "not satisfied",
+      "rules": [
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-001150",
+      "title": "The Cisco router must be configured to authenticate Network Time Protocol (NTP) sources using authentication that is cryptographically based.",
+      "status": "not satisfied",
+      "rules": [
+        "TIME-NTP-AUTH-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-001210",
+      "title": "The Cisco router must be configured to implement cryptographic mechanisms to protect the confidentiality of remote maintenance sessions.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01"
+      ],
+      "severity": "high",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-001270",
+      "title": "The Cisco router must be configured to generate log records for privileged activities.",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-001370",
+      "title": "The Cisco router must be configured to use at least two authentication servers for the purpose of authenticating users prior to granting administrative access.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": "high",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-ND-001450",
+      "title": "The Cisco router must be configured to send log data to at least two syslog servers for the purpose of forwarding alerts to the administrators and the information system security officer (ISSO).",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-REMOTE-01"
+      ],
+      "severity": "high",
+      "benchmark": "Cisco_IOS-XE_Router_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-RT-000330",
+      "title": "The Cisco perimeter router must be configured to filter ingress traffic at the external interface on an inbound direction.",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-UNTRUSTED-INGRESS-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_RTR_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "CISC-RT-000380",
+      "title": "The Cisco perimeter router must be configured to have Proxy ARP disabled on all external interfaces.",
+      "status": "undetermined",
+      "rules": [
+        "SVC-PROXY-ARP-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Cisco_IOS-XE_Router_RTR_STIG",
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.15",
+      "title": "Who may reach which systems and information is decided and enforced",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.16",
+      "title": "Every person and system that logs in has a managed identity",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.17",
+      "title": "Passwords, keys and other secrets are set, stored and handled safely",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCAL-PASSWORD-HASH-01",
+        "AAA-PASSWORD-ENCRYPTION-01",
+        "AAA-PASSWORD-MIN-LENGTH-01",
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.18",
+      "title": "Access rights are granted, reviewed and removed through a defined process",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.2",
+      "title": "Administrative (privileged) access is limited and controlled",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.5",
+      "title": "The login process itself resists misuse",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCKOUT-01",
+        "MGMT-BANNER-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.9",
+      "title": "Device settings are defined, documented and kept under control",
+      "status": "not satisfied",
+      "rules": [
+        "REF-DANGLING-01",
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.15",
+      "title": "Security-relevant activity is recorded and the records are protected",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01",
+        "LOG-REMOTE-01",
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.17",
+      "title": "Device clocks follow an agreed time source",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.19",
+      "title": "What runs on live systems is controlled; nothing unneeded is enabled",
+      "status": "not satisfied",
+      "rules": [
+        "SVC-LEGACY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.20",
+      "title": "Networks and network devices are secured and managed",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01",
+        "FILTER-UNTRUSTED-INGRESS-01",
+        "MGMT-HTTP-01",
+        "MGMT-SESSION-TIMEOUT-01",
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01",
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01",
+        "SVC-PROXY-ARP-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.22",
+      "title": "Networks are split into zones and traffic between them is controlled",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01",
+        "FILTER-UNTRUSTED-INGRESS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.24",
+      "title": "Cryptography is used, and used correctly, where it is required",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-SSH-V2-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.32",
+      "title": "Changes to systems follow a controlled process",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     }
   ],
   "findings": [
@@ -1039,28 +1761,6 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 24,
-          "line_end": 24,
-          "raw": "interface GigabitEthernet1",
-          "mapping_id": "cisco_ios_xe/interface",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 25,
-          "line_end": 25,
-          "raw": "description WAN uplink",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
           "line_start": 51,
           "line_end": 51,
           "raw": "line vty 0 4",
@@ -1076,6 +1776,28 @@
           "line_end": 55,
           "raw": "transport input ssh telnet",
           "mapping_id": "cisco_ios_xe/vty-range-transport-input",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1099,28 +1821,6 @@
       ],
       "defaults_used": [],
       "evidence": [
-        {
-          "file": "weak.cfg",
-          "line_start": 24,
-          "line_end": 24,
-          "raw": "interface GigabitEthernet1",
-          "mapping_id": "cisco_ios_xe/interface",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 25,
-          "line_end": 25,
-          "raw": "description WAN uplink",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
         {
           "file": "weak.cfg",
           "line_start": 51,
@@ -1164,22 +1864,7 @@
           "approved_by": [
             "maintainer"
           ]
-        }
-      ]
-    },
-    {
-      "rule_id": "MGMT-VTY-ACL-01",
-      "entity_id": "MgmtSession[vty 0-4]",
-      "status": "FAIL",
-      "severity": "high",
-      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
-      "reason": "Remote management lines accept only permitted sources: is violated for MgmtSession[vty 0-4].",
-      "actual": [
-        "MgmtSession[vty 0-4].kind = vty",
-        "MgmtSession[vty 0-4].access_filter: missing"
-      ],
-      "defaults_used": [],
-      "evidence": [
+        },
         {
           "file": "weak.cfg",
           "line_start": 24,
@@ -1201,13 +1886,50 @@
           "approved_by": [
             "maintainer"
           ]
-        },
+        }
+      ]
+    },
+    {
+      "rule_id": "MGMT-VTY-ACL-01",
+      "entity_id": "MgmtSession[vty 0-4]",
+      "status": "FAIL",
+      "severity": "high",
+      "severity_reason": "Medium (base) → High: an untrusted interface accepts management traffic (no inbound filter or zone, or management protocols allowed on it)",
+      "reason": "Remote management lines accept only permitted sources: is violated for MgmtSession[vty 0-4].",
+      "actual": [
+        "MgmtSession[vty 0-4].kind = vty",
+        "MgmtSession[vty 0-4].access_filter: missing"
+      ],
+      "defaults_used": [],
+      "evidence": [
         {
           "file": "weak.cfg",
           "line_start": 51,
           "line_end": 51,
           "raw": "line vty 0 4",
           "mapping_id": "cisco_ios_xe/line-vty-range",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1230,6 +1952,17 @@
       "evidence": [
         {
           "file": "weak.cfg",
+          "line_start": 56,
+          "line_end": 56,
+          "raw": "line vty 5 15",
+          "mapping_id": "cisco_ios_xe/line-vty-range",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
           "line_start": 24,
           "line_end": 24,
           "raw": "interface GigabitEthernet1",
@@ -1245,17 +1978,6 @@
           "line_end": 25,
           "raw": "description WAN uplink",
           "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 56,
-          "line_end": 56,
-          "raw": "line vty 5 15",
-          "mapping_id": "cisco_ios_xe/line-vty-range",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1398,28 +2120,6 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 24,
-          "line_end": 24,
-          "raw": "interface GigabitEthernet1",
-          "mapping_id": "cisco_ios_xe/interface",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 25,
-          "line_end": 25,
-          "raw": "description WAN uplink",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
           "line_start": 44,
           "line_end": 44,
           "raw": "snmp-server community **** RO",
@@ -1435,6 +2135,28 @@
           "line_end": 45,
           "raw": "snmp-server community **** RW",
           "mapping_id": "cisco_ios_xe/snmp-community",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 24,
+          "line_end": 24,
+          "raw": "interface GigabitEthernet1",
+          "mapping_id": "cisco_ios_xe/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 25,
+          "line_end": 25,
+          "raw": "description WAN uplink",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"

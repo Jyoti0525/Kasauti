@@ -40,6 +40,7 @@ from kasauti.ingest.store import AuditJob, UploadStore
 from kasauti.jobs import Job, JobQueue, JobState
 from kasauti.jobs.results import ResultError, decode_result
 from kasauti.log import get_logger
+from kasauti.rules.scoring import NIST
 
 log = get_logger(__name__)
 
@@ -65,6 +66,8 @@ class ScoreOut(_Model):
     failed: int
     review: int
     not_applicable: int
+    note: str = ""
+    benchmarks: tuple[str, ...] = ()
 
 
 class RuleBrief(_Model):
@@ -186,6 +189,8 @@ def summarise(result: dict[str, Any]) -> Summary:
                 failed=s["failed"],
                 review=s["review"],
                 not_applicable=s["not_applicable"],
+                note=s.get("note", ""),
+                benchmarks=tuple(s.get("benchmarks", ())),
             )
             for s in result.get("scores", ())
         ),
@@ -277,6 +282,19 @@ class VendorOut(_Model):
     """Mappings a reviewer approved; the others can't be used in an audit."""
     defaults: int
     signatures: int
+    learning: bool = False
+    """Still being taught in the Training Studio: what it doesn't read stays in review."""
+
+
+class BenchmarkOut(_Model):
+    id: str
+    title: str
+    version: str
+    released: str
+    vendors: tuple[str, ...]
+    sunset: bool
+    source_url: str
+    source_sha256: str
 
 
 class FrameworkOut(_Model):
@@ -287,6 +305,10 @@ class FrameworkOut(_Model):
     licence: str
     retrieved: str
     controls: int
+    benchmarks: tuple[BenchmarkOut, ...] = ()
+    bridge: str | None = None
+    """The official bridge each control's NIST relation comes from (CCI list, OLIR #155)."""
+    mapped_rules: int = 0
 
 
 class RuleOut(_Model):
@@ -299,7 +321,9 @@ class RuleOut(_Model):
     for_each: str
     assertion: str
     controls: dict[str, tuple[str, ...]]
-    """Framework id to the control ids the rule gives evidence for."""
+    """Framework id to the control ids the rule gives evidence for, on every vendor."""
+    vendor_controls: dict[str, dict[str, tuple[str, ...]]] = {}
+    """Per-vendor frameworks (DISA STIG): framework id -> vendor pack -> control ids."""
     hardening_best_practice: bool
     fixtures_pass: tuple[str, ...]
     fixtures_fail: tuple[str, ...]
@@ -312,7 +336,7 @@ class KbOut(_Model):
     frameworks: tuple[FrameworkOut, ...]
     rules: tuple[RuleOut, ...]
     control_titles: dict[str, str]
-    """Titles of the NIST controls the rules name."""
+    """Titles of the controls the rules name, in every framework."""
 
 
 class MappingOut(_Model):
@@ -346,8 +370,17 @@ class VendorDetailOut(_Model):
 @router.get("/api/kb")
 def knowledge_base(request: Request) -> KbOut:
     kb: KnowledgeBase = request.app.state.kb
-    nist = kb.frameworks.get("nist_800_53r5")
-    titles = {} if nist is None else {c.id: c.title for c in nist.catalog.controls}
+    titles = {c.id: c.title for f in kb.frameworks.values() for c in f.catalog.controls}
+    shared: dict[str, dict[str, list[str]]] = {}
+    per_vendor: dict[str, dict[str, dict[str, list[str]]]] = {}
+    for f in kb.frameworks.values():
+        for e in f.crosswalk.entries if f.crosswalk else ():
+            if e.vendor is None:
+                shared.setdefault(e.rule, {}).setdefault(f.catalog.framework, []).extend(e.controls)
+            else:
+                per_vendor.setdefault(e.rule, {}).setdefault(f.catalog.framework, {}).setdefault(
+                    e.vendor, []
+                ).extend(e.controls)
     rules = tuple(
         RuleOut(
             id=r.id,
@@ -358,14 +391,23 @@ def knowledge_base(request: Request) -> KbOut:
             applies_to=tuple(role.value for role in r.applies_to),
             for_each=r.for_each,
             assertion=r.assert_,
-            controls={"nist_800_53r5": tuple(r.refs.nist_800_53r5)},
+            controls={
+                "nist_800_53r5": tuple(r.refs.nist_800_53r5),
+                **{f: tuple(dict.fromkeys(ids)) for f, ids in shared.get(r.id, {}).items()},
+            },
+            vendor_controls={
+                f: {v: tuple(dict.fromkeys(ids)) for v, ids in sorted(by.items())}
+                for f, by in per_vendor.get(r.id, {}).items()
+            },
             hardening_best_practice=r.hardening_best_practice,
             fixtures_pass=r.fixtures.pass_,
             fixtures_fail=r.fixtures.fail,
         )
         for r in kb.ruleset.rules
     )
-    named = {c for r in rules for ids in r.controls.values() for c in ids}
+    named = {c for r in rules for ids in r.controls.values() for c in ids} | {
+        c for r in rules for by in r.vendor_controls.values() for ids in by.values() for c in ids
+    }
     return KbOut(
         kb_version=kb.version,
         ruleset_version=kb.ruleset_version,
@@ -379,8 +421,28 @@ def knowledge_base(request: Request) -> KbOut:
                 licence=f.catalog.licence,
                 retrieved=f.catalog.retrieved,
                 controls=len(f.catalog.controls),
+                benchmarks=tuple(
+                    BenchmarkOut(
+                        id=b.id,
+                        title=b.title,
+                        version=b.version,
+                        released=b.released,
+                        vendors=b.vendors,
+                        sunset=b.sunset,
+                        source_url=b.source.url,
+                        source_sha256=b.source.sha256,
+                    )
+                    for b in f.catalog.benchmarks
+                ),
+                bridge=f.catalog.bridge.title if f.catalog.bridge else None,
+                mapped_rules=sum(
+                    1
+                    for r in rules
+                    if r.controls.get(f.catalog.framework)
+                    or r.vendor_controls.get(f.catalog.framework)
+                ),
             )
-            for f in kb.frameworks.values()
+            for f in sorted(kb.frameworks.values(), key=lambda f: f.catalog.framework != NIST)
         ),
         rules=rules,
         control_titles={c: titles[c] for c in sorted(named) if c in titles},
@@ -446,6 +508,7 @@ def _vendor(kb: KnowledgeBase, pack_id: str) -> VendorOut:
         approved=sum(bool(x.provenance.approved_by) for x in pack.mappings),
         defaults=len(pack.defaults.defaults),
         signatures=len(pack.detect.signatures),
+        learning=m.learning,
     )
 
 

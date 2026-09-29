@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "4fe4c65ea23050dadb02f923",
+  "audit_id": "b9dd75c9179313a398ca5060",
   "input": {
     "file": "weak.cfg",
     "sha256": "03c0b8d475f96aeec21a923089f88c271174c1a4bf9b8bfc6ea66f67fd0c6a1d",
@@ -52,15 +52,19 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
+    "kb_version": "c0e30bfcb5fa67b8d8e12b89e55145dcf92ffd2f286b74169026d65abe99ed90",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
+      "disa_stig": "Y26M07",
+      "iso_27001_2022": "2022",
       "nist_800_53r5": "5.2.0"
     }
   },
   "frameworks": [
-    "nist_800_53r5"
+    "nist_800_53r5",
+    "disa_stig",
+    "iso_27001_2022"
   ],
   "scores": [
     {
@@ -71,7 +75,36 @@
       "review": 2,
       "not_applicable": 0,
       "compliance_pct": 19.0,
-      "coverage_pct": 91.3
+      "coverage_pct": 91.3,
+      "note": "",
+      "benchmarks": []
+    },
+    {
+      "framework": "disa_stig",
+      "title": "DISA STIG",
+      "passed": 0,
+      "failed": 14,
+      "review": 5,
+      "not_applicable": 0,
+      "compliance_pct": 0.0,
+      "coverage_pct": 73.7,
+      "note": "",
+      "benchmarks": [
+        "Arista MLS EOS 4.X NDM V2R2",
+        "Arista MLS EOS 4.X Router V2R2"
+      ]
+    },
+    {
+      "framework": "iso_27001_2022",
+      "title": "ISO/IEC 27001:2022",
+      "passed": 4,
+      "failed": 16,
+      "review": 2,
+      "not_applicable": 0,
+      "compliance_pct": 20.0,
+      "coverage_pct": 90.9,
+      "note": "",
+      "benchmarks": []
     }
   ],
   "rules": [
@@ -85,7 +118,17 @@
         "AC-2(1)",
         "IA-2"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000810"
+        ],
+        "iso_27001_2022": [
+          "A.5.16",
+          "A.5.18",
+          "A.8.2"
+        ]
+      }
     },
     {
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
@@ -96,7 +139,12 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "AAA-LOCKOUT-01",
@@ -107,7 +155,15 @@
       "nist_800_53r5": [
         "AC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000120"
+        ],
+        "iso_27001_2022": [
+          "A.8.5"
+        ]
+      }
     },
     {
       "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
@@ -118,7 +174,12 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
@@ -129,7 +190,15 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000380"
+        ],
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "FILTER-PERMIT-ANY-01",
@@ -141,7 +210,16 @@
         "SC-7(5)",
         "AC-4"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-RT-000330"
+        ],
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.22"
+        ]
+      }
     },
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
@@ -152,7 +230,16 @@
       "nist_800_53r5": [
         "SC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-RT-000370"
+        ],
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.22"
+        ]
+      }
     },
     {
       "rule_id": "LOG-CONFIG-CHANGE-01",
@@ -165,7 +252,16 @@
         "AU-12",
         "CM-3"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000150"
+        ],
+        "iso_27001_2022": [
+          "A.8.15",
+          "A.8.32"
+        ]
+      }
     },
     {
       "rule_id": "LOG-REMOTE-01",
@@ -177,7 +273,15 @@
         "AU-4(1)",
         "AU-9(2)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000850"
+        ],
+        "iso_27001_2022": [
+          "A.8.15"
+        ]
+      }
     },
     {
       "rule_id": "LOG-TIMESTAMPS-01",
@@ -189,7 +293,13 @@
         "AU-3",
         "AU-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.15",
+          "A.8.17"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-BANNER-01",
@@ -200,7 +310,15 @@
       "nist_800_53r5": [
         "AC-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000130"
+        ],
+        "iso_27001_2022": [
+          "A.8.5"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-HTTP-01",
@@ -213,7 +331,15 @@
         "SC-8",
         "AC-17(2)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000340"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
@@ -225,7 +351,15 @@
         "AC-12",
         "SC-10"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000490"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-SSH-V2-01",
@@ -238,7 +372,16 @@
         "SC-8",
         "SC-13"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000700"
+        ],
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.24"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-TELNET-01",
@@ -251,7 +394,16 @@
         "AC-17(2)",
         "SC-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000340",
+          "ARST-ND-000700"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-VTY-ACL-01",
@@ -263,7 +415,16 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000110"
+        ],
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-VTY-ACL-02",
@@ -275,7 +436,16 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000110"
+        ],
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-WEB-ACL-01",
@@ -287,7 +457,16 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000110"
+        ],
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "REF-DANGLING-01",
@@ -299,7 +478,12 @@
         "CM-6",
         "AC-3"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.9"
+        ]
+      }
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -311,7 +495,16 @@
         "IA-5",
         "CM-6"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000660"
+        ],
+        "iso_27001_2022": [
+          "A.5.17",
+          "A.8.9"
+        ]
+      }
     },
     {
       "rule_id": "SVC-LEGACY-01",
@@ -322,7 +515,15 @@
       "nist_800_53r5": [
         "CM-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000340"
+        ],
+        "iso_27001_2022": [
+          "A.8.19"
+        ]
+      }
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
@@ -334,7 +535,15 @@
         "CM-7",
         "SC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-RT-000640"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "TIME-NTP-AUTH-01",
@@ -346,19 +555,29 @@
         "SC-45(1)",
         "IA-3(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "ARST-ND-000600"
+        ]
+      }
     }
   ],
   "controls": [
     {
+      "framework": "nist_800_53r5",
       "control": "AC-2(1)",
       "title": "Automated System Account Management",
       "status": "not satisfied",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-3",
       "title": "Access Enforcement",
       "status": "partially satisfied",
@@ -367,41 +586,61 @@
         "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01",
         "REF-DANGLING-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-4",
       "title": "Information Flow Enforcement",
       "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-7",
       "title": "Unsuccessful Logon Attempts",
       "status": "not satisfied",
       "rules": [
         "AAA-LOCKOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-8",
       "title": "System Use Notification",
       "status": "not satisfied",
       "rules": [
         "MGMT-BANNER-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-12",
       "title": "Session Termination",
       "status": "not satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-17",
       "title": "Remote Access",
       "status": "partially satisfied",
@@ -409,9 +648,13 @@
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-17(2)",
       "title": "Protection of Confidentiality and Integrity Using Encryption",
       "status": "not satisfied",
@@ -419,74 +662,110 @@
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-2",
       "title": "Event Logging",
       "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-3",
       "title": "Content of Audit Records",
       "status": "satisfied",
       "rules": [
         "LOG-TIMESTAMPS-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-4(1)",
       "title": "Transfer to Alternate Storage",
       "status": "not satisfied",
       "rules": [
         "LOG-REMOTE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-8",
       "title": "Time Stamps",
       "status": "satisfied",
       "rules": [
         "LOG-TIMESTAMPS-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-9(2)",
       "title": "Store on Separate Physical Systems or Components",
       "status": "not satisfied",
       "rules": [
         "LOG-REMOTE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-12",
       "title": "Audit Record Generation",
       "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-3",
       "title": "Configuration Change Control",
       "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-6",
       "title": "Configuration Settings",
       "status": "not satisfied",
       "rules": [
         "REF-DANGLING-01",
         "SNMP-COMMUNITY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-7",
       "title": "Least Functionality",
       "status": "partially satisfied",
@@ -495,33 +774,49 @@
         "MGMT-TELNET-01",
         "SVC-LEGACY-01",
         "SVC-PROXY-ARP-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-2",
       "title": "Identification and Authentication (Organizational Users)",
       "status": "not satisfied",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-3(1)",
       "title": "Cryptographic Bidirectional Authentication",
       "status": "not satisfied",
       "rules": [
         "TIME-NTP-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-5",
       "title": "Authenticator Management",
       "status": "not satisfied",
       "rules": [
         "SNMP-COMMUNITY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-5(1)",
       "title": "Password-based Authentication",
       "status": "partially satisfied",
@@ -529,26 +824,38 @@
         "AAA-LOCAL-PASSWORD-HASH-01",
         "AAA-PASSWORD-ENCRYPTION-01",
         "AAA-PASSWORD-MIN-LENGTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-7",
       "title": "Boundary Protection",
       "status": "not satisfied",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-7(5)",
       "title": "Deny by Default — Allow by Exception",
       "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-8",
       "title": "Transmission Confidentiality and Integrity",
       "status": "not satisfied",
@@ -556,31 +863,418 @@
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-10",
       "title": "Network Disconnect",
       "status": "not satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-13",
       "title": "Cryptographic Protection",
       "status": "undetermined",
       "rules": [
         "MGMT-SSH-V2-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-45(1)",
       "title": "Synchronization with Authoritative Time Source",
       "status": "not satisfied",
       "rules": [
         "TIME-NTP-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000110",
+      "title": "The Arista network device must enforce approved authorizations for controlling the flow of management information within the network device based on information flow control policies.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000120",
+      "title": "The Arista network device must be configured to enforce the limit of three consecutive invalid logon attempts, after which time it must block any login attempt for 15 minutes.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCKOUT-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000130",
+      "title": "The Arista network device must display the Standard Mandatory DOD Notice and Consent Banner before granting access to the device.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-BANNER-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000150",
+      "title": "The Arista network device must be configured to audit all administrator activity.",
+      "status": "undetermined",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000340",
+      "title": "The Arista network device must be configured to prohibit the use of all unnecessary and/or nonsecure functions, ports, protocols, and/or services.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-TELNET-01",
+        "SVC-LEGACY-01"
+      ],
+      "severity": "high",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000380",
+      "title": "The Arista network device must enforce a minimum 15-character password length.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-PASSWORD-MIN-LENGTH-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000490",
+      "title": "The Arista network device must terminate all network connections associated with a device management session at the end of the session, or the session must be terminated after 10 minutes of inactivity except to fulfill documented and validated mission requirements.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-SESSION-TIMEOUT-01"
+      ],
+      "severity": "high",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000600",
+      "title": "The Arista network device must be configured to synchronize internal system clocks using redundant authenticated time sources.",
+      "status": "not satisfied",
+      "rules": [
+        "TIME-NTP-AUTH-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000660",
+      "title": "The Arista network device must be configured to authenticate SNMP messages using a FIPS-validated Keyed-Hash Message Authentication Code (HMAC).",
+      "status": "not satisfied",
+      "rules": [
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000700",
+      "title": "The Arista network device must be configured to implement cryptographic mechanisms using a FIPS 140-2 approved algorithm to protect the confidentiality of remote maintenance sessions.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01"
+      ],
+      "severity": "high",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000810",
+      "title": "The network device must be configured to use an authentication server to authenticate users prior to granting administrative access.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": "high",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-ND-000850",
+      "title": "The Arista network Arista device must be configured to send log data to a central log server for the purpose of forwarding alerts to the administrators and the ISSO.",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-REMOTE-01"
+      ],
+      "severity": "high",
+      "benchmark": "Arista_MLS_EOS_4-2x_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-RT-000330",
+      "title": "The Arista perimeter router must be configured to deny network traffic by default and allow network traffic by exception.",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01"
+      ],
+      "severity": "high",
+      "benchmark": "Arista_MLS_EOS_4-2x_Router_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-RT-000370",
+      "title": "The Arista perimeter router must be configured to filter ingress traffic at the external interface on an inbound direction.",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-UNTRUSTED-INGRESS-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_Router_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "ARST-RT-000640",
+      "title": "The Arista perimeter router must be configured to have Proxy ARP disabled on all external interfaces.",
+      "status": "undetermined",
+      "rules": [
+        "SVC-PROXY-ARP-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Arista_MLS_EOS_4-2x_Router_STIG",
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.15",
+      "title": "Who may reach which systems and information is decided and enforced",
+      "status": "partially satisfied",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.16",
+      "title": "Every person and system that logs in has a managed identity",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.17",
+      "title": "Passwords, keys and other secrets are set, stored and handled safely",
+      "status": "partially satisfied",
+      "rules": [
+        "AAA-LOCAL-PASSWORD-HASH-01",
+        "AAA-PASSWORD-ENCRYPTION-01",
+        "AAA-PASSWORD-MIN-LENGTH-01",
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.18",
+      "title": "Access rights are granted, reviewed and removed through a defined process",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.2",
+      "title": "Administrative (privileged) access is limited and controlled",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.5",
+      "title": "The login process itself resists misuse",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCKOUT-01",
+        "MGMT-BANNER-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.9",
+      "title": "Device settings are defined, documented and kept under control",
+      "status": "not satisfied",
+      "rules": [
+        "REF-DANGLING-01",
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.15",
+      "title": "Security-relevant activity is recorded and the records are protected",
+      "status": "partially satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01",
+        "LOG-REMOTE-01",
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.17",
+      "title": "Device clocks follow an agreed time source",
+      "status": "satisfied",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.19",
+      "title": "What runs on live systems is controlled; nothing unneeded is enabled",
+      "status": "satisfied",
+      "rules": [
+        "SVC-LEGACY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.20",
+      "title": "Networks and network devices are secured and managed",
+      "status": "partially satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01",
+        "FILTER-UNTRUSTED-INGRESS-01",
+        "MGMT-HTTP-01",
+        "MGMT-SESSION-TIMEOUT-01",
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01",
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01",
+        "SVC-PROXY-ARP-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.22",
+      "title": "Networks are split into zones and traffic between them is controlled",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01",
+        "FILTER-UNTRUSTED-INGRESS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.24",
+      "title": "Cryptography is used, and used correctly, where it is required",
+      "status": "undetermined",
+      "rules": [
+        "MGMT-SSH-V2-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.32",
+      "title": "Changes to systems follow a controlled process",
+      "status": "undetermined",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     }
   ],
   "findings": [
@@ -848,6 +1542,17 @@
       "evidence": [
         {
           "file": "weak.cfg",
+          "line_start": 42,
+          "line_end": 42,
+          "raw": "protocol http",
+          "mapping_id": "arista_eos/eapi-protocol-http",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
           "line_start": 21,
           "line_end": 21,
           "raw": "interface Ethernet1",
@@ -863,17 +1568,6 @@
           "line_end": 22,
           "raw": "description WAN uplink to ISP",
           "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 42,
-          "line_end": 42,
-          "raw": "protocol http",
-          "mapping_id": "arista_eos/eapi-protocol-http",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1006,28 +1700,6 @@
       "evidence": [
         {
           "file": "weak.cfg",
-          "line_start": 21,
-          "line_end": 21,
-          "raw": "interface Ethernet1",
-          "mapping_id": "arista_eos/interface",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 22,
-          "line_end": 22,
-          "raw": "description WAN uplink to ISP",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
           "line_start": 52,
           "line_end": 52,
           "raw": "management telnet",
@@ -1043,6 +1715,28 @@
           "line_end": 53,
           "raw": "no shutdown",
           "mapping_id": "arista_eos/telnet-shutdown",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 21,
+          "line_end": 21,
+          "raw": "interface Ethernet1",
+          "mapping_id": "arista_eos/interface",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
+          "line_start": 22,
+          "line_end": 22,
+          "raw": "description WAN uplink to ISP",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1102,6 +1796,17 @@
       "evidence": [
         {
           "file": "weak.cfg",
+          "line_start": 49,
+          "line_end": 49,
+          "raw": "ip access-group MGMT-ACL in",
+          "mapping_id": "arista_eos/ssh-access-group",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
           "line_start": 21,
           "line_end": 21,
           "raw": "interface Ethernet1",
@@ -1117,17 +1822,6 @@
           "line_end": 22,
           "raw": "description WAN uplink to ISP",
           "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 49,
-          "line_end": 49,
-          "raw": "ip access-group MGMT-ACL in",
-          "mapping_id": "arista_eos/ssh-access-group",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"
@@ -1150,6 +1844,17 @@
       "evidence": [
         {
           "file": "weak.cfg",
+          "line_start": 42,
+          "line_end": 42,
+          "raw": "protocol http",
+          "mapping_id": "arista_eos/eapi-protocol-http",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak.cfg",
           "line_start": 21,
           "line_end": 21,
           "raw": "interface Ethernet1",
@@ -1165,17 +1870,6 @@
           "line_end": 22,
           "raw": "description WAN uplink to ISP",
           "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak.cfg",
-          "line_start": 42,
-          "line_end": 42,
-          "raw": "protocol http",
-          "mapping_id": "arista_eos/eapi-protocol-http",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"

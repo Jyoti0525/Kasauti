@@ -21,8 +21,11 @@ from kasauti.rules.model import Status
 
 REPO = Path(__file__).resolve().parents[3]
 AUTHORED = REPO / "datasets" / "authored"
-WEAK = sorted(AUTHORED.glob("*/weak*"))
-HARDENED = sorted(AUTHORED.glob("*/hardened*"))
+# The seed vendors, which ship curated recipes. A vendor taught in the Training Studio (Huawei
+# VRP) gets its fixes by inverse mapping (TODO M4.03), not from recipes.
+SEEDED = {p.parent.name for p in (REPO / "packs" / "vendors").glob("*/recipes")}
+WEAK = sorted(p for p in AUTHORED.glob("*/weak*") if p.parent.name in SEEDED)
+HARDENED = sorted(p for p in AUTHORED.glob("*/hardened*") if p.parent.name in SEEDED)
 PARAM = re.compile(r"<([A-Z][A-Z0-9_]*)>")
 TOKEN = re.compile(r'"[^"]*"|\S+')
 # With TACACS+ logins through an authentication profile, which lockout governs PAN-OS

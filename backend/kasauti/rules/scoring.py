@@ -3,9 +3,14 @@
 * A rule's status on a device is its worst finding: FAIL > REVIEW > PASS > N/A.
 * **Compliance %** = PASS / (PASS + FAIL) over applicable rules.
 * **Coverage %** = (PASS + FAIL) / applicable rules: how much could actually be judged.
-* A NIST control rolls up from the rules that cite it: all PASS -> satisfied; some FAIL and
-  some PASS -> partially satisfied; all judged ones FAIL -> not satisfied; otherwise
-  undetermined (REVIEW) or not applicable.
+* A framework control rolls up from the rules mapped to it: all PASS -> satisfied; some FAIL
+  and some PASS -> partially satisfied; all judged ones FAIL -> not satisfied; otherwise
+  undetermined (REVIEW) or not applicable. A STIG rule is one requirement, open or not, so any
+  FAIL leaves it not satisfied (``atomic``).
+* How far a rule decides a control (``Coverage``) bounds what its verdict proves: a rule that
+  checks only part of a control can fail it but never satisfy it alone; one stricter than the
+  control can satisfy it but never fail it alone. The framework's two numbers count the same
+  way, so a STIG's Coverage % shows how much of it the checks really settle.
 
 Nobody should read "100 % compliant" without seeing "on 10 % coverage".
 """
@@ -13,16 +18,21 @@ Nobody should read "100 % compliant" without seeing "on 10 % coverage".
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Any
 
 from kasauti.rules.model import Finding, Rule, Status
 
 _RANK = {Status.FAIL: 3, Status.REVIEW: 2, Status.PASS: 1, Status.NOT_APPLICABLE: 0}
 
 NIST = "nist_800_53r5"
-FRAMEWORKS = {NIST: "NIST SP 800-53 Rev. 5"}
+FRAMEWORKS = {
+    NIST: "NIST SP 800-53 Rev. 5",
+    "disa_stig": "DISA STIG",
+    "iso_27001_2022": "ISO/IEC 27001:2022",
+}
 
 
 def rule_status(findings: Iterable[Finding]) -> Status:
@@ -75,14 +85,41 @@ def score(statuses: Iterable[Status]) -> Score:
     )
 
 
-def in_framework(rule: Rule, framework: str) -> bool:
-    if framework == NIST:
-        return bool(rule.refs.nist_800_53r5)
-    raise KeyError(f"framework {framework!r} lands with its pack (TODO M2.57-M2.60)")
+class Coverage(StrEnum):
+    FULL = "full"
+    PART = "part"
+    STRICTER = "stricter"
 
 
-def framework_score(rules: Sequence[Rule], statuses: dict[str, Status], framework: str) -> Score:
-    return score(statuses[r.id] for r in rules if in_framework(r, framework))
+@dataclass(frozen=True, slots=True)
+class Cited:
+    """A control a rule is mapped to, and how much of it the rule decides."""
+
+    control: str
+    covers: Coverage = Coverage.FULL
+
+
+def nist_citations(rules: Sequence[Rule]) -> dict[str, tuple[Cited, ...]]:
+    """NIST, the hub: each rule's own anchors, each decided in full."""
+    return {r.id: tuple(Cited(c) for c in r.refs.nist_800_53r5) for r in rules}
+
+
+def framework_score(statuses: dict[str, Status], cited: dict[str, tuple[Cited, ...]]) -> Score:
+    """Over the rules mapped to at least one of the framework's controls. A verdict counts only
+    as far as it decides them: a PASS on a rule that checks only part of every control it maps to
+    is left for review, and so is a FAIL on a rule stricter than all of them. Coverage then shows
+    how much of the framework the checks really settle."""
+    return score(
+        _as_evidence(statuses[rule], controls) for rule, controls in cited.items() if controls
+    )
+
+
+def _as_evidence(status: Status, controls: tuple[Cited, ...]) -> Status:
+    if status is Status.PASS and all(c.covers is Coverage.PART for c in controls):
+        return Status.REVIEW
+    if status is Status.FAIL and all(c.covers is Coverage.STRICTER for c in controls):
+        return Status.REVIEW
+    return status
 
 
 class ControlStatus(StrEnum):
@@ -93,34 +130,57 @@ class ControlStatus(StrEnum):
     NOT_APPLICABLE = "not applicable"
 
 
-def nist_controls(
-    rules: Sequence[Rule], statuses: dict[str, Status]
-) -> dict[str, tuple[ControlStatus, tuple[str, ...]]]:
-    """Control id -> (roll-up status, the rules behind it), in control order."""
-    by_control: dict[str, list[str]] = defaultdict(list)
-    for r in rules:
-        for control in r.refs.nist_800_53r5:
-            by_control[control].append(r.id)
-    out: dict[str, tuple[ControlStatus, tuple[str, ...]]] = {}
-    for control in sorted(by_control, key=control_sort_key):
-        ids = tuple(sorted(by_control[control]))
-        out[control] = (_roll_up([statuses[i] for i in ids]), ids)
+@dataclass(frozen=True, slots=True)
+class Rolled:
+    status: ControlStatus
+    rules: tuple[str, ...]
+    partial: bool
+    """Undetermined because the passing rules check only part of the control."""
+
+
+def control_matrix(
+    cited: dict[str, tuple[Cited, ...]],
+    statuses: dict[str, Status],
+    *,
+    order: Callable[[str], Any],
+    atomic: bool = False,
+) -> dict[str, Rolled]:
+    """Control id -> its roll-up and the rules behind it, in ``order``."""
+    by_control: dict[str, list[tuple[str, Coverage]]] = defaultdict(list)
+    for rule, controls in cited.items():
+        for c in controls:
+            by_control[c.control].append((rule, c.covers))
+    out: dict[str, Rolled] = {}
+    for control in sorted(by_control, key=order):
+        pairs = sorted(by_control[control])
+        status, partial = _roll_up([(statuses[r], cov) for r, cov in pairs], atomic=atomic)
+        out[control] = Rolled(status, tuple(dict.fromkeys(r for r, _ in pairs)), partial)
     return out
 
 
-def _roll_up(statuses: list[Status]) -> ControlStatus:
-    judged = [s for s in statuses if s in (Status.PASS, Status.FAIL)]
-    if Status.FAIL in judged:
-        return (
-            ControlStatus.PARTIALLY_SATISFIED
-            if Status.PASS in judged
-            else ControlStatus.NOT_SATISFIED
-        )
-    if Status.REVIEW in statuses:
-        return ControlStatus.UNDETERMINED
-    if judged:
-        return ControlStatus.SATISFIED
-    return ControlStatus.NOT_APPLICABLE
+def nist_controls(
+    rules: Sequence[Rule], statuses: dict[str, Status]
+) -> dict[str, tuple[ControlStatus, tuple[str, ...]]]:
+    """NIST control id -> (roll-up status, the rules behind it), in control order."""
+    rolled = control_matrix(nist_citations(rules), statuses, order=control_sort_key)
+    return {c: (r.status, r.rules) for c, r in rolled.items()}
+
+
+def _roll_up(
+    verdicts: list[tuple[Status, Coverage]], *, atomic: bool
+) -> tuple[ControlStatus, bool]:
+    breaks = [s for s, cov in verdicts if s is Status.FAIL and cov is not Coverage.STRICTER]
+    passes = [s for s, _ in verdicts if s is Status.PASS]
+    if breaks:
+        partly = bool(passes) and not atomic
+        return (ControlStatus.PARTIALLY_SATISFIED if partly else ControlStatus.NOT_SATISFIED), False
+    if any(s is Status.REVIEW or s is Status.FAIL for s, _ in verdicts):
+        return ControlStatus.UNDETERMINED, False
+    if any(s is Status.PASS and cov is not Coverage.PART for s, cov in verdicts):
+        return ControlStatus.SATISFIED, False
+    if passes:
+        return ControlStatus.UNDETERMINED, True
+    return ControlStatus.NOT_APPLICABLE, False
 
 
 def control_sort_key(control: str) -> tuple[str, int, int]:

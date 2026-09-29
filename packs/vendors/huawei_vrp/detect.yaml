@@ -1,0 +1,12 @@
+# Fingerprint for Huawei VRP `display current-configuration` output (PLAN §7). VRP prints the
+# software version as the first comment line and separates sections with `#`; `undo` is its
+# negation word and `user-interface` its line configuration (Huawei AR Router Command
+# Reference, V200R010).
+min_score: 0.7
+signatures:
+  - {id: software-version, kind: regex, pattern: '^!Software Version V\d{3}R\d{3}', weight: 0.5}
+  - {id: sysname, kind: regex, pattern: '^ ?sysname \S+', weight: 0.2}
+  - {id: user-interface, kind: regex, pattern: '^user-interface (vty|con|console) \d', weight: 0.3}
+  - {id: info-center, kind: regex, pattern: '^ ?info-center ', weight: 0.1}
+  - {id: undo-form, kind: regex, pattern: '^ ?undo \S+', weight: 0.1}
+  - {id: return, kind: regex, pattern: '^return$', weight: 0.1}

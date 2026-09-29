@@ -3,7 +3,9 @@
 
 The catalog is public domain (a US Government work). We keep only IDs and titles: enough for
 the crosswalk lint (S.06: no rule may cite an ID that isn't in the official catalog) and for
-report labels. Withdrawn controls are left out, so citing one fails the lint.
+report labels. Withdrawn controls are left out, so citing one fails the lint; where NIST says
+where a withdrawn control went ("moved to", "incorporated into"), that is kept in ``withdrawn``,
+so a DISA CCI that still cites a Rev. 4 control can follow NIST's own link (tools/import_stig.py).
 
 The source is pinned to a commit of github.com/usnistgov/oscal-content and its SHA-256 is
 recorded in the output, so anyone can re-run the import and get the same file.
@@ -59,16 +61,28 @@ def _walk(controls: list[dict[str, Any]]) -> Iterator[dict[str, Any]]:
         yield from _walk(control.get("controls", []))
 
 
-def extract(catalog: dict[str, Any]) -> tuple[str, list[dict[str, str]]]:
+def extract(
+    catalog: dict[str, Any],
+) -> tuple[str, list[dict[str, str]], dict[str, list[str]]]:
     body = catalog["catalog"]
     version = str(body["metadata"]["version"])
-    out = [
-        {"id": control_id(c["id"]), "title": c["title"]}
-        for group in body["groups"]
-        for c in _walk(group.get("controls", []))
-        if not _withdrawn(c)
-    ]
-    return version, sorted(out, key=lambda c: _order(c["id"]))
+    every = [c for group in body["groups"] for c in _walk(group.get("controls", []))]
+    out = [{"id": control_id(c["id"]), "title": c["title"]} for c in every if not _withdrawn(c)]
+    moved = {
+        control_id(c["id"]): sorted(
+            (
+                control_id(link["href"].lstrip("#"))
+                for link in c.get("links", [])
+                if link.get("rel") in ("moved-to", "incorporated-into")
+                and _ID.match(link.get("href", "").lstrip("#"))
+            ),
+            key=_order,
+        )
+        for c in every
+        if _withdrawn(c)
+    }
+    withdrawn = {k: moved[k] for k in sorted(moved, key=_order) if moved[k]}
+    return version, sorted(out, key=lambda c: _order(c["id"])), withdrawn
 
 
 def _order(cid: str) -> tuple[str, int, int]:
@@ -98,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
 
     url = URL.format(commit=args.commit)
     data = args.file.read_bytes() if args.file else fetch(url)
-    version, controls = extract(json.loads(data))
+    version, controls, withdrawn = extract(json.loads(data))
     doc = {
         "format_version": 1,
         "framework": "nist_800_53r5",
@@ -108,6 +122,7 @@ def main(argv: list[str] | None = None) -> int:
         "source_sha256": hashlib.sha256(data).hexdigest(),
         "licence": "Public domain (US Government work, 17 U.S.C. 105); IDs and titles only",
         "retrieved": args.retrieved,
+        "withdrawn": withdrawn,
         "controls": controls,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)

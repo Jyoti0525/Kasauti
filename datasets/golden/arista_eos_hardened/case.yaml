@@ -4,7 +4,7 @@ description: Arista EOS 4.30 hardened routed leaf (twin of the weak case)
 input: authored/arista_eos/hardened.cfg
 input_sha256: 42ba3c5feff684d9df92cc813e31b48dabc53071f06d828fddab8f9f85746568
 vendor: null
-frameworks: [nist_800_53r5]
+frameworks: [nist_800_53r5, disa_stig, iso_27001_2022]
 expected_statuses:
   AAA-CENTRAL-AUTH-01: PASS
   AAA-LOCAL-PASSWORD-HASH-01: PASS

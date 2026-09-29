@@ -1,0 +1,1014 @@
+{
+ "format_version": 1,
+ "framework": "iso_27001_2022",
+ "title": "ISO/IEC 27001:2022 Annex A",
+ "version": "2022",
+ "source_url": "https://csrc.nist.gov/csrc/media/Projects/olir/documents/submissions/sp800-53r5-to-iso-27001-mapping-2022-OLIR-2023-10-12-UPDATED.xlsx",
+ "source_sha256": "e631de234a1fac057991773f015c221226940540f5602e1b70a3768eaff5cbd9",
+ "licence": "Annex A control numbers only; descriptions are our own wording, not ISO text (ISO/IEC 27001 is copyrighted). Relationships: NIST OLIR #155, a public NIST informative reference",
+ "retrieved": "2026-09-29",
+ "bridge": {
+  "title": "NIST OLIR #155: SP 800-53 Rev. 5 to ISO/IEC 27001:2022",
+  "version": "1.0.0",
+  "url": "https://csrc.nist.gov/csrc/media/Projects/olir/documents/submissions/sp800-53r5-to-iso-27001-mapping-2022-OLIR-2023-10-12-UPDATED.xlsx",
+  "sha256": "e631de234a1fac057991773f015c221226940540f5602e1b70a3768eaff5cbd9",
+  "released": "2023-11-13"
+ },
+ "controls": [
+  {
+   "id": "A.5.1",
+   "title": "",
+   "nist": [
+    "AC-1",
+    "AT-1",
+    "AU-1",
+    "CA-1",
+    "CM-1",
+    "CP-1",
+    "IA-1",
+    "IR-1",
+    "MA-1",
+    "MP-1",
+    "PE-1",
+    "PL-1",
+    "PM-1",
+    "PS-1",
+    "RA-1",
+    "SA-1",
+    "SC-1",
+    "SI-1",
+    "SR-1"
+   ]
+  },
+  {
+   "id": "A.5.2",
+   "title": "",
+   "nist": [
+    "AC-1",
+    "AT-1",
+    "AU-1",
+    "CA-1",
+    "CM-1",
+    "CM-9",
+    "CP-1",
+    "CP-2",
+    "IA-1",
+    "IR-1",
+    "MA-1",
+    "MP-1",
+    "PE-1",
+    "PL-1",
+    "PM-1",
+    "PM-2",
+    "PM-10",
+    "PM-29",
+    "PS-1",
+    "PS-7",
+    "PS-9",
+    "RA-1",
+    "SA-1",
+    "SA-3",
+    "SA-9",
+    "SC-1",
+    "SI-1",
+    "SR-1"
+   ]
+  },
+  {
+   "id": "A.5.3",
+   "title": "",
+   "nist": [
+    "AC-5"
+   ]
+  },
+  {
+   "id": "A.5.4",
+   "title": "",
+   "nist": [
+    "AC-1",
+    "AT-1",
+    "AU-1",
+    "CA-1",
+    "CM-1",
+    "CP-1",
+    "IA-1",
+    "IR-1",
+    "MA-1",
+    "MP-1",
+    "PE-1",
+    "PL-1",
+    "PL-4",
+    "PM-1",
+    "PS-1",
+    "PS-6",
+    "PS-7",
+    "RA-1",
+    "SA-1",
+    "SA-9",
+    "SC-1",
+    "SI-1",
+    "SR-1"
+   ]
+  },
+  {
+   "id": "A.5.5",
+   "title": "",
+   "nist": [
+    "IR-6"
+   ]
+  },
+  {
+   "id": "A.5.6",
+   "title": "",
+   "nist": [
+    "PM-15",
+    "SI-5"
+   ]
+  },
+  {
+   "id": "A.5.7",
+   "title": "",
+   "nist": [
+    "PM-16",
+    "PM-16(1)",
+    "RA-10"
+   ]
+  },
+  {
+   "id": "A.5.8",
+   "title": "",
+   "nist": [
+    "PL-2",
+    "PL-7",
+    "PL-8",
+    "SA-3",
+    "SA-4",
+    "SA-9",
+    "SA-15"
+   ]
+  },
+  {
+   "id": "A.5.9",
+   "title": "",
+   "nist": [
+    "CM-8"
+   ]
+  },
+  {
+   "id": "A.5.10",
+   "title": "",
+   "nist": [
+    "MP-2",
+    "MP-4",
+    "MP-5",
+    "MP-6",
+    "MP-7",
+    "PE-16",
+    "PE-18",
+    "PE-20",
+    "PL-4",
+    "SC-8",
+    "SC-28"
+   ]
+  },
+  {
+   "id": "A.5.11",
+   "title": "",
+   "nist": [
+    "PS-4",
+    "PS-5"
+   ]
+  },
+  {
+   "id": "A.5.12",
+   "title": "",
+   "nist": [
+    "RA-2"
+   ]
+  },
+  {
+   "id": "A.5.13",
+   "title": "",
+   "nist": [
+    "MP-3",
+    "PE-22"
+   ]
+  },
+  {
+   "id": "A.5.14",
+   "title": "",
+   "nist": [
+    "AC-4",
+    "AC-17",
+    "AC-18",
+    "AC-19",
+    "AC-20",
+    "CA-3",
+    "PE-17",
+    "PS-6",
+    "SA-9",
+    "SC-7",
+    "SC-8",
+    "SC-15"
+   ]
+  },
+  {
+   "id": "A.5.15",
+   "title": "Who may reach which systems and information is decided and enforced",
+   "nist": [
+    "AC-1",
+    "AC-3",
+    "AC-6"
+   ]
+  },
+  {
+   "id": "A.5.16",
+   "title": "Every person and system that logs in has a managed identity",
+   "nist": [
+    "AC-2",
+    "IA-2",
+    "IA-4",
+    "IA-5",
+    "IA-8"
+   ]
+  },
+  {
+   "id": "A.5.17",
+   "title": "Passwords, keys and other secrets are set, stored and handled safely",
+   "nist": [
+    "IA-5"
+   ]
+  },
+  {
+   "id": "A.5.18",
+   "title": "Access rights are granted, reviewed and removed through a defined process",
+   "nist": [
+    "AC-2"
+   ]
+  },
+  {
+   "id": "A.5.19",
+   "title": "",
+   "nist": [
+    "SR-1",
+    "SR-2"
+   ]
+  },
+  {
+   "id": "A.5.20",
+   "title": "",
+   "nist": [
+    "SA-4",
+    "SR-2",
+    "SR-3",
+    "SR-5"
+   ]
+  },
+  {
+   "id": "A.5.21",
+   "title": "",
+   "nist": [
+    "SR-2",
+    "SR-3",
+    "SR-4",
+    "SR-5"
+   ]
+  },
+  {
+   "id": "A.5.22",
+   "title": "",
+   "nist": [
+    "RA-9",
+    "SA-9",
+    "SR-6",
+    "SR-7"
+   ]
+  },
+  {
+   "id": "A.5.23",
+   "title": "",
+   "nist": [
+    "SA-1",
+    "SA-4",
+    "SA-9",
+    "SA-9(3)",
+    "SR-5"
+   ]
+  },
+  {
+   "id": "A.5.24",
+   "title": "",
+   "nist": [
+    "IR-8"
+   ]
+  },
+  {
+   "id": "A.5.25",
+   "title": "",
+   "nist": [
+    "AU-6",
+    "IR-4"
+   ]
+  },
+  {
+   "id": "A.5.26",
+   "title": "",
+   "nist": [
+    "IR-4"
+   ]
+  },
+  {
+   "id": "A.5.27",
+   "title": "",
+   "nist": [
+    "IR-4"
+   ]
+  },
+  {
+   "id": "A.5.28",
+   "title": "",
+   "nist": [
+    "AU-3",
+    "AU-10(3)",
+    "AU-11"
+   ]
+  },
+  {
+   "id": "A.5.29",
+   "title": "",
+   "nist": [
+    "CP-2",
+    "CP-4",
+    "CP-6",
+    "CP-7",
+    "CP-8",
+    "CP-9",
+    "CP-10",
+    "CP-11",
+    "CP-13"
+   ]
+  },
+  {
+   "id": "A.5.30",
+   "title": "",
+   "nist": [
+    "CA-2",
+    "CP-2(1)",
+    "CP-2(8)",
+    "CP-4",
+    "CP-4(1)"
+   ]
+  },
+  {
+   "id": "A.5.31",
+   "title": "",
+   "nist": [
+    "AC-1",
+    "AT-1",
+    "AU-1",
+    "CA-1",
+    "CM-1",
+    "CP-1",
+    "IA-1",
+    "IR-1",
+    "MP-1",
+    "PE-1",
+    "PL-1",
+    "PM-1",
+    "PS-1",
+    "RA-1",
+    "SA-1",
+    "SC-1",
+    "SI-1",
+    "SR-1"
+   ]
+  },
+  {
+   "id": "A.5.32",
+   "title": "",
+   "nist": [
+    "CM-10"
+   ]
+  },
+  {
+   "id": "A.5.33",
+   "title": "",
+   "nist": [
+    "AC-3",
+    "AU-9",
+    "CP-9",
+    "SC-8",
+    "SC-28",
+    "SC-28(1)"
+   ]
+  },
+  {
+   "id": "A.5.34",
+   "title": "",
+   "nist": [
+    "PL-2",
+    "PM-18",
+    "PT-1",
+    "PT-3",
+    "PT-7"
+   ]
+  },
+  {
+   "id": "A.5.35",
+   "title": "",
+   "nist": [
+    "CA-2(1)"
+   ]
+  },
+  {
+   "id": "A.5.36",
+   "title": "",
+   "nist": [
+    "AC-1",
+    "AT-1",
+    "AU-1",
+    "CA-1",
+    "CA-2",
+    "CA-7",
+    "CM-1",
+    "CP-1",
+    "IA-1",
+    "IR-1",
+    "MP-1",
+    "PE-1",
+    "PL-1",
+    "PM-1",
+    "PS-1",
+    "RA-1",
+    "SA-1",
+    "SC-1",
+    "SI-1",
+    "SR-1"
+   ]
+  },
+  {
+   "id": "A.5.37",
+   "title": "",
+   "nist": [
+    "AC-1",
+    "AT-1",
+    "AU-1",
+    "CA-1",
+    "CM-1",
+    "CP-1",
+    "IA-1",
+    "IR-1",
+    "MA-1",
+    "MP-1",
+    "PE-1",
+    "PL-1",
+    "PS-1",
+    "RA-1",
+    "SA-1",
+    "SA-5",
+    "SC-1",
+    "SI-1",
+    "SR-1"
+   ]
+  },
+  {
+   "id": "A.6.1",
+   "title": "",
+   "nist": [
+    "PS-3",
+    "SA-21"
+   ]
+  },
+  {
+   "id": "A.6.2",
+   "title": "",
+   "nist": [
+    "PL-4",
+    "PS-6"
+   ]
+  },
+  {
+   "id": "A.6.3",
+   "title": "",
+   "nist": [
+    "AT-2",
+    "AT-3",
+    "CP-3",
+    "IR-2",
+    "PM-13"
+   ]
+  },
+  {
+   "id": "A.6.4",
+   "title": "",
+   "nist": [
+    "PS-8"
+   ]
+  },
+  {
+   "id": "A.6.5",
+   "title": "",
+   "nist": [
+    "PS-4",
+    "PS-5"
+   ]
+  },
+  {
+   "id": "A.6.6",
+   "title": "",
+   "nist": [
+    "PS-6"
+   ]
+  },
+  {
+   "id": "A.6.7",
+   "title": "",
+   "nist": [
+    "AC-17",
+    "PE-17"
+   ]
+  },
+  {
+   "id": "A.6.8",
+   "title": "",
+   "nist": [
+    "AU-6",
+    "IR-6",
+    "SI-2"
+   ]
+  },
+  {
+   "id": "A.7.1",
+   "title": "",
+   "nist": [
+    "PE-3"
+   ]
+  },
+  {
+   "id": "A.7.2",
+   "title": "",
+   "nist": [
+    "PE-2",
+    "PE-3",
+    "PE-4",
+    "PE-5",
+    "PE-16"
+   ]
+  },
+  {
+   "id": "A.7.3",
+   "title": "",
+   "nist": [
+    "PE-3",
+    "PE-5"
+   ]
+  },
+  {
+   "id": "A.7.4",
+   "title": "",
+   "nist": [
+    "AU-6(6)",
+    "PE-3",
+    "PE-3(3)",
+    "PE-6",
+    "PE-6(1)",
+    "PE-6(4)"
+   ]
+  },
+  {
+   "id": "A.7.5",
+   "title": "",
+   "nist": [
+    "CP-6",
+    "CP-7",
+    "PE-9",
+    "PE-13",
+    "PE-14",
+    "PE-15",
+    "PE-18",
+    "PE-19",
+    "PE-23"
+   ]
+  },
+  {
+   "id": "A.7.6",
+   "title": "",
+   "nist": []
+  },
+  {
+   "id": "A.7.7",
+   "title": "",
+   "nist": [
+    "AC-11",
+    "MP-2",
+    "MP-4",
+    "PE-5"
+   ]
+  },
+  {
+   "id": "A.7.8",
+   "title": "",
+   "nist": [
+    "PE-9",
+    "PE-13",
+    "PE-14",
+    "PE-15",
+    "PE-18",
+    "PE-19",
+    "PE-23"
+   ]
+  },
+  {
+   "id": "A.7.9",
+   "title": "",
+   "nist": [
+    "AC-19",
+    "AC-20",
+    "MP-5",
+    "PE-17"
+   ]
+  },
+  {
+   "id": "A.7.10",
+   "title": "",
+   "nist": [
+    "MA-2",
+    "MP-2",
+    "MP-4",
+    "MP-5",
+    "MP-6",
+    "MP-7",
+    "PE-16"
+   ]
+  },
+  {
+   "id": "A.7.11",
+   "title": "",
+   "nist": [
+    "CP-8",
+    "PE-9",
+    "PE-10",
+    "PE-11",
+    "PE-12",
+    "PE-14",
+    "PE-15"
+   ]
+  },
+  {
+   "id": "A.7.12",
+   "title": "",
+   "nist": [
+    "PE-4",
+    "PE-9"
+   ]
+  },
+  {
+   "id": "A.7.13",
+   "title": "",
+   "nist": [
+    "MA-2",
+    "MA-6"
+   ]
+  },
+  {
+   "id": "A.7.14",
+   "title": "",
+   "nist": [
+    "MP-6"
+   ]
+  },
+  {
+   "id": "A.8.1",
+   "title": "",
+   "nist": [
+    "AC-11",
+    "AC-19"
+   ]
+  },
+  {
+   "id": "A.8.2",
+   "title": "Administrative (privileged) access is limited and controlled",
+   "nist": [
+    "AC-2",
+    "AC-6",
+    "CM-5"
+   ]
+  },
+  {
+   "id": "A.8.3",
+   "title": "",
+   "nist": [
+    "AC-3",
+    "AC-24"
+   ]
+  },
+  {
+   "id": "A.8.4",
+   "title": "",
+   "nist": [
+    "AC-3",
+    "AC-3(11)",
+    "CM-5"
+   ]
+  },
+  {
+   "id": "A.8.5",
+   "title": "The login process itself resists misuse",
+   "nist": [
+    "AC-7",
+    "AC-8",
+    "AC-9",
+    "IA-6"
+   ]
+  },
+  {
+   "id": "A.8.6",
+   "title": "",
+   "nist": [
+    "AU-4",
+    "CP-2(2)",
+    "SC-5(2)"
+   ]
+  },
+  {
+   "id": "A.8.7",
+   "title": "",
+   "nist": [
+    "AT-2",
+    "SI-3"
+   ]
+  },
+  {
+   "id": "A.8.8",
+   "title": "",
+   "nist": [
+    "RA-3",
+    "RA-5",
+    "SI-2",
+    "SI-5"
+   ]
+  },
+  {
+   "id": "A.8.9",
+   "title": "Device settings are defined, documented and kept under control",
+   "nist": [
+    "CM-1",
+    "CM-2",
+    "CM-2(3)",
+    "CM-3",
+    "CM-3(7)",
+    "CM-3(8)",
+    "CM-4",
+    "CM-5",
+    "CM-6",
+    "CM-8",
+    "CM-9",
+    "CM-9(1)",
+    "SA-10"
+   ]
+  },
+  {
+   "id": "A.8.10",
+   "title": "",
+   "nist": [
+    "AC-4(25)",
+    "AC-7(2)",
+    "MA-2",
+    "MA-3(3)",
+    "MA-4(3)",
+    "MP-4",
+    "MP-6",
+    "MP-6(1)",
+    "SI-21"
+   ]
+  },
+  {
+   "id": "A.8.11",
+   "title": "",
+   "nist": [
+    "AC-4(23)",
+    "SI-19(4)"
+   ]
+  },
+  {
+   "id": "A.8.12",
+   "title": "",
+   "nist": [
+    "AU-13",
+    "PE-3(2)",
+    "PE-19",
+    "SC-7(10)",
+    "SI-20"
+   ]
+  },
+  {
+   "id": "A.8.13",
+   "title": "",
+   "nist": [
+    "CP-9"
+   ]
+  },
+  {
+   "id": "A.8.14",
+   "title": "",
+   "nist": [
+    "CP-2",
+    "CP-6",
+    "CP-7"
+   ]
+  },
+  {
+   "id": "A.8.15",
+   "title": "Security-relevant activity is recorded and the records are protected",
+   "nist": [
+    "AU-2",
+    "AU-3",
+    "AU-6",
+    "AU-9",
+    "AU-11",
+    "AU-12",
+    "AU-14"
+   ]
+  },
+  {
+   "id": "A.8.16",
+   "title": "",
+   "nist": [
+    "AC-2(12)",
+    "AC-17(1)",
+    "AU-13",
+    "IR-4(13)",
+    "MA-4(1)",
+    "PE-6",
+    "PE-6(3)",
+    "SC-7",
+    "SI-4",
+    "SI-4(4)",
+    "SI-4(13)",
+    "SI-4(16)"
+   ]
+  },
+  {
+   "id": "A.8.17",
+   "title": "Device clocks follow an agreed time source",
+   "nist": [
+    "AU-8"
+   ]
+  },
+  {
+   "id": "A.8.18",
+   "title": "",
+   "nist": [
+    "AC-3",
+    "AC-6"
+   ]
+  },
+  {
+   "id": "A.8.19",
+   "title": "What runs on live systems is controlled; nothing unneeded is enabled",
+   "nist": [
+    "CM-5",
+    "CM-7",
+    "CM-7(4)",
+    "CM-7(5)",
+    "CM-11"
+   ]
+  },
+  {
+   "id": "A.8.20",
+   "title": "Networks and network devices are secured and managed",
+   "nist": [
+    "AC-3",
+    "AC-18",
+    "AC-20",
+    "SC-7",
+    "SC-8",
+    "SC-10"
+   ]
+  },
+  {
+   "id": "A.8.21",
+   "title": "",
+   "nist": [
+    "CA-3",
+    "SA-9"
+   ]
+  },
+  {
+   "id": "A.8.22",
+   "title": "Networks are split into zones and traffic between them is controlled",
+   "nist": [
+    "AC-4",
+    "SC-7"
+   ]
+  },
+  {
+   "id": "A.8.23",
+   "title": "",
+   "nist": [
+    "AC-4",
+    "SC-7",
+    "SC-7(8)"
+   ]
+  },
+  {
+   "id": "A.8.24",
+   "title": "Cryptography is used, and used correctly, where it is required",
+   "nist": [
+    "SC-12",
+    "SC-13",
+    "SC-17"
+   ]
+  },
+  {
+   "id": "A.8.25",
+   "title": "",
+   "nist": [
+    "SA-3",
+    "SA-15",
+    "SA-17"
+   ]
+  },
+  {
+   "id": "A.8.26",
+   "title": "",
+   "nist": [
+    "AC-3",
+    "SC-8",
+    "SC-13"
+   ]
+  },
+  {
+   "id": "A.8.27",
+   "title": "",
+   "nist": [
+    "SA-8",
+    "SA-17"
+   ]
+  },
+  {
+   "id": "A.8.28",
+   "title": "",
+   "nist": [
+    "SA-4(3)",
+    "SA-8",
+    "SA-10",
+    "SA-11(1)",
+    "SA-15(5)"
+   ]
+  },
+  {
+   "id": "A.8.29",
+   "title": "",
+   "nist": [
+    "CA-2",
+    "SA-4",
+    "SA-11",
+    "SR-5(2)"
+   ]
+  },
+  {
+   "id": "A.8.30",
+   "title": "",
+   "nist": [
+    "SA-4",
+    "SA-10",
+    "SA-11",
+    "SA-15",
+    "SR-2",
+    "SR-4"
+   ]
+  },
+  {
+   "id": "A.8.31",
+   "title": "",
+   "nist": [
+    "CM-4(1)",
+    "CM-5",
+    "SA-3"
+   ]
+  },
+  {
+   "id": "A.8.32",
+   "title": "Changes to systems follow a controlled process",
+   "nist": [
+    "CM-3",
+    "CM-5",
+    "SA-10",
+    "SI-2"
+   ]
+  },
+  {
+   "id": "A.8.33",
+   "title": "",
+   "nist": [
+    "SA-3(2)"
+   ]
+  },
+  {
+   "id": "A.8.34",
+   "title": "",
+   "nist": []
+  }
+ ]
+}

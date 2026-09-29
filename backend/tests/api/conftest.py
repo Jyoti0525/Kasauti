@@ -5,6 +5,7 @@ from __future__ import annotations
 import shutil
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -40,10 +41,19 @@ def kb() -> KnowledgeBase:
 
 
 @pytest.fixture
-def client(var: Path, kb: KnowledgeBase, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
-    monkeypatch.setattr("kasauti.api.app.load_kb", lambda _packs: kb)  # loading takes ~0.5 s
+def client(
+    var: Path, kb: KnowledgeBase, monkeypatch: pytest.MonkeyPatch, sign_in: Any
+) -> Iterator[TestClient]:
+    """The app with its demo accounts, signed in as Asha (trainer)."""
+    monkeypatch.setattr("kasauti.api.app.load_kb", lambda _packs, _learned=None: kb)  # ~0.5 s
     app = create_app(
-        Settings(packs=PACKS, database=database_url(var, environ={}), staging=var / "staging")
+        Settings(
+            packs=PACKS,
+            database=database_url(var, environ={}),
+            staging=var / "staging",
+            demo_accounts=True,
+        )
     )
     with TestClient(app, base_url=BASE) as test_client:
+        sign_in(test_client)
         yield test_client

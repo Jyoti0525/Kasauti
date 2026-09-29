@@ -3,6 +3,11 @@
     "CrosswalkEntry": {
       "additionalProperties": false,
       "properties": {
+        "bridge_note": {
+          "default": "",
+          "title": "Bridge Note",
+          "type": "string"
+        },
         "controls": {
           "items": {
             "type": "string"
@@ -10,6 +15,21 @@
           "minItems": 1,
           "title": "Controls",
           "type": "array"
+        },
+        "covers": {
+          "default": "full",
+          "enum": [
+            "full",
+            "part",
+            "stricter"
+          ],
+          "title": "Covers",
+          "type": "string"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
         },
         "reviewed_by": {
           "anyOf": [
@@ -36,6 +56,19 @@
           ],
           "title": "Source",
           "type": "string"
+        },
+        "vendor": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z0-9][a-z0-9_]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vendor"
         }
       },
       "required": [

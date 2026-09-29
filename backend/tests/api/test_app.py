@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import URL
 from sqlalchemy.exc import OperationalError
 
+from kasauti.accounts import DEMO_ACCOUNTS
 from kasauti.api.app import SECURITY_HEADERS, WEB_CSP, Settings, create_app
 from kasauti.audit import load_kb
 from kasauti.cli.main import main
@@ -163,6 +164,19 @@ def test_serve_leaves_postgresql_migrations_to_the_operator(
     assert "hunter2" not in err
 
 
+def signed_in(app: Any, username: str = "asha") -> TestClient:
+    """A client of ``app`` (made with ``demo_accounts``) signed in as a demo account."""
+    client = TestClient(app, base_url="http://127.0.0.1:8000")
+    password = next(p for u, _, _, p in DEMO_ACCOUNTS if u == username)
+    response = client.post(
+        "/api/auth/login",
+        json={"username": username, "password": password},
+        headers={"X-Kasauti-Request": "1"},
+    )
+    assert response.status_code == 200, response.text
+    return client
+
+
 JOB_HANDLERS = {"echo": "job_handlers:echo"}
 """From ``tests/jobs/job_handlers.py``; the shipped registry has no kinds until M2.04."""
 
@@ -171,7 +185,11 @@ JOB_HANDLERS = {"echo": "job_handlers:echo"}
 def job_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
     monkeypatch.syspath_prepend(str(REPO / "backend" / "tests" / "jobs"))
     settings = Settings(
-        packs=PACKS, database=_migrated(tmp_path), staging=tmp_path / "s", handlers=JOB_HANDLERS
+        packs=PACKS,
+        database=_migrated(tmp_path),
+        staging=tmp_path / "s",
+        handlers=JOB_HANDLERS,
+        demo_accounts=True,
     )
     app = create_app(settings)
     yield app
@@ -179,7 +197,7 @@ def job_app(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
 
 
 def test_a_job_is_reported_by_its_id(job_app: Any) -> None:
-    client = TestClient(job_app, base_url="http://127.0.0.1:8000")
+    client = signed_in(job_app)
     job_id = job_app.state.jobs.enqueue("echo", {"upload": "sha256:ab"})
     body = client.get(f"/api/jobs/{job_id}").json()
     assert (body["id"], body["kind"], body["state"], body["attempts"]) == (
@@ -197,7 +215,7 @@ def test_a_job_is_reported_by_its_id(job_app: Any) -> None:
     [("00000000-0000-4000-8000-000000000000", 404), ("1", 422), ("1' OR '1'='1", 422)],
 )
 def test_unknown_and_malformed_job_ids(job_app: Any, job_id: str, status: int) -> None:
-    client = TestClient(job_app, base_url="http://127.0.0.1:8000")
+    client = signed_in(job_app)
     assert client.get(f"/api/jobs/{job_id}").status_code == status
 
 
@@ -206,7 +224,7 @@ def test_a_job_lookup_hides_database_errors(job_app: Any, monkeypatch: pytest.Mo
         raise OperationalError("SELECT", {}, Exception("unable to open C:/secret/path.db"))
 
     monkeypatch.setattr(job_app.state.jobs, "get", broken)
-    client = TestClient(job_app, base_url="http://127.0.0.1:8000")
+    client = signed_in(job_app)
     response = client.get("/api/jobs/00000000-0000-4000-8000-000000000000")
     assert (response.status_code, response.json()) == (503, {"detail": "database unavailable"})
 
@@ -221,9 +239,10 @@ def test_the_server_runs_jobs_in_the_background_while_it_is_up(
         staging=tmp_path / "s",
         handlers=JOB_HANDLERS,
         workers=1,
+        demo_accounts=True,
     )
     app = create_app(settings)
-    with TestClient(app, base_url="http://127.0.0.1:8000") as client:  # runs the lifespan
+    with signed_in(app) as client:  # runs the lifespan
         assert app.state.pool is not None
         job_id = app.state.jobs.enqueue("echo", {"n": 1})
         app.state.pool.wake()

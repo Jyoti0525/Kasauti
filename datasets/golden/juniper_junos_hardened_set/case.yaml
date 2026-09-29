@@ -4,7 +4,7 @@ description: Junos OS 23.4 hardened branch SRX (twin of the weak case), exported
 input: authored/juniper_junos/hardened_set.conf
 input_sha256: 202d54c3c46fddc57aaf2de5c1b46d8cc2d94c21ff0feaafd43595d8f274cecb
 vendor: null
-frameworks: [nist_800_53r5]
+frameworks: [nist_800_53r5, disa_stig, iso_27001_2022]
 expected_statuses:
   AAA-CENTRAL-AUTH-01: PASS   
   AAA-LOCAL-PASSWORD-HASH-01: PASS   

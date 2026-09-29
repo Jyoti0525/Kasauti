@@ -4,7 +4,7 @@ description: Cisco IOS XE 17.9 edge router with 20 planted weaknesses
 input: authored/cisco_ios_xe/weak.cfg
 input_sha256: ba77cc7a6b22126ec539f23cc647198f19b00583afcc4d7f22e191ec10e43937
 vendor: null            # must be recognised by fingerprint
-frameworks: [nist_800_53r5]
+frameworks: [nist_800_53r5, disa_stig, iso_27001_2022]
 expected_statuses:
   SVC-LEGACY-01: FAIL               # W1 service pad
   AAA-PASSWORD-ENCRYPTION-01: FAIL  # W2 no service password-encryption

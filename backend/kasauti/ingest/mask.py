@@ -66,13 +66,17 @@ _KEYWORDS = frozenset(
         "bind-password",
         "authpwd",
         "privpwd",
+        # Huawei VRP: ``hwtacacs-server shared-key cipher KEY``, ``radius-server shared-key``.
+        "shared-key",
     }
 )
 # Words between the keyword and the value that describe the secret's kind, or which one it is
 # (a key's number, IKEv2's ``local``/``remote`` key, Cisco's privilege ``level``). Kept visible.
 _SKIP = re.compile(
     r"^(\d{1,3}[a-z]?|enc|encrypted|unencrypted|ascii-text|ascii|hexadecimal|hex|cipher|hash"
-    r"|plaintext|md5|sha\S*|hmac-\S+|aes\S*|des|3des|0x|level|local|remote|type|value)$",
+    r"|plaintext|md5|sha\S*|hmac-\S+|aes\S*|des|3des|0x|level|local|remote|type|value"
+    # Huawei VRP: ``password irreversible-cipher HASH``, ``snmp-agent community read cipher S``.
+    r"|irreversible-cipher|simple|read|write)$",
     re.IGNORECASE,
 )
 # Words that follow a keyword in commands that hold no secret (``crypto key generate``,
@@ -123,6 +127,18 @@ def _secret_indexes(words: list[str], path: list[str]) -> set[int]:
                 j += 1
             if j < len(words) and not _NOT_SECRET.match(words[j]):
                 found.add(j)
+        elif (
+            word in ("authentication-mode", "privacy-mode")
+            and i + 2 < len(words)
+            and (_ALGO.match(words[i + 1]) or lower[i + 1].startswith("hmac-"))
+        ):
+            # Huawei VRP ``ntp-service authentication-keyid 1 authentication-mode hmac-sha256
+            # cipher KEY``, SNMPv3 ``authentication-mode sha cipher KEY privacy-mode aes128
+            # cipher KEY``. ``authentication-mode aaa`` on a user interface names no secret.
+            j = i + 2
+            while j < len(words) - 1 and _SKIP.match(words[j]):
+                j += 1
+            found.add(j)
         elif word in ("auth", "priv") and i + 2 < len(words) and _ALGO.match(words[i + 1]):
             j = i + 2
             if words[j].isdigit() and j + 1 < len(words):  # key size, e.g. ``aes 128``

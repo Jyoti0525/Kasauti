@@ -29,7 +29,14 @@ from kasauti.rules.model import Status
 if TYPE_CHECKING:
     from sqlalchemy import URL
 
-FRAMEWORK_ALIASES = {"nist": "nist_800_53r5", "nist_800_53r5": "nist_800_53r5"}
+FRAMEWORK_ALIASES = {
+    "nist": "nist_800_53r5",
+    "nist_800_53r5": "nist_800_53r5",
+    "stig": "disa_stig",
+    "disa_stig": "disa_stig",
+    "iso": "iso_27001_2022",
+    "iso_27001_2022": "iso_27001_2022",
+}
 LOOPBACK_NAMES = ("127.0.0.1", "localhost")
 DATA_DIR_ENV = "KASAUTI_DATA_DIR"
 MAX_WORKERS = 32
@@ -121,12 +128,13 @@ def _audit(args: argparse.Namespace) -> int:
 
 
 def _serve(args: argparse.Namespace) -> int:
-    """Run the web API on the loopback interface. Any other address is refused until accounts,
-    MFA and TLS exist (TODO M5.B, PLAN §17): the API would hand configurations to the LAN."""
+    """Run the web API on the loopback interface. Any other address is refused until MFA and
+    TLS exist (TODO M5.03, M5.10, PLAN §17): passwords alone, over plain HTTP, would guard
+    configurations on the LAN."""
     if args.host not in LOOPBACK_NAMES:
         print(
             f"kasauti: serve listens on the loopback interface only (127.0.0.1), not {args.host}. "
-            "Serving to the network needs accounts, MFA and TLS, which arrive in M5.",
+            "Serving to the network needs MFA and TLS, which arrive in M5.",
             file=sys.stderr,
         )
         return 2
@@ -142,9 +150,13 @@ def _serve(args: argparse.Namespace) -> int:
                 packs=args.packs,
                 database=url,
                 staging=args.data_dir / "staging",
+                learned=args.data_dir / "learned",
+                studio=args.data_dir / "studio",
                 workers=args.workers,
                 worker_memory_mib=args.worker_memory,
                 web=args.web,
+                demo_accounts=args.demo_accounts,
+                signup=not args.no_signup,
             )
         )
     except PackError as err:
@@ -159,6 +171,8 @@ def _serve(args: argparse.Namespace) -> int:
 
     if (args.web / "index.html").is_file():
         print(f"kasauti {__version__}: http://127.0.0.1:{args.port}/ (loopback only)")
+        if args.demo_accounts:
+            print("  demo accounts on: their passwords are shown on the sign-in page")
     else:
         print(
             f"kasauti {__version__}: http://127.0.0.1:{args.port}/api/health (loopback only); "
@@ -203,6 +217,41 @@ def _migrate(url: URL) -> tuple[str | None, str]:
         raise _DatabaseError(f"can't use the database {redacted(url)} ({_cause(err)})") from None
     finally:
         engine.dispose()
+
+
+def _account(args: argparse.Namespace) -> int:
+    """Team accounts from the command line: the first administrator, and role changes."""
+    import getpass  # noqa: PLC0415
+
+    from kasauti.accounts import AccountError, AccountStore, Role  # noqa: PLC0415
+    from kasauti.db import SchemaError, create_engine, ensure_current  # noqa: PLC0415
+
+    try:
+        url = _database(args.data_dir)
+        if url.drivername.startswith("sqlite"):
+            _migrate(url)
+        engine = create_engine(url)
+    except _DatabaseError as err:
+        print(f"kasauti: {err}", file=sys.stderr)
+        return 1
+    try:
+        ensure_current(engine)
+        store = AccountStore(engine)
+        if args.account_command == "add":
+            password = os.environ.get("KASAUTI_PASSWORD") or getpass.getpass(
+                f"password for {args.username} (at least 15 characters): "
+            )
+            made = store.create(args.username, args.name, password, Role(args.role))
+            print(f"{made.username}: account made, role {made.role}")
+        else:
+            changed = store.set_role(args.username, Role(args.role))
+            print(f"{changed.username}: role {changed.role}")
+    except (AccountError, SchemaError) as err:
+        print(f"kasauti: {err}", file=sys.stderr)
+        return 1
+    finally:
+        engine.dispose()
+    return 0
 
 
 def _db(args: argparse.Namespace) -> int:
@@ -300,7 +349,10 @@ def _print_summary(result: AuditResult, written: Sequence[Path]) -> None:
         print(
             f"  {sc.title}: compliance {comp}, coverage {cov} "
             f"({sc.passed} pass, {sc.failed} fail, {sc.review} review, {sc.not_applicable} n/a)"
+            + (f"; {sc.note}" if sc.note else "")
         )
+        if sc.benchmarks:
+            print(f"    {'; '.join(sc.benchmarks)}")
     found = effective_severity(result)
     for rule in result.rules:
         if rule.status in (Status.FAIL, Status.REVIEW):
@@ -343,7 +395,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         choices=sorted(FRAMEWORK_ALIASES),
         default=None,
-        help="framework to score against (repeatable; default: nist)",
+        help="framework to score against: nist, stig, iso (repeatable; default: nist)",
     )
     aud.add_argument("--vendor", help="vendor pack id, if fingerprinting can't tell")
     aud.add_argument(
@@ -398,6 +450,33 @@ def build_parser() -> argparse.ArgumentParser:
         "fails with a message saying so",
     )
 
+    srv.add_argument(
+        "--demo-accounts",
+        action="store_true",
+        help="make the demonstration accounts (asha, trainer; ravi, approver) and show their "
+        "passwords on the sign-in page; for demonstrations only",
+    )
+    srv.add_argument(
+        "--no-signup",
+        action="store_true",
+        help="no sign-up on the sign-in page: accounts are made with `kasauti account add`",
+    )
+
+    acc = sub.add_parser("account", help="team accounts: add one, or change a role")
+    acc_sub = acc.add_subparsers(dest="account_command", required=True)
+    roles = ["viewer", "auditor", "trainer", "approver", "admin"]
+    add = acc_sub.add_parser(
+        "add", help="make an account (password asked for, or $KASAUTI_PASSWORD)"
+    )
+    add.add_argument("username")
+    add.add_argument("--name", required=True, help="as shown in the UI")
+    add.add_argument("--role", choices=roles, default="auditor")
+    add.add_argument("--data-dir", type=Path, default=None, help=data_help)
+    role = acc_sub.add_parser("role", help="change an account's role")
+    role.add_argument("username")
+    role.add_argument("role", choices=roles)
+    role.add_argument("--data-dir", type=Path, default=None, help=data_help)
+
     db = sub.add_parser("db", help="the database's schema")
     db_sub = db.add_subparsers(dest="db_command", required=True)
     for name, text in (
@@ -436,6 +515,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _serve(args)
     if args.command == "db":
         return _db(args)
+    if args.command == "account":
+        return _account(args)
     if args.command == "packs" and args.packs_command == "validate":
         return _validate_packs(args.root)
     return 2  # pragma: no cover - argparse enforces the choices above

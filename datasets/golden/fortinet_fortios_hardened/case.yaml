@@ -4,7 +4,7 @@ description: FortiOS 7.4.8 hardened edge FortiGate (twin of the weak case)
 input: authored/fortinet_fortios/hardened.conf
 input_sha256: 063ca0c4806bbbf776294c7b020f40612e1810a2d39d4c655b8ea2b0ac4d5005
 vendor: null
-frameworks: [nist_800_53r5]
+frameworks: [nist_800_53r5, disa_stig, iso_27001_2022]
 expected_statuses:
   AAA-CENTRAL-AUTH-01: PASS
   AAA-LOCAL-PASSWORD-HASH-01: PASS

@@ -4,7 +4,7 @@ description: Arista EOS 4.30 routed leaf with 20 planted weaknesses (E1-E20)
 input: authored/arista_eos/weak.cfg
 input_sha256: 03c0b8d475f96aeec21a923089f88c271174c1a4bf9b8bfc6ea66f67fd0c6a1d
 vendor: null
-frameworks: [nist_800_53r5]
+frameworks: [nist_800_53r5, disa_stig, iso_27001_2022]
 expected_statuses:
   AAA-CENTRAL-AUTH-01: FAIL     # E3 no TACACS+/RADIUS server
   AAA-LOCAL-PASSWORD-HASH-01: FAIL     # E1 admin with nopassword; E2 netadmin secret 5 ($1$ MD5-crypt)

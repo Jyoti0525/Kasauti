@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "6ab8bb9260e0df06129cd18a",
+  "audit_id": "a739c9730c70d781d142bdcb",
   "input": {
     "file": "weak.json",
     "sha256": "05fef695af33a827e42a23817015bd5f0ac3304ff99944e243342055269ea188",
@@ -52,15 +52,19 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
+    "kb_version": "c0e30bfcb5fa67b8d8e12b89e55145dcf92ffd2f286b74169026d65abe99ed90",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "aws_vpc@1",
     "frameworks": {
+      "disa_stig": "Y26M07",
+      "iso_27001_2022": "2022",
       "nist_800_53r5": "5.2.0"
     }
   },
   "frameworks": [
-    "nist_800_53r5"
+    "nist_800_53r5",
+    "disa_stig",
+    "iso_27001_2022"
   ],
   "scores": [
     {
@@ -71,7 +75,33 @@
       "review": 0,
       "not_applicable": 21,
       "compliance_pct": 0.0,
-      "coverage_pct": 100.0
+      "coverage_pct": 100.0,
+      "note": "",
+      "benchmarks": []
+    },
+    {
+      "framework": "disa_stig",
+      "title": "DISA STIG",
+      "passed": 0,
+      "failed": 0,
+      "review": 0,
+      "not_applicable": 0,
+      "compliance_pct": null,
+      "coverage_pct": null,
+      "note": "DISA Security Technical Implementation Guides has no benchmark for this platform, so it judges nothing here",
+      "benchmarks": []
+    },
+    {
+      "framework": "iso_27001_2022",
+      "title": "ISO/IEC 27001:2022",
+      "passed": 0,
+      "failed": 2,
+      "review": 0,
+      "not_applicable": 20,
+      "compliance_pct": 0.0,
+      "coverage_pct": 100.0,
+      "note": "",
+      "benchmarks": []
     }
   ],
   "rules": [
@@ -85,7 +115,14 @@
         "AC-2(1)",
         "IA-2"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.16",
+          "A.5.18",
+          "A.8.2"
+        ]
+      }
     },
     {
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
@@ -96,7 +133,12 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "AAA-LOCKOUT-01",
@@ -107,7 +149,12 @@
       "nist_800_53r5": [
         "AC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.5"
+        ]
+      }
     },
     {
       "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
@@ -118,7 +165,12 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
@@ -129,7 +181,12 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "FILTER-PERMIT-ANY-01",
@@ -141,7 +198,13 @@
         "SC-7(5)",
         "AC-4"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.22"
+        ]
+      }
     },
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
@@ -152,7 +215,13 @@
       "nist_800_53r5": [
         "SC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.22"
+        ]
+      }
     },
     {
       "rule_id": "LOG-CONFIG-CHANGE-01",
@@ -165,7 +234,13 @@
         "AU-12",
         "CM-3"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.15",
+          "A.8.32"
+        ]
+      }
     },
     {
       "rule_id": "LOG-REMOTE-01",
@@ -177,7 +252,12 @@
         "AU-4(1)",
         "AU-9(2)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.15"
+        ]
+      }
     },
     {
       "rule_id": "LOG-TIMESTAMPS-01",
@@ -189,7 +269,13 @@
         "AU-3",
         "AU-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.15",
+          "A.8.17"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-BANNER-01",
@@ -200,7 +286,12 @@
       "nist_800_53r5": [
         "AC-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.5"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-HTTP-01",
@@ -213,7 +304,12 @@
         "SC-8",
         "AC-17(2)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
@@ -225,7 +321,12 @@
         "AC-12",
         "SC-10"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-SSH-V2-01",
@@ -238,7 +339,13 @@
         "SC-8",
         "SC-13"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.24"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-TELNET-01",
@@ -251,7 +358,12 @@
         "AC-17(2)",
         "SC-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-VTY-ACL-01",
@@ -263,7 +375,13 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-VTY-ACL-02",
@@ -275,7 +393,13 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-WEB-ACL-01",
@@ -287,7 +411,13 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "REF-DANGLING-01",
@@ -299,7 +429,12 @@
         "CM-6",
         "AC-3"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.9"
+        ]
+      }
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -311,7 +446,13 @@
         "IA-5",
         "CM-6"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.17",
+          "A.8.9"
+        ]
+      }
     },
     {
       "rule_id": "SVC-LEGACY-01",
@@ -322,7 +463,12 @@
       "nist_800_53r5": [
         "CM-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.19"
+        ]
+      }
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
@@ -334,7 +480,12 @@
         "CM-7",
         "SC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "TIME-NTP-AUTH-01",
@@ -346,19 +497,25 @@
         "SC-45(1)",
         "IA-3(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {}
     }
   ],
   "controls": [
     {
+      "framework": "nist_800_53r5",
       "control": "AC-2(1)",
       "title": "Automated System Account Management",
       "status": "not applicable",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-3",
       "title": "Access Enforcement",
       "status": "not satisfied",
@@ -367,41 +524,61 @@
         "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01",
         "REF-DANGLING-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-4",
       "title": "Information Flow Enforcement",
       "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-7",
       "title": "Unsuccessful Logon Attempts",
       "status": "not applicable",
       "rules": [
         "AAA-LOCKOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-8",
       "title": "System Use Notification",
       "status": "not applicable",
       "rules": [
         "MGMT-BANNER-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-12",
       "title": "Session Termination",
       "status": "not applicable",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-17",
       "title": "Remote Access",
       "status": "not applicable",
@@ -409,9 +586,13 @@
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-17(2)",
       "title": "Protection of Confidentiality and Integrity Using Encryption",
       "status": "not applicable",
@@ -419,74 +600,110 @@
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-2",
       "title": "Event Logging",
       "status": "not applicable",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-3",
       "title": "Content of Audit Records",
       "status": "not applicable",
       "rules": [
         "LOG-TIMESTAMPS-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-4(1)",
       "title": "Transfer to Alternate Storage",
       "status": "not applicable",
       "rules": [
         "LOG-REMOTE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-8",
       "title": "Time Stamps",
       "status": "not applicable",
       "rules": [
         "LOG-TIMESTAMPS-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-9(2)",
       "title": "Store on Separate Physical Systems or Components",
       "status": "not applicable",
       "rules": [
         "LOG-REMOTE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-12",
       "title": "Audit Record Generation",
       "status": "not applicable",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-3",
       "title": "Configuration Change Control",
       "status": "not applicable",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-6",
       "title": "Configuration Settings",
       "status": "not satisfied",
       "rules": [
         "REF-DANGLING-01",
         "SNMP-COMMUNITY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-7",
       "title": "Least Functionality",
       "status": "not applicable",
@@ -495,33 +712,49 @@
         "MGMT-TELNET-01",
         "SVC-LEGACY-01",
         "SVC-PROXY-ARP-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-2",
       "title": "Identification and Authentication (Organizational Users)",
       "status": "not applicable",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-3(1)",
       "title": "Cryptographic Bidirectional Authentication",
       "status": "not applicable",
       "rules": [
         "TIME-NTP-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-5",
       "title": "Authenticator Management",
       "status": "not applicable",
       "rules": [
         "SNMP-COMMUNITY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-5(1)",
       "title": "Password-based Authentication",
       "status": "not applicable",
@@ -529,26 +762,38 @@
         "AAA-LOCAL-PASSWORD-HASH-01",
         "AAA-PASSWORD-ENCRYPTION-01",
         "AAA-PASSWORD-MIN-LENGTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-7",
       "title": "Boundary Protection",
       "status": "not applicable",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-7(5)",
       "title": "Deny by Default — Allow by Exception",
       "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-8",
       "title": "Transmission Confidentiality and Integrity",
       "status": "not applicable",
@@ -556,31 +801,233 @@
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-10",
       "title": "Network Disconnect",
       "status": "not applicable",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-13",
       "title": "Cryptographic Protection",
       "status": "not applicable",
       "rules": [
         "MGMT-SSH-V2-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-45(1)",
       "title": "Synchronization with Authoritative Time Source",
       "status": "not applicable",
       "rules": [
         "TIME-NTP-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.15",
+      "title": "Who may reach which systems and information is decided and enforced",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.16",
+      "title": "Every person and system that logs in has a managed identity",
+      "status": "not applicable",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.17",
+      "title": "Passwords, keys and other secrets are set, stored and handled safely",
+      "status": "not applicable",
+      "rules": [
+        "AAA-LOCAL-PASSWORD-HASH-01",
+        "AAA-PASSWORD-ENCRYPTION-01",
+        "AAA-PASSWORD-MIN-LENGTH-01",
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.18",
+      "title": "Access rights are granted, reviewed and removed through a defined process",
+      "status": "not applicable",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.2",
+      "title": "Administrative (privileged) access is limited and controlled",
+      "status": "not applicable",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.5",
+      "title": "The login process itself resists misuse",
+      "status": "not applicable",
+      "rules": [
+        "AAA-LOCKOUT-01",
+        "MGMT-BANNER-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.9",
+      "title": "Device settings are defined, documented and kept under control",
+      "status": "not satisfied",
+      "rules": [
+        "REF-DANGLING-01",
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.15",
+      "title": "Security-relevant activity is recorded and the records are protected",
+      "status": "not applicable",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01",
+        "LOG-REMOTE-01",
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.17",
+      "title": "Device clocks follow an agreed time source",
+      "status": "not applicable",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.19",
+      "title": "What runs on live systems is controlled; nothing unneeded is enabled",
+      "status": "not applicable",
+      "rules": [
+        "SVC-LEGACY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.20",
+      "title": "Networks and network devices are secured and managed",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01",
+        "FILTER-UNTRUSTED-INGRESS-01",
+        "MGMT-HTTP-01",
+        "MGMT-SESSION-TIMEOUT-01",
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01",
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01",
+        "SVC-PROXY-ARP-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.22",
+      "title": "Networks are split into zones and traffic between them is controlled",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01",
+        "FILTER-UNTRUSTED-INGRESS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.24",
+      "title": "Cryptography is used, and used correctly, where it is required",
+      "status": "not applicable",
+      "rules": [
+        "MGMT-SSH-V2-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.32",
+      "title": "Changes to systems follow a controlled process",
+      "status": "not applicable",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     }
   ],
   "findings": [

@@ -1,0 +1,202 @@
+# Rules -> DISA STIG rules, per vendor benchmark (PLAN §12.4; TODO M2.56).
+#
+# Each entry was matched by reading the STIG rule's title, check and fix text against the rule's
+# assertion. `covers` says how far the rule decides the STIG rule; `note` says what it leaves out.
+# The crosswalk lint checks every STIG rule shares a NIST SP 800-53 base control with the rule
+# (through its CCIs); `bridge_note` explains the few that DISA files under an unrelated control.
+format_version: 1
+framework: disa_stig
+entries:
+  # --- Cisco IOS XE Router NDM V3R7 + RTR V3R5 ------------------------------------------------
+  - {rule: AAA-CENTRAL-AUTH-01, vendor: cisco_ios_xe, controls: [CISC-ND-001370], source: authored, covers: part,
+     note: "The STIG asks for at least two authentication servers; the rule checks that one is in use.",
+     bridge_note: "DISA files this under CM-6(1) through its CCI; the requirement itself is central authentication of administrators (AC-2(1), IA-2)."}
+  - {rule: AAA-LOCKOUT-01, vendor: cisco_ios_xe, controls: [CISC-ND-000150], source: authored, covers: part,
+     note: "The STIG asks for three attempts and a 15-minute lockout; the rule accepts up to five attempts."}
+  - {rule: AAA-PASSWORD-ENCRYPTION-01, vendor: cisco_ios_xe, controls: [CISC-ND-000620], source: authored}
+  - {rule: AAA-PASSWORD-MIN-LENGTH-01, vendor: cisco_ios_xe, controls: [CISC-ND-000550], source: authored}
+  - {rule: FILTER-UNTRUSTED-INGRESS-01, vendor: cisco_ios_xe, controls: [CISC-RT-000330], source: authored, covers: part,
+     note: "Checks that each interface Kasauti finds untrusted filters inbound traffic, not what the filter allows."}
+  - {rule: LOG-CONFIG-CHANGE-01, vendor: cisco_ios_xe, controls: [CISC-ND-001270], source: authored}
+  - {rule: LOG-CONFIG-CHANGE-01, vendor: cisco_ios_xe, controls: [CISC-ND-000210], source: authored, covers: part,
+     note: "The STIG also asks for `logging userinfo`; the rule checks configuration-change logging."}
+  - {rule: LOG-REMOTE-01, vendor: cisco_ios_xe, controls: [CISC-ND-001450], source: authored, covers: part,
+     note: "The STIG asks for at least two syslog servers; the rule checks for one."}
+  - {rule: LOG-TIMESTAMPS-01, vendor: cisco_ios_xe, controls: [CISC-ND-000280], source: authored}
+  - {rule: MGMT-BANNER-01, vendor: cisco_ios_xe, controls: [CISC-ND-000160], source: authored, covers: part,
+     note: "The STIG asks for the DoD Notice and Consent text; the rule checks a banner is shown."}
+  - {rule: MGMT-HTTP-01, vendor: cisco_ios_xe, controls: [CISC-ND-000470], source: authored, covers: part,
+     note: "One of the insecure services the STIG rule covers."}
+  - {rule: MGMT-SESSION-TIMEOUT-01, vendor: cisco_ios_xe, controls: [CISC-ND-000720], source: authored, covers: part,
+     note: "The STIG asks for 5 minutes; the rule accepts up to 10."}
+  - {rule: MGMT-SSH-V2-01, vendor: cisco_ios_xe, controls: [CISC-ND-001210], source: authored, covers: part,
+     note: "SSH v1 fails the STIG's approved-cipher requirement; the ciphers themselves aren't checked.",
+     bridge_note: "DISA files remote-management encryption under MA-4(6) (nonlocal maintenance); the rule anchors the same protection as AC-17(2)/SC-8."}
+  - {rule: MGMT-TELNET-01, vendor: cisco_ios_xe, controls: [CISC-ND-000470], source: authored, covers: part,
+     note: "One of the insecure services the STIG rule covers."}
+  - {rule: MGMT-TELNET-01, vendor: cisco_ios_xe, controls: [CISC-ND-001210], source: authored, covers: part,
+     note: "Telnet carries management sessions unencrypted, which the STIG forbids; the SSH ciphers aren't checked.",
+     bridge_note: "DISA files remote-management encryption under MA-4(6) (nonlocal maintenance); the rule anchors the same protection as AC-17(2)/SC-8."}
+  - {rule: MGMT-VTY-ACL-01, vendor: cisco_ios_xe, controls: [CISC-ND-000140], source: authored, covers: part,
+     note: "Checks each vty line has an access-class, not which addresses it admits.",
+     bridge_note: "DISA files management-access ACLs under AC-4 (information flow); the rule anchors them as access enforcement (AC-3, AC-17)."}
+  - {rule: MGMT-VTY-ACL-02, vendor: cisco_ios_xe, controls: [CISC-ND-000140], source: authored, covers: part,
+     note: "Checks the access-class exists and doesn't admit everyone.",
+     bridge_note: "DISA files management-access ACLs under AC-4 (information flow); the rule anchors them as access enforcement (AC-3, AC-17)."}
+  - {rule: MGMT-WEB-ACL-01, vendor: cisco_ios_xe, controls: [CISC-ND-000140], source: authored, covers: part,
+     note: "Checks the web server has an access-class, not which addresses it admits.",
+     bridge_note: "DISA files management-access ACLs under AC-4 (information flow); the rule anchors them as access enforcement (AC-3, AC-17)."}
+  - {rule: SNMP-COMMUNITY-01, vendor: cisco_ios_xe, controls: [CISC-ND-001130], source: authored, covers: part,
+     note: "The STIG asks for SNMPv3 with HMAC; a well-known or writable community fails it, but a private v2c community doesn't pass it.",
+     bridge_note: "DISA files SNMP authentication under IA-3(1) (device authentication); the rule anchors community strings as authenticators (IA-5)."}
+  - {rule: SVC-LEGACY-01, vendor: cisco_ios_xe, controls: [CISC-ND-000470], source: authored, covers: part,
+     note: "The legacy services the rule knows are among those the STIG rule covers."}
+  - {rule: SVC-PROXY-ARP-01, vendor: cisco_ios_xe, controls: [CISC-RT-000380], source: authored, covers: stricter,
+     note: "The STIG asks only external interfaces; the rule asks every interface."}
+  - {rule: TIME-NTP-AUTH-01, vendor: cisco_ios_xe, controls: [CISC-ND-001150], source: authored}
+
+  # --- Arista MLS EOS 4.x NDM V2R2 + Router V2R2 ----------------------------------------------
+  - {rule: AAA-CENTRAL-AUTH-01, vendor: arista_eos, controls: [ARST-ND-000810], source: authored,
+     bridge_note: "DISA files this under CM-6(1) through its CCI; the requirement itself is central authentication of administrators (AC-2(1), IA-2)."}
+  - {rule: AAA-LOCKOUT-01, vendor: arista_eos, controls: [ARST-ND-000120], source: authored, covers: part,
+     note: "The STIG asks for three attempts; the rule accepts up to five."}
+  - {rule: AAA-PASSWORD-MIN-LENGTH-01, vendor: arista_eos, controls: [ARST-ND-000380], source: authored}
+  - {rule: FILTER-PERMIT-ANY-01, vendor: arista_eos, controls: [ARST-RT-000330], source: authored, covers: part,
+     note: "A permit-everything entry breaks deny-by-default; the rest of the filter isn't judged."}
+  - {rule: FILTER-UNTRUSTED-INGRESS-01, vendor: arista_eos, controls: [ARST-RT-000370], source: authored, covers: part,
+     note: "Checks that each interface Kasauti finds untrusted filters inbound traffic, not what the filter allows."}
+  - {rule: LOG-CONFIG-CHANGE-01, vendor: arista_eos, controls: [ARST-ND-000150], source: authored, covers: part,
+     note: "The STIG covers all administrator activity (AAA accounting); the rule checks configuration changes."}
+  - {rule: LOG-REMOTE-01, vendor: arista_eos, controls: [ARST-ND-000850], source: authored}
+  - {rule: MGMT-BANNER-01, vendor: arista_eos, controls: [ARST-ND-000130], source: authored, covers: part,
+     note: "The STIG asks for the DoD Notice and Consent text; the rule checks a banner is shown."}
+  - {rule: MGMT-HTTP-01, vendor: arista_eos, controls: [ARST-ND-000340], source: authored, covers: part,
+     note: "One of the insecure services the STIG rule covers."}
+  - {rule: MGMT-SESSION-TIMEOUT-01, vendor: arista_eos, controls: [ARST-ND-000490], source: authored}
+  - {rule: MGMT-SSH-V2-01, vendor: arista_eos, controls: [ARST-ND-000700], source: authored, covers: part,
+     note: "SSH v1 fails the STIG's approved-cipher requirement; the ciphers themselves aren't checked.",
+     bridge_note: "DISA files remote-management encryption under MA-4(6) (nonlocal maintenance); the rule anchors the same protection as AC-17(2)/SC-8."}
+  - {rule: MGMT-TELNET-01, vendor: arista_eos, controls: [ARST-ND-000340], source: authored, covers: part,
+     note: "One of the insecure services the STIG rule covers."}
+  - {rule: MGMT-TELNET-01, vendor: arista_eos, controls: [ARST-ND-000700], source: authored, covers: part,
+     note: "Telnet carries management sessions unencrypted, which the STIG forbids; the SSH ciphers aren't checked.",
+     bridge_note: "DISA files remote-management encryption under MA-4(6) (nonlocal maintenance); the rule anchors the same protection as AC-17(2)/SC-8."}
+  - {rule: MGMT-VTY-ACL-01, vendor: arista_eos, controls: [ARST-ND-000110], source: authored, covers: part,
+     note: "Checks that remote management has an access list, not which addresses it admits.",
+     bridge_note: "DISA files management-access ACLs under AC-4 (information flow); the rule anchors them as access enforcement (AC-3, AC-17)."}
+  - {rule: MGMT-VTY-ACL-02, vendor: arista_eos, controls: [ARST-ND-000110], source: authored, covers: part,
+     note: "Checks the access list exists and doesn't admit everyone.",
+     bridge_note: "DISA files management-access ACLs under AC-4 (information flow); the rule anchors them as access enforcement (AC-3, AC-17)."}
+  - {rule: MGMT-WEB-ACL-01, vendor: arista_eos, controls: [ARST-ND-000110], source: authored, covers: part,
+     note: "Checks web management has an access list, not which addresses it admits.",
+     bridge_note: "DISA files management-access ACLs under AC-4 (information flow); the rule anchors them as access enforcement (AC-3, AC-17)."}
+  - {rule: SNMP-COMMUNITY-01, vendor: arista_eos, controls: [ARST-ND-000660], source: authored, covers: part,
+     note: "The STIG asks for SNMPv3 with HMAC; a well-known or writable community fails it, but a private v2c community doesn't pass it.",
+     bridge_note: "DISA files SNMP authentication under IA-3(1) (device authentication); the rule anchors community strings as authenticators (IA-5)."}
+  - {rule: SVC-LEGACY-01, vendor: arista_eos, controls: [ARST-ND-000340], source: authored, covers: part,
+     note: "The legacy services the rule knows are among those the STIG rule covers."}
+  - {rule: SVC-PROXY-ARP-01, vendor: arista_eos, controls: [ARST-RT-000640], source: authored, covers: stricter,
+     note: "The STIG asks only external interfaces; the rule asks every interface."}
+  - {rule: TIME-NTP-AUTH-01, vendor: arista_eos, controls: [ARST-ND-000600], source: authored, covers: part,
+     note: "The STIG also asks for redundant time sources; the rule checks they are authenticated."}
+
+  # --- Juniper SRX Services Gateway NDM V3R3 + ALG V3R3 ---------------------------------------
+  - {rule: AAA-CENTRAL-AUTH-01, vendor: juniper_junos, controls: [JUSX-DM-000097], source: authored}
+  - {rule: AAA-LOCAL-PASSWORD-HASH-01, vendor: juniper_junos, controls: [JUSX-DM-000136], source: authored}
+  - {rule: AAA-LOCKOUT-01, vendor: juniper_junos, controls: [JUSX-DM-000030], source: authored, covers: part,
+     note: "The STIG asks for three attempts; the rule accepts up to five."}
+  - {rule: AAA-PASSWORD-MIN-LENGTH-01, vendor: juniper_junos, controls: [JUSX-DM-000128], source: authored}
+  - {rule: FILTER-PERMIT-ANY-01, vendor: juniper_junos, controls: [JUSX-AG-000128], source: authored, covers: part,
+     note: "A permit-everything entry breaks deny-by-default; the rest of the policy isn't judged."}
+  - {rule: FILTER-UNTRUSTED-INGRESS-01, vendor: juniper_junos, controls: [JUSX-AG-000126], source: authored, covers: part,
+     note: "Checks that each interface Kasauti finds untrusted is in a zone or filtered, not what is allowed in."}
+  - {rule: LOG-CONFIG-CHANGE-01, vendor: juniper_junos, controls: [JUSX-DM-000040], source: authored}
+  - {rule: LOG-REMOTE-01, vendor: juniper_junos, controls: [JUSX-AG-000057], source: authored, covers: part,
+     note: "The STIG also asks for security (screen and policy) logs in structured form; the rule checks a syslog host."}
+  - {rule: LOG-TIMESTAMPS-01, vendor: juniper_junos, controls: [JUSX-DM-000065], source: authored, covers: part,
+     note: "The STIG asks for UTC; the rule checks that date and time are recorded."}
+  - {rule: MGMT-BANNER-01, vendor: juniper_junos, controls: [JUSX-DM-000032], source: authored, covers: part,
+     note: "The STIG asks for the DoD Notice and Consent text; the rule checks a banner is shown."}
+  - {rule: MGMT-HTTP-01, vendor: juniper_junos, controls: [JUSX-DM-000109, JUSX-DM-000167], source: authored, covers: part,
+     note: "Web management over HTTP breaks both; the STIG also forbids J-Web over HTTPS."}
+  - {rule: MGMT-SESSION-TIMEOUT-01, vendor: juniper_junos, controls: [JUSX-DM-000156], source: authored}
+  - {rule: MGMT-SSH-V2-01, vendor: juniper_junos, controls: [JUSX-DM-000150], source: authored, covers: part,
+     note: "SSH v1 fails the STIG's SSHv2-with-privacy requirement; the ciphers themselves aren't checked.",
+     bridge_note: "DISA files remote-management encryption under MA-4(6) (nonlocal maintenance); the rule anchors the same protection as AC-17(2)/SC-8."}
+  - {rule: MGMT-TELNET-01, vendor: juniper_junos, controls: [JUSX-DM-000109], source: authored, covers: part,
+     note: "Telnet is one of the insecure protocols the STIG rule removes."}
+  - {rule: SNMP-COMMUNITY-01, vendor: juniper_junos, controls: [JUSX-DM-000111], source: authored, covers: part,
+     note: "The STIG asks for SNMPv3; a well-known or writable community fails it, but a private v2c community doesn't pass it.",
+     bridge_note: "DISA files this under CM-7 and IA-3(1); the rule anchors community strings as authenticators (IA-5)."}
+  - {rule: SVC-LEGACY-01, vendor: juniper_junos, controls: [JUSX-DM-000108], source: authored, covers: part,
+     note: "The legacy services the rule knows are among those the STIG rule covers."}
+
+  # --- FortiGate Firewall NDM V1R5 + Firewall V1R4 -------------------------------------------
+  - {rule: AAA-CENTRAL-AUTH-01, vendor: fortinet_fortios, controls: [FGFW-ND-000165], source: authored, covers: part,
+     note: "The STIG asks for LDAP specifically; the rule accepts any central server.",
+     bridge_note: "DISA files this under CM-6(1) through its CCI; the requirement itself is central authentication of administrators (AC-2(1), IA-2)."}
+  - {rule: AAA-LOCKOUT-01, vendor: fortinet_fortios, controls: [FGFW-ND-000045], source: authored, covers: part,
+     note: "The STIG asks for three attempts; the rule accepts up to five."}
+  - {rule: AAA-PASSWORD-MIN-LENGTH-01, vendor: fortinet_fortios, controls: [FGFW-ND-000220], source: authored}
+  - {rule: FILTER-PERMIT-ANY-01, vendor: fortinet_fortios, controls: [FNFG-FW-000085], source: authored, covers: part,
+     note: "A permit-everything policy lets unregistered traffic in; the rest of the policy isn't judged."}
+  - {rule: FILTER-UNTRUSTED-INGRESS-01, vendor: fortinet_fortios, controls: [FNFG-FW-000115], source: authored, covers: part,
+     note: "Checks that each interface Kasauti finds untrusted is filtered, not what is allowed in."}
+  - {rule: LOG-CONFIG-CHANGE-01, vendor: fortinet_fortios, controls: [FGFW-ND-000080], source: authored, covers: part,
+     note: "The STIG covers all privileged activity; the rule checks configuration changes."}
+  - {rule: LOG-REMOTE-01, vendor: fortinet_fortios, controls: [FGFW-ND-000110], source: authored}
+  - {rule: LOG-TIMESTAMPS-01, vendor: fortinet_fortios, controls: [FGFW-ND-000125], source: authored, covers: part,
+     note: "The STIG asks for UTC-mappable time; the rule checks that date and time are recorded."}
+  - {rule: MGMT-BANNER-01, vendor: fortinet_fortios, controls: [FGFW-ND-000050], source: authored, covers: part,
+     note: "The STIG asks for the DoD Notice and Consent text; the rule checks a banner is shown."}
+  - {rule: MGMT-HTTP-01, vendor: fortinet_fortios, controls: [FGFW-ND-000200], source: authored, covers: part,
+     note: "One of the insecure services the STIG rule covers."}
+  - {rule: MGMT-SESSION-TIMEOUT-01, vendor: fortinet_fortios, controls: [FGFW-ND-000275], source: authored}
+  - {rule: MGMT-SSH-V2-01, vendor: fortinet_fortios, controls: [FGFW-ND-000265], source: authored, covers: part,
+     note: "SSH v1 fails the STIG's approved-cipher requirement; the ciphers themselves aren't checked.",
+     bridge_note: "DISA files remote-management encryption under MA-4(6) (nonlocal maintenance); the rule anchors the same protection as AC-17(2)/SC-8."}
+  - {rule: MGMT-TELNET-01, vendor: fortinet_fortios, controls: [FGFW-ND-000200], source: authored, covers: part,
+     note: "One of the insecure services the STIG rule covers."}
+  - {rule: MGMT-TELNET-01, vendor: fortinet_fortios, controls: [FGFW-ND-000265], source: authored, covers: part,
+     note: "Telnet carries management sessions unencrypted, which the STIG forbids; the SSH ciphers aren't checked.",
+     bridge_note: "DISA files remote-management encryption under MA-4(6) (nonlocal maintenance); the rule anchors the same protection as AC-17(2)/SC-8."}
+  - {rule: SNMP-COMMUNITY-01, vendor: fortinet_fortios, controls: [FGFW-ND-000210], source: authored, covers: part,
+     note: "The STIG asks for SNMPv3 with HMAC; a well-known or writable community fails it, but a private v2c community doesn't pass it.",
+     bridge_note: "DISA files SNMP authentication under IA-3(1) (device authentication); the rule anchors community strings as authenticators (IA-5)."}
+  - {rule: SVC-LEGACY-01, vendor: fortinet_fortios, controls: [FGFW-ND-000200], source: authored, covers: part,
+     note: "The legacy services the rule knows are among those the STIG rule covers."}
+  - {rule: TIME-NTP-AUTH-01, vendor: fortinet_fortios, controls: [FGFW-ND-000215], source: authored}
+
+  # --- Palo Alto Networks NDM V3R4 + ALG V3R4 (sunset by DISA, no successor) -----------------
+  - {rule: AAA-CENTRAL-AUTH-01, vendor: paloalto_panos, controls: [PANW-NM-000136], source: authored,
+     bridge_note: "DISA files this under CM-6 and CM-6(1) through its CCI; the requirement itself is central authentication of administrators (AC-2(1), IA-2)."}
+  - {rule: AAA-LOCKOUT-01, vendor: paloalto_panos, controls: [PANW-NM-000015], source: authored, covers: part,
+     note: "The STIG asks for three attempts; the rule accepts up to five."}
+  - {rule: AAA-PASSWORD-MIN-LENGTH-01, vendor: paloalto_panos, controls: [PANW-NM-000053], source: authored}
+  - {rule: FILTER-PERMIT-ANY-01, vendor: paloalto_panos, controls: [PANW-AG-000051], source: authored, covers: part,
+     note: "A permit-everything rule breaks deny-by-default; the rest of the rulebase isn't judged."}
+  - {rule: LOG-REMOTE-01, vendor: paloalto_panos, controls: [PANW-NM-000128], source: authored}
+  - {rule: LOG-TIMESTAMPS-01, vendor: paloalto_panos, controls: [PANW-NM-000101], source: authored, covers: part,
+     note: "The STIG asks for UTC-mappable time; the rule checks that date and time are recorded."}
+  - {rule: MGMT-BANNER-01, vendor: paloalto_panos, controls: [PANW-NM-000016], source: authored, covers: part,
+     note: "The STIG asks for the DoD Notice and Consent text; the rule checks a banner is shown."}
+  - {rule: MGMT-HTTP-01, vendor: paloalto_panos, controls: [PANW-NM-000046], source: authored, covers: part,
+     note: "One of the insecure services the STIG rule covers."}
+  - {rule: MGMT-HTTP-01, vendor: paloalto_panos, controls: [PANW-NM-000061], source: authored, covers: part,
+     note: "The STIG turns off both HTTP and Telnet on the management interface; the rule checks HTTP.",
+     bridge_note: "DISA files unencrypted management protocols under IA-5(1) (passwords sent in clear); the rule anchors them as CM-7/SC-8."}
+  - {rule: MGMT-SESSION-TIMEOUT-01, vendor: paloalto_panos, controls: [PANW-NM-000069], source: authored}
+  - {rule: MGMT-SSH-V2-01, vendor: paloalto_panos, controls: [PANW-NM-000117], source: authored, covers: part,
+     note: "SSH v1 fails the STIG's secure-protocols requirement; the ciphers themselves aren't checked.",
+     bridge_note: "DISA files remote-management encryption under MA-4(6) (nonlocal maintenance); the rule anchors the same protection as AC-17(2)/SC-8."}
+  - {rule: MGMT-TELNET-01, vendor: paloalto_panos, controls: [PANW-NM-000046], source: authored, covers: part,
+     note: "One of the insecure services the STIG rule covers."}
+  - {rule: MGMT-TELNET-01, vendor: paloalto_panos, controls: [PANW-NM-000061], source: authored, covers: part,
+     note: "The STIG turns off both HTTP and Telnet on the management interface; the rule checks Telnet.",
+     bridge_note: "DISA files unencrypted management protocols under IA-5(1) (passwords sent in clear); the rule anchors them as CM-7/SC-8."}
+  - {rule: SNMP-COMMUNITY-01, vendor: paloalto_panos, controls: [PANW-NM-000118], source: authored, covers: part,
+     note: "The STIG forbids SNMP v1 and v2c; a well-known or writable community fails it, but a private v2c community doesn't pass it.",
+     bridge_note: "DISA files this under MA-4(6) (nonlocal maintenance); the rule anchors community strings as authenticators (IA-5)."}
+  - {rule: SVC-LEGACY-01, vendor: paloalto_panos, controls: [PANW-NM-000046], source: authored, covers: part,
+     note: "The legacy services the rule knows are among those the STIG rule covers."}
+  - {rule: TIME-NTP-AUTH-01, vendor: paloalto_panos, controls: [PANW-NM-000145], source: authored}

@@ -4,7 +4,7 @@ description: PAN-OS 11.1.2 branch firewall with 14 planted weaknesses (P1-P14)
 input: authored/paloalto_panos/weak.xml
 input_sha256: 845b94ce8f00e3c62b19f9b4435d7e0a1cf980a608d3e9a4d8fb9ca36bceb75f
 vendor: null
-frameworks: [nist_800_53r5]
+frameworks: [nist_800_53r5, disa_stig, iso_27001_2022]
 expected_statuses:
   AAA-CENTRAL-AUTH-01: FAIL     # P5 no TACACS+/RADIUS/LDAP server profile
   AAA-LOCAL-PASSWORD-HASH-01: FAIL     # P4 admin phash $1$ (MD5-crypt)

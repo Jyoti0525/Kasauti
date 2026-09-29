@@ -22,6 +22,7 @@ dependencies = [
     "sqlalchemy>=2.1.1,<2.2",       # MIT (+ typing-extensions PSF-2.0); sync API, no greenlet
     "alembic>=1.20,<2",             # MIT (+ Mako MIT, MarkupSafe BSD-3); schema migrations
     "cryptography>=50.0.1,<51",     # Apache-2.0 OR BSD-3-Clause (+ cffi MIT-0, pycparser BSD-3)
+    "argon2-cffi>=25.1,<26",        # MIT (+ argon2-cffi-bindings MIT); Argon2id password hashes
 ]
 
 [project.scripts]

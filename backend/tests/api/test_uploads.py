@@ -21,6 +21,7 @@ import httpx2 as httpx
 import pytest
 from fastapi.testclient import TestClient
 
+from kasauti.accounts import DEMO_ACCOUNTS
 from kasauti.api.jobs import accepts_gzip
 from kasauti.audit import audit
 from kasauti.ingest import upload
@@ -525,7 +526,7 @@ def test_the_installed_kasauti_serve_runs_an_upload_to_its_audit(tmp_path: Path)
     server = subprocess.Popen(
         [
             *(command, "serve", "--port", str(port), "--packs", str(PACKS)),
-            *("--workers", "1", "--worker-memory", "1024"),
+            *("--workers", "1", "--worker-memory", "1024", "--demo-accounts"),
         ],
         env=env,
         stdout=subprocess.DEVNULL,
@@ -542,6 +543,9 @@ def test_the_installed_kasauti_serve_runs_an_upload_to_its_audit(tmp_path: Path)
                     pass
                 assert time.monotonic() < deadline, "the server didn't come up"
                 time.sleep(0.2)
+            password = next(p for u, _, _, p in DEMO_ACCOUNTS if u == "asha")
+            login = {"username": "asha", "password": password}
+            assert http.post("/api/auth/login", json=login, headers=GUARD).status_code == 200
             upload_id = http.post("/api/uploads", json={}, headers=GUARD).json()["id"]
             http.post(
                 f"/api/uploads/{upload_id}/files",

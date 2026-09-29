@@ -1,7 +1,7 @@
 import { ArrowRight, ChevronRight, ServerCog } from "lucide-react";
 import { Link } from "react-router";
 import { useAudits, useKb, usePackName } from "../api/hooks";
-import { DotCount, Meter, Posture } from "../components/charts";
+import { DotCount, FrameworkStrip, Meter, Posture } from "../components/charts";
 import {
   Card,
   Empty,
@@ -119,6 +119,7 @@ export function Dashboard() {
         }
         scope={`across ${devices.length} device${devices.length === 1 ? "" : "s"}`}
       />
+      <FrameworkStrip scores={[...frameworks].map(([id, f]) => ({ framework: id, ...f }))} />
 
       <div className="mb-6 grid gap-6 lg:grid-cols-12">
         <Card

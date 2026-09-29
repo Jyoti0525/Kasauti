@@ -1,6 +1,8 @@
-import { Monitor, Moon, Plus, ShieldCheck, Sun } from "lucide-react";
-import { Link, NavLink, Outlet, useLocation } from "react-router";
-import { useHealth } from "../api/hooks";
+import { useQueryClient } from "@tanstack/react-query";
+import { LogOut, Monitor, Moon, Plus, ShieldCheck, Sun } from "lucide-react";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { api } from "../api/client";
+import { may, useHealth, useMe } from "../api/hooks";
 import { shortHash } from "../lib/format";
 import { type ThemeChoice, useTheme } from "../lib/theme";
 import { Lockup } from "./Brand";
@@ -11,12 +13,14 @@ const NAV = [
   { to: "/audits", label: "Audits", end: false, also: ["/uploads", "/devices"] },
   { to: "/knowledge", label: "Knowledge base", end: false },
   { to: "/rules", label: "Rules", end: false },
+  { to: "/studio", label: "Training Studio", end: false },
 ];
 
 export function Layout() {
   const health = useHealth();
   const { pathname } = useLocation();
   const onNewAudit = pathname.startsWith("/audits/new");
+  const me = useMe().data;
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 border-b border-basalt-line bg-basalt text-on-basalt">
@@ -49,21 +53,24 @@ export function Layout() {
           <div className="ml-auto flex items-center gap-4">
             <ThemeSwitch />
             <span
-              className="hidden items-center gap-1.5 text-xs text-on-basalt md:inline-flex"
+              className="hidden items-center gap-1.5 text-xs text-on-basalt 2xl:inline-flex"
               title="Kasauti listens on this machine only and calls no cloud service. Uploaded files are audited and deleted."
             >
               <ShieldCheck className="size-3.5 text-pass" aria-hidden />
               Runs on this machine only
             </span>
-            <Link
-              to="/audits/new"
-              className={cx(
-                "inline-flex items-center gap-1.5 rounded-lg bg-brass px-3 py-1.5 text-[13px] font-semibold text-on-brass shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition hover:brightness-110",
-                onNewAudit && "ring-2 ring-brass/40 ring-offset-2 ring-offset-basalt",
-              )}
-            >
-              <Plus className="size-4" strokeWidth={2.5} aria-hidden /> New audit
-            </Link>
+            {may(me?.role, "auditor") && (
+              <Link
+                to="/audits/new"
+                className={cx(
+                  "inline-flex items-center gap-1.5 rounded-lg bg-brass px-3 py-1.5 text-[13px] font-semibold text-on-brass shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition hover:brightness-110",
+                  onNewAudit && "ring-2 ring-brass/40 ring-offset-2 ring-offset-basalt",
+                )}
+              >
+                <Plus className="size-4" strokeWidth={2.5} aria-hidden /> New audit
+              </Link>
+            )}
+            <Account />
           </div>
         </div>
       </header>
@@ -96,6 +103,45 @@ export function Layout() {
           <span className="ml-auto">No cloud calls · uploaded files are deleted after audit</span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function Account() {
+  const me = useMe().data;
+  const queries = useQueryClient();
+  const navigate = useNavigate();
+  if (!me) return null;
+  const signOut = async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } finally {
+      queries.clear();
+      queries.setQueryData(["me"], null);
+      navigate("/login", { replace: true });
+    }
+  };
+  return (
+    <div className="flex items-center gap-1 border-l border-basalt-line pl-4">
+      <span
+        className="grid size-7 place-items-center rounded-full bg-basalt-2 text-[12.5px] font-semibold text-brass shadow-[inset_0_0_0_1px_var(--basalt-line)]"
+        aria-hidden
+      >
+        {me.name.slice(0, 1).toUpperCase()}
+      </span>
+      <span className="ml-1.5 hidden flex-col leading-tight sm:flex">
+        <span className="text-[12.5px] font-medium text-white">{me.name}</span>
+        <span className="text-[11px] text-on-basalt">{me.role}</span>
+      </span>
+      <button
+        type="button"
+        onClick={() => void signOut()}
+        title="Sign out"
+        aria-label={`Sign out ${me.name}`}
+        className="ml-2 grid size-7 place-items-center rounded-md text-on-basalt transition-colors hover:bg-basalt-2 hover:text-white"
+      >
+        <LogOut className="size-3.5" aria-hidden />
+      </button>
     </div>
   );
 }

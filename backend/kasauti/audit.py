@@ -29,7 +29,9 @@ from kasauti.identity.resolve import companion_value, resolve_identity
 from kasauti.ingest.mask import mask_secrets
 from kasauti.ingest.model import Artifact
 from kasauti.mapping.engine import apply_mappings
+from kasauti.mapping.model import RefEffect
 from kasauti.mapping.setform import parse_config
+from kasauti.packs.crosswalk import citations, covered, order
 from kasauti.packs.loader import (
     FrameworkPack,
     PackError,
@@ -38,10 +40,12 @@ from kasauti.packs.loader import (
     load_framework_pack,
     load_ruleset,
     load_vendor_packs,
+    with_learned,
 )
 from kasauti.remediation.engine import EntityFacts, Outcome, remediate
 from kasauti.remediation.lint import recipe_problems
 from kasauti.remediation.model import Remediation
+from kasauti.rules import expr as ex
 from kasauti.rules.engine import NOTHING_IN_SCOPE, evaluate_rules
 from kasauti.rules.enrich import apply_default_role, apply_inferences
 from kasauti.rules.evaluate import with_derived
@@ -49,9 +53,10 @@ from kasauti.rules.model import Domain, Finding, Severity, Status
 from kasauti.rules.scoring import (
     FRAMEWORKS,
     NIST,
+    Cited,
     ControlStatus,
+    control_matrix,
     framework_score,
-    nist_controls,
     rule_statuses,
 )
 from kasauti.sbm.document import OUTSIDE, SecurityBaselineModel
@@ -82,11 +87,14 @@ class KnowledgeBase:
     """SHA-256 over the rule and derivation files only."""
 
 
-def load_kb(packs_root: Path) -> KnowledgeBase:
-    """The knowledge base under ``packs_root``. :class:`PackError` if a pack is invalid, or if
-    there is no vendor pack, framework or rule: a server or audit started in the wrong folder
-    must stop and say so, not run with nothing to judge by."""
+def load_kb(packs_root: Path, learned: Path | None = None) -> KnowledgeBase:
+    """The knowledge base under ``packs_root``, plus the mappings taught in the Training Studio
+    under ``learned`` (the server's ``<data dir>/learned``). :class:`PackError` if a pack is
+    invalid, or if there is no vendor pack, framework or rule: a server or audit started in the
+    wrong folder must stop and say so, not run with nothing to judge by."""
     vendor = load_vendor_packs(packs_root)
+    if learned is not None:
+        vendor = with_learned(vendor, learned)
     frameworks = {
         fw.catalog.framework: fw
         for fw in (load_framework_pack(d) for d in sorted((packs_root / "frameworks").glob("*/")))
@@ -115,12 +123,12 @@ def load_kb(packs_root: Path) -> KnowledgeBase:
         vendor_packs=vendor,
         ruleset=ruleset,
         frameworks=frameworks,
-        version=_tree_hash(packs_root, (*CONTENT_DIRS, "vendors", "frameworks")),
+        version=_tree_hash(packs_root, (*CONTENT_DIRS, "vendors", "frameworks"), learned),
         ruleset_version=_tree_hash(packs_root, CONTENT_DIRS),
     )
 
 
-def _tree_hash(root: Path, parts: Sequence[str]) -> str:
+def _tree_hash(root: Path, parts: Sequence[str], learned: Path | None = None) -> str:
     """Content hash of pack files. Line endings are normalised first: packs are text, and a
     Windows checkout (CRLF) must report the same knowledge-base version as a Linux one (LF).
     Exact-byte integrity is the job of pack signatures (TODO M5.08), not of this version id."""
@@ -131,6 +139,12 @@ def _tree_hash(root: Path, parts: Sequence[str]) -> str:
                 digest.update(path.relative_to(root).as_posix().encode() + b"\0")
                 content = path.read_bytes().replace(b"\r\n", b"\n")
                 digest.update(hashlib.sha256(content).digest())
+    if learned is not None and learned.is_dir():
+        # What the Studio taught is part of the knowledge base, so it changes the version.
+        for path in sorted(learned.rglob("*.yaml")):
+            digest.update(b"learned/" + path.relative_to(learned).as_posix().encode() + b"\0")
+            content = path.read_bytes().replace(b"\r\n", b"\n")
+            digest.update(hashlib.sha256(content).digest())
     return digest.hexdigest()
 
 
@@ -208,6 +222,9 @@ class RuleResult(_Out):
     severity: Severity
     nist_800_53r5: tuple[str, ...]
     hardening_best_practice: bool
+    controls: dict[str, tuple[str, ...]] = {}
+    """Framework -> the controls this rule is mapped to on this device, for each selected
+    framework other than NIST (whose anchors are ``nist_800_53r5``)."""
 
 
 class FrameworkScore(_Out):
@@ -219,13 +236,24 @@ class FrameworkScore(_Out):
     not_applicable: int
     compliance_pct: float | None
     coverage_pct: float | None
+    note: str = ""
+    """Why the framework judges nothing here, when it doesn't (no STIG for this platform)."""
+    benchmarks: tuple[str, ...] = ()
+    """The vendor benchmarks applied (``Cisco IOS XE Router NDM V3R7``), for per-vendor
+    frameworks."""
 
 
 class ControlResult(_Out):
+    framework: str = NIST
     control: str
     title: str
     status: ControlStatus
     rules: tuple[str, ...]
+    severity: str | None = None
+    """DISA's category for a STIG rule: high (CAT I), medium (CAT II), low (CAT III)."""
+    benchmark: str | None = None
+    partial: bool = False
+    """Undetermined because the passing rules check only part of the control."""
 
 
 class UnmappedPattern(_Out):
@@ -319,6 +347,8 @@ def audit(
     unknown = [f for f in frameworks if f not in kb.frameworks]
     if unknown:
         raise AuditError(f"framework(s) not installed: {', '.join(unknown)}")
+    # NIST, the hub every rule anchors to, leads; the others follow in the order asked.
+    frameworks = sorted(dict.fromkeys(frameworks), key=lambda f: f != NIST)
     try:
         by_hand = clean_entered(entered or {})
     except ManualEntryError as err:
@@ -349,7 +379,7 @@ def audit(
         enriched, pack.manifest.default_role, f"{pack.manifest.id}/pack.yaml#default_role"
     )
     sbm = with_derived(enriched, kb.ruleset.derivations)
-    findings = evaluate_rules(sbm, kb.ruleset)
+    findings = _unread_by_pack(evaluate_rules(sbm, kb.ruleset), kb, pack)
     if tree.family is not pack.manifest.shape_family:
         findings = _not_read(findings, kb.ruleset, pack.manifest.shape_family.value)
         warnings.append(
@@ -368,11 +398,10 @@ def audit(
     unmapped = [s for s in mapped.unmapped if s.line_start not in ident.lines]
     # A line identity reads counts once, whether or not a mapping read it too.
     understood = mapped.stats.mapped + len(mapped.unmapped) - len(unmapped)
-    titles = (
-        {c.id: c.title for c in kb.frameworks[NIST].catalog.controls}
-        if NIST in kb.frameworks
-        else {}
-    )
+    cited = {
+        f: citations(f, kb.frameworks.get(f), kb.ruleset.rules, pack.manifest.id)
+        for f in frameworks
+    }
 
     given = "".join(f"|{c.sha256}" for c in sorted(companions, key=lambda c: c.sha256))
     if by_hand:
@@ -408,7 +437,9 @@ def audit(
             original=_outcome_of(
                 findings,
                 statuses,
-                _framework_score(kb, statuses, frameworks[0]).compliance_pct
+                _framework_score(
+                    kb, statuses, frameworks[0], cited[frameworks[0]], pack.manifest.id
+                ).compliance_pct
                 if frameworks
                 else None,
             ),
@@ -450,7 +481,9 @@ def audit(
             frameworks={k: fw.catalog.version for k, fw in sorted(kb.frameworks.items())},
         ),
         frameworks=tuple(frameworks),
-        scores=tuple(_framework_score(kb, statuses, f) for f in frameworks),
+        scores=tuple(
+            _framework_score(kb, statuses, f, cited[f], pack.manifest.id) for f in frameworks
+        ),
         rules=tuple(
             RuleResult(
                 rule_id=r.id,
@@ -460,15 +493,15 @@ def audit(
                 severity=r.severity.base,
                 nist_800_53r5=r.refs.nist_800_53r5,
                 hardening_best_practice=r.hardening_best_practice,
+                controls={
+                    f: tuple(c.control for c in cited[f][r.id])
+                    for f in frameworks
+                    if f != NIST and cited[f][r.id]
+                },
             )
             for r in kb.ruleset.rules
         ),
-        controls=tuple(
-            ControlResult(control=c, title=titles.get(c, ""), status=status, rules=rules)
-            for c, (status, rules) in nist_controls(kb.ruleset.rules, statuses).items()
-        )
-        if NIST in frameworks
-        else (),
+        controls=tuple(c for f in frameworks for c in _controls(kb, f, cited[f], statuses)),
         findings=findings,
         assurance=Assurance(
             statements=mapped.stats.statements,
@@ -622,6 +655,146 @@ ENGINE_WRITES = frozenset(
 _MISSING = re.compile(r"^[A-Za-z]+(?:\[.*\])?\.([a-z_0-9]+): missing$")
 
 
+_MISSING_FACT = re.compile(r"^([A-Za-z]+)(?:\[.*\])?\.([a-z_0-9]+): missing$")
+_MISSING_ANY = re.compile(r"^any ([A-Za-z]+): missing$")
+
+
+def _reads(pack: VendorPack, kb: KnowledgeBase) -> tuple[frozenset[str], frozenset[str]]:
+    """What a pack still being taught can read: the entity types it opens or writes, and the
+    ``Entity.attribute`` facts. The engine's links (a reference resolved) and the role inferred
+    from a description or zone count on the types the pack's own lines produce. The access
+    inferences don't: they carry other vendors' settings over (per-account sources), which a
+    pack that doesn't read those settings can't supply."""
+    attrs = {eff.attr for m in pack.mappings for eff in m.effects}
+    attrs |= {d.attr for d in pack.defaults.defaults if d.attr}
+    types = {a.split(".", 1)[0] for a in attrs}
+    types |= {m.entity.type for m in pack.mappings if m.entity is not None}
+    types |= {d.none_of for d in pack.defaults.defaults if d.none_of}
+    if any(isinstance(eff, RefEffect) for m in pack.mappings for eff in m.effects):
+        types.add("Reference")  # the resolver makes one per name a `ref` effect records
+    attrs |= {f"{t}.{a}" for t in types for a in ENGINE_WRITES}
+    # A role is inferred from a description or a zone, or is the pack's default for the device.
+    attrs |= {f"{t}.role" for t in types if f"{t}.description" in attrs or f"{t}.zone" in attrs}
+    attrs.add("Device.role")
+    return frozenset(types), frozenset(attrs)
+
+
+def _tolerated(kb: KnowledgeBase) -> frozenset[str]:
+    """Attributes whose absence the rules themselves accept: the ``not exists(x) or …`` idiom
+    (a log target with no ``enabled`` setting is on; a filter with no application match matches
+    every application). Their absence is never what a verdict rests on."""
+    names: set[str] = set()
+    sources = [r.assert_ for r in kb.ruleset.rules] + [d.expr for d in kb.ruleset.derivations]
+    sources += [w for r in kb.ruleset.rules if (w := r.for_each.partition(" where ")[2])]
+    for text in sources:
+        try:
+            names |= _optional(ex.parse(text))
+        except ex.ExprError:
+            continue
+    return frozenset(names)
+
+
+def _optional(node: ex.Expr | None) -> set[str]:
+    match node:
+        case ex.BoolOp(op="or", operands=operands):
+            found = {
+                o.operand.ref.parts[-1]
+                for o in operands
+                if isinstance(o, ex.Not) and isinstance(o.operand, ex.Exists)
+            }
+            return found.union(*(_optional(o) for o in operands))
+        case ex.BoolOp(operands=operands):
+            return set().union(*(_optional(o) for o in operands))
+        case ex.Not(operand=operand):
+            return _optional(operand)
+        case ex.Quant(where=where, test=test):
+            return _optional(where) | _optional(test)
+        case ex.Compare(left=left, right=right):
+            return _optional(left) | _optional(right)
+        case _:
+            return set()
+
+
+def _scope_attrs(where: ex.Expr | None) -> set[str]:
+    """Attributes of the scope's own entity a rule's ``where`` filter reads."""
+    if where is None:
+        return set()
+    match where:
+        case ex.Ref(parts=parts):
+            return {parts[0]} if len(parts) == 1 else set()
+        case ex.Exists(ref=ref):
+            return _scope_attrs(ref)
+        case ex.Not(operand=operand):
+            return _scope_attrs(operand)
+        case ex.BoolOp(operands=operands):
+            return set().union(*(_scope_attrs(o) for o in operands))
+        case ex.Compare(left=left, right=right):
+            return _scope_attrs(left) | _scope_attrs(right)
+        case _:
+            return set()
+
+
+def _unread_by_pack(
+    findings: Sequence[Finding], kb: KnowledgeBase, pack: VendorPack
+) -> tuple[Finding, ...]:
+    """A verdict that rests only on something being absent, where this vendor's pack has no
+    mapping that could read it, says nothing about the device: a vendor still being taught in
+    the Training Studio (a pack with few mappings) isn't failed for a banner it can't see yet.
+    Such a PASS, FAIL or "nothing to check" becomes REVIEW, naming what the pack doesn't read.
+    Only for packs marked ``learning``: a reviewed pack reads what applies to its vendor, so
+    there a missing attribute is information (a Cisco filter matches no application)."""
+    if not pack.manifest.learning:
+        return tuple(findings)
+    types, attrs = _reads(pack, kb)
+    tolerated = _tolerated(kb)
+    scope = {r.id: ex.parse_scope(r.for_each) for r in kb.ruleset.rules}
+    base = {r.id: r.severity.base for r in kb.ruleset.rules}
+    out: list[Finding] = []
+    for f in findings:
+        unread: list[str] = []
+        if f.status is Status.NOT_APPLICABLE and f.reason.startswith(NOTHING_IN_SCOPE):
+            entity, where = scope[f.rule_id]
+            if entity not in types and entity not in SINGLETON_TYPES:
+                unread.append(f"any {entity}")
+            else:  # the entities are read, but not what picks the ones in scope
+                unread += sorted(
+                    f"{entity}.{a}" for a in _scope_attrs(where) if f"{entity}.{a}" not in attrs
+                )
+        elif f.status in (Status.PASS, Status.FAIL):
+            # The facts a verdict lists are the ones it rests on; one of them missing where the
+            # pack can't read it leaves the verdict resting on nothing.
+            for a in f.actual:
+                fact, many = _MISSING_FACT.match(a), _MISSING_ANY.match(a)
+                if (
+                    fact is not None
+                    and fact.group(2) not in tolerated
+                    and f"{fact.group(1)}.{fact.group(2)}" not in attrs
+                ):
+                    unread.append(f"{fact.group(1)}.{fact.group(2)}")
+                elif many is not None and many.group(1) not in types:
+                    unread.append(f"any {many.group(1)}")
+        if not unread:
+            out.append(f)
+            continue
+        severity = f.severity or base[f.rule_id]
+        reason = (
+            f"Would be {f.status.value}, but the {pack.manifest.name} pack doesn't read "
+            f"{', '.join(dict.fromkeys(unread))} yet, so its absence here says nothing; teach "
+            f"the lines that set it in the Training Studio. {f.reason}"
+        )
+        out.append(
+            f.model_copy(
+                update={
+                    "status": Status.REVIEW,
+                    "severity": severity,
+                    "severity_reason": f.severity_reason or f"{severity.value.capitalize()} (base)",
+                    "reason": reason,
+                }
+            )
+        )
+    return tuple(out)
+
+
 def _writable(pack: VendorPack, kb: KnowledgeBase) -> frozenset[str]:
     """Attribute names anything could set for this pack: its mappings, its defaults, the
     inferences and the engine. One outside them is missing from any file of this vendor (a
@@ -769,19 +942,65 @@ def _choose_pack(
 
 
 def _framework_score(
-    kb: KnowledgeBase, statuses: dict[str, Status], framework: str
+    kb: KnowledgeBase,
+    statuses: dict[str, Status],
+    framework: str,
+    cited: dict[str, tuple[Cited, ...]],
+    vendor: str,
 ) -> FrameworkScore:
-    s = framework_score(kb.ruleset.rules, statuses, framework)
+    s = framework_score(statuses, cited)
+    fw = kb.frameworks[framework]
+    note = ""
+    if not covered(fw, vendor):
+        note = f"{fw.catalog.title} has no benchmark for this platform, so it judges nothing here"
+    benchmarks = tuple(
+        b.title.removesuffix(" Security Technical Implementation Guide")
+        + f" {b.version}"
+        + (" (sunset by DISA)" if b.sunset else "")
+        for b in fw.catalog.benchmarks_for(vendor)
+    )
     return FrameworkScore(
         framework=framework,
-        title=FRAMEWORKS.get(framework, kb.frameworks[framework].catalog.title),
+        title=FRAMEWORKS.get(framework, fw.catalog.title),
         passed=s.passed,
         failed=s.failed,
         review=s.review,
         not_applicable=s.not_applicable,
         compliance_pct=s.compliance_pct,
         coverage_pct=s.coverage_pct,
+        note=note,
+        benchmarks=benchmarks,
     )
+
+
+def _controls(
+    kb: KnowledgeBase,
+    framework: str,
+    cited: dict[str, tuple[Cited, ...]],
+    statuses: dict[str, Status],
+) -> list[ControlResult]:
+    """The framework's control matrix for this device: every control a rule is mapped to."""
+    fw = kb.frameworks[framework]
+    catalog = {c.id: c for c in fw.catalog.controls}
+    rolled = control_matrix(
+        cited, statuses, order=order(framework, fw), atomic=bool(fw.catalog.benchmarks)
+    )
+    out = []
+    for cid, r in rolled.items():
+        c = catalog.get(cid)
+        out.append(
+            ControlResult(
+                framework=framework,
+                control=cid,
+                title=c.title if c else "",
+                status=r.status,
+                rules=r.rules,
+                severity=c.severity if c else None,
+                benchmark=c.benchmark if c else None,
+                partial=r.partial,
+            )
+        )
+    return out
 
 
 def _patterns(unmapped: Sequence[Statement]) -> tuple[UnmappedPattern, ...]:

@@ -1,7 +1,7 @@
-import { Download, FileJson } from "lucide-react";
+import { Download, FileJson, GraduationCap } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useParams, useSearchParams } from "react-router";
-import { useAudits, usePackName, useResult } from "../api/hooks";
+import { Link, useParams, useSearchParams } from "react-router";
+import { useAudits, useKb, usePackName, useResult } from "../api/hooks";
 import type { Finding } from "../api/types";
 import { Posture } from "../components/charts";
 import {
@@ -9,6 +9,7 @@ import {
   ErrorBox,
   LinkButton,
   Loading,
+  Notice,
   PageHeader,
   Tabs,
   Tag,
@@ -22,7 +23,7 @@ import { Findings } from "./device/Findings";
 import { Fixes } from "./device/Fixes";
 import { Model } from "./device/Model";
 import { Provenance } from "./device/Provenance";
-import { Controls, Coverage, Policy } from "./device/Tabs";
+import { Controls, Coverage, FrameworkScores, Policy } from "./device/Tabs";
 
 type Tab = "findings" | "fixes" | "controls" | "config" | "policy" | "model" | "coverage";
 
@@ -33,6 +34,7 @@ export function DevicePage() {
   const result = useResult(jobId);
   const audits = useAudits();
   const packName = usePackName();
+  const kb = useKb();
   const [params, setParams] = useSearchParams();
   const tab = (params.get("tab") as Tab | null) ?? "findings";
   const [open, setOpen] = useState<Finding | null>(null);
@@ -94,6 +96,22 @@ export function DevicePage() {
         understood={r.assurance.understood_pct}
         scope="on this device, judged against Kasauti's model of its configuration"
       />
+      {kb.data?.vendors.find((v) => v.id === r.detection.pack_id)?.learning && (
+        <div className="mb-6">
+          <Notice icon={<GraduationCap />}>
+            {packName(r.detection.pack_id)} is still being taught: Kasauti reads{" "}
+            {r.assurance.understood} of {r.assurance.statements} statements of this file, and a
+            check that rests on something it can't read yet stays in review.{" "}
+            <Link
+              to={`/studio?pack=${r.detection.pack_id}`}
+              className="font-medium text-text underline"
+            >
+              Teach it in the Training Studio
+            </Link>
+          </Notice>
+        </div>
+      )}
+      <FrameworkScores result={r} />
 
       <div className="mb-8 grid gap-6 lg:grid-cols-12">
         <Card
@@ -190,7 +208,13 @@ export function DevicePage() {
       {tab === "fixes" && (
         <Fixes key={params.get("fix") ?? ""} result={r} focus={params.get("fix")} />
       )}
-      {tab === "controls" && <Controls result={r} />}
+      {tab === "controls" && (
+        <Controls
+          result={r}
+          framework={params.get("fw")}
+          onFramework={(f) => setParams({ tab: "controls", fw: f }, { replace: true })}
+        />
+      )}
       {tab === "config" && <Config result={r} onOpen={setOpen} />}
       {tab === "policy" && <Policy result={r} />}
       {tab === "model" && <Model result={r} />}

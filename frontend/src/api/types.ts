@@ -94,6 +94,10 @@ export interface ScoreOut {
   failed: number;
   review: number;
   not_applicable: number;
+  /** Why the framework judges nothing here (no STIG for this platform). */
+  note?: string;
+  /** The vendor benchmarks applied, for per-vendor frameworks (DISA STIG). */
+  benchmarks?: string[];
 }
 
 export interface RuleBrief {
@@ -180,13 +184,21 @@ export interface RuleResult {
   severity: Severity;
   nist_800_53r5: string[];
   hardening_best_practice: boolean;
+  /** Framework -> controls on this device, for selected frameworks other than NIST. */
+  controls?: Record<string, string[]>;
 }
 
 export interface ControlResult {
+  framework: string;
   control: string;
   title: string;
   status: ControlStatus;
   rules: string[];
+  /** DISA category of a STIG requirement: high = CAT I, medium = CAT II, low = CAT III. */
+  severity: "high" | "medium" | "low" | null;
+  benchmark: string | null;
+  /** Undetermined because the passing rules check only part of the control. */
+  partial: boolean;
 }
 
 export interface AuditResult {
@@ -321,6 +333,8 @@ export interface VendorOut {
   approved: number;
   defaults: number;
   signatures: number;
+  /** Still being taught in the Training Studio. */
+  learning: boolean;
 }
 
 export interface RuleOut {
@@ -333,6 +347,8 @@ export interface RuleOut {
   for_each: string;
   assertion: string;
   controls: Record<string, string[]>;
+  /** Per-vendor frameworks (DISA STIG): framework -> vendor pack -> controls. */
+  vendor_controls: Record<string, Record<string, string[]>>;
   hardening_best_practice: boolean;
   fixtures_pass: string[];
   fixtures_fail: string[];
@@ -350,6 +366,18 @@ export interface Kb {
     licence: string;
     retrieved: string;
     controls: number;
+    benchmarks: {
+      id: string;
+      title: string;
+      version: string;
+      released: string;
+      vendors: string[];
+      sunset: boolean;
+      source_url: string;
+      source_sha256: string;
+    }[];
+    bridge: string | null;
+    mapped_rules: number;
   }[];
   rules: RuleOut[];
   control_titles: Record<string, string>;
@@ -379,4 +407,143 @@ export interface VendorDetail {
     source: string;
     reference: string;
   }[];
+}
+
+// -- training studio -----------------------------------------------------------------------------
+
+export interface StudioTally {
+  understood: number;
+  statements: number;
+  passed: number;
+  failed: number;
+  review: number;
+  not_applicable: number;
+}
+
+export interface StudioPack {
+  id: string;
+  name: string;
+  learning: boolean;
+  mappings: number;
+  taught: number;
+  files: number;
+  tally: StudioTally | null;
+}
+
+export interface StudioFile {
+  id: string;
+  name: string;
+  pack: string;
+  added: string;
+  tally: StudioTally;
+}
+
+export interface StudioState {
+  packs: StudioPack[];
+  files: StudioFile[];
+  kb_version: string;
+}
+
+export type SlotType = "INT" | "IP" | "IFNAME" | "STR" | "LIST";
+
+export interface StudioSuggestion {
+  meaning: string;
+  label: string;
+  score: number;
+  why: string;
+  choices: Record<string, string | string[]>;
+  /** Token index -> role. */
+  roles: Record<string, string>;
+}
+
+export interface StudioPattern {
+  key: string;
+  pattern: string;
+  block: string | null;
+  block_taught: boolean;
+  count: number;
+  files: number;
+  examples: { file: string; line: number; text: string; block: string | null }[];
+  tokens: { text: string; slot: SlotType | null }[];
+  relevance: number;
+  suggestions: StudioSuggestion[];
+}
+
+export interface StudioMeaning {
+  id: string;
+  label: string;
+  explain: string;
+  under: string | null;
+  roles: { name: string; label: string; types: SlotType[]; optional: boolean }[];
+  choices: { name: string; options: string[]; many: boolean }[];
+}
+
+export interface StudioFlip {
+  rule: string;
+  title: string;
+  file: string;
+  before: Status;
+  after: Status;
+}
+
+export interface StudioProposal {
+  id: string;
+  pack: string;
+  pattern: string;
+  meaning: string;
+  mapping_id: string;
+  mapping: string;
+  impact: {
+    lines: number;
+    files: number;
+    facts: number;
+    understood_before: number;
+    understood_after: number;
+    statements: number;
+    to_pass: number;
+    flips: StudioFlip[];
+  };
+  proposed_by: string;
+  needs_second: boolean;
+}
+
+export interface StudioTaught {
+  id: string;
+  match: string;
+  context: string[];
+  proposed_by: string;
+  approved_by: string[];
+  mapping: string;
+}
+
+export interface StudioDecision {
+  at: string;
+  action: "propose" | "approve" | "reject" | "ignore" | "undo";
+  pack: string;
+  mapping?: string;
+  /** The taught line, as the trainer wrote it. */
+  line?: string;
+  pattern?: string;
+  by: string;
+  proposed_by?: string;
+  to_pass?: number;
+}
+
+// --- accounts (backend/kasauti/api/auth.py) -------------------------------------------------------
+
+export type Role = "viewer" | "auditor" | "trainer" | "approver" | "admin";
+
+/** Least privilege first: each role may do what the ones before it may. */
+export const ROLES: Role[] = ["viewer", "auditor", "trainer", "approver", "admin"];
+
+export interface Me {
+  username: string;
+  name: string;
+  role: Role;
+}
+
+export interface AuthOptions {
+  signup: boolean;
+  min_password: number;
+  demo: (Me & { password: string })[];
 }

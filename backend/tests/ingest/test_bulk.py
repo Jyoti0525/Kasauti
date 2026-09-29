@@ -8,6 +8,7 @@ import sys
 import time
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -26,7 +27,7 @@ BUDGET_S = 180.0
 
 
 @pytest.fixture
-def client(tmp_path: Path) -> Iterator[TestClient]:
+def client(tmp_path: Path, sign_in: Any) -> Iterator[TestClient]:
     engine = create_engine(database_url(tmp_path, environ={}))
     upgrade(engine)
     engine.dispose()
@@ -35,9 +36,11 @@ def client(tmp_path: Path) -> Iterator[TestClient]:
             packs=REPO / "packs",
             database=database_url(tmp_path, environ={}),
             staging=tmp_path / "staging",
+            demo_accounts=True,
         )
     )
     with TestClient(app, base_url="http://127.0.0.1:8000") as test_client:
+        sign_in(test_client)
         yield test_client
 
 

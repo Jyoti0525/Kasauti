@@ -252,3 +252,63 @@ export function DotCount({ n, total }: { n: number; total: number }) {
     </span>
   );
 }
+
+export interface FrameworkScore {
+  framework: string;
+  title: string;
+  compliance_pct: number | null;
+  coverage_pct: number | null;
+  passed: number;
+  failed: number;
+  review: number;
+  note?: string;
+  benchmarks?: string[];
+}
+
+/** Each selected framework's two numbers, side by side. Nothing when there is only one: the
+ * posture above already shows it. */
+export function FrameworkStrip({
+  scores,
+  className,
+}: {
+  scores: FrameworkScore[];
+  className?: string;
+}) {
+  if (scores.length < 2) return null;
+  return (
+    <section className={cx("mb-8 grid gap-4 md:grid-cols-3", className)}>
+      {scores.map((s) => (
+        <div key={s.framework} className="rounded-xl border border-line bg-surface p-4">
+          <div className="text-[13px] font-medium text-muted">{s.title}</div>
+          {s.note ? (
+            <p className="mt-2 text-[13px] text-faint">{s.note}.</p>
+          ) : (
+            <>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="figure text-[30px] font-semibold leading-none">
+                  {s.compliance_pct === null ? "–" : s.compliance_pct.toFixed(1)}
+                  <span className="ml-0.5 text-[17px] text-muted">%</span>
+                </span>
+                <span className="text-[12.5px] text-muted">compliant</span>
+              </div>
+              <Meter value={s.coverage_pct} tone="data" className="mt-3" />
+              <div className="mt-1.5 flex justify-between gap-3 text-[12px] text-muted">
+                <span>
+                  Coverage {s.coverage_pct === null ? "–" : `${s.coverage_pct.toFixed(1)}%`}
+                </span>
+                <span className="tabular-nums">
+                  {s.passed} pass · {s.failed} fail · {s.review} review
+                </span>
+              </div>
+              {s.benchmarks && s.benchmarks.length > 0 && (
+                <p className="mt-2 text-[12px] leading-snug text-faint">
+                  {s.benchmarks.join(" · ")}
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      ))}
+    </section>
+  );
+}

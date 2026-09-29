@@ -330,7 +330,7 @@ def _cover(r: AuditResult, s: _Styles, generated: str) -> list[Any]:
             [
                 _p(label, s.cell),
                 _p(item.value or "(not available)", s.cell),
-                _p(item.source, s.small),
+                _rich(item.source, s.small),
             ]
         )
     out.append(_table(rows, (28 * mm, 45 * mm, 101 * mm)))
@@ -343,7 +343,7 @@ def _cover(r: AuditResult, s: _Styles, generated: str) -> list[Any]:
                 _p(" ".join(filter(None, (i.part, i.version))) or "-", s.cell),
                 _p(i.serial, s.cell),
                 _p(i.description or "-", s.cell),
-                _p(i.source, s.small),
+                _rich(i.source, s.small),
             ]
             for i in r.inventory
         ]
@@ -414,6 +414,19 @@ def _summary(r: AuditResult, s: _Styles) -> list[Any]:
                 s.body,
             )
         )
+        if sc.benchmarks:
+            out.append(_p("Benchmarks applied: " + "; ".join(sc.benchmarks) + ".", s.small))
+        if sc.framework == "disa_stig" and not sc.note:
+            out.append(
+                _p(
+                    "A rule that checks only part of a STIG requirement can fail it but not "
+                    "meet it, so its PASS counts as needing review here: the coverage shows how "
+                    "much of the STIG this configuration settles.",
+                    s.small,
+                )
+            )
+        if sc.note:
+            out.append(_p(sc.note[0].upper() + sc.note[1:] + ".", s.small))
     effective = effective_severity(r)
     checks = Counter(effective.values())
     findings = Counter(f.severity for f in r.findings if f.status is Status.FAIL)
@@ -459,43 +472,88 @@ def _summary(r: AuditResult, s: _Styles) -> list[Any]:
 # --- 3. control matrix ---------------------------------------------------------------------------
 
 
+_MATRIX = {
+    "nist_800_53r5": ("NIST SP 800-53 Rev. 5 controls", "Control"),
+    "disa_stig": ("DISA STIG requirements", "STIG ID"),
+    "iso_27001_2022": ("ISO/IEC 27001:2022 Annex A controls", "Control"),
+}
+_CAT = {"high": "CAT I", "medium": "CAT II", "low": "CAT III"}
+
+
 def _control_matrix(r: AuditResult, s: _Styles) -> list[Any]:
+    others = [f for f in r.frameworks if f != "nist_800_53r5"]
     out: list[Any] = [
         _p("Control matrix", s.h1),
         _p(
-            "Each rule, the NIST SP 800-53 Rev. 5 controls it supports, and its "
-            "status on this device.",
+            "Each rule, the framework controls it gives evidence for on this device, and its "
+            "status. Then, for each selected framework, every control those rules touch.",
             s.small,
         ),
         Spacer(1, 2 * mm),
     ]
-    rows = [[_p(h, s.cell) for h in ("Rule", "Title", "NIST SP 800-53 r5", "Severity", "Status")]]
+    head = ("Rule", "Title", "NIST SP 800-53 r5", "Severity", "Status")
+    if others:
+        head = ("Rule", "Title", "NIST SP 800-53 r5", "Other frameworks", "Status")
+    rows = [[_p(h, s.cell) for h in head]]
     for rule in sorted(r.rules, key=lambda x: (_STATUS_ORDER[x.status], x.rule_id)):
+        extra = (
+            _p(
+                "; ".join(
+                    f"{_SHORT.get(f, f)} {', '.join(rule.controls[f])}"
+                    for f in others
+                    if rule.controls.get(f)
+                )
+                or "-",
+                s.small,
+            )
+            if others
+            else _p(rule.severity.value, s.cell)
+        )
         rows.append(
             [
                 _p(rule.rule_id, s.code),
                 _p(rule.title, s.cell),
                 _p(", ".join(rule.nist_800_53r5) or "hardening best practice", s.cell),
-                _p(rule.severity.value, s.cell),
+                extra,
                 _status(rule.status, s.cell),
             ]
         )
-    out.append(_table(rows, (40 * mm, 62 * mm, 34 * mm, 18 * mm, 20 * mm)))
-    if r.controls:
-        out += [Spacer(1, 4 * mm), _p("NIST controls", s.h2)]
-        rows = [[_p(h, s.cell) for h in ("Control", "Title", "Status", "Rules")]]
-        rows += [
-            [
+    widths = (40 * mm, 58 * mm, 30 * mm, 26 * mm, 20 * mm)
+    if others:
+        widths = (44 * mm, 46 * mm, 25 * mm, 41 * mm, 18 * mm)
+    out.append(_table(rows, widths))
+    for framework in r.frameworks:
+        controls = [c for c in r.controls if c.framework == framework]
+        heading, label = _MATRIX.get(framework, (framework, "Control"))
+        out += [Spacer(1, 4 * mm), _p(heading, s.h2)]
+        if not controls:
+            note = next((sc.note for sc in r.scores if sc.framework == framework), "")
+            out.append(_p((note[:1].upper() + note[1:] + ".") if note else "No control.", s.body))
+            continue
+        stig = framework == "disa_stig"
+        rows = [[_p(h, s.cell) for h in (label, "Title", "Status", "Rules")]]
+        if stig:
+            rows = [[_p(h, s.cell) for h in (label, "CAT", "Title", "Status", "Rules")]]
+        for c in controls:
+            status = c.status.value + (" (checks cover part)" if c.partial else "")
+            row = [
                 _p(c.control, s.code),
-                _p(c.title, s.cell),
-                _p(c.status.value, s.cell),
+                _p(c.title, s.cell if not stig else s.small),
+                _p(status, s.cell),
                 _p(", ".join(c.rules), s.small),
             ]
-            for c in r.controls
-        ]
-        out.append(_table(rows, (20 * mm, 62 * mm, 32 * mm, 60 * mm)))
+            if stig:
+                row.insert(1, _p(_CAT.get(c.severity or "", ""), s.cell))
+            rows.append(row)
+        cols: tuple[float, ...] = (20 * mm, 62 * mm, 32 * mm, 60 * mm)
+        if stig:
+            cols = (28 * mm, 14 * mm, 62 * mm, 28 * mm, 42 * mm)
+        out.append(_table(rows, cols))
     out.append(PageBreak())
     return out
+
+
+_SHORT = {"disa_stig": "STIG", "iso_27001_2022": "ISO"}
 
 
 # --- 4. detailed findings ------------------------------------------------------------------------
@@ -801,6 +859,32 @@ def _appendix(r: AuditResult, s: _Styles) -> list[Any]:
             "NIST SP 800-53 Rev. 5 control identifiers and titles are from NIST's official OSCAL "
             "catalog (public domain, US Government work).",
             s.body,
+        ),
+        *(
+            [
+                _p(
+                    "DISA STIG identifiers, titles and categories are from DISA's published "
+                    "XCCDF benchmarks (public domain, US Government work); each STIG "
+                    "requirement's link to NIST SP 800-53 comes from DISA's CCI list.",
+                    s.body,
+                )
+            ]
+            if "disa_stig" in r.frameworks
+            else []
+        ),
+        *(
+            [
+                _p(
+                    "ISO/IEC 27001:2022 Annex A control numbers only; the descriptions are "
+                    "Kasauti's own wording, not ISO text. Each rule's Annex A controls are "
+                    "derived from its NIST anchors through NIST OLIR #155 and reviewed. A "
+                    "configuration audit shows only the device's part of a control; the "
+                    "organisational part is outside it.",
+                    s.body,
+                )
+            ]
+            if "iso_27001_2022" in r.frameworks
+            else []
         ),
         _p("Provenance", s.h2),
         _table(

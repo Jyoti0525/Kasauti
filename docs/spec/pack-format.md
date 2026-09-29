@@ -165,6 +165,16 @@ params:
   `context`, and its evidence line is masked like any other.
 - A framework `catalog.json` may record `source_sha256`, the hash of the official file its IDs
   were extracted from. `tools/import_oscal.py` writes it for NIST SP 800-53 r5.
+- A per-vendor framework (DISA STIG) lists its `benchmarks`, each with the vendor packs it
+  covers and its source zip's URL and SHA-256; every control names its `benchmark`. Controls
+  carry their official NIST bridge in `nist` (from the CCI list for a STIG, from NIST OLIR #155
+  for ISO/IEC 27001), and the catalog names that `bridge`. `tools/import_stig.py` and
+  `tools/import_olir.py` write them. The NIST catalog keeps `withdrawn`: where each withdrawn
+  control went, as NIST's OSCAL links say.
+- A `crosswalk.yaml` entry maps one rule to controls: `vendor` for per-vendor frameworks,
+  `covers` (`full`, `part`, `stricter`; the last two need a `note` saying what differs), and a
+  `bridge_note` when no control's `nist` shares a base control with the rule's anchors. The
+  crosswalk lint (`tools/lint_content.py`) enforces all of it.
 
 ## Evidence for defaults
 

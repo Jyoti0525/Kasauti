@@ -18,6 +18,10 @@ Syntax was checked against the vendors' own references where it is less common:
 - Arista type ``8a`` (AES-256-GCM) secrets: Arista AVD encrypt/decrypt filter documentation.
 - Junos ``authentication-key key-number type type value password`` at ``[edit system ntp]``:
   Junos OS, "NTP Authentication Keys" (juniper.net).
+- Huawei VRP ``snmp-agent community { read | write } [ cipher ] community-name``, ``local-user
+  user-name password { cipher | irreversible-cipher } password``, ``hwtacacs-server shared-key
+  cipher key``, ``ntp-service authentication-keyid key-id authentication-mode { md5 |
+  hmac-sha256 } [ cipher ] key``: Huawei AR Router Command Reference, V200R010 (support.huawei.com).
 - FortiOS ``config system snmp community`` / ``edit <id>`` / ``set name`` (the community string)
   and ``config system snmp user`` ``set auth-pwd`` / ``set priv-pwd``: FortiOS CLI Reference,
   6.2 to 8.0 (docs.fortinet.com).
@@ -481,6 +485,42 @@ PANOS: list[Case] = [
 ]
 
 
+HUAWEI: list[Case] = [
+    (
+        (),
+        "snmp-agent community read cipher %^%#S3CRET%^%#",
+        f"snmp-agent community read cipher {M}",
+    ),
+    ((), "snmp-agent community write S3CRET", f"snmp-agent community write {M}"),
+    (
+        ("aaa",),
+        "local-user admin password irreversible-cipher $1a$S3CRET$",
+        f"local-user admin password irreversible-cipher {M}",
+    ),
+    (("aaa",), "local-user ops password cipher S3CRET", f"local-user ops password cipher {M}"),
+    (
+        ("hwtacacs-server template tac1",),
+        "hwtacacs-server shared-key cipher %^%#S3CRET%^%#",
+        f"hwtacacs-server shared-key cipher {M}",
+    ),
+    (
+        (),
+        "ntp-service authentication-keyid 1 authentication-mode hmac-sha256 cipher S3CRET",
+        f"ntp-service authentication-keyid 1 authentication-mode hmac-sha256 cipher {M}",
+    ),
+    (
+        (),
+        "snmp-agent usm-user v3 nms authentication-mode sha cipher S3CRET privacy-mode aes128"
+        " cipher S3CRET",
+        f"snmp-agent usm-user v3 nms authentication-mode sha cipher {M} privacy-mode aes128"
+        f" cipher {M}",
+    ),
+    # Not secrets: how a user interface authenticates, and a scheme's name.
+    (("user-interface vty 0 4",), "authentication-mode aaa", "authentication-mode aaa"),
+    (("aaa",), "authentication-scheme default", "authentication-scheme default"),
+]
+
+
 @pytest.mark.parametrize(
     ("path", "text", "shown"),
     [
@@ -491,6 +531,7 @@ PANOS: list[Case] = [
             "junos": JUNOS,
             "fortios": FORTIOS,
             "panos": PANOS,
+            "huawei": HUAWEI,
         }.items()
         for case in cases
     ],

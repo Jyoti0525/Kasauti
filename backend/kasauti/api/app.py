@@ -6,9 +6,11 @@ jobs M2.03); this module sets up what every route inherits.
 
 Exposure (PLAN §17, "Exposure" and "Air gap"):
 
-* **Loopback only.** ``kasauti serve`` binds 127.0.0.1 and refuses any other address. Accounts,
-  MFA and TLS arrive in M5; serving configurations to the LAN before then would hand them to
-  anyone who can reach the port.
+* **Loopback only.** ``kasauti serve`` binds 127.0.0.1 and refuses any other address. MFA and
+  TLS arrive in M5; serving configurations to the LAN before then would hand them to anyone who
+  can reach the port.
+* **Signed in.** Every route under ``/api`` but ``/api/health`` and sign-in itself needs a team
+  account's session, and a change needs a role that may make it (:mod:`kasauti.api.auth`).
 * **Host allow-list.** A web page on any site can make a browser send requests to
   ``127.0.0.1`` through a domain it controls (DNS rebinding). Requests whose ``Host`` isn't
   the name the server was started for are refused with 400.
@@ -17,7 +19,7 @@ Exposure (PLAN §17, "Exposure" and "Air gap"):
   (POST, PUT, PATCH, DELETE) must carry ``X-Kasauti-Request: 1``: a page on another site can only
   add a custom header after a CORS preflight, which this server never grants. On top of that, a
   browser's ``Sec-Fetch-Site`` must say same-origin, and an ``Origin``, when sent, must be this
-  server. Sign-in sessions and their CSRF tokens join these in M5.
+  server. The session cookie is SameSite=Strict on top of that.
 * **Security headers** on every response, errors included: nothing sniffed, framed, cached or
   sent as a referrer, and a content security policy that allows nothing for the API, which
   returns JSON.
@@ -52,7 +54,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import URL, Engine
@@ -64,8 +66,13 @@ from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from kasauti import __version__
+from kasauti.accounts import AccountStore, Role
 from kasauti.api.audits import router as audits_router
+from kasauti.api.auth import needs, signed_in
+from kasauti.api.auth import router as auth_router
 from kasauti.api.jobs import router as jobs_router
+from kasauti.api.studio import make_studio
+from kasauti.api.studio import router as studio_router
 from kasauti.api.uploads import router as uploads_router
 from kasauti.audit import KnowledgeBase, load_kb
 from kasauti.db import create_engine, current_revision, ensure_current
@@ -76,6 +83,7 @@ from kasauti.jobs import JobQueue, WorkerPool
 from kasauti.jobs.kinds import HANDLERS
 from kasauti.jobs.limits import DEFAULT_MEMORY_MIB
 from kasauti.log import get_logger
+from kasauti.rules.scoring import NIST
 
 log = get_logger(__name__)
 
@@ -133,6 +141,15 @@ class Settings:
     web: Path | None = None
     """The web UI's build folder (``frontend/dist``); None, or no ``index.html`` in it, serves
     the API alone."""
+    learned: Path | None = None
+    """Mappings taught in the Training Studio (``<data dir>/learned``), added to the packs."""
+    studio: Path | None = None
+    """The Studio's decision record and ignored patterns (``<data dir>/studio``)."""
+    demo_accounts: bool = False
+    """Make the demonstration accounts (:data:`kasauti.accounts.DEMO_ACCOUNTS`) and show their
+    passwords on the sign-in page. For demonstrations only."""
+    signup: bool = True
+    """Anyone who can open the sign-in page may make an account (role: auditor)."""
 
 
 class Health(BaseModel):
@@ -153,11 +170,12 @@ class Health(BaseModel):
 def create_app(settings: Settings) -> FastAPI:
     """Build the application. The knowledge base and database are checked here, so invalid
     packs or an old schema stop the server from starting instead of failing on a request."""
-    kb = load_kb(settings.packs)
+    kb = load_kb(settings.packs, settings.learned)
     engine = create_engine(settings.database)
     try:
         ensure_current(engine)
         queue, store, pool, worker_secrets = _jobs_and_uploads(settings, engine)
+        accounts = _accounts(settings, engine)
     except BaseException:
         engine.dispose()
         raise
@@ -166,7 +184,7 @@ def create_app(settings: Settings) -> FastAPI:
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         if pool is not None:
             pool.start()
-        housekeeping = asyncio.create_task(_housekeep(store))
+        housekeeping = asyncio.create_task(_housekeep(store, accounts))
         try:
             yield
         finally:
@@ -193,7 +211,12 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.pool = pool
     app.state.worker_secrets = worker_secrets
     app.state.uploads = store
+    app.state.accounts = accounts
     app.state.packs = settings.packs
+    data = settings.staging.parent  # <data dir>/staging
+    app.state.studio = make_studio(
+        settings.learned or data / "learned", settings.studio or data / "studio"
+    )
     web = (
         settings.web.resolve() if settings.web and (settings.web / "index.html").is_file() else None
     )
@@ -207,14 +230,31 @@ def create_app(settings: Settings) -> FastAPI:
             # The error names the file or host: the operator's log gets it, the client doesn't.
             log.exception("database unavailable", error=str(err))
             raise HTTPException(503, "database unavailable") from None
-        return _health(kb, engine, revision or "none")
+        # The live knowledge base: an approval in the Training Studio reloads it in place.
+        return _health(app.state.kb, engine, revision or "none")
 
-    app.include_router(jobs_router)
-    app.include_router(uploads_router)
-    app.include_router(audits_router)
+    _routes(app, settings)
     if web is not None:
         _serve_web(app, web)
     return app
+
+
+def _accounts(settings: Settings, engine: Engine) -> AccountStore:
+    accounts = AccountStore(engine)
+    if settings.demo_accounts:
+        accounts.ensure_demo()
+    return accounts
+
+
+def _routes(app: FastAPI, settings: Settings) -> None:
+    """Sign-in is open; everything else needs a session, and a change needs a role that may."""
+    app.state.demo_accounts = settings.demo_accounts
+    app.state.signup = settings.signup
+    app.include_router(auth_router)
+    app.include_router(jobs_router, dependencies=[Depends(signed_in)])
+    app.include_router(uploads_router, dependencies=[Depends(needs(Role.AUDITOR))])
+    app.include_router(audits_router, dependencies=[Depends(needs(Role.AUDITOR))])
+    app.include_router(studio_router, dependencies=[Depends(needs(Role.TRAINER))])
 
 
 def _guard(app: FastAPI, allowed_hosts: tuple[str, ...], *, web: bool) -> None:
@@ -312,15 +352,21 @@ def _jobs_and_uploads(
         if settings.workers
         else None
     )
-    return queue, UploadStore(engine, staging, queue, settings.packs), pool, worker_secrets
+    return (
+        queue,
+        UploadStore(engine, staging, queue, settings.packs, settings.learned),
+        pool,
+        worker_secrets,
+    )
 
 
-async def _housekeep(store: UploadStore) -> None:
+async def _housekeep(store: UploadStore, accounts: AccountStore) -> None:
     while True:
         try:
             removed = await run_in_threadpool(store.housekeep)
             if removed:
                 log.info("staged files deleted", files=removed)
+            await run_in_threadpool(accounts.housekeep)
         except SQLAlchemyError as err:
             log.warning("housekeeping can't reach the database", error=type(err).__name__)
         except Exception:
@@ -335,7 +381,7 @@ def _health(kb: KnowledgeBase, engine: Engine, revision: str) -> Health:
         kb_version=kb.version,
         ruleset_version=kb.ruleset_version,
         vendor_packs=tuple(sorted(kb.vendor_packs)),
-        frameworks=tuple(sorted(kb.frameworks)),
+        frameworks=tuple(sorted(kb.frameworks, key=lambda f: (f != NIST, f))),
         database=engine.dialect.name,
         schema_revision=revision,
     )

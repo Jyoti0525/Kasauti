@@ -30,7 +30,7 @@ National Technical Research Organisation (NTRO) · Software · Blockchain & Cybe
 
 | Pillar | One-line promise | What the evaluator sees |
 |---|---|---|
-| **P1 Learns any vendor** | Unseen vendor → useful audit in minutes, not a code release | A Huawei config at 22% understood; the Studio already quotes Huawei's manual; 6 approvals later the coverage bar reads 85% |
+| **P1 Learns any vendor** | Unseen vendor → useful audit in minutes, not a code release | A Huawei config at 22% understood; the Studio already quotes Huawei's manual; 6 approvals later the coverage bar reads 85% (target for M3, not yet met: v5.4.0 measured 8 of 23 checks judged after 13 approvals, with no manual grounding yet) |
 | **P2 Proves its fixes** | Every remediation is applied to a copy of the config and re-audited before we recommend it; firewall rulesets analysed for shadowed and redundant rules | "Preview fix": FAIL → PASS, zero regressions; "Rule 14 never fires, rule 3 shadows it" |
 | **P3 Trustworthy by design** | The auditor itself is hardened, its learning loop can't be quietly poisoned, and its reports are signed and logged | A PDF with a valid signature (optionally an Indian DSC); one edited byte → "signature invalid" |
 | **P4 Measured, not claimed** | Published accuracy on public data, including a leave-one-vendor-out test that *proves* unseen-vendor learning | One slide of honest numbers and a learning curve |
@@ -510,12 +510,14 @@ NIST SP 800-53 r5 is the **hub**. Every rule is anchored to NIST controls. Every
 | Framework | Source of IDs (licence) | Bridge to our rules |
 |---|---|---|
 | **NIST SP 800-53 r5** | Official OSCAL catalog (public domain / CC0) | Authored per rule, peer-reviewed |
-| **DISA STIG** | Imported XCCDF for the vendor's STIG (US Gov, public domain) | Our semantic engine proposes rule↔STIG matches from rule text vs STIG check text; a human confirms. **Consistency check:** the STIG rule's CCIs → NIST (DISA CCI list) must overlap our NIST anchors. (Part of the CCI list still references 800-53 **Rev 4**, so we translate through NIST's Rev4→Rev5 mapping and flag any gaps) |
+| **DISA STIG** | Imported XCCDF for the vendor's STIG (US Gov, public domain) | Matched by reading each requirement's check and fix text; a human confirms. **Consistency check:** the STIG rule's CCIs → NIST (DISA CCI list) must share a base control with our NIST anchors, or the mapping says why. (CCIs that still cite only 800-53 **Rev 4** follow NIST's own "moved to / incorporated into" links in the Rev 5 OSCAL catalog; every translation is reported) |
 | **ISO/IEC 27001:2022** | Annex A control numbers only (copyrighted standard) | **Derived from NIST via NIST OLIR #155**, the official SP 800-53 r5 → ISO/IEC 27001:2022 informative reference, then reviewed |
 | **CIS Benchmarks** | Recommendation IDs from the free benchmark PDFs, per vendor/version (CC BY-NC-SA: IDs + our own wording, with attribution) | Authored per rule and vendor |
 | **NCIIPC** (if obtained) | NCIIPC guidelines | A framework pack like any other |
 
 A CI "crosswalk lint" rejects unknown IDs, missing anchors and inconsistent STIG↔NIST pairs.
+Each mapping also says how much of the control the rule decides (`full`, `part`, `stricter`), so a
+check that covers part of a STIG requirement can fail it but never mark it met (v5.3.0).
 
 ### 12.5 Applicability
 Rules declare the roles and features they apply to, so a switch isn't failed on VPN rules and a cloud security group isn't failed on console timeouts. Non-applicable rules are N/A and listed, not hidden.
@@ -934,7 +936,7 @@ kasauti/
 | 0:00–0:10 | Hook: seven vendors, seven dialects, one question: "Is this network compliant, and can you *prove* it?" |
 | 0:10–0:30 | Bulk upload of 7 configs incl. SONiC and AWS; CIS + NIST + STIG selected; fleet dashboard with Compliance % and Coverage % |
 | 0:30–0:55 | **P2:** Palo Alto: rule 14 is shadowed by rule 3; telnet allowed on the untrusted zone raises it to Critical. "Preview fix" → re-audit → FAIL→PASS, zero regressions, rollback ready |
-| 0:55–1:30 | **P1:** Unseen Huawei config at 22% coverage. The Studio quotes Huawei's own manual ("`undo telnet server enable` … default: disabled"). 6 approvals; the bar climbs to 85% live; re-audit; Huawei-syntax fixes appear |
+| 0:55–1:30 | **P1:** Unseen Huawei config at 22% coverage. The Studio quotes Huawei's own manual ("`undo telnet server enable` … default: disabled"). 6 approvals; the bar climbs to 85% live; re-audit; Huawei-syntax fixes appear (the M3 target; until it is met, record from `docs/DEMO.md`, which uses measured numbers) |
 | 1:30–1:48 | **P3:** The signed PDF opens with a valid signature; one edited byte → invalid. Trying to approve a verdict-flipping mapping alone → "second approver required" |
 | 1:48–2:00 | **P4:** Numbers: false-PASS 0, LOVO learning curve, ablation "no LLM needed". Close: offline, open source, NTRO-ready |
 
@@ -1103,6 +1105,27 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
     rendering. Not reproduced in 6 × 350 ingest tests run in parallel, nor in 4 parallel runs of
     the test alone; its assertions already name the file and the job's error, so a recurrence
     will say why.
+- **v5.5.0 (2026-09-29, team accounts: M5.03-M5.05 in part):**
+  - **Sign in, sign up, sign out.** One team, one workspace: every account sees the same fleet,
+    and its role says what it may change (`viewer` < `auditor` < `trainer` < `approver` <
+    `admin`). Every route under `/api` but health and sign-in needs a session (401), and a change
+    needs a role that may make it (403): the server decides, not the screen. A sign-up joins as
+    an auditor; `kasauti account add` makes the first administrator and `kasauti account role`
+    changes a role; `kasauti serve --no-signup` closes sign-up.
+  - **Passwords and sessions.** Argon2id (argon2-cffi, MIT; RFC 9106's second recommended
+    profile); at least 15 characters and no composition rules, as NIST SP 800-63B-4 asks of a
+    password used alone. Five wrong passwords in a row lock an account for five minutes; an
+    unknown name costs a hash too. Sessions are server-side rows keyed by the SHA-256 of a
+    random token in an HttpOnly, SameSite=Strict cookie (Secure over HTTPS), ended after 30
+    minutes idle, 12 hours after sign-in, or on sign-out. The cross-site checks still apply to
+    every change, signing in included.
+  - **Four-eyes by real people.** The Studio's "acting as" switch is gone: who proposes and who
+    approves is whoever is signed in. A lesson that makes a check pass needs an approver other
+    than its proposer; it waits under "Waiting for approval" until one signs in.
+  - **Demo accounts.** `kasauti serve --demo-accounts` makes Asha (trainer) and Ravi (approver)
+    and shows their passwords on the sign-in page; without the flag nothing is shown.
+  - **Still open:** TOTP MFA (M5.03), per-client rate limits beyond the lockout, the admin screen
+    for accounts (M5.19), logging every action per account (M5.05).
 - **v5.2.0 (2026-09-29, remediation: R-07c, M4 §14):**
   - **Every failed check gets a fix, proven before it is shown.** One fix per failed check,
     covering every entity it fails for, in five steps: pre-check, change, verify, save,
@@ -1134,6 +1157,84 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
     development laptop (was about 40 s for the audit alone).
   - **Still open:** syntax checks against vendor manuals (M4.10), fixes for Studio-taught vendors
     by inverse mapping (M4.03), STIG fix text (M4.04), version-specific recipes (M4.15).
+- **v5.4.0 (2026-09-29, Training Studio: R-03, R-05, M2.59-M2.69, M2.81, M3.23-M3.24):**
+  - **Teach a vendor without code.** The Studio reads configurations of an untaught vendor
+    (Huawei VRP) in memory only, and queues the patterns its pack doesn't read, lines inside an
+    untaught block after the block. A trainer marks which words are values, picks one of 18
+    curated meanings (`packs/studio/meanings.yaml`) and previews what approving it changes:
+    lines read, statements understood, and every check that moves (Telnet REVIEW → FAIL). An
+    approval is stored in the data folder with who proposed and who approved it; the knowledge
+    base reloads in place and the next audit reads it, the server never restarted.
+  - **Four-eyes on anything that passes.** A change that makes any check PASS can't be approved
+    by whoever proposed it, and the server refuses it, not only the screen. Each person is
+    recorded in their own role (`trainer:asha`, `approver:ravi`).
+  - **Suggestions that don't mislead.** Measured on the Huawei samples: a meaning was suggested
+    whenever a line shared any word with it, so `snmp-agent sys-info version v3` came first as
+    "SSH version 1" (one careless approval would fail SSH on a router running only version 2),
+    `undo telnet server enable` as "service on", and a TACACS+ line as NTP authentication. A
+    meaning now lists the words that name its subject (`requires`, groups that must all
+    match), those words weigh more than common ones, and a faint likeness (score < 0.2) is "No
+    suggestion". Suggestions still only pre-fill the card.
+  - **Measured learning curve** (weak Huawei sample, 13 approvals): 1 → 16 of 37 statements
+    understood, 0 → 8 of 23 checks judged (7 FAIL, 1 PASS); the 15 left rest on lines not yet
+    taught and stay REVIEW. The earlier target "22 % → 85 % after 6 approvals" was never
+    measured and is withdrawn; `docs/DEMO.md` uses measured numbers only.
+  - **Found while preparing the demo video:** a finding raised by exposure listed the WAN
+    interface line first, so the findings list showed `interface GigabitEthernet1` as the
+    evidence for SNMP, SSH and Telnet; a finding's own lines now come first, then the lines that
+    located it (goldens: order only, verified across all 14 cases). The PDF showed raw
+    backticks around command names. The Studio set a rest-of-line value's other words apart
+    from it. `tools/demo_seed.py --export` writes the demo fleet as one folder per device, so a
+    folder drop pairs every command output with no pairing by hand.
+  - **Still open:** fixes for a taught vendor (M4.03); the manual excerpt and manual grounding
+    (M3); anti-unification over several lines, the free attribute tree, keyboard and bulk
+    approval, re-running stored audits (see M2.61-M2.69).
+- **v5.3.0 (2026-09-29, multi-framework: R-06, M2.51-M2.58):**
+  - **Three frameworks, each from its official source.** NIST SP 800-53 Rev. 5 stays the hub.
+    DISA STIGs are imported from DISA's published XCCDF (`tools/import_stig.py`): ten benchmarks
+    for the five seed platforms that have one (IOS XE Router NDM + RTR, Arista EOS NDM + Router,
+    Juniper SRX NDM + ALG, FortiGate NDM + Firewall, Palo Alto NDM + ALG, the last sunset by
+    DISA on 2026-07-10 with no successor and marked so), 501 requirements with category, CCIs
+    and fix text, every source zip's SHA-256 recorded. ISO/IEC 27001:2022 comes from NIST OLIR
+    #155 (`tools/import_olir.py`, hash checked against NIST's): Annex A numbers only, our own
+    wording for the 14 controls in use, no ISO text. AWS security groups have no STIG, and the
+    report says so instead of scoring zero.
+  - **Every mapping checked against the official bridge.** A STIG requirement reaches NIST
+    through DISA's CCI list, which now carries Rev. 5 references directly; the 22 CCIs that
+    still cite only Rev. 4 follow NIST's own "moved to / incorporated into" links from the
+    OSCAL catalog (now kept in `withdrawn`), so every one reaches an active Rev. 5 control. The
+    crosswalk lint rejects a mapping that shares no NIST base control with its rule unless a
+    `bridge_note` says why (DISA files remote-session encryption under MA-4(6), for instance),
+    and a note that isn't needed. 88 STIG mappings, matched by reading each requirement's check
+    and fix text; 22 ISO mappings, each within what OLIR #155 relates to the rule's anchors.
+    TIME-NTP-AUTH-01 has no ISO control because OLIR #155 relates none to SC-45 or IA-3.
+  - **No overclaiming.** A mapping says how much of the control the rule decides: `full`,
+    `part` (a FAIL fails the control; a PASS leaves it undetermined) or `stricter` (a PASS meets
+    it; a FAIL doesn't break it). A STIG requirement is open or not, never "partially
+    satisfied". The framework's two numbers count the same way, so a hardened Cisco router is
+    100 % STIG-compliant on 31.6 % coverage: most STIG requirements ask more than a
+    configuration can show (DoD banner text, two AAA servers, FIPS ciphers).
+  - **Selectable end to end.** New Audit selects every installed framework by default; the CLI
+    takes `--framework nist|stig|iso`; NIST always leads. The device view shows each framework's
+    two numbers and a Controls tab per framework (STIG with CAT and DISA's wording); the fleet
+    dashboard pools each; the PDF has a matrix per framework and its attribution; the Rules page
+    shows each rule's ISO controls and STIG requirements per platform. Goldens now score all
+    three.
+  - **Decided:** a rule's base severity stays our reviewed, vendor-neutral rating rather than the
+    STIG category (§12.7): one rule maps to requirements of different categories on different
+    platforms. The category is shown beside each STIG requirement.
+  - **Groundwork for a vendor taught in the Studio.** A Huawei VRP pack added as data only
+    (fingerprint and identity, no mappings) and two authored VRP samples. Two things this
+    exposed are fixed: masking now hides VRP's secrets (`community read cipher S`,
+    `irreversible-cipher`, `shared-key cipher`, NTP and SNMPv3 `authentication-mode … cipher`),
+    where before it masked the kind word and showed the secret; and a verdict that rests only on
+    something absent that the vendor's pack can't read yet (no banner seen, because nothing reads
+    banners) is now REVIEW, naming what the pack doesn't read. An untaught Huawei router reads
+    0 pass, 0 fail, 23 review, instead of five FAILs it had no evidence for. Seed packs read
+    every area their rules judge, so their verdicts are unchanged (goldens).
+  - **Still open:** CIS Benchmarks (M2.54): recommendation numbers exist only in CIS's benchmark
+    PDFs, handed out after registration, so they wait for the team to download them (C.04).
+    DISA's fix text is imported but not yet shown with our fixes (M4.04).
 - **v5.1.32 (2026-09-27, M2.28 limits closed):** Every Junos file form the CLI writes is now
   replayed as the CLI would (`kasauti/mapping/commands.py`): `[edit …]` banners, prompts and
   command output in terminal captures, `edit`/`up`/`top`/`exit`, `insert`, `rename`, `copy`,

@@ -1,0 +1,57 @@
+# Rules -> ISO/IEC 27001:2022 Annex A (PLAN §12.4; TODO M2.53).
+#
+# Derived from each rule's NIST SP 800-53 anchors through NIST OLIR #155, then reviewed: OLIR
+# relates a NIST control to every Annex A control it touches, so each rule keeps only those its
+# check is evidence for. The crosswalk lint rejects any control OLIR #155 doesn't relate to one of
+# the rule's anchors (an enhancement counts through its base control, as OLIR maps base controls).
+#
+# TIME-NTP-AUTH-01 has no entry: OLIR #155 relates neither SC-45 nor IA-3 to Annex A.
+# As with NIST, a control's status says what the device configuration shows; the organisational
+# side of an Annex A control is outside any configuration audit, and the report says so.
+format_version: 1
+framework: iso_27001_2022
+entries:
+  - {rule: AAA-CENTRAL-AUTH-01, controls: [A.5.16, A.5.18, A.8.2], source: olir-155,
+     note: "Central authentication is how identities and administrative rights are managed on the device."}
+  - {rule: AAA-LOCAL-PASSWORD-HASH-01, controls: [A.5.17], source: olir-155,
+     note: "How the device stores local passwords."}
+  - {rule: AAA-LOCKOUT-01, controls: [A.8.5], source: olir-155,
+     note: "Repeated failed logins are blocked."}
+  - {rule: AAA-PASSWORD-ENCRYPTION-01, controls: [A.5.17], source: olir-155,
+     note: "No password sits in the configuration in clear text."}
+  - {rule: AAA-PASSWORD-MIN-LENGTH-01, controls: [A.5.17], source: olir-155,
+     note: "The device enforces a minimum password length."}
+  - {rule: FILTER-PERMIT-ANY-01, controls: [A.8.20, A.8.22], source: olir-155,
+     note: "A permit-everything entry removes the separation the filter exists for."}
+  - {rule: FILTER-UNTRUSTED-INGRESS-01, controls: [A.8.20, A.8.22], source: olir-155,
+     note: "Traffic entering from untrusted networks is filtered."}
+  - {rule: LOG-CONFIG-CHANGE-01, controls: [A.8.15, A.8.32], source: olir-155,
+     note: "Configuration changes leave a record."}
+  - {rule: LOG-REMOTE-01, controls: [A.8.15], source: olir-155,
+     note: "Logs are kept off the device, out of an intruder's reach."}
+  - {rule: LOG-TIMESTAMPS-01, controls: [A.8.15, A.8.17], source: olir-155,
+     note: "Log entries carry the time they happened."}
+  - {rule: MGMT-BANNER-01, controls: [A.8.5], source: olir-155,
+     note: "Users are warned before they log in."}
+  - {rule: MGMT-HTTP-01, controls: [A.8.20], source: olir-155,
+     note: "Management traffic isn't sent unencrypted."}
+  - {rule: MGMT-SESSION-TIMEOUT-01, controls: [A.8.20], source: olir-155,
+     note: "Idle management sessions are closed."}
+  - {rule: MGMT-SSH-V2-01, controls: [A.8.20, A.8.24], source: olir-155,
+     note: "Remote management uses current SSH cryptography."}
+  - {rule: MGMT-TELNET-01, controls: [A.8.20], source: olir-155,
+     note: "Management traffic isn't sent unencrypted."}
+  - {rule: MGMT-VTY-ACL-01, controls: [A.5.15, A.8.20], source: olir-155,
+     note: "Only permitted addresses may reach remote management."}
+  - {rule: MGMT-VTY-ACL-02, controls: [A.5.15, A.8.20], source: olir-155,
+     note: "The list guarding remote management exists and is restrictive."}
+  - {rule: MGMT-WEB-ACL-01, controls: [A.5.15, A.8.20], source: olir-155,
+     note: "Only permitted addresses may reach web management."}
+  - {rule: REF-DANGLING-01, controls: [A.8.9], source: olir-155,
+     note: "A reference to something missing means the configuration isn't what it was meant to be."}
+  - {rule: SNMP-COMMUNITY-01, controls: [A.5.17, A.8.9], source: olir-155,
+     note: "SNMP community strings are secrets; well-known or writable ones are misconfiguration."}
+  - {rule: SVC-LEGACY-01, controls: [A.8.19], source: olir-155,
+     note: "Legacy services that nothing needs are turned off."}
+  - {rule: SVC-PROXY-ARP-01, controls: [A.8.20], source: olir-155,
+     note: "Interfaces don't answer for hosts on other networks."}

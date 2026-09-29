@@ -1,8 +1,10 @@
 from pathlib import Path
 
 import check_licences as cl
+import demo_seed
 import export_schemas
 import lint_content
+from kasauti.ingest.devices import name_key
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -79,3 +81,12 @@ def test_repository_content_passes_gates() -> None:
 
 def test_schemas_are_up_to_date() -> None:
     assert export_schemas.main(["--check"]) == 0
+
+
+def test_demo_fleet_folder_pairs_command_outputs_by_folder(tmp_path: Path) -> None:
+    written = demo_seed.export(tmp_path)
+    assert len(written) == sum(len(files) for files in demo_seed.FLEET.values())
+    for folder in {p.parent for p in written}:
+        names = {name_key(p.relative_to(tmp_path).as_posix()) for p in folder.iterdir()}
+        # A configuration and its command outputs say the same device: the folder's.
+        assert len(names) == 1, names

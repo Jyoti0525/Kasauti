@@ -1,6 +1,6 @@
 {
   "$defs": {
-    "Control": {
+    "Benchmark": {
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -8,10 +8,128 @@
           "title": "Id",
           "type": "string"
         },
+        "released": {
+          "title": "Released",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "sunset": {
+          "default": false,
+          "title": "Sunset",
+          "type": "boolean"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "vendors": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9_]*$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Vendors",
+          "type": "array"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "version",
+        "released",
+        "vendors",
+        "source"
+      ],
+      "title": "Benchmark",
+      "type": "object"
+    },
+    "Control": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Benchmark"
+        },
+        "ccis": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Ccis",
+          "type": "array"
+        },
+        "fix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fix"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "nist": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Nist",
+          "type": "array"
+        },
+        "severity": {
+          "anyOf": [
+            {
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Severity"
+        },
         "title": {
           "default": "",
           "title": "Title",
           "type": "string"
+        },
+        "vuln_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vuln Id"
         }
       },
       "required": [
@@ -19,10 +137,71 @@
       ],
       "title": "Control",
       "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "released": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Released"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "version",
+        "url",
+        "sha256"
+      ],
+      "title": "Source",
+      "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
+    "benchmarks": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Benchmark"
+      },
+      "title": "Benchmarks",
+      "type": "array"
+    },
+    "bridge": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Source"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "controls": {
       "items": {
         "$ref": "#/$defs/Control"
@@ -73,6 +252,16 @@
     "version": {
       "title": "Version",
       "type": "string"
+    },
+    "withdrawn": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Withdrawn",
+      "type": "object"
     }
   },
   "required": [

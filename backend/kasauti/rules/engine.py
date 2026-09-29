@@ -19,7 +19,7 @@ an unread vty line must not turn "every vty times out" into N/A.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from functools import cache
 
 from kasauti.packs.loader import RuleSet
@@ -39,7 +39,7 @@ from kasauti.rules.evaluate import (
 from kasauti.rules.model import Finding, OnMissing, Rule, Status
 from kasauti.sbm.document import SecurityBaselineModel, unread_subject
 from kasauti.sbm.entities import Device, Entity
-from kasauti.sbm.facts import FactState
+from kasauti.sbm.facts import Evidence, FactState
 
 MAX_ACTUAL = 12
 NOTHING_IN_SCOPE = "Not applicable: nothing matches"
@@ -74,16 +74,22 @@ def _with_exposure(finding: Finding, exposures: Sequence[Exposure], ev: Evaluato
     if entity is None:
         return finding
     severity, reason, evidence = adjust_severity(finding.severity, exposures, ev, entity)
-    merged = {
-        (e.file, e.line_start, e.line_end, e.mapping_ref): e for e in (*finding.evidence, *evidence)
-    }
+
+    def key(e: Evidence) -> tuple[str, int, int, str | None]:
+        return (e.file, e.line_start, e.line_end, e.mapping_ref)
+
+    def ordered(items: Iterable[Evidence]) -> list[Evidence]:
+        return sorted(items, key=lambda e: (e.file, e.line_start, e.mapping_ref or ""))
+
+    # The lines that break the rule come first, then those that only locate it (the WAN
+    # interface that raised its severity): a list or report showing one line shows the cause.
+    own = {key(e): e for e in finding.evidence}
+    where = {key(e): e for e in evidence if key(e) not in own}
     return finding.model_copy(
         update={
             "severity": severity,
             "severity_reason": reason,
-            "evidence": tuple(
-                sorted(merged.values(), key=lambda e: (e.file, e.line_start, e.mapping_ref or ""))
-            ),
+            "evidence": (*ordered(own.values()), *ordered(where.values())),
         }
     )
 

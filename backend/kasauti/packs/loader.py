@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -199,6 +199,39 @@ def load_vendor_pack(root: Path) -> VendorPack:
 def load_vendor_packs(packs_root: Path) -> dict[str, VendorPack]:
     """Every vendor pack under ``packs_root/vendors``, by id."""
     return {d.name: load_vendor_pack(d) for d in sorted((packs_root / "vendors").glob("*/"))}
+
+
+def with_learned(packs: dict[str, VendorPack], learned: Path) -> dict[str, VendorPack]:
+    """The packs with the mappings taught in the Training Studio added: ``learned/<pack>/*.yaml``,
+    each a mappings file like a pack's own (PLAN §11.2). They live in the server's data folder,
+    not in the shipped packs, and are validated exactly as pack mappings are. A file for a pack
+    that isn't installed, a mapping for another vendor, or an id the pack already has is refused."""
+    if not learned.is_dir():
+        return packs
+    c = _Collector(_data_only(learned))
+    out = dict(packs)
+    for folder in sorted(p for p in learned.iterdir() if p.is_dir()):
+        pack = packs.get(folder.name)
+        taught: list[Mapping] = _many(c, folder.glob("*.yaml"), MappingFile, lambda f: f.mappings)
+        if pack is None:
+            if taught:
+                c.problems.append(f"{folder}: no vendor pack {folder.name!r} is installed")
+            continue
+        c.problems += [
+            f"{folder}: mapping {m.id} is for {m.vendor!r}, not {folder.name!r}"
+            for m in taught
+            if m.vendor != folder.name
+        ]
+        c.problems += [
+            f"{folder}: taught mapping {m.id} has no approval"
+            for m in taught
+            if not m.provenance.approved_by
+        ]
+        c.problems += _duplicates("mapping", (m.id for m in (*pack.mappings, *taught)))
+        out[folder.name] = replace(pack, mappings=(*pack.mappings, *taught))
+    if c.problems:
+        raise PackError(c.problems)
+    return out
 
 
 def load_ruleset(

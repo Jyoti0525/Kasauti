@@ -193,11 +193,21 @@ def audit_timeout(size: int) -> int:
 
 
 class UploadStore:
-    def __init__(self, engine: Engine, staging: Staging, queue: JobQueue, packs: Path) -> None:
+    def __init__(
+        self,
+        engine: Engine,
+        staging: Staging,
+        queue: JobQueue,
+        packs: Path,
+        learned: Path | None = None,
+    ) -> None:
         self.engine = engine
         self.staging = staging
         self.queue = queue
         self.packs = packs
+        self.learned = learned
+        """Mappings taught in the Training Studio: each audit loads them with the packs, so an
+        approval changes the next audit with no restart (R-03)."""
 
     # -- reading ------------------------------------------------------------------------------
 
@@ -639,6 +649,7 @@ class UploadStore:
                 "staging": str(self.staging.root.resolve()),
                 "staging_key": self.staging.key_id,
                 "packs": str(self.packs.resolve()),
+                "learned": str(self.learned.resolve()) if self.learned else None,
             }
             size = sizes[root.id] + sum(sizes[m.id] for m in paired)
             job_id = self.queue.enqueue(

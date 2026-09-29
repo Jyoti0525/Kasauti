@@ -1,0 +1,20 @@
+format_version: 1
+id: huawei_vrp
+name: Huawei VRP
+vendor: Huawei
+os_family: VRP
+shape_family: indent
+pack_version: 1
+negation_words: ["undo"]
+comment_markers: ["#", "!"]
+time_unit: minutes
+default_role: router
+learning: true   # being taught in the Training Studio; see the note below
+# A new vendor, added as data only (PLAN §4.4, R-08): the pack says how to recognise a Huawei
+# VRP configuration and where its identity is, and holds no mappings. What its lines mean is
+# taught in the Training Studio, one approved pattern at a time (R-03). The description below
+# is shown to users (knowledge base screen), so it carries no plan references.
+description: >
+  Huawei VRP (V200R0xx) configurations as `display current-configuration` prints them. Added as
+  data: the pack recognises the vendor and reads the device's identity; what each line means
+  is taught in the Training Studio and approved there.

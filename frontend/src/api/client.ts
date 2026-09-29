@@ -2,7 +2,8 @@
 //
 // Every request that changes something carries X-Kasauti-Request: 1, which the server requires
 // (backend/kasauti/api/app.py, CrossSiteGuard): a page on another site can't add it without a
-// CORS preflight, and the server grants none. Credentials never leave this origin.
+// CORS preflight, and the server grants none. Credentials never leave this origin: the session
+// is an HttpOnly cookie this code can't read, sent by the browser to this server only.
 
 export class ApiError extends Error {
   readonly status: number;
@@ -14,6 +15,9 @@ export class ApiError extends Error {
 }
 
 const GUARD = { "X-Kasauti-Request": "1" };
+
+/** Fired when the server says the session is gone. */
+export const SIGNED_OUT = "kasauti:signed-out";
 
 async function failure(response: Response): Promise<ApiError> {
   let detail = `${response.status} ${response.statusText}`;
@@ -42,6 +46,10 @@ async function request<T>(method: string, path: string, init: RequestInit = {}):
     credentials: "same-origin",
     headers: { ...(unsafe ? GUARD : {}), ...(init.headers ?? {}) },
   });
+  if (response.status === 401 && !path.startsWith("/api/auth/")) {
+    // The session ended (idle, expired or signed out elsewhere): the app goes to sign-in.
+    window.dispatchEvent(new Event(SIGNED_OUT));
+  }
   if (!response.ok) throw await failure(response);
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;

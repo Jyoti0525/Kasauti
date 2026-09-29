@@ -1,52 +1,126 @@
 import { Info } from "lucide-react";
 import type { AuditResult, Entity, Fact } from "../../api/types";
-import { Meter } from "../../components/charts";
-import { Card, ControlBadge, Empty, Notice, Tag, cx } from "../../components/ui";
+import { FrameworkStrip, Meter } from "../../components/charts";
+import { Card, Chip, ControlBadge, Empty, Notice, Tag, cx } from "../../components/ui";
 import { pct, show } from "../../lib/format";
 
-/** The NIST SP 800-53 control matrix: each control the rules give evidence for. */
-export function Controls({ result }: { result: AuditResult }) {
-  const order = {
-    "not satisfied": 0,
-    "partially satisfied": 1,
-    undetermined: 2,
-    satisfied: 3,
-    "not applicable": 4,
-  };
-  const rows = [...result.controls].sort(
-    (a, b) => order[a.status] - order[b.status] || a.control.localeCompare(b.control),
-  );
+const CONTROL_ORDER = {
+  "not satisfied": 0,
+  "partially satisfied": 1,
+  undetermined: 2,
+  satisfied: 3,
+  "not applicable": 4,
+};
+const CAT = { high: "CAT I", medium: "CAT II", low: "CAT III" } as const;
+const FRAMEWORK_NOTE: Record<string, string> = {
+  disa_stig:
+    "STIG requirements from DISA's published benchmarks. A requirement the checks cover only in part can be failed here but never met: it stays undetermined until someone checks the rest.",
+  iso_27001_2022:
+    "Annex A control numbers, derived from each rule's NIST controls through NIST OLIR #155. Descriptions are Kasauti's own wording; ISO text is copyrighted. A configuration shows only the device's side of a control.",
+  nist_800_53r5: "NIST SP 800-53 Rev. 5 controls, from NIST's official catalog.",
+};
+
+/** Per-framework scores, side by side, when the audit was scored against more than one. */
+export function FrameworkScores({ result }: { result: AuditResult }) {
+  return <FrameworkStrip scores={result.scores} />;
+}
+
+/** The control matrix for one selected framework at a time: each control the rules give
+ * evidence for on this device. */
+export function Controls({
+  result,
+  framework,
+  onFramework,
+}: {
+  result: AuditResult;
+  framework: string | null;
+  onFramework: (f: string) => void;
+}) {
+  const chosen =
+    framework && result.frameworks.includes(framework) ? framework : result.frameworks[0];
+  const score = result.scores.find((s) => s.framework === chosen);
+  const stig = chosen === "disa_stig";
+  const rows = result.controls
+    .filter((c) => (c.framework ?? "nist_800_53r5") === chosen)
+    .sort(
+      (a, b) =>
+        CONTROL_ORDER[a.status] - CONTROL_ORDER[b.status] ||
+        Number(a.partial) - Number(b.partial) ||
+        a.control.localeCompare(b.control, undefined, { numeric: true }),
+    );
   return (
-    <Card bodyClass="p-0">
-      <table className="data">
-        <thead>
-          <tr>
-            <th className="w-28">Control</th>
-            <th>Title</th>
-            <th className="w-52">Status</th>
-            <th>Evidence from</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((c) => (
-            <tr key={c.control}>
-              <td className="font-mono text-[13px] font-medium">{c.control}</td>
-              <td>{c.title}</td>
-              <td>
-                <ControlBadge status={c.status} />
-              </td>
-              <td>
-                <span className="flex flex-wrap gap-1">
-                  {c.rules.map((r) => (
-                    <Tag key={r}>{r}</Tag>
-                  ))}
-                </span>
-              </td>
-            </tr>
+    <>
+      {result.frameworks.length > 1 && (
+        <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Framework">
+          {result.scores.map((s) => (
+            <Chip
+              key={s.framework}
+              active={s.framework === chosen}
+              onClick={() => onFramework(s.framework)}
+            >
+              {s.title}
+              <span className="tabular-nums opacity-70">
+                {
+                  result.controls.filter((c) => (c.framework ?? "nist_800_53r5") === s.framework)
+                    .length
+                }
+              </span>
+            </Chip>
           ))}
-        </tbody>
-      </table>
-    </Card>
+        </div>
+      )}
+      <p className="mb-3 max-w-3xl text-[13px] text-muted">
+        {(chosen && FRAMEWORK_NOTE[chosen]) ?? ""}
+        {score?.benchmarks?.length ? ` Applied: ${score.benchmarks.join("; ")}.` : ""}
+      </p>
+      {rows.length === 0 ? (
+        <Card>
+          <Empty title={score?.note ? `${score.note}.` : "No control is touched by these rules"} />
+        </Card>
+      ) : (
+        <Card bodyClass="p-0">
+          <table className="data">
+            <thead>
+              <tr>
+                <th className={stig ? "w-36" : "w-28"}>{stig ? "STIG ID" : "Control"}</th>
+                {stig && <th className="w-20">Category</th>}
+                <th>{stig ? "Requirement" : "Title"}</th>
+                <th className="w-52">Status</th>
+                <th>Evidence from</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((c) => (
+                <tr key={c.control}>
+                  <td className="whitespace-nowrap font-mono text-[13px] font-medium">
+                    {c.control}
+                  </td>
+                  {stig && (
+                    <td className="whitespace-nowrap text-[13px]">
+                      {c.severity ? CAT[c.severity] : "–"}
+                    </td>
+                  )}
+                  <td className={cx(stig && "text-[13px]")}>{c.title || "–"}</td>
+                  <td>
+                    <ControlBadge status={c.status} />
+                    {c.partial && (
+                      <div className="mt-1 text-[12px] text-faint">Checks cover part of it</div>
+                    )}
+                  </td>
+                  <td>
+                    <span className="flex flex-wrap gap-1">
+                      {c.rules.map((r) => (
+                        <Tag key={r}>{r}</Tag>
+                      ))}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
+    </>
   );
 }
 

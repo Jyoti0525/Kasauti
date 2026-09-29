@@ -1,0 +1,8 @@
+# Where identity appears (PLAN §7). `display current-configuration` starts with the release as
+# a comment ("!Software Version V200R010C00SPC600") and names the device with `sysname`
+# (Huawei AR Router Command Reference, V200R010, "sysname").
+fields:
+  hostname:
+    - {source: config, pattern: "sysname <STR:value>"}
+  os_version:
+    - {source: config, regex: '^!Software Version (?P<value>V\d{3}R\d{3}\S*)'}

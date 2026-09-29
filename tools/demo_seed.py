@@ -5,17 +5,28 @@ device) as three audits, the way the web UI does: one request per file, command 
 with their device, then started. It uses only the standard library and talks only to the
 loopback server, so it runs on an air-gapped laptop.
 
-    uv run kasauti serve --data-dir var/demo        # a separate, empty database for the demo
-    uv run python tools/demo_seed.py                # in another terminal
+    uv run kasauti serve --data-dir var/demo --demo-accounts   # a separate database for the demo
+    uv run python tools/demo_seed.py                           # in another terminal
+
+It signs in as the demo trainer, Asha, whose password the server publishes when started with
+``--demo-accounts``; ``--user`` and ``$KASAUTI_PASSWORD`` sign in as someone else.
 
 Then open http://127.0.0.1:8000/. Run it again for another round of the same audits: the
 dashboard counts each device once, at its latest audit.
+
+    uv run python tools/demo_seed.py --export var/demo-fleet
+
+writes the same fleet as a folder to drop on the New audit screen (docs/DEMO.md): one folder per
+device, its configuration named ``running-config`` so that its command outputs pair with it by
+folder name, as a site's own backup folders would.
 """
 
 from __future__ import annotations
 
 import argparse
+import http.cookiejar
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -62,6 +73,10 @@ class Api:
         ):
             raise SystemExit("demo_seed talks to a loopback Kasauti only: http://127.0.0.1:PORT")
         self.base = base.rstrip("/")
+        # The session cookie, kept in memory for this run only.
+        self.opener = urllib.request.build_opener(
+            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
+        )
 
     def call(
         self,
@@ -77,7 +92,7 @@ class Api:
             headers={**(GUARD if method != "GET" else {}), **(headers or {})},
         )
         try:
-            with urllib.request.urlopen(request, timeout=60) as response:  # noqa: S310  # nosec B310
+            with self.opener.open(request, timeout=60) as response:
                 raw = response.read()
         except urllib.error.HTTPError as err:
             raise SystemExit(
@@ -91,10 +106,24 @@ class Api:
         )
 
 
+def sign_in(api: Api, user: str, password: str | None) -> None:
+    if password is None:
+        demo = api.call("GET", "/api/auth/options")["demo"]
+        password = next((d["password"] for d in demo if d["username"] == user), None)
+    if password is None:
+        raise SystemExit(
+            f"no password for {user}: start the server with --demo-accounts, "
+            "or set $KASAUTI_PASSWORD"
+        )
+    api.json("POST", "/api/auth/login", {"username": user, "password": password})
+
+
 def seed(api: Api) -> list[str]:
     started = []
+    # Every installed framework, as the New Audit page selects by default.
+    frameworks = api.call("GET", "/api/health")["frameworks"]
     for label, files in FLEET.items():
-        upload = api.json("POST", "/api/uploads", {"label": label})
+        upload = api.json("POST", "/api/uploads", {"label": label, "frameworks": frameworks})
         uid = upload["id"]
         for rel in files:
             path = AUTHORED / rel
@@ -145,12 +174,36 @@ def _wait(api: Api, uid: str, done: Any, what: str, timeout_s: float = 300) -> d
     )
 
 
+def export(target: Path) -> list[Path]:
+    """Write the fleet's files under ``target``, one folder per device; nothing is uploaded."""
+    written: list[Path] = []
+    for files in FLEET.values():
+        for rel in files:
+            source = AUTHORED / rel
+            vendor = rel.split("/")[0]
+            name = source.name if "/companions/" in rel else f"running-config{source.suffix}"
+            out = target / vendor / name
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes(source.read_bytes())
+            written.append(out)
+    return written
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--url", default="http://127.0.0.1:8000", help="the running Kasauti")
+    parser.add_argument(
+        "--export", type=Path, metavar="DIR", help="write the fleet as a folder instead"
+    )
+    parser.add_argument("--user", default="asha", help="who uploads (default: asha, the demo)")
     args = parser.parse_args(argv)
+    if args.export:
+        written = export(args.export)
+        print(f"wrote {len(written)} files under {args.export}")
+        return 0
     api = Api(args.url)
     api.call("GET", "/api/health")
+    sign_in(api, args.user, os.environ.get("KASAUTI_PASSWORD"))
     seed(api)
     for audit in api.call("GET", "/api/audits?limit=50"):
         s = audit["summary"]

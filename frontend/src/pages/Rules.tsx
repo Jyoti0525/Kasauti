@@ -1,6 +1,6 @@
 import { Check, ChevronDown, ExternalLink, X } from "lucide-react";
 import { useState } from "react";
-import { useKb } from "../api/hooks";
+import { useKb, usePackName } from "../api/hooks";
 import type { RuleOut } from "../api/types";
 import {
   Card,
@@ -21,6 +21,7 @@ import { titleCase } from "../lib/format";
  * fixtures that prove it passes a hardened configuration and fails a weak one. */
 export function Rules() {
   const kb = useKb();
+  const packName = usePackName();
   const [domain, setDomain] = useState("");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
@@ -33,7 +34,11 @@ export function Rules() {
     (r) =>
       (!domain || r.domain === domain) &&
       (!q ||
-        `${r.id} ${r.title} ${r.intent} ${Object.values(r.controls).flat().join(" ")}`
+        `${r.id} ${r.title} ${r.intent} ${Object.values(r.controls).flat().join(" ")} ${Object.values(
+          r.vendor_controls,
+        )
+          .flatMap((v) => Object.values(v).flat())
+          .join(" ")}`
           .toLowerCase()
           .includes(q)),
   );
@@ -51,13 +56,35 @@ export function Rules() {
               <div>
                 <div className="text-[15px] font-semibold">{f.title}</div>
                 <div className="mt-1 text-[12.5px] text-muted">
-                  Release {f.version} · {f.controls} controls · {f.licence}
+                  {f.benchmarks.length
+                    ? `${f.benchmarks.length} benchmarks`
+                    : `Release ${f.version}`}{" "}
+                  · {f.controls} controls · {f.mapped_rules} rules mapped
                 </div>
               </div>
               <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md bg-pass-soft px-2 py-0.5 text-[12px] font-semibold text-pass">
                 <Check className="size-3.5" strokeWidth={2.75} /> In use
               </span>
             </div>
+            {f.benchmarks.length > 0 && (
+              <ul className="mt-3 space-y-0.5 text-[12.5px]">
+                {f.benchmarks.map((b) => (
+                  <li key={b.id} className="flex justify-between gap-3">
+                    <span className="truncate" title={b.title}>
+                      {b.title.replace(" Security Technical Implementation Guide", "")}
+                    </span>
+                    <span className="shrink-0 tabular-nums text-muted">
+                      {b.version}
+                      {b.sunset && <span className="ml-1.5 text-faint">sunset</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-3 text-[12px] leading-relaxed text-faint">
+              {f.licence}
+              {f.bridge && `. Mapped to rules through ${f.bridge}.`}
+            </p>
             <a
               href={f.source_url}
               target="_blank"
@@ -70,12 +97,11 @@ export function Rules() {
           </Card>
         ))}
         <div className="rounded-xl border border-dashed border-line-strong p-5">
-          <div className="text-[15px] font-semibold text-muted">
-            CIS Benchmarks · DISA STIG · ISO/IEC 27001
-          </div>
+          <div className="text-[15px] font-semibold text-muted">CIS Benchmarks</div>
           <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
-            Coming through a reviewed crosswalk from the NIST SP 800-53 controls each rule already
-            cites, one mapping at a time.
+            Not installed. CIS publishes recommendation numbers only in its benchmark PDFs, given
+            out after registration; once they are downloaded, they are imported and mapped like the
+            other frameworks.
           </p>
         </div>
       </div>
@@ -112,6 +138,7 @@ export function Rules() {
             open={open === r.id}
             onToggle={() => setOpen(open === r.id ? null : r.id)}
             titles={control_titles}
+            packName={packName}
           />
         ))}
       </Card>
@@ -124,13 +151,17 @@ function RuleRow({
   open,
   onToggle,
   titles,
+  packName,
 }: {
   rule: RuleOut;
   open: boolean;
   onToggle: () => void;
   titles: Record<string, string>;
+  packName: (id: string) => string;
 }) {
   const nist = r.controls.nist_800_53r5 ?? [];
+  const iso = r.controls.iso_27001_2022 ?? [];
+  const stig = r.vendor_controls.disa_stig ?? {};
   return (
     <div className="border-b border-line last:border-0">
       <button
@@ -195,6 +226,42 @@ function RuleRow({
                 ))}
               </ul>
             </div>
+            {iso.length > 0 && (
+              <div>
+                <div className="mb-1.5 text-[12px] font-medium text-muted">
+                  ISO/IEC 27001:2022 Annex A, through NIST OLIR #155
+                </div>
+                <ul className="space-y-1">
+                  {iso.map((c) => (
+                    <li key={c} className="flex gap-2">
+                      <Mono className="w-16 shrink-0 font-medium">{c}</Mono>
+                      <span className="text-muted">{titles[c]}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {Object.keys(stig).length > 0 && (
+              <div>
+                <div className="mb-1.5 text-[12px] font-medium text-muted">
+                  DISA STIG, per platform
+                </div>
+                <ul className="space-y-1">
+                  {Object.entries(stig).map(([vendor, ids]) => (
+                    <li key={vendor} className="flex gap-2">
+                      <span className="w-32 shrink-0 truncate">{packName(vendor)}</span>
+                      <span className="flex flex-wrap gap-1">
+                        {ids.map((c) => (
+                          <span key={c} title={titles[c]}>
+                            <Tag>{c}</Tag>
+                          </span>
+                        ))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div>
               <div className="mb-1.5 text-[12px] font-medium text-muted">
                 Proved on every change against sample configurations

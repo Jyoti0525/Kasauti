@@ -96,6 +96,11 @@ class VendorManifest(_Strict):
     records: Records | None = None
     """JSON/YAML only: list items read as records (a cloud export's rules)."""
     description: str = ""
+    learning: bool = False
+    """The pack is still being taught in the Training Studio: it doesn't yet read every area the
+    rules judge, so a fact it has no mapping for is never taken as absent (PLAN §11). A reviewed
+    pack reads what applies to its vendor; there, a missing attribute means the setting isn't
+    there (a Cisco filter has no application match)."""
 
     @model_validator(mode="after")
     def _set_form_needs_blocks(self) -> Self:
@@ -503,10 +508,47 @@ class ExposureFile(_Strict):
 # --- frameworks/<framework>/ -------------------------------------------------------------------
 
 
+Sha256 = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
+
+
 class Control(_Strict):
     id: str = Field(min_length=1)
     title: str = ""
     """Official title where the licence allows (NIST, STIG); our own short wording for ISO/CIS."""
+    benchmark: str | None = None
+    """The benchmark (one vendor STIG) the control belongs to, for frameworks that have them."""
+    severity: Literal["high", "medium", "low"] | None = None
+    """STIG category as DISA rates it: high = CAT I, medium = CAT II, low = CAT III."""
+    vuln_id: str | None = None
+    """STIG Vulnerability ID (``V-215807``), the number DISA's own checklists (CKL) key on."""
+    ccis: tuple[str, ...] = ()
+    nist: tuple[str, ...] = ()
+    """The official bridge to NIST SP 800-53 r5: through the control's CCIs (DISA CCI list) for
+    a STIG, through NIST OLIR #155 for ISO/IEC 27001. The crosswalk lint checks every mapping
+    against it."""
+    fix: str | None = None
+    """DISA's fix text (public domain), shown with our fix as reference wording (M4.04)."""
+
+
+class Source(_Strict):
+    title: str
+    version: str
+    url: str
+    sha256: Sha256
+    released: str | None = None
+
+
+class Benchmark(_Strict):
+    id: str = Field(min_length=1)
+    title: str
+    version: str
+    """``V3R7``: DISA's version and release."""
+    released: str
+    vendors: tuple[Slug, ...] = Field(min_length=1)
+    """The vendor packs whose devices this benchmark covers."""
+    source: Source
+    sunset: bool = False
+    """DISA has retired the benchmark; kept because no successor exists yet."""
 
 
 class FrameworkCatalog(_Strict):
@@ -519,6 +561,13 @@ class FrameworkCatalog(_Strict):
     """SHA-256 of the official file the IDs were extracted from, so the import is verifiable."""
     licence: str
     retrieved: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    benchmarks: tuple[Benchmark, ...] = ()
+    """Per-vendor benchmarks (DISA STIG). Empty: the framework is the same for every vendor."""
+    bridge: Source | None = None
+    """Where each control's ``nist`` comes from (the DISA CCI list, NIST OLIR #155)."""
+    withdrawn: dict[str, tuple[str, ...]] = Field(default_factory=dict)
+    """Withdrawn control -> where the official catalog says it went (NIST: moved to or
+    incorporated into). Never citable itself."""
     controls: tuple[Control, ...]
 
     @model_validator(mode="after")
@@ -526,14 +575,43 @@ class FrameworkCatalog(_Strict):
         ids = [c.id for c in self.controls]
         if len(ids) != len(set(ids)):
             raise ValueError("duplicate control ids in catalog")
+        known = {b.id for b in self.benchmarks}
+        if len(known) != len(self.benchmarks):
+            raise ValueError("duplicate benchmark ids in catalog")
+        stray = sorted(
+            {c.benchmark for c in self.controls if c.benchmark and c.benchmark not in known}
+        )
+        if stray or (known and any(c.benchmark is None for c in self.controls)):
+            raise ValueError(f"controls outside the catalog's benchmarks: {stray or 'none given'}")
         return self
+
+    def benchmarks_for(self, vendor: str) -> tuple[Benchmark, ...]:
+        return tuple(b for b in self.benchmarks if vendor in b.vendors)
 
 
 class CrosswalkEntry(_Strict):
     rule: str
     controls: tuple[str, ...] = Field(min_length=1)
     source: Literal["authored", "olir-155", "stig-cci", "semantic-proposal"]
+    vendor: Slug | None = None
+    """For per-vendor frameworks (DISA STIG): the vendor pack whose benchmark ``controls`` are in.
+    ``None``: the mapping holds for every vendor."""
+    covers: Literal["full", "part", "stricter"] = "full"
+    """How much of each control the rule decides. ``full``: the rule's verdict is the control's.
+    ``part``: the rule checks part of it (a FAIL fails the control; a PASS proves nothing more).
+    ``stricter``: the rule asks for more (a PASS meets the control; a FAIL may not break it)."""
+    note: str = ""
+    """What the rule leaves out of the control, or asks beyond it."""
+    bridge_note: str = ""
+    """Required when no NIST control of the rule shares a base control with the framework
+    control's official NIST bridge (CCI, OLIR): why the mapping holds anyway."""
     reviewed_by: str | None = None
+
+    @model_validator(mode="after")
+    def _explained(self) -> Self:
+        if self.covers != "full" and not self.note:
+            raise ValueError(f"{self.rule}: a {self.covers!r} mapping needs a note saying why")
+        return self
 
 
 class Crosswalk(_Strict):

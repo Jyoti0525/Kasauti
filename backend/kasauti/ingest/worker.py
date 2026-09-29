@@ -62,7 +62,8 @@ def audit_file(payload: dict[str, Any]) -> dict[str, Any]:
         del data
         given = [decode(raw, n) for n, raw in outputs]
         del outputs
-        kb = load_kb(Path(payload["packs"]))
+        learned = payload.get("learned")
+        kb = load_kb(Path(payload["packs"]), Path(learned) if learned else None)
         result = audit(
             artifact,
             kb,

@@ -9,7 +9,8 @@ the vendor pack (``cisco_ios_xe/weak.cfg``).
 (Per-seed-vendor fixture completeness is added in M2.46 once more seed packs exist.)
 
 Crosswalk lint. No rule may cite a control ID that isn't in an imported official catalog;
-every crosswalk entry must name an existing rule and existing controls.
+every crosswalk entry must name an existing rule and existing controls, and share a NIST
+base control with each (through the control's official bridge: CCI, OLIR #155) or say why.
 
 Usage: ``uv run python tools/lint_content.py [--packs packs] [--fixtures datasets/authored]``
 """
@@ -25,6 +26,7 @@ import yaml
 
 from kasauti.audit import AuditError, audit, load_kb
 from kasauti.ingest.read import IngestError, read_file
+from kasauti.packs.crosswalk import bridge_problems
 from kasauti.packs.loader import FrameworkPack, PackError, load_framework_pack, load_ruleset
 
 NIST = "nist_800_53r5"
@@ -98,7 +100,6 @@ def crosswalk_lint(packs: Path) -> list[str]:
             continue
         frameworks[fw.catalog.framework] = fw
 
-    rule_ids = {r.id for r in ruleset.rules}
     nist = frameworks.get(NIST)
     nist_ids = {c.id for c in nist.catalog.controls} if nist else set()
     for rule in ruleset.rules:
@@ -114,18 +115,8 @@ def crosswalk_lint(packs: Path) -> list[str]:
             if nist is not None and cid not in nist_ids
         ]
 
-    for name, fw in frameworks.items():
-        if fw.crosswalk is None:
-            continue
-        ids = {c.id for c in fw.catalog.controls}
-        for entry in fw.crosswalk.entries:
-            if entry.rule not in rule_ids:
-                problems.append(f"{name} crosswalk: unknown rule {entry.rule}")
-            problems += [
-                f"{name} crosswalk: {entry.rule} -> {cid} is not in the {name} catalog"
-                for cid in entry.controls
-                if cid not in ids
-            ]
+    for fw in frameworks.values():
+        problems += bridge_problems(fw, ruleset.rules)
     return problems
 
 

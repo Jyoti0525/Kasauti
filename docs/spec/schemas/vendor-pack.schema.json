@@ -102,6 +102,11 @@
       "title": "Id",
       "type": "string"
     },
+    "learning": {
+      "default": false,
+      "title": "Learning",
+      "type": "boolean"
+    },
     "name": {
       "title": "Name",
       "type": "string"

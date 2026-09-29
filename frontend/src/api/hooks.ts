@@ -1,6 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "./client";
-import type { AuditOut, AuditResult, Health, Kb, Upload, UploadBrief, VendorDetail } from "./types";
+import { ApiError, api } from "./client";
+import type {
+  AuditOut,
+  AuditResult,
+  AuthOptions,
+  Health,
+  Kb,
+  Me,
+  Role,
+  Upload,
+  UploadBrief,
+  VendorDetail,
+} from "./types";
+import { ROLES } from "./types";
 
 const STILL_RUNNING = new Set(["queued", "running"]);
 
@@ -86,4 +98,33 @@ export function useResult(jobId: string | undefined) {
     enabled: Boolean(jobId),
     staleTime: Infinity,
   });
+}
+
+/** Who is signed in: null when no one is. */
+export function useMe() {
+  return useQuery({
+    queryKey: ["me"],
+    queryFn: async () => {
+      try {
+        return await api.get<Me>("/api/auth/me");
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 401) return null;
+        throw e;
+      }
+    },
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useAuthOptions() {
+  return useQuery({
+    queryKey: ["auth", "options"],
+    queryFn: () => api.get<AuthOptions>("/api/auth/options"),
+    staleTime: Infinity,
+  });
+}
+
+/** Whether ``role`` includes the rights of ``needed``. */
+export function may(role: Role | undefined, needed: Role): boolean {
+  return role !== undefined && ROLES.indexOf(role) >= ROLES.indexOf(needed);
 }

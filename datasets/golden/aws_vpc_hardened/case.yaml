@@ -4,7 +4,7 @@ description: Amazon VPC security groups and network ACLs, hardened twin
 input: authored/aws_vpc/hardened.json
 input_sha256: 730d44c034b958c434d89608366a046e473113ac78d549c5ec493f1bb02b833b
 vendor: null
-frameworks: [nist_800_53r5]
+frameworks: [nist_800_53r5, disa_stig, iso_27001_2022]
 expected_statuses:
   AAA-CENTRAL-AUTH-01: N/A      # the rule covers routers, switches, firewalls and white boxes, not cloud filters
   AAA-LOCAL-PASSWORD-HASH-01: N/A      # the rule covers routers, switches, firewalls and white boxes, not cloud filters

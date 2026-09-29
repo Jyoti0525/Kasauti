@@ -7,11 +7,14 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { ApiError } from "./api/client";
 import { Layout } from "./components/Layout";
+import { SignedIn } from "./components/SignedIn";
 import "./index.css";
 import { Audits } from "./pages/Audits";
 import { Dashboard } from "./pages/Dashboard";
 import { DevicePage } from "./pages/Device";
+import { Studio } from "./pages/Studio";
 import { KnowledgeBase } from "./pages/KnowledgeBase";
+import { Login } from "./pages/Login";
 import { NewAudit } from "./pages/NewAudit";
 import { NotFound } from "./pages/NotFound";
 import { Rules } from "./pages/Rules";
@@ -28,19 +31,26 @@ const queries = new QueryClient({
 });
 
 const router = createBrowserRouter([
+  { path: "/login", element: <Login /> },
   {
-    element: <Layout />,
+    element: <SignedIn />,
     children: [
-      { path: "/", element: <Dashboard /> },
-      { path: "/audits/new", element: <NewAudit /> },
-      { path: "/audits/new/:uploadId", element: <NewAudit /> },
-      { path: "/audits", element: <Audits /> },
-      { path: "/uploads/:uploadId", element: <UploadResults /> },
-      { path: "/devices/:jobId", element: <DevicePage /> },
-      { path: "/knowledge", element: <KnowledgeBase /> },
-      { path: "/knowledge/:packId", element: <KnowledgeBase /> },
-      { path: "/rules", element: <Rules /> },
-      { path: "*", element: <NotFound /> },
+      {
+        element: <Layout />,
+        children: [
+          { path: "/", element: <Dashboard /> },
+          { path: "/audits/new", element: <NewAudit /> },
+          { path: "/audits/new/:uploadId", element: <NewAudit /> },
+          { path: "/audits", element: <Audits /> },
+          { path: "/uploads/:uploadId", element: <UploadResults /> },
+          { path: "/devices/:jobId", element: <DevicePage /> },
+          { path: "/knowledge", element: <KnowledgeBase /> },
+          { path: "/knowledge/:packId", element: <KnowledgeBase /> },
+          { path: "/rules", element: <Rules /> },
+          { path: "/studio", element: <Studio /> },
+          { path: "*", element: <NotFound /> },
+        ],
+      },
     ],
   },
 ]);

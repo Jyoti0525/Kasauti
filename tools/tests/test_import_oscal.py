@@ -24,6 +24,7 @@ MINI = {
                                 "id": "ac-17.5",
                                 "title": "Monitoring",
                                 "props": [{"name": "status", "value": "withdrawn"}],
+                                "links": [{"href": "#si-4", "rel": "incorporated-into"}],
                             },
                         ],
                     },
@@ -43,9 +44,11 @@ def test_control_ids(oscal: str, ours: str) -> None:
 
 
 def test_extract_orders_controls_and_drops_withdrawn() -> None:
-    version, controls = import_oscal.extract(MINI)
+    version, controls, withdrawn = import_oscal.extract(MINI)
     assert version == "5.2.0"
     assert [c["id"] for c in controls] == ["AC-2", "AC-17", "AC-17(2)"]
+    # Kept only as NIST's pointer to where the withdrawn control went, never as a citable ID.
+    assert withdrawn == {"AC-17(5)": ["SI-4"]}
 
 
 def test_import_from_a_local_file_writes_a_valid_framework_pack(tmp_path: Path) -> None:

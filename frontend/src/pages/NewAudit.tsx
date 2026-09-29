@@ -40,7 +40,8 @@ export function NewAudit() {
   const packName = usePackName();
 
   const [label, setLabel] = useState("");
-  const [frameworks, setFrameworks] = useState<string[]>(["nist_800_53r5"]);
+  // Null until the user changes the choice: every installed framework is selected by default.
+  const [picked, setPicked] = useState<string[] | null>(null);
   const [vendor, setVendor] = useState("");
   const [sending, setSending] = useState<Sending[]>([]);
   const [error, setError] = useState<unknown>(null);
@@ -133,6 +134,8 @@ export function NewAudit() {
   }
 
   const installed = health.data?.frameworks ?? [];
+  const frameworks = picked ?? installed;
+  const setFrameworks = (f: (cur: string[]) => string[]) => setPicked(f(frameworks));
   const busy = sending.some((s) => s.state === "sending");
   const canStart = Boolean(u && u.accepted > 0 && u.recognising === 0 && !busy);
   const step = !u ? 1 : u.devices.length === 0 ? 2 : 3;
@@ -219,19 +222,17 @@ export function NewAudit() {
                         <span className="font-medium">
                           {kb.data?.frameworks.find((x) => x.id === f)?.title ?? f}
                         </span>
-                        {f === "nist_800_53r5" && (
-                          <span className="mt-0.5 block text-[12px] text-muted">
-                            The anchor: every rule cites these controls
-                          </span>
-                        )}
+                        <span className="mt-0.5 block text-[12px] text-muted">
+                          {FRAMEWORK_HINT[f] ?? ""}
+                        </span>
                       </span>
                     </label>
                   );
                 })}
               </div>
               <p className="mt-2 text-[12px] leading-relaxed text-muted">
-                CIS Benchmarks, DISA STIG and ISO/IEC 27001 follow through a reviewed crosswalk from
-                these controls.
+                Each framework is mapped from the NIST controls through an official bridge (DISA's
+                CCI list, NIST OLIR #155) and reviewed. CIS Benchmarks aren't installed yet.
               </p>
             </fieldset>
             <label className="mt-5 block text-[13px] font-medium" htmlFor="vendor">
@@ -577,3 +578,9 @@ function DeviceRow({
     </li>
   );
 }
+
+const FRAMEWORK_HINT: Record<string, string> = {
+  nist_800_53r5: "The anchor: every rule cites these controls",
+  disa_stig: "DISA's benchmark for each device's platform, requirement by requirement",
+  iso_27001_2022: "Annex A controls, reached from NIST through NIST's official mapping",
+};

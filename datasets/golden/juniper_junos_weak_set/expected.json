@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "a14bb266f4e18a30727146af",
+  "audit_id": "2aa8167ffaf708bce0e0baeb",
   "input": {
     "file": "weak_set.conf",
     "sha256": "3bbd619977af8589de5e36d38d0f90f9ac06d6d0ebdceac6979485e059acbf9e",
@@ -52,15 +52,19 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
+    "kb_version": "c0e30bfcb5fa67b8d8e12b89e55145dcf92ffd2f286b74169026d65abe99ed90",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
+      "disa_stig": "Y26M07",
+      "iso_27001_2022": "2022",
       "nist_800_53r5": "5.2.0"
     }
   },
   "frameworks": [
-    "nist_800_53r5"
+    "nist_800_53r5",
+    "disa_stig",
+    "iso_27001_2022"
   ],
   "scores": [
     {
@@ -71,7 +75,36 @@
       "review": 1,
       "not_applicable": 2,
       "compliance_pct": 15.0,
-      "coverage_pct": 95.2
+      "coverage_pct": 95.2,
+      "note": "",
+      "benchmarks": []
+    },
+    {
+      "framework": "disa_stig",
+      "title": "DISA STIG",
+      "passed": 0,
+      "failed": 13,
+      "review": 3,
+      "not_applicable": 0,
+      "compliance_pct": 0.0,
+      "coverage_pct": 81.2,
+      "note": "",
+      "benchmarks": [
+        "Juniper SRX Services Gateway ALG V3R3",
+        "Juniper SRX Services Gateway NDM V3R3"
+      ]
+    },
+    {
+      "framework": "iso_27001_2022",
+      "title": "ISO/IEC 27001:2022",
+      "passed": 3,
+      "failed": 16,
+      "review": 1,
+      "not_applicable": 2,
+      "compliance_pct": 15.8,
+      "coverage_pct": 95.0,
+      "note": "",
+      "benchmarks": []
     }
   ],
   "rules": [
@@ -85,7 +118,17 @@
         "AC-2(1)",
         "IA-2"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000097"
+        ],
+        "iso_27001_2022": [
+          "A.5.16",
+          "A.5.18",
+          "A.8.2"
+        ]
+      }
     },
     {
       "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
@@ -96,7 +139,15 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000136"
+        ],
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "AAA-LOCKOUT-01",
@@ -107,7 +158,15 @@
       "nist_800_53r5": [
         "AC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000030"
+        ],
+        "iso_27001_2022": [
+          "A.8.5"
+        ]
+      }
     },
     {
       "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
@@ -118,7 +177,12 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
@@ -129,7 +193,15 @@
       "nist_800_53r5": [
         "IA-5(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000128"
+        ],
+        "iso_27001_2022": [
+          "A.5.17"
+        ]
+      }
     },
     {
       "rule_id": "FILTER-PERMIT-ANY-01",
@@ -141,7 +213,16 @@
         "SC-7(5)",
         "AC-4"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-AG-000128"
+        ],
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.22"
+        ]
+      }
     },
     {
       "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
@@ -152,7 +233,16 @@
       "nist_800_53r5": [
         "SC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-AG-000126"
+        ],
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.22"
+        ]
+      }
     },
     {
       "rule_id": "LOG-CONFIG-CHANGE-01",
@@ -165,7 +255,16 @@
         "AU-12",
         "CM-3"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000040"
+        ],
+        "iso_27001_2022": [
+          "A.8.15",
+          "A.8.32"
+        ]
+      }
     },
     {
       "rule_id": "LOG-REMOTE-01",
@@ -177,7 +276,15 @@
         "AU-4(1)",
         "AU-9(2)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-AG-000057"
+        ],
+        "iso_27001_2022": [
+          "A.8.15"
+        ]
+      }
     },
     {
       "rule_id": "LOG-TIMESTAMPS-01",
@@ -189,7 +296,16 @@
         "AU-3",
         "AU-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000065"
+        ],
+        "iso_27001_2022": [
+          "A.8.15",
+          "A.8.17"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-BANNER-01",
@@ -200,7 +316,15 @@
       "nist_800_53r5": [
         "AC-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000032"
+        ],
+        "iso_27001_2022": [
+          "A.8.5"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-HTTP-01",
@@ -213,7 +337,16 @@
         "SC-8",
         "AC-17(2)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000109",
+          "JUSX-DM-000167"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-SESSION-TIMEOUT-01",
@@ -225,7 +358,15 @@
         "AC-12",
         "SC-10"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000156"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-SSH-V2-01",
@@ -238,7 +379,16 @@
         "SC-8",
         "SC-13"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000150"
+        ],
+        "iso_27001_2022": [
+          "A.8.20",
+          "A.8.24"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-TELNET-01",
@@ -251,7 +401,15 @@
         "AC-17(2)",
         "SC-8"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000109"
+        ],
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-VTY-ACL-01",
@@ -263,7 +421,13 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-VTY-ACL-02",
@@ -275,7 +439,13 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "MGMT-WEB-ACL-01",
@@ -287,7 +457,13 @@
         "AC-3",
         "AC-17"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.5.15",
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "REF-DANGLING-01",
@@ -299,7 +475,12 @@
         "CM-6",
         "AC-3"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.9"
+        ]
+      }
     },
     {
       "rule_id": "SNMP-COMMUNITY-01",
@@ -311,7 +492,16 @@
         "IA-5",
         "CM-6"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000111"
+        ],
+        "iso_27001_2022": [
+          "A.5.17",
+          "A.8.9"
+        ]
+      }
     },
     {
       "rule_id": "SVC-LEGACY-01",
@@ -322,7 +512,15 @@
       "nist_800_53r5": [
         "CM-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "disa_stig": [
+          "JUSX-DM-000108"
+        ],
+        "iso_27001_2022": [
+          "A.8.19"
+        ]
+      }
     },
     {
       "rule_id": "SVC-PROXY-ARP-01",
@@ -334,7 +532,12 @@
         "CM-7",
         "SC-7"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {
+        "iso_27001_2022": [
+          "A.8.20"
+        ]
+      }
     },
     {
       "rule_id": "TIME-NTP-AUTH-01",
@@ -346,19 +549,25 @@
         "SC-45(1)",
         "IA-3(1)"
       ],
-      "hardening_best_practice": false
+      "hardening_best_practice": false,
+      "controls": {}
     }
   ],
   "controls": [
     {
+      "framework": "nist_800_53r5",
       "control": "AC-2(1)",
       "title": "Automated System Account Management",
       "status": "not satisfied",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-3",
       "title": "Access Enforcement",
       "status": "not satisfied",
@@ -367,41 +576,61 @@
         "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01",
         "REF-DANGLING-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-4",
       "title": "Information Flow Enforcement",
       "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-7",
       "title": "Unsuccessful Logon Attempts",
       "status": "not satisfied",
       "rules": [
         "AAA-LOCKOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-8",
       "title": "System Use Notification",
       "status": "not satisfied",
       "rules": [
         "MGMT-BANNER-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-12",
       "title": "Session Termination",
       "status": "not satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-17",
       "title": "Remote Access",
       "status": "not satisfied",
@@ -409,9 +638,13 @@
         "MGMT-VTY-ACL-01",
         "MGMT-VTY-ACL-02",
         "MGMT-WEB-ACL-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AC-17(2)",
       "title": "Protection of Confidentiality and Integrity Using Encryption",
       "status": "partially satisfied",
@@ -419,74 +652,110 @@
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-2",
       "title": "Event Logging",
       "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-3",
       "title": "Content of Audit Records",
       "status": "satisfied",
       "rules": [
         "LOG-TIMESTAMPS-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-4(1)",
       "title": "Transfer to Alternate Storage",
       "status": "not satisfied",
       "rules": [
         "LOG-REMOTE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-8",
       "title": "Time Stamps",
       "status": "satisfied",
       "rules": [
         "LOG-TIMESTAMPS-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-9(2)",
       "title": "Store on Separate Physical Systems or Components",
       "status": "not satisfied",
       "rules": [
         "LOG-REMOTE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "AU-12",
       "title": "Audit Record Generation",
       "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-3",
       "title": "Configuration Change Control",
       "status": "undetermined",
       "rules": [
         "LOG-CONFIG-CHANGE-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-6",
       "title": "Configuration Settings",
       "status": "not satisfied",
       "rules": [
         "REF-DANGLING-01",
         "SNMP-COMMUNITY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "CM-7",
       "title": "Least Functionality",
       "status": "not satisfied",
@@ -495,33 +764,49 @@
         "MGMT-TELNET-01",
         "SVC-LEGACY-01",
         "SVC-PROXY-ARP-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-2",
       "title": "Identification and Authentication (Organizational Users)",
       "status": "not satisfied",
       "rules": [
         "AAA-CENTRAL-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-3(1)",
       "title": "Cryptographic Bidirectional Authentication",
       "status": "not satisfied",
       "rules": [
         "TIME-NTP-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-5",
       "title": "Authenticator Management",
       "status": "not satisfied",
       "rules": [
         "SNMP-COMMUNITY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "IA-5(1)",
       "title": "Password-based Authentication",
       "status": "partially satisfied",
@@ -529,26 +814,38 @@
         "AAA-LOCAL-PASSWORD-HASH-01",
         "AAA-PASSWORD-ENCRYPTION-01",
         "AAA-PASSWORD-MIN-LENGTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-7",
       "title": "Boundary Protection",
       "status": "not satisfied",
       "rules": [
         "FILTER-UNTRUSTED-INGRESS-01",
         "SVC-PROXY-ARP-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-7(5)",
       "title": "Deny by Default — Allow by Exception",
       "status": "not satisfied",
       "rules": [
         "FILTER-PERMIT-ANY-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-8",
       "title": "Transmission Confidentiality and Integrity",
       "status": "partially satisfied",
@@ -556,31 +853,426 @@
         "MGMT-HTTP-01",
         "MGMT-SSH-V2-01",
         "MGMT-TELNET-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-10",
       "title": "Network Disconnect",
       "status": "not satisfied",
       "rules": [
         "MGMT-SESSION-TIMEOUT-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-13",
       "title": "Cryptographic Protection",
       "status": "satisfied",
       "rules": [
         "MGMT-SSH-V2-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     },
     {
+      "framework": "nist_800_53r5",
       "control": "SC-45(1)",
       "title": "Synchronization with Authoritative Time Source",
       "status": "not satisfied",
       "rules": [
         "TIME-NTP-AUTH-01"
-      ]
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-AG-000057",
+      "title": "The Juniper SRX Services Gateway Firewall must be configured to support centralized management and configuration of the audit log.",
+      "status": "not satisfied",
+      "rules": [
+        "LOG-REMOTE-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Juniper_SRX_SG_ALG_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-AG-000126",
+      "title": "The Juniper SRX Services Gateway Firewall must only allow inbound communications from organization-defined authorized sources routed to organization-defined authorized destinations.",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-UNTRUSTED-INGRESS-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Juniper_SRX_SG_ALG_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-AG-000128",
+      "title": "The Juniper SRX Services Gateway Firewall must deny network communications traffic by default and allow network communications traffic by exception (i.e., deny all, permit by exception).",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Juniper_SRX_SG_ALG_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000030",
+      "title": "For local accounts created on the device, the Juniper SRX Services Gateway must enforce the limit of three consecutive invalid logon attempts by a user during a 15-minute time period.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCKOUT-01"
+      ],
+      "severity": "low",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000032",
+      "title": "The Juniper SRX Services Gateway must display the Standard Mandatory DoD Notice and Consent Banner before granting access.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-BANNER-01"
+      ],
+      "severity": "low",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000040",
+      "title": "The Juniper SRX Services Gateway must generate log records when successful attempts to configure the device and use commands occur.",
+      "status": "undetermined",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ],
+      "severity": "low",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000065",
+      "title": "The Juniper SRX Services Gateway must record time stamps for log records using Coordinated Universal Time (UTC).",
+      "status": "undetermined",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": true
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000097",
+      "title": "The Juniper SRX Services Gateway must be configured to use a centralized authentication server to authenticate privileged users for remote and nonlocal access for device management.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": "high",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000108",
+      "title": "The Juniper SRX Services Gateway must be configured to prohibit the use of unnecessary and/or nonsecure functions, ports, protocols, and/or services, as defined in the PPSM CAL and vulnerability assessments.",
+      "status": "not satisfied",
+      "rules": [
+        "SVC-LEGACY-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000109",
+      "title": "For nonlocal maintenance sessions, the Juniper SRX Services Gateway must remove or explicitly deny the use of nonsecure protocols.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-HTTP-01",
+        "MGMT-TELNET-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000111",
+      "title": "The Juniper SRX Services Gateway must use and securely configure SNMPv3 if SNMP is enabled.",
+      "status": "not satisfied",
+      "rules": [
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": "high",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000128",
+      "title": "For local accounts using password authentication (i.e., the root account and the account of last resort), the Juniper SRX Services Gateway must enforce a minimum 15-character password length.",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-PASSWORD-MIN-LENGTH-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000136",
+      "title": "The Juniper SRX Services Gateway must use the SHA256 or later protocol for password authentication for local accounts using password authentication (i.e., the root account and the account of last resort).",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCAL-PASSWORD-HASH-01"
+      ],
+      "severity": "high",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000150",
+      "title": "The Juniper SRX Services Gateway must use SSHv2 with privacy options to protect the confidentiality of maintenance and diagnostic communications for nonlocal maintenance sessions using SSH.",
+      "status": "undetermined",
+      "rules": [
+        "MGMT-SSH-V2-01"
+      ],
+      "severity": "high",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": true
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000156",
+      "title": "The Juniper SRX Services Gateway must terminate a device management session after 10 minutes of inactivity, except to fulfill documented and validated mission requirements.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-SESSION-TIMEOUT-01"
+      ],
+      "severity": "medium",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "disa_stig",
+      "control": "JUSX-DM-000167",
+      "title": "For nonlocal maintenance sessions, the Juniper SRX Services Gateway must explicitly deny the use of J-Web.",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-HTTP-01"
+      ],
+      "severity": "high",
+      "benchmark": "Juniper_SRX_SG_NDM_STIG",
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.15",
+      "title": "Who may reach which systems and information is decided and enforced",
+      "status": "not satisfied",
+      "rules": [
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.16",
+      "title": "Every person and system that logs in has a managed identity",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.17",
+      "title": "Passwords, keys and other secrets are set, stored and handled safely",
+      "status": "partially satisfied",
+      "rules": [
+        "AAA-LOCAL-PASSWORD-HASH-01",
+        "AAA-PASSWORD-ENCRYPTION-01",
+        "AAA-PASSWORD-MIN-LENGTH-01",
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.5.18",
+      "title": "Access rights are granted, reviewed and removed through a defined process",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.2",
+      "title": "Administrative (privileged) access is limited and controlled",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-CENTRAL-AUTH-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.5",
+      "title": "The login process itself resists misuse",
+      "status": "not satisfied",
+      "rules": [
+        "AAA-LOCKOUT-01",
+        "MGMT-BANNER-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.9",
+      "title": "Device settings are defined, documented and kept under control",
+      "status": "not satisfied",
+      "rules": [
+        "REF-DANGLING-01",
+        "SNMP-COMMUNITY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.15",
+      "title": "Security-relevant activity is recorded and the records are protected",
+      "status": "partially satisfied",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01",
+        "LOG-REMOTE-01",
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.17",
+      "title": "Device clocks follow an agreed time source",
+      "status": "satisfied",
+      "rules": [
+        "LOG-TIMESTAMPS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.19",
+      "title": "What runs on live systems is controlled; nothing unneeded is enabled",
+      "status": "not satisfied",
+      "rules": [
+        "SVC-LEGACY-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.20",
+      "title": "Networks and network devices are secured and managed",
+      "status": "partially satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01",
+        "FILTER-UNTRUSTED-INGRESS-01",
+        "MGMT-HTTP-01",
+        "MGMT-SESSION-TIMEOUT-01",
+        "MGMT-SSH-V2-01",
+        "MGMT-TELNET-01",
+        "MGMT-VTY-ACL-01",
+        "MGMT-VTY-ACL-02",
+        "MGMT-WEB-ACL-01",
+        "SVC-PROXY-ARP-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.22",
+      "title": "Networks are split into zones and traffic between them is controlled",
+      "status": "not satisfied",
+      "rules": [
+        "FILTER-PERMIT-ANY-01",
+        "FILTER-UNTRUSTED-INGRESS-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.24",
+      "title": "Cryptography is used, and used correctly, where it is required",
+      "status": "satisfied",
+      "rules": [
+        "MGMT-SSH-V2-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
+    },
+    {
+      "framework": "iso_27001_2022",
+      "control": "A.8.32",
+      "title": "Changes to systems follow a controlled process",
+      "status": "undetermined",
+      "rules": [
+        "LOG-CONFIG-CHANGE-01"
+      ],
+      "severity": null,
+      "benchmark": null,
+      "partial": false
     }
   ],
   "findings": [
@@ -1035,17 +1727,6 @@
       "evidence": [
         {
           "file": "weak_set.conf",
-          "line_start": 15,
-          "line_end": 15,
-          "raw": "description \"WAN uplink\"",
-          "mapping_id": "inference/interface.role.untrusted_by_description",
-          "mapping_version": 1,
-          "approved_by": [
-            "maintainer"
-          ]
-        },
-        {
-          "file": "weak_set.conf",
           "line_start": 23,
           "line_end": 23,
           "raw": "authorization read-write",
@@ -1061,6 +1742,17 @@
           "line_end": 23,
           "raw": "community ****",
           "mapping_id": "juniper_junos/snmp-community",
+          "mapping_version": 1,
+          "approved_by": [
+            "maintainer"
+          ]
+        },
+        {
+          "file": "weak_set.conf",
+          "line_start": 15,
+          "line_end": 15,
+          "raw": "description \"WAN uplink\"",
+          "mapping_id": "inference/interface.role.untrusted_by_description",
           "mapping_version": 1,
           "approved_by": [
             "maintainer"

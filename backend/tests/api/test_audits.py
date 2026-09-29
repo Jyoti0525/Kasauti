@@ -190,8 +190,21 @@ def test_the_knowledge_base_is_described_from_the_installed_packs(
     for vendor in body["vendors"]:
         pack = kb.vendor_packs[vendor["id"]]
         assert vendor["mappings"] == len(pack.mappings)
-        assert 0 < vendor["approved"] <= vendor["mappings"]
-    assert [f["id"] for f in body["frameworks"]] == ["nist_800_53r5"]
+        assert vendor["approved"] <= vendor["mappings"]
+        # A pack still being taught may start with none; every seed pack has approved ones.
+        assert vendor["learning"] or vendor["approved"] > 0
+    frameworks = {f["id"]: f for f in body["frameworks"]}
+    assert set(frameworks) == {"disa_stig", "iso_27001_2022", "nist_800_53r5"}
+    stig = frameworks["disa_stig"]
+    # One benchmark set per platform with a STIG; DISA publishes none for AWS security groups
+    # or Huawei VRP.
+    assert {v for b in stig["benchmarks"] for v in b["vendors"]} == set(kb.vendor_packs) - {
+        "aws_vpc",
+        "huawei_vrp",
+    }
+    assert all(len(b["source_sha256"]) == 64 for b in stig["benchmarks"])
+    assert stig["bridge"]
+    assert frameworks["iso_27001_2022"]["bridge"]
     assert len(body["rules"]) == len(kb.ruleset.rules)
     permit_any = next(r for r in body["rules"] if r["id"] == "FILTER-PERMIT-ANY-01")
     assert "cloud_filter" in permit_any["applies_to"]
@@ -199,6 +212,11 @@ def test_the_knowledge_base_is_described_from_the_installed_packs(
     for rule in body["rules"]:
         for control in rule["controls"]["nist_800_53r5"]:
             assert body["control_titles"][control]
+        for by_vendor in rule["vendor_controls"].values():
+            assert all(body["control_titles"][c] for ids in by_vendor.values() for c in ids)
+    telnet = next(r for r in body["rules"] if r["id"] == "MGMT-TELNET-01")
+    assert "CISC-ND-000470" in telnet["vendor_controls"]["disa_stig"]["cisco_ios_xe"]
+    assert telnet["controls"]["iso_27001_2022"] == ["A.8.20"]
 
     detail = client.get("/api/kb/vendors/aws_vpc").json()
     assert detail["vendor"]["default_role"] == "cloud_filter"

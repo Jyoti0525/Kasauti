@@ -4,7 +4,7 @@ description: Junos OS 23.4 branch SRX with 17 planted weaknesses (J1-J17), expor
 input: authored/juniper_junos/weak_set.conf
 input_sha256: 3bbd619977af8589de5e36d38d0f90f9ac06d6d0ebdceac6979485e059acbf9e
 vendor: null
-frameworks: [nist_800_53r5]
+frameworks: [nist_800_53r5, disa_stig, iso_27001_2022]
 expected_statuses:
   AAA-CENTRAL-AUTH-01: FAIL     # J6 no TACACS+/RADIUS server
   AAA-LOCAL-PASSWORD-HASH-01: FAIL     # J5 root password $1$ (MD5-crypt)

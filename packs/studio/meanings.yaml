@@ -1,0 +1,188 @@
+# What a configuration line can mean, in words a trainer can pick (PLAN §11.1 step 4, TODO M2.65).
+#
+# Each meaning is a template of the mapping language (§9): the entity the line opens or sits in,
+# and the effects it has. The trainer picks a meaning and says which words of the line fill its
+# roles; the Studio renders the mapping, shows exactly what will be stored, and previews its
+# impact before anyone approves it. `words` feed the lexicon suggestions (signal S4): words a
+# vendor uses for the same thing (`telnet`, `stelnet`, `info-center`, `snmp-agent`).
+#
+# `under`: the meaning only makes sense inside a block that opens this entity type (a timeout
+# inside a line block); the Studio takes the entity from the approved mapping of that block.
+format_version: 1
+meanings:
+  - id: service-on
+    label: Turns a management service on
+    explain: The line switches a network service on; written with the vendor's negation word, it switches it off.
+    words: [server, service, enable, enabled, "on"]
+    choose: {service: [telnet, ssh, http, https, ftp, tftp, finger, snmp]}
+    entity: {type: MgmtService, key: "{service}"}
+    effects:
+      - {assert: MgmtService.enabled, value: true}
+
+  - id: service-off
+    label: Turns a management service off
+    explain: The line switches a network service off.
+    words: [disable, disabled, shutdown, "off", undo, "no"]
+    requires: [disable, disabled, shutdown, "off", undo, "no"]
+    choose: {service: [telnet, ssh, http, https, ftp, tftp, finger, snmp]}
+    entity: {type: MgmtService, key: "{service}"}
+    effects:
+      - {assert: MgmtService.enabled, value: false}
+
+  - id: ssh-v1-allowed
+    label: Lets SSH clients use protocol version 1
+    explain: The SSH server still accepts the old, broken protocol version 1 (often called SSH 1.x compatibility).
+    words: [compatible, compatible-ssh1x, ssh1, ssh1x, version, "1"]
+    requires: [ssh, stelnet, compatible-ssh1x, ssh1, ssh1x]
+    entity: {type: MgmtService, key: ssh}
+    effects:
+      - {assert: MgmtService.version, value: "1"}
+
+  - id: remote-lines
+    label: Opens a range of remote-management lines
+    explain: A block for the virtual terminal lines people log in to over the network (vty lines); settings inside it apply to these lines.
+    words: [vty, user-interface, line, terminal]
+    roles:
+      - {name: first, label: First line number, types: [INT]}
+      - {name: last, label: Last line number, types: [INT], optional: true}
+    entity: {type: MgmtSession, key: "vty {first}-{last}", key_if_missing: "vty {first}"}
+    effects:
+      - {assert: MgmtSession.kind, value: vty}
+
+  - id: console-line
+    label: Opens the console line
+    explain: A block for the local console port; settings inside it apply to console logins.
+    words: [con, console, user-interface, line]
+    entity: {type: MgmtSession, key: console}
+    effects:
+      - {assert: MgmtSession.kind, value: console}
+
+  - id: line-protocols
+    label: Sets which protocols these lines accept
+    explain: Lists the login protocols the management lines of this block accept (Telnet, SSH).
+    words: [protocol, inbound, transport, input, all]
+    under: MgmtSession
+    choose: {protocols: {many: [ssh, telnet]}}
+    effects:
+      - {assert: MgmtSession.transport, value: "{protocols}"}
+
+  - id: line-idle-timeout
+    label: Idle timeout for these lines
+    explain: How long an idle session on these lines stays open. Zero usually means never.
+    words: [idle-timeout, timeout, exec-timeout, idle]
+    under: MgmtSession
+    roles:
+      - {name: minutes, label: Minutes, types: [INT], weight: 60}
+      - {name: seconds, label: Seconds, types: [INT], weight: 1, optional: true}
+    effects:
+      - {set: MgmtSession.idle_timeout_s, from: weighted}
+
+  - id: line-acl
+    label: Restricts these lines to an access list
+    explain: Only sources the named access list permits may log in on these lines.
+    words: [acl, access-class, inbound, access-list, filter]
+    under: MgmtSession
+    roles:
+      - {name: acl, label: Access list name or number, types: [STR, INT]}
+    effects:
+      - ref: MgmtSession.access_filter
+        from: acl
+        target: acl
+        # A pack taught in the Studio may not read access-list blocks yet: a name it can't
+        # find is then unknown (REVIEW), never "dangling" (FAIL).
+        unread: an access list the pack doesn't read yet
+
+  - id: log-server
+    label: Sends logs to a server
+    explain: A remote syslog server that receives the device's log messages.
+    words: [loghost, logging, syslog, info-center, host, log]
+    requires: [loghost, syslog, host]
+    roles:
+      - {name: host, label: Server address, types: [IP, STR]}
+    entity: {type: LogTarget, key: "{host}"}
+    effects:
+      - {set: LogTarget.host, from: host}
+
+  - id: login-banner
+    label: Shows a banner at login
+    explain: Text shown to anyone who connects, before they log in.
+    words: [header, banner, login, information, motd]
+    entity: {type: Banner, key: login}
+    effects:
+      - {assert: Banner.present, value: true}
+
+  - id: snmp-community
+    label: Defines an SNMP community
+    explain: An SNMP v1/v2c community, read-only or read-write. Its string is a secret and is never shown or stored.
+    words: [community, snmp-agent, snmp-server, snmp, read, write]
+    requires: [community]
+    choose: {access: [ro, rw]}
+    entity: {type: SnmpCommunity, key: "community-{#}"}
+    effects:
+      - {assert: SnmpCommunity.access, value: "{access}"}
+
+  - id: interface
+    label: Opens an interface
+    explain: A block for one network interface; settings inside it apply to that interface.
+    words: [interface, ethernet, gigabitethernet, vlanif, port]
+    roles:
+      - {name: name, label: Interface name, types: [IFNAME, STR]}
+    entity: {type: Interface, key: "{name}"}
+
+  - id: interface-description
+    label: Describes this interface
+    explain: The interface's description. Words like WAN, ISP or Internet mark an interface as facing untrusted networks.
+    words: [description, desc, alias]
+    under: Interface
+    roles:
+      - {name: text, label: Description, types: [LIST, STR]}
+    effects:
+      - {set: Interface.description, template: "{text}"}
+
+  - id: proxy-arp-on
+    label: Answers ARP for other hosts (proxy ARP)
+    explain: The interface answers ARP requests on behalf of hosts on other networks.
+    words: [arp-proxy, proxy-arp, arp, proxy]
+    under: Interface
+    effects:
+      - {assert: Interface.proxy_arp, value: true}
+
+  - id: time-server
+    label: Uses a time server without authentication
+    explain: An NTP server the device takes its time from, with no key to prove the replies are genuine.
+    words: [ntp, ntp-service, unicast-server, server, sntp]
+    requires: [ntp, ntp-service, sntp]
+    roles:
+      - {name: host, label: Server address, types: [IP, STR]}
+    entity: {type: TimeSource, key: "{host}"}
+    effects:
+      - {set: TimeSource.host, from: host}
+      - {assert: TimeSource.authenticated, value: false}
+
+  - id: time-server-keyed
+    label: Uses a time server with an authentication key
+    explain: An NTP server whose replies must carry the given key.
+    words: [ntp, ntp-service, unicast-server, server, authentication-keyid, key]
+    requires: [authentication-keyid, key]
+    roles:
+      - {name: host, label: Server address, types: [IP, STR]}
+    entity: {type: TimeSource, key: "{host}"}
+    effects:
+      - {set: TimeSource.host, from: host}
+      - {assert: TimeSource.authenticated, value: true}
+
+  - id: time-auth-enforced
+    label: Requires time sources to authenticate
+    explain: The device only accepts time from sources that authenticate.
+    words: [ntp, ntp-service, authentication, enable]
+    requires: [[ntp, ntp-service, sntp], [authentication]]
+    effects:
+      - {assert: TimePolicy.auth_enforced, value: true}
+
+  - id: log-timestamps
+    label: Stamps log messages with the date and time
+    explain: Log messages carry the date and time they were logged.
+    words: [timestamp, timestamps, date, datetime, time]
+    requires: [timestamp, timestamps]
+    effects:
+      - {assert: LoggingPolicy.timestamps, value: true}

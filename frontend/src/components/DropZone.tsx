@@ -16,11 +16,14 @@ export function DropZone({
   onFiles,
   disabled,
   vendors,
+  hint,
 }: {
   onFiles: (files: Picked[]) => void;
   disabled?: boolean;
   /** The installed vendor packs, by name. */
   vendors?: string[];
+  /** In place of the default explanation; a short one keeps the zone compact. */
+  hint?: string;
 }) {
   const [over, setOver] = useState(false);
   const files = useRef<HTMLInputElement>(null);
@@ -51,14 +54,16 @@ export function DropZone({
       onDragLeave={() => setOver(false)}
       onDrop={onDrop}
       className={cx(
-        "flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-12 text-center transition-colors",
+        "flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 text-center transition-colors",
+        hint ? "py-6" : "py-12",
         over ? "border-brass bg-brass-soft" : "border-line-strong bg-surface",
         disabled && "opacity-60",
       )}
     >
       <div
         className={cx(
-          "mb-4 flex size-14 items-center justify-center rounded-2xl transition-colors",
+          "flex items-center justify-center rounded-2xl transition-colors",
+          hint ? "mb-2 size-10" : "mb-4 size-14",
           over ? "bg-brass text-on-brass" : "bg-brass-soft text-brass-ink",
         )}
       >
@@ -68,12 +73,16 @@ export function DropZone({
         {over ? "Drop to add them" : "Drop configuration files, folders or a .zip"}
       </div>
       <div className="mt-1.5 max-w-lg text-[13.5px] leading-relaxed text-muted">
-        Running configurations, and optionally each device's{" "}
-        <span className="font-mono text-[12.5px] text-text">show version</span> or{" "}
-        <span className="font-mono text-[12.5px] text-text">show inventory</span> output for its
-        serial number and hardware. The vendor is recognised from each file itself.
+        {hint ?? (
+          <>
+            Running configurations, and optionally each device's{" "}
+            <span className="font-mono text-[12.5px] text-text">show version</span> or{" "}
+            <span className="font-mono text-[12.5px] text-text">show inventory</span> output for its
+            serial number and hardware. The vendor is recognised from each file itself.
+          </>
+        )}
       </div>
-      <div className="mt-5 flex gap-2">
+      <div className={cx("flex gap-2", hint ? "mt-3" : "mt-5")}>
         <Button disabled={disabled} onClick={() => files.current?.click()}>
           <FilePlus2 /> Choose files
         </Button>
