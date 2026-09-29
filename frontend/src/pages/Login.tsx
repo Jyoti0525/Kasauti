@@ -94,7 +94,7 @@ export function Login() {
         </div>
         <p className="inline-flex items-center gap-1.5 text-xs">
           <ShieldCheck className="size-3.5 text-pass" aria-hidden />
-          Runs on this machine only · no cloud calls
+          Works offline · no cloud calls
         </p>
       </aside>
 

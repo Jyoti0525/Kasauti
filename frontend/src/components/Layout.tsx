@@ -54,10 +54,10 @@ export function Layout() {
             <ThemeSwitch />
             <span
               className="hidden items-center gap-1.5 text-xs text-on-basalt 2xl:inline-flex"
-              title="Kasauti listens on this machine only and calls no cloud service. Uploaded files are audited and deleted."
+              title="Kasauti needs no internet and calls no cloud service. Uploaded files are audited and deleted."
             >
               <ShieldCheck className="size-3.5 text-pass" aria-hidden />
-              Runs on this machine only
+              Works offline · no cloud calls
             </span>
             {may(me?.role, "auditor") && (
               <Link
