@@ -87,6 +87,7 @@ from kasauti.jobs import JobQueue, WorkerPool
 from kasauti.jobs.kinds import HANDLERS
 from kasauti.jobs.limits import DEFAULT_MEMORY_MIB
 from kasauti.log import get_logger
+from kasauti.report.sign import load_or_create
 from kasauti.rules.scoring import NIST
 
 log = get_logger(__name__)
@@ -157,6 +158,10 @@ class Settings:
     passwords on the sign-in page. For demonstrations only."""
     signup: bool = True
     """Anyone who can open the sign-in page may make an account (role: auditor)."""
+    signing: Path | None = None
+    """The report-signing key and certificate (``<data dir>/signing``, made on first use)."""
+    sign_reports: bool = True
+    """Sign every PDF report; False only for tests that don't need it."""
     public_origin: str | None = None
     """``https://name`` when a host's HTTPS front end publishes this server (see the module
     docstring and :func:`public_origin`); None for a loopback server. When set it replaces
@@ -248,6 +253,10 @@ def create_app(settings: Settings) -> FastAPI:
     data = settings.staging.parent  # <data dir>/staging
     app.state.studio = make_studio(
         settings.learned or data / "learned", settings.studio or data / "studio"
+    )
+    # Every report is signed (PLAN §15.3); a key that can't be read stops the server here.
+    app.state.signing = (
+        load_or_create(settings.signing or data / "signing") if settings.sign_reports else None
     )
     web = (
         settings.web.resolve() if settings.web and (settings.web / "index.html").is_file() else None

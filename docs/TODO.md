@@ -623,7 +623,7 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
 - [ ] **M5.11** Air gap: offline installer, bundled models, signed offline updates for packs and catalogs. *(§17, §1.2 test 5)* `@sec`
 
 ### 5D · Signatures and the transparency log (§15.3, §16)
-- [ ] **M5.12** PAdES signing with pyHanko. By default it uses a key generated at install; it also accepts an organisational certificate or an officer's **Class-3 DSC on a USB token via PKCS#11**. *(§15.3)* `@sec`
+- [~] **M5.12** PAdES signing with pyHanko. By default it uses a key generated at install; it also accepts an organisational certificate or an officer's **Class-3 DSC on a USB token via PKCS#11**. *(§15.3)* `@sec` Partly done 2026-09-30 (v5.8.0): every PDF report, from the API, the bulk zip and the CLI, carries a PAdES B-B signature over the whole file (`kasauti/report/sign.py`); the key is an ECDSA P-256 key and self-signed certificate made in `<data dir>/signing` on first use (owner-only), or an organisation's PKCS#12 certificate (`KASAUTI_SIGNING_P12`). `kasauti verify report.pdf` checks it offline (a changed byte, appended bytes and a PDF incremental update are all caught; tested); `GET /api/signing/certificate` hands out the certificate. Open: the Class-3 DSC on a USB token (PKCS#11), which needs a token to test; trusted timestamps (B-T).
 - [ ] **M5.13** Merkle transparency log (RFC 9162-style hashing, the design behind Certificate Transparency and Sigstore Rekor). It records:
   - ingested evidence hashes (§5.2)
   - mapping approvals and KB versions (§11.4)

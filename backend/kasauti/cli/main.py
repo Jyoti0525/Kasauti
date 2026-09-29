@@ -17,7 +17,7 @@ import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from kasauti import __version__
 from kasauti.audit import AuditError, AuditResult, audit, effective_severity, load_kb
@@ -118,10 +118,19 @@ def _audit(args: argparse.Namespace) -> int:
     written = [json_path]
     if not args.no_pdf:
         from kasauti.report.pdf import render_pdf  # noqa: PLC0415 - ReportLab only when needed
+        from kasauti.report.sign import SigningError, load_or_create, sign_pdf  # noqa: PLC0415
 
         pdf_path = args.out / f"{stem}.kasauti.pdf"
         rules = {r.id: r for r in kb.ruleset.rules}
-        pdf_path.write_bytes(render_pdf(result, rules, generated=_report_date(args.date)))
+        try:
+            key = None if args.no_sign else load_or_create(args.data_dir / "signing")
+        except (SigningError, OSError, ValueError) as err:
+            print(f"kasauti: can't sign the report: {err}", file=sys.stderr)
+            return 1
+        pdf = render_pdf(
+            result, rules, generated=_report_date(args.date), signed_by=key.by if key else None
+        )
+        pdf_path.write_bytes(sign_pdf(pdf, key) if key else pdf)
         written.append(pdf_path)
     _print_summary(result, written)
     return 0
@@ -307,6 +316,45 @@ def _db(args: argparse.Namespace) -> int:
     return 0 if current == head else 1
 
 
+def _verify(args: argparse.Namespace) -> int:
+    """Exit 0 when the report is signed, unchanged and by a trusted certificate; 1 otherwise."""
+    from cryptography import x509  # noqa: PLC0415
+
+    from kasauti.report.sign import verify_pdf  # noqa: PLC0415
+
+    paths = args.cert or [args.data_dir / "signing" / "cert.pem"]
+    trusted = []
+    for path in paths:
+        try:
+            trusted.append(x509.load_pem_x509_certificate(path.read_bytes()))
+        except (OSError, ValueError) as err:
+            print(f"kasauti: can't read the certificate {path}: {err}", file=sys.stderr)
+            return 1
+    try:
+        pdf = args.report.read_bytes()
+    except OSError as err:
+        print(f"kasauti: {err}", file=sys.stderr)
+        return 1
+    v = verify_pdf(pdf, trusted)
+    if not v.signed:
+        print(f"{args.report}: NOT SIGNED ({v.problem})")
+        return 1
+    if v.problem:
+        print(f"{args.report}: INVALID ({v.problem})")
+        return 1
+    verdict = "VALID" if v.ok else "INVALID"
+    print(f"{args.report}: {verdict}")
+    for label, good, text in (
+        ("unchanged since signing", v.intact and v.valid, "the signed bytes were changed"),
+        ("nothing added after signing", v.whole_file, "content was added after signing"),
+        ("signer trusted", v.trusted, "the certificate is not one you trust (--cert)"),
+    ):
+        print(f"  {'ok ' if good else 'NO '} {label}" + ("" if good else f": {text}"))
+    print(f"  signed by {v.signer} at {v.signed_at or 'an unstated time'}")
+    print(f"  certificate SHA-256 {v.fingerprint}")
+    return 0 if v.ok else 1
+
+
 def _models(command: str) -> int:
     """``fetch``: download the embedding model from its pinned revision, checking each file's
     SHA-256. ``status``: load it as the server would, so a changed file is reported."""
@@ -421,6 +469,27 @@ def _print_summary(result: AuditResult, written: Sequence[Path]) -> None:
         print(f"  wrote {path}")
 
 
+def _add_verify_and_models(sub: Any, data_help: str) -> None:
+    ver = sub.add_parser("verify", help="check a report's digital signature, offline")
+    ver.add_argument("report", type=Path, help="a Kasauti PDF report")
+    ver.add_argument(
+        "--cert",
+        type=Path,
+        action="append",
+        default=[],
+        metavar="PEM",
+        help="a certificate to trust (repeatable; default: this server's, in <data dir>/signing)",
+    )
+    ver.add_argument("--data-dir", type=Path, default=None, help=data_help)
+
+    models = sub.add_parser("models", help="the local AI model the Training Studio suggests with")
+    models_sub = models.add_subparsers(dest="models_command", required=True)
+    models_sub.add_parser(
+        "fetch", help="download it once (pinned, hash-checked); run at setup, not at run time"
+    )
+    models_sub.add_parser("status", help="say whether it is installed and intact")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="kasauti",
@@ -428,6 +497,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"kasauti {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
+    data_help = (
+        f"where the SQLite database lives (default: ${DATA_DIR_ENV} or ./var); "
+        "PostgreSQL is set with $KASAUTI_DATABASE_URL instead"
+    )
 
     aud = sub.add_parser("audit", help="audit one configuration file")
     aud.add_argument("config", type=Path, help="configuration file (e.g. router.cfg)")
@@ -460,6 +533,12 @@ def build_parser() -> argparse.ArgumentParser:
     aud.add_argument("--out", type=Path, default=Path(), help="where to write the report")
     aud.add_argument("--date", help="report date YYYY-MM-DD (default: today)")
     aud.add_argument("--no-pdf", action="store_true", help="write the JSON result only")
+    aud.add_argument(
+        "--no-sign",
+        action="store_true",
+        help="leave the PDF unsigned (by default it is signed with the key in <data dir>/signing)",
+    )
+    aud.add_argument("--data-dir", type=Path, default=None, help=data_help)
 
     srv = sub.add_parser("serve", help="run the web API on this machine (loopback only)")
     srv.add_argument("--host", default="127.0.0.1", help="127.0.0.1 or localhost (the default)")
@@ -470,10 +549,6 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("frontend/dist"),
         help="the web UI's build folder (default: frontend/dist)",
-    )
-    data_help = (
-        f"where the SQLite database lives (default: ${DATA_DIR_ENV} or ./var); "
-        "PostgreSQL is set with $KASAUTI_DATABASE_URL instead"
     )
     srv.add_argument("--data-dir", type=Path, default=None, help=data_help)
     srv.add_argument(
@@ -533,12 +608,7 @@ def build_parser() -> argparse.ArgumentParser:
         cmd = db_sub.add_parser(name, help=text)
         cmd.add_argument("--data-dir", type=Path, default=None, help=data_help)
 
-    models = sub.add_parser("models", help="the local AI model the Training Studio suggests with")
-    models_sub = models.add_subparsers(dest="models_command", required=True)
-    models_sub.add_parser(
-        "fetch", help="download it once (pinned, hash-checked); run at setup, not at run time"
-    )
-    models_sub.add_parser("status", help="say whether it is installed and intact")
+    _add_verify_and_models(sub, data_help)
 
     packs = sub.add_parser("packs", help="work with content packs")
     packs_sub = packs.add_subparsers(dest="packs_command", required=True)
@@ -571,6 +641,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _db(args)
     if args.command == "account":
         return _account(args)
+    if args.command == "verify":
+        return _verify(args)
     if args.command == "models":
         return _models(args.models_command)
     if args.command == "packs" and args.packs_command == "validate":

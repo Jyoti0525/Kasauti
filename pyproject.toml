@@ -25,6 +25,10 @@ dependencies = [
     "argon2-cffi>=25.1,<26",        # MIT (+ argon2-cffi-bindings MIT); Argon2id password hashes
     # BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0: vectors for the S5/S6 signals
     "numpy>=2.5,<3",
+    # MIT (+ pyhanko-certvalidator MIT, asn1crypto MIT, tzlocal MIT, uritools MIT, lxml BSD-3,
+    # aiohttp Apache-2.0, oscrypto MIT, certifi MPL-2.0 unmodified): PAdES report signatures.
+    # oscrypto is only imported for the system trust store, which Kasauti never asks for.
+    "pyhanko>=0.37,<0.38",
 ]
 
 [project.scripts]
@@ -97,6 +101,10 @@ files = ["backend/kasauti", "eval/harness", "tools", "deploy"]
 
 [[tool.mypy.overrides]]
 module = ["re2"]            # google-re2 ships no type information; wrapped in kasauti.rules.regex
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["asn1crypto", "asn1crypto.*"]  # pyHanko's certificate types; used in report/sign.py
 ignore_missing_imports = true
 
 [tool.pydantic-mypy]

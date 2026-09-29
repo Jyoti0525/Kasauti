@@ -42,6 +42,7 @@ from reportlab.platypus import (
 
 from kasauti.audit import AuditResult, effective_severity
 from kasauti.remediation.model import Fix, Proof
+from kasauti.report.sign import SignedBy
 from kasauti.rules.evaluate import display
 from kasauti.rules.model import Finding, Severity, Status
 
@@ -77,9 +78,17 @@ _STREAK = (
 _PATH_TOKEN = re.compile(r"[MCLZ]|-?\d*\.?\d+")
 
 
-def render_pdf(result: AuditResult, rules_by_id: dict[str, Any], *, generated: str) -> bytes:
+def render_pdf(
+    result: AuditResult,
+    rules_by_id: dict[str, Any],
+    *,
+    generated: str,
+    signed_by: SignedBy | None = None,
+) -> bytes:
     """Render the report. ``generated`` is the report date (YYYY-MM-DD), passed in so that
-    the same audit on the same date renders to identical bytes."""
+    the same audit on the same date renders to identical bytes. ``signed_by``: the key the
+    report will be signed with (:func:`kasauti.report.sign.sign_pdf`, after rendering), which
+    the report names so a reader knows which certificate to expect."""
     buf = BytesIO()
     hostname = result.identity["hostname"].value or result.input.file
     doc = SimpleDocTemplate(
@@ -104,14 +113,17 @@ def render_pdf(result: AuditResult, rules_by_id: dict[str, Any], *, generated: s
     story += _remediation(result, s)
     story += _policy(s)
     story += _assurance(result, s)
-    story += _appendix(result, s)
+    story += _appendix(result, s, signed_by)
 
     def footer(canvas: Any, _doc: Any) -> None:
         canvas.saveState()
         canvas.setFont("Helvetica", 7.5)
         canvas.setFillColor(_MUTED)
         canvas.drawString(
-            18 * mm, 10 * mm, f"Kasauti | {_safe(hostname)} | audit {result.audit_id} | unsigned"
+            18 * mm,
+            10 * mm,
+            f"Kasauti | {_safe(hostname)} | audit {result.audit_id} | "
+            + ("digitally signed" if signed_by else "unsigned"),
         )
         canvas.drawRightString(A4[0] - 18 * mm, 10 * mm, f"page {canvas.getPageNumber()}")
         canvas.restoreState()
@@ -827,7 +839,7 @@ def _assurance(r: AuditResult, s: _Styles) -> list[Any]:
     return out
 
 
-def _appendix(r: AuditResult, s: _Styles) -> list[Any]:
+def _appendix(r: AuditResult, s: _Styles, signed_by: SignedBy | None) -> list[Any]:
     glossary = [
         ("PASS", "The rule holds, from explicit configuration or a documented vendor default."),
         ("FAIL", "The rule is violated; the evidence lines show where."),
@@ -900,5 +912,36 @@ def _appendix(r: AuditResult, s: _Styles) -> list[Any]:
             (28 * mm, 146 * mm),
             header=False,
         ),
+        *_signature(signed_by, s),
     ]
     return out
+
+
+def _signature(by: SignedBy | None, s: _Styles) -> list[Any]:
+    if by is None:
+        return [
+            _p("Digital signature", s.h2),
+            _p("This copy of the report is not signed.", s.body),
+        ]
+    return [
+        _p("Digital signature", s.h2),
+        _p(
+            "This report carries a PAdES digital signature over the whole file. Any change "
+            "made after signing shows in a PDF reader's signature panel, and in the command "
+            "'kasauti verify', which checks it offline. A reader "
+            "shows the signer as unknown until this certificate is trusted.",
+            s.body,
+        ),
+        _table(
+            [
+                [_p(k, s.cell), _p(v, s.code)]
+                for k, v in (
+                    ("Signed by", by.name),
+                    ("Certificate", by.source),
+                    ("Certificate SHA-256", by.fingerprint),
+                )
+            ],
+            (28 * mm, 146 * mm),
+            header=False,
+        ),
+    ]

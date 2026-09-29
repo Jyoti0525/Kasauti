@@ -55,6 +55,9 @@ device, so each device's `show version` and `show inventory` pair with it on the
   rest on lines not yet taught (AAA, ACLs, the banner). Kasauti says so; it never guesses.
 - 100 configurations uploaded, recognised, audited and every fix proven in 52 s on the
   development laptop.
+- Every PDF report is digitally signed (PAdES). `kasauti verify EDGE-R1.kasauti.pdf` says VALID;
+  change one byte and it says INVALID, "the signed bytes were changed". The certificate is at
+  `/api/signing/certificate`.
 - The Studio's AI suggestions (measured 2026-09-30, `eval/reports/lovo.md`): on a vendor it
   has never seen, the first suggestion is right 74 % of the time (the word lists alone: 57 %);
   when it makes one, it is right 96 %; unsure, it says "No suggestion". On Huawei, which is in

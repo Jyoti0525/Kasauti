@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+from cryptography import x509
 from fastapi.testclient import TestClient
 
 from kasauti.api.audits import summarise
@@ -17,6 +18,7 @@ from kasauti.audit import KnowledgeBase, audit
 from kasauti.ingest.read import decode
 from kasauti.jobs import WorkerPool
 from kasauti.jobs.kinds import HANDLERS
+from kasauti.report.sign import verify_pdf
 
 REPO = Path(__file__).resolve().parents[3]
 AUTHORED = REPO / "datasets" / "authored"
@@ -224,3 +226,24 @@ def test_the_knowledge_base_is_described_from_the_installed_packs(
     assert all(m["approved_by"] for m in detail["mappings"])
     assert {d["id"] for d in detail["defaults"]} >= {"sg-unmatched-denied"}
     assert client.get("/api/kb/vendors/nope").status_code == 404
+
+
+def test_reports_are_signed_by_the_certificate_the_server_hands_out(client: TestClient) -> None:
+    """PLAN §15.3, TODO M5.12: the report, and each one in the zip, verifies offline against
+    ``GET /api/signing/certificate``, whose fingerprint ``GET /api/signing`` states."""
+    about = client.get("/api/signing").json()
+    assert about["signed"] is True
+    assert about["source"] == "made on this server"
+    pem = client.get("/api/signing/certificate")
+    assert pem.headers["content-type"] == "application/x-pem-file"
+    cert = x509.load_pem_x509_certificate(pem.content)
+
+    upload_id = _audited(client, "core", WEAK, AWS)
+    audits = client.get("/api/audits", params={"upload": upload_id}).json()
+    job = next(a["job_id"] for a in audits if a["name"] == "cisco_ios_xe/weak.cfg")
+    v = verify_pdf(client.get(f"/api/jobs/{job}/report.pdf").content, [cert])
+    assert v.ok
+    assert v.fingerprint == about["fingerprint"]
+    bundle = client.get(f"/api/uploads/{upload_id}/reports.zip")
+    with zipfile.ZipFile(io.BytesIO(bundle.content)) as zf:
+        assert all(verify_pdf(zf.read(n), [cert]).ok for n in zf.namelist())

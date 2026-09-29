@@ -4,6 +4,8 @@
     GET /api/audits?upload={id}         one upload's
     GET /api/jobs/{job}/report.pdf      a device's report (PLAN §15.1)
     GET /api/uploads/{id}/reports.zip   every report of an upload, zipped (R-07)
+    GET /api/signing                    who signs the reports: name, source, fingerprint
+    GET /api/signing/certificate        the signing certificate (PEM), to trust or verify with
     GET /api/kb                         vendor packs, frameworks and rules installed
     GET /api/kb/vendors/{pack}          one vendor pack's mappings and defaults
 
@@ -14,8 +16,9 @@ dashboard doesn't expand every result on every visit. The full result is still
 ``GET /api/jobs/{job}/result``.
 
 A report is rendered from the stored result when it is asked for, never kept: the PDF holds
-the result's masked evidence and nothing else. It is unsigned until M5.14 and says so on its
-cover. The rules it describes are looked up in the installed knowledge base; a rule removed
+the result's masked evidence and nothing else. It is signed with the server's key
+(:mod:`kasauti.report.sign`, PLAN §15.3) and names that key in its appendix. The rules it
+describes are looked up in the installed knowledge base; a rule removed
 since the audit is reported with the result's own words.
 """
 
@@ -40,6 +43,7 @@ from kasauti.ingest.store import AuditJob, UploadStore
 from kasauti.jobs import Job, JobQueue, JobState
 from kasauti.jobs.results import ResultError, decode_result
 from kasauti.log import get_logger
+from kasauti.report.sign import SigningKey, sign_pdf
 from kasauti.rules.scoring import NIST
 
 log = get_logger(__name__)
@@ -230,7 +234,7 @@ async def list_audits(
 )
 async def report(job_id: uuid.UUID, request: Request) -> Response:
     result = await _result(request, str(job_id))
-    pdf = await run_in_threadpool(_render, request.app.state.kb, result)
+    pdf = await run_in_threadpool(_render, request.app.state.kb, result, request.app.state.signing)
     name = f"{_file_stem(result)}.kasauti.pdf"
     return Response(
         pdf,
@@ -257,11 +261,50 @@ async def reports(upload_id: uuid.UUID, request: Request) -> Response:
     if not done:
         raise HTTPException(409, "no audit of this upload has succeeded yet")
     results = [await _result(request, a.job_id) for a in done]
-    data = await run_in_threadpool(_zip, request.app.state.kb, results)
+    data = await run_in_threadpool(_zip, request.app.state.kb, results, request.app.state.signing)
     return Response(
         data,
         media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="kasauti-reports.zip"'},
+    )
+
+
+class SigningOut(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    signed: bool
+    name: str | None
+    source: str | None
+    fingerprint: str | None
+    """SHA-256 of the certificate (DER), hex: compare it with a report's appendix."""
+
+
+@router.get("/api/signing")
+async def signing(request: Request) -> SigningOut:
+    key: SigningKey | None = request.app.state.signing
+    if key is None:
+        return SigningOut(signed=False, name=None, source=None, fingerprint=None)
+    return SigningOut(
+        signed=True, name=key.by.name, source=key.by.source, fingerprint=key.by.fingerprint
+    )
+
+
+@router.get(
+    "/api/signing/certificate",
+    response_class=Response,
+    responses={
+        200: {"content": {"application/x-pem-file": {}}, "description": "the certificate"},
+        404: {"description": "reports are not signed"},
+    },
+)
+async def signing_certificate(request: Request) -> Response:
+    key: SigningKey | None = request.app.state.signing
+    if key is None:
+        raise HTTPException(404, "reports are not signed on this server")
+    return Response(
+        key.certificate_pem,
+        media_type="application/x-pem-file",
+        headers={"Content-Disposition": 'attachment; filename="kasauti-signing.pem"'},
     )
 
 
@@ -571,12 +614,19 @@ async def _result(request: Request, job_id: str) -> dict[str, Any]:
     return result
 
 
-def _render(kb: KnowledgeBase, result: dict[str, Any]) -> bytes:
+def _render(kb: KnowledgeBase, result: dict[str, Any], key: SigningKey | None) -> bytes:
+    """The device's report, signed with the server's key (PLAN §15.3)."""
     from kasauti.report.pdf import render_pdf  # noqa: PLC0415 - ReportLab only when needed
 
     rules = {r.id: r for r in kb.ruleset.rules}
     today = dt.datetime.now(dt.UTC).date().isoformat()
-    return render_pdf(AuditResult.model_validate(result), rules, generated=today)
+    pdf = render_pdf(
+        AuditResult.model_validate(result),
+        rules,
+        generated=today,
+        signed_by=key.by if key else None,
+    )
+    return sign_pdf(pdf, key) if key else pdf
 
 
 def _file_stem(result: dict[str, Any]) -> str:
@@ -586,7 +636,7 @@ def _file_stem(result: dict[str, Any]) -> str:
     return _SAFE_NAME.sub("_", stem).strip("._")[:80] or "device"
 
 
-def _zip(kb: KnowledgeBase, results: list[dict[str, Any]]) -> bytes:
+def _zip(kb: KnowledgeBase, results: list[dict[str, Any]], key: SigningKey | None) -> bytes:
     buf = io.BytesIO()
     used: set[str] = set()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -597,5 +647,5 @@ def _zip(kb: KnowledgeBase, results: list[dict[str, Any]]) -> bytes:
                 n += 1
                 name = f"{stem}-{n}.kasauti.pdf"
             used.add(name)
-            zf.writestr(name, _render(kb, result))
+            zf.writestr(name, _render(kb, result, key))
     return buf.getvalue()

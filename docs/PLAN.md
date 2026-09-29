@@ -1107,6 +1107,27 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
     rendering. Not reproduced in 6 × 350 ingest tests run in parallel, nor in 4 parallel runs of
     the test alone; its assertions already name the file and the job's error, so a recurrence
     will say why.
+- **v5.8.0 (2026-09-30, signed reports: M5.12 in part):**
+  - **Every report is signed.** The PDF from `GET /api/jobs/{id}/report.pdf`, each PDF in an
+    upload's zip, and the CLI's report carry a PAdES baseline B-B signature over the whole file
+    (pyHanko, MIT; `kasauti/report/sign.py`). The report names its key in the appendix
+    (signer, where the certificate came from, its SHA-256) and says "digitally signed" in every
+    page's footer. Rendering is unchanged and deterministic; the signature is an incremental
+    update after it.
+  - **The key.** An ECDSA P-256 key and a self-signed certificate made in `<data dir>/signing` the
+    first time they are needed, created owner-only; half a key is refused, never replaced. An
+    organisation's own certificate (PKCS#12, `KASAUTI_SIGNING_P12` and its password variable)
+    replaces it. `GET /api/signing` states who signs and the certificate's fingerprint;
+    `GET /api/signing/certificate` hands the certificate out, to trust in a PDF reader or to
+    verify with.
+  - **`kasauti verify report.pdf [--cert PEM]`** checks offline, trusting only the certificates
+    given (default: this server's): unchanged since signing, nothing added after it, signer
+    trusted. A flipped byte, appended bytes and a proper PDF incremental update are each caught
+    (`tests/report/test_sign.py`). Nothing is fetched: no system trust store, no revocation
+    lookups; pyHanko's oscrypto dependency is only imported for the system store, so it is never
+    loaded.
+  - **Not done:** an officer's Class-3 DSC on a USB token (PKCS#11: pyHanko supports it, but it
+    needs a token to test), trusted timestamps (PAdES B-T), and the transparency log (M5.13-M5.17).
 - **v5.7.0 (2026-09-30, the semantic engine's first model: S5 and S6, M3.12-M3.14 and more):**
   - **S5, embeddings.** The Studio now also asks a local model what an unread line most likely
     means. The model is `potion-base-8M` (Minish Lab, MIT): static embeddings distilled from

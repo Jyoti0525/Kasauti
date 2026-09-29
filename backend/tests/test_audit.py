@@ -151,6 +151,8 @@ def test_cli_audit_writes_json_and_pdf(tmp_path: Path, capsys: pytest.CaptureFix
             str(tmp_path),
             "--date",
             "2026-09-26",
+            "--data-dir",
+            str(tmp_path / "data"),
         ]
     )
     assert code == 0
@@ -160,7 +162,18 @@ def test_cli_audit_writes_json_and_pdf(tmp_path: Path, capsys: pytest.CaptureFix
     assert "  FAIL   critical MGMT-TELNET-01:" in out
     data = json.loads((tmp_path / "weak.kasauti.json").read_text(encoding="utf-8"))
     assert data["identity"]["hostname"]["value"] == "EDGE-R1"
-    assert (tmp_path / "weak.kasauti.pdf").read_bytes().startswith(b"%PDF")
+    pdf = tmp_path / "weak.kasauti.pdf"
+    assert pdf.read_bytes().startswith(b"%PDF")
+
+    # Signed with the key made in the data folder, and `kasauti verify` checks it (M5.12).
+    verify = ["verify", str(pdf), "--data-dir", str(tmp_path / "data")]
+    assert main(verify) == 0
+    assert ": VALID" in capsys.readouterr().out
+    changed = bytearray(pdf.read_bytes())
+    changed[len(changed) // 3] ^= 1
+    pdf.write_bytes(bytes(changed))
+    assert main(verify) == 1
+    assert "NO  unchanged since signing" in capsys.readouterr().out
 
 
 def test_cli_audit_reads_companion_outputs(

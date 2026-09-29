@@ -32,6 +32,13 @@ EDGE-R1  (cisco_ios_xe@1, chosen by fingerprint)
   wrote reports/weak.kasauti.pdf
 ```
 
+The PDF is digitally signed (PAdES) with a key Kasauti makes in `var/signing` the first time;
+any change to the file afterwards shows in a PDF reader and here:
+
+```bash
+uv run kasauti verify reports/weak.kasauti.pdf    # VALID: unchanged, nothing added, signer trusted
+```
+
 Configurations rarely hold a serial number. Add the device's command outputs (`show version`,
 `show inventory`, `get system status`, `show system info`, `show chassis hardware`) and the
 report names the serial, model, exact release and every hardware component, each with the file
@@ -166,7 +173,8 @@ docker run -p 8000:8000 -e KASAUTI_PUBLIC_URL=https://kasauti.example.org kasaut
    (today: structure, a lexicon and a local embedding model; next: the vendor's own command
    manual). Humans approve.
 3. **Judges those facts against all four frameworks at once.** Every finding carries its evidence,
-   a fix verified by re-auditing it, and a digital signature with a transparency-log proof.
+   a fix verified by re-auditing it, and a digital signature (a transparency-log proof is
+   next).
 
 The full design is in [docs/PLAN.md](docs/PLAN.md).
 
