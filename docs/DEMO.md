@@ -55,6 +55,13 @@ device, so each device's `show version` and `show inventory` pair with it on the
   rest on lines not yet taught (AAA, ACLs, the banner). Kasauti says so; it never guesses.
 - 100 configurations uploaded, recognised, audited and every fix proven in 52 s on the
   development laptop.
+- The Studio's AI suggestions (measured 2026-09-30, `eval/reports/lovo.md`): on a vendor it
+  has never seen, the first suggestion is right 74 % of the time (the word lists alone: 57 %);
+  when it makes one, it is right 96 %; unsure, it says "No suggestion". On Huawei, which is in
+  no seed pack, 27 of 27 lines got the right meaning first.
+- Huawei taught with every line the Studio can express (`eval/reports/huawei_teach.md`):
+  23 approvals, each the top suggestion, then 11 of 21 checks judged, 10 failing. The model is
+  local (30 MB, no GPU, no internet at run time).
 
 ## Don't say
 

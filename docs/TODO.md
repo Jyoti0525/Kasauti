@@ -492,26 +492,26 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
 ### 3B · S5 embeddings and reranker (§10.2, §21.2)
 - [ ] **M3.09** Write the SBM attribute descriptions that S5 matches against. `@lead`
 - [ ] **M3.10** E2 mapping set: 400–600 labelled (statement → attribute) pairs across the seeds and Huawei, NAssim-assisted. *(§21.1)* `@ml` `@content`
-- [ ] **M3.11** Benchmark on E2 under LOVO:
+- [~] **M3.11** Benchmark on E2 under LOVO: Partly 2026-09-30 (v5.7.0): leave-one-vendor-out on the 96 seed lines that are examples of a Studio meaning, plus the 547 no meaning fits, and Huawei held out (`eval/harness/lovo.py`, `eval/reports/lovo.md`). Measured for the adopted model only; the E2 set and the transformer shortlist are open.
   - embeddings: Qwen3-Embedding-0.6B, granite-embedding-small-english-r2, SecureBERT2.0-biencoder, bge-small-en-v1.5
   - rerankers: Qwen3-Reranker-0.6B, bge-reranker-v2-m3
   - pick by Recall@1 and Recall@5, with speed as the tie-breaker
   - re-check each licence on Hugging Face at download time
 
   *(§19.2, §21.2)* `@ml`
-- [ ] **M3.12** Adopt the winner, with cached embeddings, meeting < 300 ms per pattern. Nearest-neighbour search uses plain numpy: no FAISS and no pgvector, which are unnecessary at our scale. *(§22, §19.5)* `@ml`
-- [ ] **M3.13** Store models as safetensors with pinned SHA-256 hashes (the start-up check comes in M5.09). *(§10.5)* `@ml`
+- [x] **M3.12** Adopt the winner, with cached embeddings, meeting < 300 ms per pattern. Nearest-neighbour search uses plain numpy: no FAISS and no pgvector, which are unnecessary at our scale. *(§22, §19.5)* `@ml` Done 2026-09-30 (v5.7.0): potion-base-8M (MIT), static embeddings read with numpy; embeddings cached per text and the index built once per knowledge-base version. Measured on a laptop: the index builds in 0.12 s, a Huawei queue of 57 patterns ranks in 0.02 s, a line tokenises in 45 µs. Chosen for what it needs (no PyTorch, 30 MB, fits the 512 MB host) and measured in `eval/reports/lovo.md`.
+- [x] **M3.13** Store models as safetensors with pinned SHA-256 hashes (the start-up check comes in M5.09). *(§10.5)* `@ml` Done 2026-09-30 (v5.7.0): safetensors only, pinned revision and SHA-256 per file in `kasauti/semantic/embed.py`, fetched at setup by `kasauti models fetch`; checked again on every load.
 
 ### 3C · S6 two-speed learning (§10.5)
-- [ ] **M3.14** Instant: every approval goes into a prototype/kNN memory over frozen embeddings, and the pending queue re-ranks immediately. `@ml`
+- [x] **M3.14** Instant: every approval goes into a prototype/kNN memory over frozen embeddings, and the pending queue re-ranks immediately. `@ml` Done 2026-09-30 (v5.7.0): every approved mapping is an example of its meaning (S6); an approval reloads the knowledge base and the next queue is ranked with it (`tests/semantic/test_index.py`).
 - [ ] **M3.15** Background: once enough new labels accumulate, run a contrastive fine-tune (SetFit / sentence-transformers trainer). The GPU is optional. `@ml`
-- [ ] **M3.16** Eval gate: a candidate model is promoted only if it beats the current one on E2, including the LOVO split. `@ml`
+- [~] **M3.16** Eval gate: a candidate model is promoted only if it beats the current one on E2, including the LOVO split. `@ml` Partly 2026-09-30 (v5.7.0): a CI gate keeps the Studio's suggestions from getting worse on the leave-one-vendor-out set and on Huawei (`eval/tests/test_lovo.py`). Promoting a candidate model is open.
 
 ### 3D · Fusion, confidence, trust (§10.3)
-- [ ] **M3.17** Signal interface: each signal returns `(candidate attribute, score)` or abstains. `@ml`
+- [~] **M3.17** Signal interface: each signal returns `(candidate attribute, score)` or abstains. `@ml` Partly 2026-09-30 (v5.7.0): S5/S6 rank every meaning with a score and the evidence behind it; below the floor they add nothing (abstain). One interface for all signals is open.
 - [ ] **M3.18** Stacking model (scikit-learn logistic regression over signal scores), retrained from Studio decisions. `@ml`
-- [ ] **M3.19** Calibrated thresholds. No confident candidate means "don't know", never a guess. (Conformal prediction comes in M6.05.) `@ml`
-- [ ] **M3.20** Every suggestion explains itself: which signals agreed, the manual excerpt, and the 3 nearest approved lines from other vendors. `@ml` `@ui`
+- [~] **M3.19** Calibrated thresholds. No confident candidate means "don't know", never a guess. (Conformal prediction comes in M6.05.) `@ml` Partly 2026-09-30 (v5.7.0): thresholds chosen on the leave-one-vendor-out set so that no more meaningless lines get a suggestion than before; unsure means "No suggestion". Calibrated probabilities are open.
+- [~] **M3.20** Every suggestion explains itself: which signals agreed, the manual excerpt, and the 3 nearest approved lines from other vendors. `@ml` `@ui` Partly 2026-09-30 (v5.7.0): each suggestion names the nearest approved lines and their vendors, and records its signals in the provenance of what it teaches. The manual excerpt waits for S3.
 - [ ] **M3.21** Trust-policy test: a suggestion never reaches a verdict until it's approved. `@lead`
 - [ ] **M3.22** Test every row of the degradation ladder:
   - all core signals
@@ -530,10 +530,10 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
 - [ ] **M3.27** KB versioning: every version kept and diffable, with one-click revert on the KB screen. Transparency-log entries are hooked up in M5.13. `@lead` `@ui`
 
 ### 3F · Unseen-vendor proof (§20.4, §21.2)
-- [ ] **M3.28** Huawei VRP, never in the seeds, run through the full teach flow. Target: ≥ 80% coverage after ≤ 20 approvals. Rehearse the demo beat: 22% → 85% after 6 approvals. *(§21.3, Executive summary)* `@content` `@ml` Measured 2026-09-29 (v5.4.0), before manual grounding: 13 approvals judge 8 of 23 checks on the weak sample; the demo uses that (docs/DEMO.md) until this target is met.
+- [~] **M3.28** Huawei VRP, never in the seeds, run through the full teach flow. Target: ≥ 80% coverage after ≤ 20 approvals. Rehearse the demo beat: 22% → 85% after 6 approvals. *(§21.3, Executive summary)* `@content` `@ml` Measured 2026-09-29 (v5.4.0), before manual grounding: 13 approvals judge 8 of 23 checks on the weak sample; the demo uses that (docs/DEMO.md) until this target is met. Measured again 2026-09-30 (v5.7.0, `eval/reports/huawei_teach.md`): every line the Studio's meanings can express, 23 approvals, each the top suggestion: 11 of 21 checks judged on the weak sample. The rest need meanings for local accounts, AAA servers, access-list entries and lockout (M2.65), with Huawei's documented semantics.
   - the reference case moved here from M2.23: `user-interface vty 0 4` / `acl 2001 inbound` becomes a `ref` to ACL 2001 through the taught mappings, followed to its permitted sources with Huawei's quoted implicit action, with a test
 - [ ] **M3.29** MikroTik: a new shape family with no manual, proving the no-manual path of the ladder. *(§20.4, §10.6)* `@content`
-- [ ] **M3.30** LOVO runs: zero-shot Recall@5 per vendor with and without the manual (targets ≥ 60% / ≥ 40%), and learning curves after 0 / 5 / 10 / 20 approvals. *(§21.2, §21.3; PS hint "NLP for unseen keywords")* `@ml`
+- [~] **M3.30** LOVO runs: zero-shot Recall@5 per vendor with and without the manual (targets ≥ 60% / ≥ 40%), and learning curves after 0 / 5 / 10 / 20 approvals. *(§21.2, §21.3; PS hint "NLP for unseen keywords")* `@ml` Partly 2026-09-30 (v5.7.0): without manuals, right-first 74 % (R@1) across the five text-family seeds, 92 % R@3 for S5/S6 alone (`eval/reports/lovo.md`); the Huawei learning curve in `eval/reports/huawei_teach.md`. With-manual runs wait for S3.
 - [ ] **M3.31** Upgrade rule ↔ STIG matching to semantic-engine proposals. *(§12.4)* `@ml` `@content`
 - [ ] **M3.32** Hallway test: someone who has never seen Kasauti (a friend or classmate, 5 minutes, no network background needed) maps a Huawei pattern unaided in < 60 s. You can't be the tester, because you already know the UI. *(R-05 AC)* `@ui`
 - [ ] **M3.33** Kill-criterion check: is S3 Recall@5 on Huawei ≥ 40%? Record the decision; if not, apply the fallback and log it in Appendix C. *(§25, §28)* `@ml`
@@ -618,7 +618,7 @@ Every rule has intent, official refs, `on_absent`/`on_unknown`, a pass and a fai
   - import/export on the KB screen, showing signature status
 
   *(§4.4, §17, §18.1)* `@sec`
-- [ ] **M5.09** Models: safetensors only, with a SHA-256 manifest checked at start-up. *(§17)* `@sec`
+- [~] **M5.09** Models: safetensors only, with a SHA-256 manifest checked at start-up. *(§17)* `@sec` Partly 2026-09-30 (v5.7.0): the one model is checked against its pinned SHA-256 on every load and refused if changed. A manifest file for several models is open.
 - [~] **M5.10** Network exposure: localhost by default. When exposed: TLS, CSP, HSTS and the other security headers. Ollama bound to 127.0.0.1. *(§17)* `@sec` Partly done 2026-09-30 (v5.6.0): `kasauti serve --public https://name` for a host's HTTPS front end (the Render demonstration link): that name only, its `https://` origin, Secure cookie, HSTS; CSP and the other headers as before. Open: TLS served by Kasauti itself for a LAN install, and MFA (M5.03) before a real deployment.
 - [ ] **M5.11** Air gap: offline installer, bundled models, signed offline updates for packs and catalogs. *(§17, §1.2 test 5)* `@sec`
 

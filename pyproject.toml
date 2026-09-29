@@ -23,6 +23,8 @@ dependencies = [
     "alembic>=1.20,<2",             # MIT (+ Mako MIT, MarkupSafe BSD-3); schema migrations
     "cryptography>=50.0.1,<51",     # Apache-2.0 OR BSD-3-Clause (+ cffi MIT-0, pycparser BSD-3)
     "argon2-cffi>=25.1,<26",        # MIT (+ argon2-cffi-bindings MIT); Argon2id password hashes
+    # BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0: vectors for the S5/S6 signals
+    "numpy>=2.5,<3",
 ]
 
 [project.scripts]

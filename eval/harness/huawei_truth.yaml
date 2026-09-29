@@ -1,0 +1,65 @@
+# What each line of the two Huawei VRP samples (datasets/authored/huawei_vrp) means, in the
+# Training Studio's meanings (packs/studio/meanings.yaml), written by hand from Huawei's VRP
+# command semantics. Huawei is in no seed pack, so this is the Studio's held-out test
+# (eval/harness/lovo.py `huawei`). Keyed by the queue's pattern, then its block's pattern
+# ("" at the top level). `null`: no meaning in the catalogue fits; the right answer is "no
+# suggestion". Lines that could fairly be read two ways are left out rather than guessed:
+# `snmp-agent` alone (starts the agent: a service switched on, or a block opened?) and the two
+# NTP key lines (a key defined, or trust in it declared?).
+format_version: 1
+lines:
+  - {pattern: "interface <IFNAME>", block: "", meaning: interface}
+  - {pattern: "info-center timestamp log date", block: "", meaning: log-timestamps}
+  - {pattern: "user-interface con <INT>", block: "", meaning: console-line}
+  - {pattern: "user-interface vty <INT> <INT>", block: "", meaning: remote-lines}
+  - {pattern: "ntp-service unicast-server <IP> authentication-keyid <INT>", block: "", meaning: time-server-keyed}
+  - {pattern: "ntp-service authentication enable", block: "", meaning: time-auth-enforced}
+  - {pattern: "header login information <STR>", block: "", meaning: login-banner}
+  - {pattern: "info-center loghost <IP>", block: "", meaning: log-server}
+  - {pattern: "ntp-service unicast-server <IP>", block: "", meaning: time-server}
+  - {pattern: "ssh server compatible-ssh1x enable", block: "", meaning: ssh-v1-allowed}
+  - {pattern: "snmp-agent community write cipher <STR>", block: "", meaning: snmp-community}
+  - {pattern: "undo telnet server enable", block: "", meaning: service-off}
+  - {pattern: "undo http server enable", block: "", meaning: service-off}
+  - {pattern: "undo ftp server enable", block: "", meaning: service-off}
+  - {pattern: "stelnet server enable", block: "", meaning: service-on}
+  - {pattern: "ftp server enable", block: "", meaning: service-on}
+  - {pattern: "telnet server enable", block: "", meaning: service-on}
+  - {pattern: "http server enable", block: "", meaning: service-on}
+  - {pattern: "http secure-server enable", block: "", meaning: service-on}
+  - {pattern: "idle-timeout <INT> <INT>", block: "user-interface vty <INT> <INT>", meaning: line-idle-timeout}
+  - {pattern: "idle-timeout <INT> <INT>", block: "user-interface con <INT>", meaning: line-idle-timeout}
+  - {pattern: "protocol inbound all", block: "user-interface vty <INT> <INT>", meaning: line-protocols}
+  - {pattern: "protocol inbound ssh", block: "user-interface vty <INT> <INT>", meaning: line-protocols}
+  - {pattern: "acl <INT> inbound", block: "user-interface vty <INT> <INT>", meaning: line-acl}
+  - {pattern: "arp-proxy enable", block: "interface <IFNAME>", meaning: proxy-arp-on}
+  - {pattern: "description LAN users", block: "interface <IFNAME>", meaning: interface-description}
+  - {pattern: "description WAN uplink to ISP", block: "interface <IFNAME>", meaning: interface-description}
+  # No meaning in the catalogue fits these (AAA, ACL bodies, addressing, SNMP versions).
+  - {pattern: "snmp-agent sys-info version v3", block: "", meaning: null}
+  - {pattern: "snmp-agent sys-info version v2c v3", block: "", meaning: null}
+  - {pattern: "hwtacacs-server template tac1", block: "", meaning: null}
+  - {pattern: "acl number <INT>", block: "", meaning: null}
+  - {pattern: "aaa", block: "", meaning: null}
+  - {pattern: "return", block: "", meaning: null}
+  - {pattern: "authentication-scheme default", block: "aaa", meaning: null}
+  - {pattern: "authentication-scheme tac", block: "aaa", meaning: null}
+  - {pattern: "authorization-scheme default", block: "aaa", meaning: null}
+  - {pattern: "accounting-scheme default", block: "aaa", meaning: null}
+  - {pattern: "domain default", block: "aaa", meaning: null}
+  - {pattern: "domain default_admin", block: "aaa", meaning: null}
+  - {pattern: "local-user admin privilege level <INT>", block: "aaa", meaning: null}
+  - {pattern: "local-user admin service-type ssh", block: "aaa", meaning: null}
+  - {pattern: "local-user admin service-type telnet terminal ssh http", block: "aaa", meaning: null}
+  - {pattern: "local-user admin password irreversible-cipher <STR>", block: "aaa", meaning: null}
+  - {pattern: "hwtacacs-server shared-key cipher <STR>", block: "hwtacacs-server template tac1", meaning: null}
+  - {pattern: "authentication-mode hwtacacs local", block: "authentication-scheme tac", meaning: null}
+  - {pattern: "hwtacacs-server tac1", block: "domain default_admin", meaning: null}
+  - {pattern: "authentication-scheme tac", block: "domain default_admin", meaning: null}
+  - {pattern: "hwtacacs-server authentication <IP> <INT>", block: "hwtacacs-server template tac1", meaning: null}
+  - {pattern: "authentication-mode aaa", block: "user-interface vty <INT> <INT>", meaning: null}
+  - {pattern: "authentication-mode aaa", block: "user-interface con <INT>", meaning: null}
+  - {pattern: "authentication-mode password", block: "user-interface con <INT>", meaning: null}
+  - {pattern: "ip address <IP> <IP>", block: "interface <IFNAME>", meaning: null}
+  - {pattern: "rule <INT> deny", block: "acl number <INT>", meaning: null}
+  - {pattern: "rule <INT> permit source <IP> <IP>", block: "acl number <INT>", meaning: null}

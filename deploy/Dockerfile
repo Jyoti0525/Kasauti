@@ -29,6 +29,9 @@ WORKDIR /home/kasauti/app
 COPY --chown=kasauti pyproject.toml uv.lock README.md LICENSE NOTICE ./
 COPY --chown=kasauti backend/kasauti ./backend/kasauti
 RUN uv sync --no-dev
+# The Training Studio's embedding model (MIT, 30 MB), fetched at build time from its pinned
+# revision and checked by SHA-256, so the running container never reaches the network for it.
+RUN kasauti models fetch
 COPY --chown=kasauti packs ./packs
 COPY --chown=kasauti datasets/authored ./datasets/authored
 COPY --chown=kasauti tools/demo_seed.py ./tools/demo_seed.py

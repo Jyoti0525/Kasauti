@@ -400,7 +400,7 @@ So suggestions come from **independent signals that fail differently**, fused an
 | S2 | **Approved knowledge base** | Exact, human-approved mappings (the only signal that feeds verdicts) | Mapping language (§9) | — | Core |
 | S3 | **Vendor-manual grounding** | For unseen vendors: which documented command this line is, what it does, its `undo` form and its default | Manual ingester (§10.4); seed corpus from **NAssim** (MIT: 12,406 Huawei NE40E + Nokia 7750 SR command entries) | **NAssim, ACM SIGCOMM '22**: device models from manuals, 9.1× faster onboarding | Core ★ |
 | S4 | **Security lexicon** | Cross-vendor synonyms (`telnet`/`stelnet`/`admin-telnet`, `logging`/`info-center`/`syslog`, `snmp-server`/`snmp-agent`), aligned to OpenConfig names | Curated YAML + rapidfuzz | OpenConfig | Core |
-| S5 | **Semantic embeddings + reranker** | Closeness of line (or its manual description) to SBM attribute descriptions and to approved examples from *other* vendors | sentence-transformers; model **chosen by benchmark** (§21) from Qwen3-Embedding-0.6B, granite-embedding-small-english-r2, SecureBERT2.0, bge-small; reranker Qwen3-Reranker-0.6B / bge-reranker-v2-m3 | NAssim's NetBERT; domain-adapted compliance mapping (arXiv 2607.06364) | Core |
+| S5 | **Semantic embeddings + reranker** | Closeness of line (or its manual description) to SBM attribute descriptions and to approved examples from *other* vendors | **In use (v5.7.0):** potion-base-8M static embeddings (MIT, 30 MB, numpy only), measured leave-one-vendor-out in `eval/reports/lovo.md`. Upgrade path, promoted only if it beats it there: Qwen3-Embedding-0.6B, granite-embedding-small-english-r2, SecureBERT2.0, bge-small via sentence-transformers; reranker Qwen3-Reranker-0.6B / bge-reranker-v2-m3 | NAssim's NetBERT; domain-adapted compliance mapping (arXiv 2607.06364) | Core |
 | S6 | **Few-shot memory** | Learns from every approval, at two speeds (§10.5) | Prototype/kNN memory + background contrastive fine-tune (SetFit / sentence-transformers) | NAssim fine-tuned on 110–381 expert pairs | Core ★ |
 | S7 | Fleet consensus | Values that differ from same-role peers; value-type inference | Template-with-holes + outlier scoring | Selfstarter (NSDI '20), Diffy (PLDI '24) | Stretch |
 | S8 | LLM voter | Broad general knowledge; drafting explanations | Local Granite 4.2-3B or Qwen3.5-4B via Ollama (localhost only), or an org-hosted open model | "Verified Prompt Programming" (HotNets '23): LLMs need verifiers | Stretch |
@@ -719,8 +719,10 @@ Evidence first (every number clickable down to a config line); two numbers, neve
 ### 19.2 AI / ML
 | Purpose | Choice | Licence |
 |---|---|---|
-| Embedding runtime | sentence-transformers 6 | Apache-2.0 |
-| Embedding models (benchmark shortlist) | Qwen3-Embedding-0.6B; granite-embedding-small-english-r2 (47M); SecureBERT2.0-biencoder; bge-small-en-v1.5 | Apache-2.0 ×3, MIT |
+| Embedding runtime (in use, v5.7.0) | numpy, reading the model directly (`kasauti/semantic/embed.py`) | BSD-3-Clause (+ 0BSD, MIT, Zlib, CC0 parts) |
+| Embedding model (in use, v5.7.0) | potion-base-8M (Minish Lab), pinned revision and SHA-256 | MIT |
+| Embedding runtime (upgrade path) | sentence-transformers 6 | Apache-2.0 |
+| Embedding models (upgrade shortlist) | Qwen3-Embedding-0.6B; granite-embedding-small-english-r2 (47M); SecureBERT2.0-biencoder; bge-small-en-v1.5 | Apache-2.0 ×3, MIT |
 | Rerankers (benchmark) | Qwen3-Reranker-0.6B; bge-reranker-v2-m3 | Apache-2.0 |
 | Classical ML, stacking | scikit-learn, numpy | BSD-3 |
 | Few-shot fine-tune | SetFit 1.2 / sentence-transformers trainer | Apache-2.0 |
@@ -1105,6 +1107,46 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
     rendering. Not reproduced in 6 × 350 ingest tests run in parallel, nor in 4 parallel runs of
     the test alone; its assertions already name the file and the job's error, so a recurrence
     will say why.
+- **v5.7.0 (2026-09-30, the semantic engine's first model: S5 and S6, M3.12-M3.14 and more):**
+  - **S5, embeddings.** The Studio now also asks a local model what an unread line most likely
+    means. The model is `potion-base-8M` (Minish Lab, MIT): static embeddings distilled from
+    BAAI bge-base-en-v1.5, one 256-dimensional vector per word piece, 30 MB. It was chosen
+    over the §10.2 shortlist of transformer encoders by what it needs, not only by what it
+    scores: no PyTorch, microseconds per line on a laptop CPU, and it fits the 512 MB
+    demonstration host. The shortlist stays the upgrade path, promoted only if it beats this
+    model on the evaluation below. It is read with numpy alone (BERT WordPiece and the
+    safetensors format in `kasauti/semantic/embed.py`, matched to the reference implementation
+    to 1e-8 by a test), so no library that can talk to a model hub is installed.
+  - **Pinned, fetched at setup, never at run time.** `kasauti models fetch` downloads the model
+    from a pinned revision and checks each file's SHA-256; every load checks them again, and a
+    changed file is refused, never used (§17 "Models", M3.13, M5.09 in part). CI and the
+    container build fetch it; without it the Studio's other signals still suggest (§10.6).
+  - **S6, few-shot memory.** Every approved mapping, seed or taught in the Studio, is an example
+    of the meaning its effects have (`kasauti/semantic/index.py`); 96 of the 652 seed mappings
+    are. A line is ranked by closeness to those examples (other vendors' lines, block by block)
+    and to each meaning's description. Word pieces are weighted by how rare they are among
+    configuration lines, so `ip` or `set` say little. An approval reloads the knowledge base
+    and the next queue is ranked with it: learning in seconds, with no training step (§10.5).
+  - **Fusion.** S1 + S4 + S5/S6, with a negated line (`undo …`) compared in its positive form
+    and never suggested as switching something on. Each suggestion names the nearest approved
+    lines and their vendors, and records its signals in the provenance of what it teaches.
+    The weights were chosen on the leave-one-vendor-out set below, under one constraint: no
+    more suggestions for lines no meaning fits than the lexicon alone made.
+  - **Measured** (`uv run python -m harness lovo`, `eval/reports/lovo.md`). Each seed vendor
+    hidden in turn, its 96 lines ranked from what the others taught: right first time
+    **74 %** (lexicon alone 57 %); right when it suggests **96 %** (81 %); suggests something
+    for **16 %** of the 547 lines no meaning fits (20 %). Huawei, in no seed pack and not used
+    to choose anything: **27 of 27** lines right first, 1 of 27 meaningless lines given a
+    suggestion. A CI gate (`eval/tests/test_lovo.py`) keeps these from getting worse.
+  - **Huawei taught end to end** (`uv run python -m harness teach`,
+    `eval/reports/huawei_teach.md`): every line the Studio's meanings can express, taught by
+    accepting the top suggestion (right for 23 of 23), approved by a second person. Kasauti
+    then judges **11 of 21** checks on the weak sample (10 failing), up from 8 of 23 after
+    the 13 approvals measured on 2026-09-29. The rest rest on local accounts, AAA servers,
+    access-list entries and lockout, which no Studio meaning expresses yet (M2.65); their Huawei
+    semantics must come from Huawei's documentation, so they are not guessed.
+  - **Not done:** vendor-manual grounding (S3, M3.01-M3.08), the background fine-tune
+    (M3.15), the stacking model and conformal sets (M3.18, M6.05), the LLM voter (S8).
 - **v5.6.0 (2026-09-30, a public demonstration link: M5.10 in part):**
   - **`kasauti serve --public https://name`.** For a host whose HTTPS front end publishes the
     server (Render's free plan here). It listens on every interface but answers only to that name

@@ -454,6 +454,8 @@ export interface StudioSuggestion {
   choices: Record<string, string | string[]>;
   /** Token index -> role. */
   roles: Record<string, string>;
+  /** Which signals backed it (PLAN §10.2), kept in the provenance of what it teaches. */
+  signals: string[];
 }
 
 export interface StudioPattern {

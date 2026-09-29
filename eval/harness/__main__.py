@@ -3,17 +3,21 @@
 ``uv run python -m harness status``            which evaluation datasets are populated
 ``uv run python -m harness golden``            run every E1 golden case (ground truth + snapshot)
 ``uv run python -m harness golden --update``   rewrite snapshots after reviewing the change
+``uv run python -m harness lovo``              Studio suggestions on vendors held out (-> reports)
+``uv run python -m harness teach``             teach Huawei one approval at a time (-> reports)
 """
 
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
-from harness import golden
+from harness import golden, lovo, teach
 from harness.datasets import DATASETS
 from kasauti.audit import load_kb
 
-USAGE = "usage: python -m harness status | golden [--update]"
+USAGE = "usage: python -m harness status | golden [--update] | lovo | teach"
+REPORTS = Path(__file__).resolve().parents[1] / "reports"
 
 
 def _status() -> int:
@@ -43,8 +47,27 @@ def _golden(update: bool) -> int:
     return 0 if all(r.ok for r in results) else 1
 
 
+def _lovo() -> int:
+    return _write("lovo.md", lovo.markdown(lovo.run(), lovo.huawei()))
+
+
+def _teach() -> int:
+    return _write("huawei_teach.md", teach.markdown(*teach.run()))
+
+
+def _write(name: str, text: str) -> int:
+    REPORTS.mkdir(exist_ok=True)
+    (REPORTS / name).write_text(text, encoding="utf-8")
+    print(text)
+    return 0
+
+
 def main(argv: list[str]) -> int:
     match argv:
+        case ["lovo"]:
+            return _lovo()
+        case ["teach"]:
+            return _teach()
         case ["status"]:
             return _status()
         case ["golden"]:

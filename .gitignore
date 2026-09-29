@@ -37,6 +37,9 @@ models/
 # Evaluation outputs (reports are generated; keep the harness only)
 eval/reports/*
 !eval/reports/.gitkeep
+# ...except the measurements the README quotes; eval/tests check they match a fresh run.
+!eval/reports/lovo.md
+!eval/reports/huawei_teach.md
 
 # Raw third-party data is fetched by tools, not committed unless recorded in SOURCES.md
 datasets/_downloads/

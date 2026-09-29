@@ -5,3 +5,28 @@ This product is licensed under the Apache License, Version 2.0 (see LICENSE).
 
 Third-party content attributions (framework content, datasets, models) are
 listed in datasets/SOURCES.md and in the appendix of every generated report.
+
+The Training Studio's embedding model is not stored in this repository; `kasauti models
+fetch` downloads it, and the container image built from deploy/Dockerfile includes it:
+
+  potion-base-8M, https://huggingface.co/minishlab/potion-base-8M
+  (revision bf8b056651a2c21b8d2565580b8569da283cab23)
+  Copyright (c) 2024 Thomas van Dongen (Minish Lab; model card: MIT, authors Stephan Tulkens
+  and Thomas van Dongen)
+  Licensed under the MIT License:
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this
+  software and associated documentation files (the "Software"), to deal in the Software
+  without restriction, including without limitation the rights to use, copy, modify, merge,
+  publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+  to whom the Software is furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all copies or
+  substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+  INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+  PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+  FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+  OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.

@@ -37,7 +37,11 @@ jobs:
           uv run ruff format --check .
       - name: Types (strict)
         run: uv run mypy
+      - name: The Training Studio's embedding model (pinned revision, SHA-256 checked)
+        run: uv run kasauti models fetch
       - name: Tests (network disabled for the core, TODO S.11)
+        env:
+          KASAUTI_REQUIRE_MODEL: "1"   # the model's tests and the suggestion gate must run
         run: uv run pytest -p no:cacheprovider
 
   postgresql:

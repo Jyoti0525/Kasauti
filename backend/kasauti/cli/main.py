@@ -307,6 +307,32 @@ def _db(args: argparse.Namespace) -> int:
     return 0 if current == head else 1
 
 
+def _models(command: str) -> int:
+    """``fetch``: download the embedding model from its pinned revision, checking each file's
+    SHA-256. ``status``: load it as the server would, so a changed file is reported."""
+    from kasauti.semantic import embed  # noqa: PLC0415
+
+    spec, where = embed.MODEL, embed.models_dir()
+    if command == "fetch":
+        try:
+            path = embed.fetch(spec, where)
+        except (embed.ModelError, OSError) as e:
+            print(f"kasauti: could not fetch {spec.name}: {e}", file=sys.stderr)
+            return 1
+        print(f"{spec.name} ({spec.licence}) is installed in {path}")
+        return 0
+    try:
+        loaded = embed.load(spec, where)
+    except embed.ModelError as e:
+        print(f"{spec.name}: {e}")
+        return 1
+    print(
+        f"{spec.name} ({spec.licence}): installed in {where / spec.name}, every file matches "
+        f"its pinned SHA-256; {len(loaded.vocab)} word pieces, {loaded.dim} dimensions"
+    )
+    return 0
+
+
 def _cause(err: Exception) -> str:
     """The driver error's kind, e.g. ``OperationalError``. Not its text: that may echo the
     URL, and so the password."""
@@ -507,6 +533,13 @@ def build_parser() -> argparse.ArgumentParser:
         cmd = db_sub.add_parser(name, help=text)
         cmd.add_argument("--data-dir", type=Path, default=None, help=data_help)
 
+    models = sub.add_parser("models", help="the local AI model the Training Studio suggests with")
+    models_sub = models.add_subparsers(dest="models_command", required=True)
+    models_sub.add_parser(
+        "fetch", help="download it once (pinned, hash-checked); run at setup, not at run time"
+    )
+    models_sub.add_parser("status", help="say whether it is installed and intact")
+
     packs = sub.add_parser("packs", help="work with content packs")
     packs_sub = packs.add_subparsers(dest="packs_command", required=True)
     validate = packs_sub.add_parser("validate", help="schema-check every pack under a directory")
@@ -538,6 +571,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _db(args)
     if args.command == "account":
         return _account(args)
+    if args.command == "models":
+        return _models(args.models_command)
     if args.command == "packs" and args.packs_command == "validate":
         return _validate_packs(args.root)
     return 2  # pragma: no cover - argparse enforces the choices above

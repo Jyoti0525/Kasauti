@@ -43,6 +43,9 @@ from kasauti.mapping.setform import parse_config
 from kasauti.packs.loader import VendorPack
 from kasauti.rules.model import Status
 from kasauti.rules.scoring import NIST
+from kasauti.semantic.embed import shared as shared_embedder
+from kasauti.semantic.index import Near, SemanticIndex, line_words
+from kasauti.semantic.index import block_words as semantic_block_words
 from kasauti.shape.model import Statement
 from kasauti.shape.patterns import token_class
 from kasauti.studio.meanings import Block, Meaning, Token, as_yaml, load_meanings, render
@@ -87,6 +90,8 @@ class Suggestion:
     choices: dict[str, Any]
     roles: dict[int, str]
     """Token index -> role, where the value types line up."""
+    signals: tuple[str, ...] = ("S1",)
+    """Which signals backed it (PLAN §10.2): recorded in the provenance of what it teaches."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,6 +200,7 @@ class Studio:
             for stmt in unread(f.artifact, pack):
                 groups.setdefault(_key(stmt), []).append((f, stmt))
         meanings = load_meanings()
+        index = semantic_index(kb)
         out: list[Pattern] = []
         for key, found in groups.items():
             if key in ignored:
@@ -202,7 +208,9 @@ class Studio:
             first = found[0][1]
             tokens = _tokens(first)
             block = _block_pattern(first)
-            suggestions = suggest(tokens, block, meanings)
+            suggestions = suggest(
+                tokens, block, meanings, index=index, negation=pack.manifest.negation_words
+            )
             relevance = suggestions[0].score if suggestions else 0.0
             out.append(
                 Pattern(
@@ -264,7 +272,7 @@ class Studio:
             raise StudioError(f"no meaning {meaning!r}")
         if [t.text for t in tokens] != [t for t, _ in item.tokens]:
             raise StudioError("the words don't match the pattern's example line")
-        suggested = any(s.meaning == meaning for s in item.suggestions)
+        backing = next((s.signals for s in item.suggestions if s.meaning == meaning), ("S1",))
         mapping = render(
             picked,
             pack=pack,
@@ -272,7 +280,7 @@ class Studio:
             choices=choices,
             block=block_mapping(kb.vendor_packs[pack], item),
             proposed_by=f"{role.value}:{by}",
-            signals=("S1", "S4") if suggested else ("S1",),
+            signals=backing,
         )
         if any(m.id == mapping.id for m in kb.vendor_packs[pack].mappings):
             raise StudioError("this exact mapping is already approved")
@@ -536,54 +544,182 @@ SYNONYMS = {
 }
 
 
+_INDEX: dict[str, SemanticIndex] = {}
+_INDEX_LOCK = threading.Lock()
+
+
+def semantic_index(kb: KnowledgeBase) -> SemanticIndex | None:
+    """Signals S5 and S6 over this knowledge base: built once per knowledge-base version, so an
+    approval (which reloads the knowledge base) is in the very next queue's ranking. ``None``
+    when the embedding model isn't installed: the other signals still suggest."""
+    embedder = shared_embedder()
+    if embedder is None:
+        return None
+    with _INDEX_LOCK:
+        index = _INDEX.get(kb.version)
+        if index is None:
+            _INDEX.clear()  # one live knowledge base at a time
+            index = SemanticIndex(
+                embedder,
+                load_meanings(),
+                [m for p in kb.vendor_packs.values() for m in p.mappings],
+            )
+            _INDEX[kb.version] = index
+        return index
+
+
+@dataclass(frozen=True, slots=True)
+class _Line:
+    """A queue pattern as the signals read it."""
+
+    tokens: tuple[tuple[str, str | None], ...]
+    words: tuple[str, ...]
+    """Its literal words, lower-cased."""
+    block: str | None
+    block_words: frozenset[str]
+    negated: bool
+
+
 def suggest(
-    tokens: tuple[tuple[str, str | None], ...], block: str | None, meanings: dict[str, Meaning]
+    tokens: tuple[tuple[str, str | None], ...],
+    block: str | None,
+    meanings: dict[str, Meaning],
+    *,
+    index: SemanticIndex | None = None,
+    exclude_vendor: str | None = None,
+    negation: tuple[str, ...] = (),
 ) -> tuple[Suggestion, ...]:
     """Up to three meanings, best first, each saying why. Words of the line shared with a
-    meaning's vocabulary (S4), and whether the line sits in a block the meaning belongs in
-    (S1). Suggestions only pre-fill the card: nothing is stored until approved."""
-    words = [w.lower() for w, c in tokens if c is None]
-    block_words = set((block or "").lower().split())
-    found: list[Suggestion] = []
-    for m in meanings.values():
-        vocab = {v.lower() for v in m.words}
-        hits = [w for w in words if w in vocab]
-        groups = [{r.lower() for r in group} for group in m.requires]
-        if not hits or not all(g & set(words) for g in groups):
-            continue
-        subject = [w for w in words if any(w in g for g in groups)]
-        # A word naming the subject ("compatible-ssh1x") says more than a common one ("enable").
-        score = (len(hits) + 2 * len(subject)) / max(len(words), 1)
-        why = [f"shares {', '.join(repr(h) for h in hits)} with {m.label.lower()}"]
-        if m.under is not None:
-            inside = bool(block_words & _BLOCK_WORDS.get(m.under, set()))
-            score *= 1.5 if inside else 0.3
-            if inside:
-                why.append("sits in a block of that kind")
-        elif (
-            block is not None
-            and m.entity is not None
-            and m.entity.type
-            in (
-                "MgmtSession",
-                "Interface",
-            )
-        ):
-            score *= 0.5  # blocks open at the top level
-        choices = _guess_choices(m, words)
-        if m.choose and len(choices) < len(m.choose):
-            score *= 0.6
-        roles = _guess_roles(m, tokens)
-        found.append(
-            Suggestion(m.id, m.label, round(min(score, 1.0), 3), "; ".join(why), choices, roles)
+    meaning's vocabulary (S4); whether the line sits in a block the meaning belongs in (S1);
+    and, with an ``index``, how close the line is to the meaning and to lines other vendors
+    already have approved for it (S5, S6). Suggestions only pre-fill the card: nothing is
+    stored until approved. ``exclude_vendor`` is for the leave-one-vendor-out evaluation.
+
+    ``negation``: the pack's negation words. A line that starts with one (``undo telnet server
+    enable``) says the opposite of the rest, so it is compared in its positive form, and a
+    meaning that switches something on is its opposite, not its meaning (S1)."""
+    negated = bool(tokens) and tokens[0][1] is None and tokens[0][0].lower() in negation
+    line = _Line(
+        tokens,
+        tuple(w.lower() for w, c in tokens if c is None),
+        block,
+        frozenset((block or "").lower().split()),
+        negated,
+    )
+    near: dict[str, Near] = {}
+    if index is not None:
+        positive = tokens[1:] if negated else tokens
+        ranked_near = index.rank(
+            line_words(positive), semantic_block_words(block), exclude_vendor=exclude_vendor
         )
+        near = {n.meaning: n for n in ranked_near}
+    found = [
+        s for m in meanings.values() if (s := _consider(m, line, near.get(m.id), index)) is not None
+    ]
+    if not found:
+        return ()
     ranked = sorted(found, key=lambda s: (-s.score, s.meaning))
     # Only meanings nearly as good as the best, and none on a faint likeness: one shared word
     # ("enable") is no reason, and "No suggestion" is better than a wrong one.
     return tuple(s for s in ranked[:3] if s.score >= max(ranked[0].score / 2, MIN_SCORE))
 
 
+def _consider(
+    m: Meaning, line: _Line, near: Near | None, index: SemanticIndex | None
+) -> Suggestion | None:
+    """How well ``m`` fits ``line``, and why; None when nothing speaks for it."""
+    groups = [{r.lower() for r in group} for group in m.requires]
+    seen = set(line.words) | line.block_words
+    # The block names the subject too: ``trusted-key`` inside ``ntp { }`` is about NTP.
+    named = all(g & seen for g in groups)
+    hits = [w for w in line.words if w in {v.lower() for v in m.words}]
+    lexical = bool(hits) and named
+    if not lexical and index is None:
+        return None
+    why: list[str] = []
+    signals = ["S1"]
+    score = 0.0
+    if lexical:
+        signals.append("S4")
+        subject = [w for w in line.words if any(w in g for g in groups)]
+        # A word naming the subject ("compatible-ssh1x") says more than a common one.
+        score = (len(hits) + 2 * len(subject)) / max(len(line.words), 1)
+        why.append(f"shares {', '.join(repr(h) for h in hits)} with {m.label.lower()}")
+    if near is not None:
+        # The word lists gate only their own (lexical) score: a vendor's word for the subject
+        # may be one nobody listed (``authenticate``, ``trusted-key``).
+        semantic = max(0.0, (near.score - SEMANTIC_FLOOR) / (1 - SEMANTIC_FLOOR))
+        if groups and not any(g & seen for g in groups):
+            semantic *= 0.5  # names none of the meaning's subjects, nor does its block
+        score = LEXICAL_WEIGHT * min(score, 1.0) + SEMANTIC_WEIGHT * semantic
+        if semantic > 0:
+            signals.append("S5")
+        if semantic >= SEMANTIC_SHOWN and near.examples:
+            shown = ", ".join(f"'{e.line}' ({_vendor_name(e.vendor)})" for e in near.examples)
+            why.append(f"close to approved {shown}")
+            signals.append("S6")
+    factor, where = _placement(m, line, fused=index is not None)
+    score *= factor
+    why += where
+    if line.negated and _switches_on(m):
+        score *= 0.3
+        why.append(f"but '{line.tokens[0][0]}' negates the line")
+    choices = _guess_choices(m, list(line.words))
+    if m.choose and len(choices) < len(m.choose):
+        score *= 0.6
+    if not why:
+        return None
+    return Suggestion(
+        m.id,
+        m.label,
+        round(min(score, 1.0), 3),
+        "; ".join(why),
+        choices,
+        _guess_roles(m, line.tokens),
+        tuple(signals),
+    )
+
+
+def _placement(m: Meaning, line: _Line, *, fused: bool) -> tuple[float, list[str]]:
+    """S1: does the line sit where the meaning belongs (inside a block of its kind, or at the
+    top level for a meaning that opens a block)?"""
+    if m.under is not None:
+        inside = bool(line.block_words & _BLOCK_WORDS.get(m.under, set()))
+        why = ["sits in a block of that kind"] if inside else []
+        if not fused:
+            return (1.5 if inside else 0.3), why
+        # Block names differ by vendor (FortiOS ``edit "port1"``): S5 already weighs how alike
+        # the blocks are, so here only a line outside any block is unlikely.
+        return ((1.2 if inside else 1.0) if line.block is not None else 0.3), why
+    if (
+        not fused
+        and line.block is not None
+        and m.entity is not None
+        and m.entity.type in ("MgmtSession", "Interface")
+    ):
+        return 0.5, []  # blocks open at the top level
+    return 1.0, []
+
+
+# How the signals are weighed was chosen on the leave-one-vendor-out evaluation (eval/harness/
+# lovo.py, results in eval/reports/lovo.md): the most right-first suggestions without offering
+# something for more of the lines no meaning fits than the lexicon alone did.
 MIN_SCORE = 0.2
+LEXICAL_WEIGHT = 0.35
+SEMANTIC_WEIGHT = 0.65
+SEMANTIC_FLOOR = 0.5
+"""Closeness below this is what unrelated CLI lines share; above it, closeness counts linearly
+up to 1."""
+SEMANTIC_SHOWN = 0.3
+"""Name the nearest approved lines only when they are really close."""
+
+
+def _switches_on(m: Meaning) -> bool:
+    return any(e.get("value") is True for e in m.effects if "assert" in e)
+
+
+def _vendor_name(pack: str) -> str:
+    return pack.replace("_", " ")
 
 
 _BLOCK_WORDS = {

@@ -112,6 +112,7 @@ class SuggestionOut(_Model):
     why: str
     choices: dict[str, Any]
     roles: dict[int, str]
+    signals: tuple[str, ...]
 
 
 class TokenOut(_Model):
@@ -317,6 +318,7 @@ def _pattern(p: Pattern, taught: bool) -> PatternOut:
                 why=s.why,
                 choices=s.choices,
                 roles=s.roles,
+                signals=s.signals,
             )
             for s in p.suggestions
         ),

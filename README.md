@@ -52,6 +52,7 @@ it from the repository root:
 
 ```bash
 (cd frontend && npm ci && npm run build)
+uv run kasauti models fetch                   # once: the Training Studio's local AI model (30 MB)
 uv run kasauti serve --data-dir var/demo      # http://127.0.0.1:8000/
 uv run python tools/demo_seed.py              # optional, in another terminal: a 6-vendor demo fleet
 ```
@@ -67,6 +68,34 @@ uv run python tools/demo_seed.py              # optional, in another terminal: a
   it: raw line → mapping (who approved it) → fact → rule → control.
 - **Knowledge base** and **Frameworks & rules:** every mapping, vendor default and rule, with
   its source.
+- **Training Studio:** add configurations from a brand Kasauti can't read yet. Their unread
+  lines are grouped into patterns; for each, Kasauti suggests what it means and why (the words
+  it shares with a meaning, and the nearest lines other vendors already have approved). A
+  trainer clicks the values, picks the meaning and sees the impact before submitting; a change
+  that makes any check pass needs a second person, an approver. Approved lessons apply to the
+  next audit with no restart.
+
+### The Training Studio's AI
+
+The suggestions come from independent signals: the line's structure and block, a lexicon of
+each vendor's words for the same thing, and a small local embedding model
+([potion-base-8M](https://huggingface.co/minishlab/potion-base-8M), MIT, 30 MB, no GPU) that
+compares the line with the lines every vendor pack has approved. Every approval is an example
+for the next suggestion at once, with no training step. `kasauti models fetch` downloads the
+model from a pinned revision and checks its SHA-256, and every load checks it again; the server
+never downloads anything. Without the model the other signals still suggest. Suggestions only
+pre-fill the card: nothing reaches a verdict until a person approves it.
+
+Measured, with each vendor Kasauti knows hidden in turn and its lines ranked from what the
+others taught ([eval/reports/lovo.md](eval/reports/lovo.md)): the first suggestion is right
+74 % of the time (the lexicon alone: 57 %) and 96 % of the times it makes one; unsure, it says
+so. On Huawei VRP, which is in no seed pack, it gets 27 of 27 lines right first
+([eval/reports/huawei_teach.md](eval/reports/huawei_teach.md) teaches it end to end).
+
+```bash
+cd eval && uv run python -m harness lovo    # regenerate eval/reports/lovo.md
+cd eval && uv run python -m harness teach   # regenerate eval/reports/huawei_teach.md
+```
 
 The API alone:
 
@@ -133,8 +162,9 @@ docker run -p 8000:8000 -e KASAUTI_PUBLIC_URL=https://kasauti.example.org kasaut
 1. **Reads configurations by their shape, not their vendor.** Seven structural families cover
    practically every network OS, so a new vendor almost never needs new code.
 2. **Turns every line into facts with proof** in a vendor-neutral Security Baseline Model, using a
-   small, precise mapping language. Independent AI signals propose mappings for unseen vendors,
-   including by reading the vendor's own command manual. Humans approve.
+   small, precise mapping language. Independent AI signals propose mappings for unseen vendors
+   (today: structure, a lexicon and a local embedding model; next: the vendor's own command
+   manual). Humans approve.
 3. **Judges those facts against all four frameworks at once.** Every finding carries its evidence,
    a fix verified by re-auditing it, and a digital signature with a transparency-log proof.
 
@@ -147,6 +177,7 @@ Development is native; Docker is used only for packaging.
 
 ```bash
 uv sync                     # create .venv from the hash-locked uv.lock
+uv run kasauti models fetch # the embedding model the Studio's tests and suggestions use
 uv run pytest               # tests
 uv run ruff check . && uv run ruff format --check .
 uv run mypy                 # strict type checking
