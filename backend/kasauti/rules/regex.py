@@ -83,6 +83,14 @@ def group(pattern: str, text: str, name: str) -> str | None:
     return str(value) if value is not None else None
 
 
+def groups(pattern: str, text: str) -> dict[str, str] | None:
+    """The named groups of the first match (those that took part), or None without a match."""
+    m = _compiled(pattern).search(text)
+    if m is None:
+        return None
+    return {k: str(v) for k, v in m.groupdict().items() if v is not None}
+
+
 def group_names(pattern: str) -> tuple[str, ...]:
     """The pattern's named groups, in order."""
     return tuple(sorted(_compiled(pattern).groupindex, key=_compiled(pattern).groupindex.get))

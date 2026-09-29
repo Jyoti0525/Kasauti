@@ -1,0 +1,146 @@
+# Remediation recipes for EOS (PLAN §14.2 source 1: curated), from the Arista EOS 4.30 User
+# Manual, the same source as datasets/authored/arista_eos/hardened.cfg. Each is applied to a
+# copy of the audited configuration and re-audited before it is shown as verified.
+recipes:
+  # --- Management plane ----------------------------------------------------------------------
+  - id: telnet-off
+    rule: MGMT-TELNET-01
+    change:
+      - "management telnet"
+      - " shutdown"
+    note: Make sure SSH works for your administrators before you apply this.
+
+  - id: http-off
+    rule: MGMT-HTTP-01
+    change:
+      - "management api http-commands"
+      - " no protocol http"
+
+  - id: web-http-off
+    rule: MGMT-WEB-ACL-01
+    entity: '^MgmtService\[http\]$'
+    change:
+      - "management api http-commands"
+      - " no protocol http"
+
+  - id: session-timeout
+    rule: MGMT-SESSION-TIMEOUT-01
+    change:
+      - "{{block}}"
+      - " idle-timeout 10"
+    replaces: ["idle-timeout"]
+
+  - id: define-mgmt-acl
+    rule: MGMT-VTY-ACL-02
+    change:
+      - "ip access-list standard {{name}}"
+      - " 10 permit <MGMT_PREFIX>"
+      - " 20 deny any log"
+    note: The access list was named but never defined; this defines it for your management network.
+
+  - id: define-missing
+    rule: REF-DANGLING-01
+    entity: '\.access_filter -> '
+    change:
+      - "ip access-list standard {{name}}"
+      - " 10 permit <MGMT_PREFIX>"
+      - " 20 deny any log"
+    note: The access list was named but never defined; this defines it for your management network.
+
+  - id: banner
+    rule: MGMT-BANNER-01
+    change:
+      - "banner login"
+      - "<BANNER_TEXT>"
+      - "EOF"
+
+  # --- Accounts ------------------------------------------------------------------------------
+  - id: user-secret
+    rule: AAA-LOCAL-PASSWORD-HASH-01
+    each: "^username {{key}} "
+    change:
+      - >-
+        {{line|before:nopassword,secret}} secret <NEW_PASSWORD>
+        => {{line|before:nopassword,secret}} secret sha512 <SHA512_HASH>
+    replaces: ["username {{key}}"]
+    note: EOS stores the password as a SHA-512 hash; the account keeps its privilege and role.
+
+  - id: password-length
+    rule: AAA-PASSWORD-MIN-LENGTH-01
+    change:
+      - "management security"
+      - " password minimum length 15"
+
+  - id: lockout
+    rule: AAA-LOCKOUT-01
+    change: ["aaa authentication policy lockout failure 3 duration 900"]
+
+  - id: central-auth
+    rule: AAA-CENTRAL-AUTH-01
+    change:
+      - "tacacs-server host <TACACS_SERVER> key <TACACS_KEY> => tacacs-server host <TACACS_SERVER> key 7 <TACACS_KEY_ENC>"
+      - "aaa group server tacacs+ TACACS-GROUP"
+      - " server <TACACS_SERVER>"
+      - "aaa authentication login default group TACACS-GROUP local"
+      - "aaa authorization exec default group TACACS-GROUP local"
+    note: >-
+      `local` keeps local accounts as the fallback when the TACACS+ server can't be reached;
+      test a TACACS+ login before closing your session.
+
+  # --- Logging and time ----------------------------------------------------------------------
+  - id: remote-log
+    rule: LOG-REMOTE-01
+    change: ["logging host <SYSLOG_SERVER>"]
+
+  - id: ntp-auth
+    rule: TIME-NTP-AUTH-01
+    change:
+      - "ntp authentication-key 1 sha1 <NTP_KEY>"
+      - "ntp trusted-key 1"
+      - "ntp authenticate"
+      - "ntp server {{key}} iburst key 1"
+    replaces: ["ntp server {{key}}"]
+
+  # --- SNMP ----------------------------------------------------------------------------------
+  - id: snmp-v3
+    rule: SNMP-COMMUNITY-01
+    lines: "^snmp-server community "
+    change:
+      - "no {{lines}}"
+      - "snmp-server group NMS-GRP v3 priv"
+      - >-
+        snmp-server user <SNMP_USER> NMS-GRP v3 auth sha <SNMP_AUTH_KEY> priv aes
+        <SNMP_PRIV_KEY> =>
+    note: Point your monitoring system at SNMPv3 with the user above before you remove the communities.
+
+  # --- Services and filtering ----------------------------------------------------------------
+  - id: proxy-arp
+    rule: SVC-PROXY-ARP-01
+    change:
+      - "interface {{key}}"
+      - " no ip proxy-arp"
+
+  - id: permit-any
+    rule: FILTER-PERMIT-ANY-01
+    each: "permit ip any any$"
+    change:
+      - "{{block}}"
+      - " no {{line}}"
+      - " 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>"
+      - " 1000 deny ip any any log"
+    note: >-
+      Replace the catch-all with the traffic this interface must accept, one line per service;
+      everything else then meets the final deny.
+
+  - id: untrusted-ingress
+    rule: FILTER-UNTRUSTED-INGRESS-01
+    change:
+      - "ip access-list <INBOUND_ACL>"
+      - " 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>"
+      - " 1000 deny ip any any log"
+      - "interface {{key}}"
+      - " ip access-group <INBOUND_ACL> in"
+    replaces: ["ip access-group"]
+    note: >-
+      List what this interface must accept, one permit per service; everything else meets the
+      final deny. To use an access list you already have, name it and leave out its lines.

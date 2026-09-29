@@ -20,14 +20,19 @@ export function Provenance({
   finding,
   result,
   onClose,
+  onFix,
 }: {
   finding: Finding | null;
   result: AuditResult;
   onClose: () => void;
+  onFix?: (ruleId: string) => void;
 }) {
   const kb = useKb();
   const vendor = useVendor(result.detection.pack_id);
   if (!finding) return null;
+  const fix = result.remediation?.fixes.find(
+    (x) => x.rule_id === finding.rule_id && x.entity_ids.includes(finding.entity_id),
+  );
   const rule = kb.data?.rules.find((r) => r.id === finding.rule_id);
   const ruleResult = result.rules.find((r) => r.rule_id === finding.rule_id);
   const title = rule?.title ?? ruleResult?.title ?? finding.rule_id;
@@ -195,12 +200,51 @@ export function Provenance({
           )}
         </Step>
 
-        <Step icon={<Hammer />} title="Fix and verification" n={6} muted>
-          <p className="text-sm text-muted">
-            Vendor-specific remediation, with pre-checks, a rollback plan and a re-audit of the
-            fixed configuration, comes in the next release. Kasauti never pushes a change to a
-            device.
-          </p>
+        <Step icon={<Hammer />} title="Fix and verification" n={6} muted={!fix}>
+          {fix ? (
+            <div className="space-y-2">
+              <p className="text-sm">
+                <span
+                  className={cx(
+                    "font-semibold",
+                    fix.proof === "verified"
+                      ? "text-pass"
+                      : fix.proof === "not_verified"
+                        ? "text-fail"
+                        : "text-review",
+                  )}
+                >
+                  {fix.proof === "verified"
+                    ? "Re-audit verified."
+                    : fix.proof === "not_verified"
+                      ? "Didn't hold when re-audited."
+                      : "Not re-audited."}
+                </span>{" "}
+                <span className="text-muted">{fix.proof_detail}</span>
+              </p>
+              <pre className="overflow-x-auto rounded-lg bg-basalt px-3.5 py-2.5 font-mono text-[12px] leading-5 text-[#e6e1d6] ring-1 ring-basalt-line">
+                {fix.change.commands.slice(0, 8).join("\n")}
+                {fix.change.commands.length > 8 ? "\n…" : ""}
+              </pre>
+              {onFix && (
+                <button
+                  type="button"
+                  onClick={() => onFix(fix.rule_id)}
+                  className="text-sm font-medium text-brass-ink hover:underline"
+                >
+                  Open the fix: pre-check, change, verify, save, rollback →
+                </button>
+              )}
+              <p className="text-xs text-faint">Kasauti never pushes a change to a device.</p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted">
+              {finding.status === "FAIL"
+                ? "This vendor pack has no command recipe for this check yet."
+                : "Only a failed check gets a fix; this one doesn't fail."}{" "}
+              Kasauti never pushes a change to a device.
+            </p>
+          )}
         </Step>
       </ol>
     </Drawer>

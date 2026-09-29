@@ -1,0 +1,133 @@
+# Remediation recipes for PAN-OS 11.1 (PLAN §14.2 source 1: curated), from the PAN-OS 11.1
+# Administrator's Guide and CLI reference, the same sources as
+# datasets/authored/paloalto_panos/hardened.xml. Each is a set of configure-mode commands,
+# applied to a copy of the audited XML and re-audited before it is shown as verified.
+recipes:
+  # --- Management plane ----------------------------------------------------------------------
+  - id: telnet-off
+    rule: MGMT-TELNET-01
+    change: ["set deviceconfig system service disable-telnet yes"]
+    note: Make sure SSH works for your administrators before you commit this.
+
+  - id: http-off
+    rule: MGMT-HTTP-01
+    change: ["set deviceconfig system service disable-http yes"]
+
+  - id: web-http-off
+    rule: MGMT-WEB-ACL-01
+    entity: '^MgmtService\[http\]$'
+    change: ["set deviceconfig system service disable-http yes"]
+
+  - id: web-restrict
+    rule: MGMT-WEB-ACL-01
+    each: 'network profiles interface-management-profile entry \S+$'
+    change:
+      - "set deviceconfig system permitted-ip <MGMT_PREFIX>"
+      - "set network profiles interface-management-profile {{entry}} permitted-ip <MGMT_PREFIX>"
+    note: >-
+      Only the management network may then reach the web interface, on the MGT port and on
+      every interface with a management profile. Keep your own address in the range, or you
+      will be locked out at commit.
+
+  - id: session-timeout
+    rule: MGMT-SESSION-TIMEOUT-01
+    change: ["set deviceconfig setting management idle-timeout 10"]
+
+  - id: banner
+    rule: MGMT-BANNER-01
+    change: ['set deviceconfig system login-banner "<BANNER_TEXT>"']
+
+  # --- Accounts ------------------------------------------------------------------------------
+  - id: admin-password
+    rule: AAA-LOCAL-PASSWORD-HASH-01
+    change:
+      - "set mgt-config users {{key}} password => set mgt-config users {{key}} phash <SHA256_HASH>"
+    note: PAN-OS asks for the new password twice and stores it as a SHA-256 crypt hash.
+
+  - id: password-policy
+    rule: AAA-PASSWORD-MIN-LENGTH-01
+    change:
+      - "set mgt-config password-complexity enabled yes"
+      - "set mgt-config password-complexity minimum-length 15"
+
+  - id: lockout
+    rule: AAA-LOCKOUT-01
+    change:
+      - "set deviceconfig setting management admin-lockout failed-attempts 5"
+      - "set deviceconfig setting management admin-lockout lockout-time 30"
+
+  - id: central-auth
+    rule: AAA-CENTRAL-AUTH-01
+    change:
+      - "set shared server-profile tacplus TACACS server tacacs-1 address <TACACS_SERVER>"
+      - >-
+        set shared server-profile tacplus TACACS server tacacs-1 secret <TACACS_KEY>
+        => set shared server-profile tacplus TACACS server tacacs-1 secret <TACACS_KEY_ENC>
+      - "set shared authentication-profile TACACS-AUTH method tacplus server-profile TACACS"
+      - "set shared authentication-profile TACACS-AUTH allow-list all"
+      - "set shared authentication-profile TACACS-AUTH lockout failed-attempts 5"
+      - "set shared authentication-profile TACACS-AUTH lockout lockout-time 30"
+      - "set deviceconfig system authentication-profile TACACS-AUTH"
+    note: >-
+      Administrators logging in through the profile are locked out by its own settings, so it
+      carries a lockout too. Keep a local administrator for when the TACACS+ server can't be
+      reached, and test a TACACS+ login before you close your session after the commit.
+
+  # --- Logging and time ----------------------------------------------------------------------
+  - id: forward-logs
+    rule: LOG-REMOTE-01
+    each: '^config shared log-settings syslog entry \S+$'
+    change:
+      - 'set shared log-settings system match-list system-to-siem filter "All Logs"'
+      - "set shared log-settings system match-list system-to-siem send-syslog {{entry}}"
+      - 'set shared log-settings config match-list config-to-siem filter "All Logs"'
+      - "set shared log-settings config match-list config-to-siem send-syslog {{entry}}"
+    note: >-
+      The syslog profile existed but no log was sent to it: system and configuration logs now
+      are. Consider SSL transport on port 6514 for the profile itself.
+
+  - id: new-syslog
+    rule: LOG-REMOTE-01
+    change:
+      - "set shared log-settings syslog SIEM server siem-1 server <SYSLOG_SERVER>"
+      - "set shared log-settings syslog SIEM server siem-1 transport SSL"
+      - "set shared log-settings syslog SIEM server siem-1 port 6514"
+      - "set shared log-settings syslog SIEM server siem-1 format IETF"
+      - 'set shared log-settings system match-list system-to-siem filter "All Logs"'
+      - "set shared log-settings system match-list system-to-siem send-syslog SIEM"
+      - 'set shared log-settings config match-list config-to-siem filter "All Logs"'
+      - "set shared log-settings config match-list config-to-siem send-syslog SIEM"
+
+  - id: ntp-auth
+    rule: TIME-NTP-AUTH-01
+    change:
+      - >-
+        set deviceconfig system ntp-servers {{key}} authentication-type symmetric-key algorithm
+        sha1 authentication-key <NTP_KEY> => set deviceconfig system ntp-servers {{key}}
+        authentication-type symmetric-key algorithm sha1 authentication-key <NTP_KEY_ENC>
+      - "set deviceconfig system ntp-servers {{key}} authentication-type symmetric-key key-id 1"
+
+  # --- SNMP ----------------------------------------------------------------------------------
+  - id: snmp-community
+    rule: SNMP-COMMUNITY-01
+    change:
+      - >-
+        set deviceconfig system snmp-setting access-setting version v2c snmp-community-string
+        <SNMP_COMMUNITY>
+    note: >-
+      Replaces the well-known community with one only your monitoring system knows. SNMPv3
+      (Device > Setup > Operations > SNMP Setup) is better still: it authenticates and encrypts.
+
+  # --- Filtering -----------------------------------------------------------------------------
+  - id: permit-any
+    rule: FILTER-PERMIT-ANY-01
+    each: 'rulebase security rules entry \S+ destination member any$'
+    each_in: evidence
+    change:
+      - "set rulebase security rules {{entry}} destination <PUBLIC_SERVER>"
+      - "set rulebase security rules {{entry}} application <APPLICATION>"
+      - "set rulebase security rules {{entry}} service application-default"
+      - "set rulebase security rules {{entry}} log-end yes"
+    note: >-
+      The rule now reaches one server with one application on its standard ports; add a rule
+      per further service rather than widening this one.

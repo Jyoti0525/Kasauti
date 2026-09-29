@@ -32,8 +32,9 @@ packs/
     identity.yaml               where hostname / os_version / model / serial / hardware appear
     defaults.yaml               vendor defaults, each with os_versions and a documented reference
     mappings/*.yaml             statements -> facts (seeded, plus learned in the Studio)
-    recipes/*.yaml              fix intents -> pre-check / change / verify / save / rollback
-    verify.yaml                 pre-check and verify show-commands per rule domain
+    recipes/*.yaml              how each rule's failure is fixed: the commands, as typed
+    verify.yaml                 the session (enter, save, pre-check/verify, undo) and the
+                                <VALUES> recipes leave for the site, with examples
     manual/                     optional ingested command-manual corpus (S3)
   frameworks/<framework>/
     catalog.json                official control IDs (+ titles where the licence allows)
@@ -102,6 +103,53 @@ Rules (checked when the pack loads and when the defaults are applied):
 - If the device's OS version is unknown, only defaults scoped `*` apply.
 - If two entries for the same target apply with different values, neither is used and the
   audit reports the conflict; the fact stays absent and the rule says REVIEW.
+
+## Remediation recipes (PLAN §14)
+
+```yaml
+# recipes/hardening.yaml
+recipes:
+  - id: telnet-off
+    rule: MGMT-TELNET-01              # the failed check this fixes
+    each: "^line vty [0-9 ]+$"        # optional: once per statement whose full path matches
+    change:                           # what the administrator types, in the vendor's syntax
+      - "{{line}}"
+      - " transport input ssh"
+    replaces: ["transport input"]     # what the change overwrites in its block
+    note: Make sure SSH works on every line before you apply this.
+
+# verify.yaml
+session:
+  enter: ["configure terminal"]
+  exit: ["end"]
+  save: ["copy running-config startup-config"]
+  precheck: ["show running-config | section {path}"]
+  verify: ["show running-config | section {path}"]
+  kept_negations: [no ip http server]  # indent family: `no` forms the device keeps as a line
+params:
+  - {name: SYSLOG_SERVER, means: "Your syslog or SIEM server", example: "192.0.2.50"}
+```
+
+- **One fix per failed check.** Every failing entity of a rule is fixed in one change; each
+  finding is filled in from the first matching recipe (`rule`, `entity` pattern,
+  `os_versions`), and a recipe that finds nothing to change gives way to the next.
+- **Fields** (`kasauti/remediation/engine.py` documents each): `{{block}}`, `{{key}}`,
+  `{{hostname}}`, an entity's facts by name (`{{privilege}}`); with `each`, the statement's
+  `{{line}}`, `{{path}}`, `{{parent}}`, `{{above}}`, `{{inner}}`, `{{entry}}` and the pattern's
+  named groups; filters `|drop:`, `|before:`, `|trim:`. `lines` repeats a line holding
+  `{{lines}}` per match; `with_record` reads fields from the records beside the match;
+  `combine: true` lets several recipes fix one finding together.
+- **`typed => stored`**: a line typed one way and kept another (`… secret <NEW_PASSWORD> =>
+  … secret 9 <SCRYPT_HASH>`); the re-audit reads the stored form.
+- **`<PARAM>`** values are left for the site and must be described in `verify.yaml`. Their
+  examples are documentation values (RFC 5737, `EXAMPLE-` names) used only to re-audit; they
+  must never occur in a real configuration.
+- **JSON/YAML platforms** (AWS) show API calls, so a recipe also states the export `edits`
+  those calls make (`remove`, `set`, `append`; `Name{Key=value}` and `Name[2]` selectors),
+  plus its own `rollback` and `check`.
+- **Proof:** the change is applied to a copy by the family's editor and the copy is
+  re-audited; see PLAN §14.3. The loader refuses a recipe for an unknown rule, an
+  undescribed `<PARAM>`, a duplicate id, or recipes without a session.
 
 ## Identity and catalogs
 

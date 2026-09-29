@@ -1103,6 +1103,37 @@ i5-12500H (12C/16T), 15.7 GB RAM with ~3 GB typically free, RTX 3050 Laptop 4 GB
     rendering. Not reproduced in 6 × 350 ingest tests run in parallel, nor in 4 parallel runs of
     the test alone; its assertions already name the file and the job's error, so a recurrence
     will say why.
+- **v5.2.0 (2026-09-29, remediation: R-07c, M4 §14):**
+  - **Every failed check gets a fix, proven before it is shown.** One fix per failed check,
+    covering every entity it fails for, in five steps: pre-check, change, verify, save,
+    rollback. The change is the vendor's own commands, filled in from this device's entities
+    by curated recipes in each vendor pack (98 across six vendors); `<VALUES>` only the site
+    knows (its syslog server, a new password) are left, each described.
+  - **Proof.** The commands are applied to a copy of the configuration by an editor for its
+    shape family (indent, set-path, block-edit, PAN-OS `set` → XML, AWS CLI → export edits) and
+    the copy is re-audited. A fix whose findings clear, with no check worse anywhere, is
+    *re-audit verified*. All fixes go on one copy first (one extra audit per device); one that
+    doesn't settle there is re-audited alone, within a work limit counted in statements, not
+    time, so results stay deterministic. On every weak sample every failed check is fixed and
+    verified, and together they take the device to no failed check (PAN-OS: lockout then waits
+    for review, because which lockout governs TACACS+ logins isn't documented; the summary says
+    so). "Verified" means against Kasauti's model of the device, not on hardware; the JSON, PDF
+    and UI all say so, and nothing in the code can reach a device (a test guards it).
+  - **Not hier_config.** §14.3 named hier_config for text families; our own editors (no new
+    dependency) also cover EOS, Junos `set` and FortiOS, and derive the rollback from what the
+    change altered (Junos uses `rollback 1`). Pre-check and verify show what the change touched.
+  - **Where it shows.** A Fixes tab on the device view (before → after, the basis, one card per
+    check with copyable steps), the finding drawer's link to its fix, PDF section 5, and a CLI
+    summary line. The "remediation in a later release" notes are gone.
+  - **Safety.** Secrets copied from a configuration stay masked in every step (context-aware:
+    a FortiGate community is its `set name`), with a note where one must be typed; `<VALUE>`
+    stand-ins stay readable. Examples used for proof are documentation values that never occur
+    in real configurations. The loader refuses a recipe for an unknown rule or with an
+    undescribed value.
+  - **Cost.** 100 mixed files uploaded, recognised, audited and every fix proven in 52 s on the
+    development laptop (was about 40 s for the audit alone).
+  - **Still open:** syntax checks against vendor manuals (M4.10), fixes for Studio-taught vendors
+    by inverse mapping (M4.03), STIG fix text (M4.04), version-specific recipes (M4.15).
 - **v5.1.32 (2026-09-27, M2.28 limits closed):** Every Junos file form the CLI writes is now
   replayed as the CLI would (`kasauti/mapping/commands.py`): `[edit …]` banners, prompts and
   command output in terminal captures, `edit`/`up`/`top`/`exit`, `insert`, `rename`, `copy`,

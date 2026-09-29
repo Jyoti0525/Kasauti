@@ -1,55 +1,79 @@
 {
   "$defs": {
-    "FixIntent": {
+    "JsonEdit": {
       "additionalProperties": false,
+      "description": "One edit to a JSON/YAML export, for platforms whose commands aren't configuration lines\n(the AWS CLI): the export is changed as the commands would change the platform, so the fix\ncan be re-audited. ``at`` is a path of keys; ``{Key=value,Other=value}`` picks the list item\nholding those fields and ``[2]`` the third item. ``remove`` drops the list items under\n``at`` that hold every field of ``where``; ``set`` puts ``value`` at ``at``; ``append``\nadds ``value`` to the list at ``at``. Values may be objects and lists.",
       "properties": {
-        "equal": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "integer"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "boolean"
-                  },
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ]
-              },
-              "type": "array"
-            }
-          ],
-          "title": "Equal"
-        },
-        "make": {
+        "at": {
           "minLength": 1,
-          "title": "Make",
+          "title": "At",
           "type": "string"
+        },
+        "op": {
+          "enum": [
+            "remove",
+            "set",
+            "append"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue",
+          "default": null
+        },
+        "where": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "title": "Where",
+          "type": "object"
         }
       },
       "required": [
-        "make",
-        "equal"
+        "op",
+        "at"
       ],
-      "title": "FixIntent",
+      "title": "JsonEdit",
       "type": "object"
     },
+    "JsonValue": {},
     "Recipe": {
       "additionalProperties": false,
+      "description": "How one rule's failure is fixed on this vendor (PLAN §14). The first recipe whose\n``rule``, ``entity`` and ``os_versions`` match a failed finding is used.\n\n``change`` is what the administrator types, one command per line, in the vendor's own\nconfiguration syntax. Templates fill ``{{name}}`` fields from the finding (``{{block}}``,\n``{{line}}``, ``{{key}}``, ``{{hostname}}``) and leave ``<PARAM>`` site values for the\nadministrator; :mod:`kasauti.remediation.engine` documents every field. The same lines are\napplied to a copy of the configuration and re-audited, so what is shown is what is proven.\nPre-check, verify, save and rollback come from the pack's session (``verify.yaml``) and\nfrom what the change actually altered.",
       "properties": {
-        "expect": {
+        "change": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Change",
+          "type": "array"
+        },
+        "check": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Check",
+          "type": "array"
+        },
+        "combine": {
+          "default": false,
+          "title": "Combine",
+          "type": "boolean"
+        },
+        "each": {
           "anyOf": [
             {
               "type": "string"
@@ -59,19 +83,90 @@
             }
           ],
           "default": null,
-          "title": "Expect"
+          "title": "Each"
         },
-        "fix_intent": {
-          "$ref": "#/$defs/FixIntent"
+        "each_in": {
+          "default": "file",
+          "enum": [
+            "file",
+            "evidence"
+          ],
+          "title": "Each In",
+          "type": "string"
+        },
+        "edits": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/JsonEdit"
+          },
+          "title": "Edits",
+          "type": "array"
+        },
+        "entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entity"
         },
         "id": {
           "pattern": "^[a-z0-9][a-z0-9_\\-]*$",
           "title": "Id",
           "type": "string"
         },
+        "lines": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lines"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
         "os_versions": {
           "default": "*",
           "title": "Os Versions",
+          "type": "string"
+        },
+        "replaces": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Replaces",
+          "type": "array"
+        },
+        "rollback": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Rollback",
+          "type": "array"
+        },
+        "rule": {
+          "pattern": "^[A-Z][A-Z0-9\\-]*-\\d{2}$",
+          "title": "Rule",
           "type": "string"
         },
         "source": {
@@ -83,69 +178,25 @@
           "title": "Source",
           "type": "string"
         },
-        "steps": {
-          "$ref": "#/$defs/RecipeSteps"
+        "with_record": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "With Record"
         }
       },
       "required": [
         "id",
-        "fix_intent",
-        "steps"
+        "rule",
+        "change"
       ],
       "title": "Recipe",
-      "type": "object"
-    },
-    "RecipeSteps": {
-      "additionalProperties": false,
-      "properties": {
-        "change": {
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "title": "Change",
-          "type": "array"
-        },
-        "precheck": {
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "title": "Precheck",
-          "type": "array"
-        },
-        "rollback": {
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "title": "Rollback",
-          "type": "array"
-        },
-        "save": {
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "title": "Save",
-          "type": "array"
-        },
-        "verify": {
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "title": "Verify",
-          "type": "array"
-        }
-      },
-      "required": [
-        "precheck",
-        "change",
-        "verify",
-        "rollback"
-      ],
-      "title": "RecipeSteps",
       "type": "object"
     }
   },

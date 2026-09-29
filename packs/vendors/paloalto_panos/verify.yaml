@@ -1,0 +1,24 @@
+# How a fix is entered, checked, committed and undone on PAN-OS (PLAN §14.5), and the site
+# values its recipes leave for the administrator. Changes go into the candidate configuration
+# in configure mode and take effect at commit. Examples (RFC 5737 addresses, EXAMPLE- names)
+# are used only to re-audit each fix on a copy; they must never occur in a real configuration.
+session:
+  enter: ["configure"]
+  exit: []
+  save: ["commit", "exit"]
+  save_note: The change takes effect at `commit`; until then `revert config` discards it.
+  precheck: ["configure", "show {path}"]
+  verify: ["show {path}"]
+params:
+  - {name: MGMT_PREFIX, means: "Network your administrators connect from (prefix)", example: "192.0.2.0/24"}
+  - {name: PUBLIC_SERVER, means: "The server this rule must reach", example: "192.0.2.80"}
+  - {name: APPLICATION, means: "The application it offers (App-ID, e.g. ssl, web-browsing)", example: "ssl"}
+  - {name: SYSLOG_SERVER, means: "Your syslog or SIEM server", example: "192.0.2.50"}
+  - {name: NTP_KEY, means: "The NTP key shared with your time server", example: "Example-Ntp-Key-01"}
+  - {name: NTP_KEY_ENC, means: "The same key as PAN-OS stores it (encrypted)", example: "-AQ==ExampleNtpKeyEncoded"}
+  - {name: TACACS_SERVER, means: "Your TACACS+ server", example: "192.0.2.40"}
+  - {name: TACACS_KEY, means: "The TACACS+ shared secret", example: "Example-Tacacs-Key-01"}
+  - {name: TACACS_KEY_ENC, means: "The same secret as PAN-OS stores it (encrypted)", example: "-AQ==ExampleTacacsEncoded"}
+  - {name: SHA256_HASH, means: "The SHA-256 crypt hash PAN-OS stores for the new password", example: "$5$ExampleSalt$ExampleSha256HashValue"}
+  - {name: SNMP_COMMUNITY, means: "A long random community string known only to your monitoring system", example: "EXAMPLE-Rq7vN2xLp9Tz"}
+  - {name: BANNER_TEXT, means: "Your organisation's warning notice", example: "Authorised access only. Activity is logged and monitored."}

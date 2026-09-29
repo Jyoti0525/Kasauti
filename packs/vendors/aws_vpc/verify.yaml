@@ -1,0 +1,16 @@
+# How a fix is made, checked and undone for a VPC's security groups and network ACLs (PLAN
+# §14.5): AWS CLI calls, each taking effect at once. The recipes state the export edits their
+# calls make, so each fix is re-audited on a copy of the export. Examples (RFC 5737 addresses)
+# are used only for that; they must never occur in a real export.
+session:
+  enter: []
+  exit: []
+  save: []
+  save_note: >-
+    Each AWS call takes effect as soon as it returns; there is nothing to save. Run them with
+    the profile and region that hold this VPC (`--profile`, `--region`).
+  precheck: ["aws ec2 describe-security-groups", "aws ec2 describe-network-acls"]
+  verify: ["aws ec2 describe-security-groups", "aws ec2 describe-network-acls"]
+params:
+  - {name: SERVICE_PORT, means: "The TCP port clients must reach in this subnet", example: "443"}
+  - {name: PEER_CIDR, means: "The address range of the peered VPC", example: "192.0.2.0/24"}

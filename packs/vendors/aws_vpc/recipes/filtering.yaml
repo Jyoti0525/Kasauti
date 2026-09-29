@@ -1,0 +1,130 @@
+# Remediation recipes for VPC security groups and network ACLs (PLAN §14.2 source 1: curated),
+# from the Amazon VPC User Guide and the AWS CLI reference (ec2 replace-network-acl-entry,
+# revoke-/authorize-security-group-ingress/-egress). The CLI calls are what is shown; `edits`
+# make the same change to a copy of the export, which is re-audited before the fix is shown as
+# verified.
+recipes:
+  # A rule that allows everything can sit in any of four places; the four recipes below fix the
+  # finding together, each for the kind of rule it finds behind it.
+  - id: nacl-ingress
+    rule: FILTER-PERMIT-ANY-01
+    combine: true
+    each: '^NetworkAcls (?P<acl>\S+) Entries \d+ @ CidrBlock 0\.0\.0\.0/0 Egress false Protocol -1 RuleAction allow RuleNumber (?P<num>\d+)$'
+    each_in: evidence
+    change:
+      - >-
+        aws ec2 replace-network-acl-entry --network-acl-id {{acl}} --ingress --rule-number {{num}}
+        --protocol tcp --port-range From=<SERVICE_PORT>,To=<SERVICE_PORT> --cidr-block 0.0.0.0/0
+        --rule-action allow
+    edits:
+      - {op: set, at: "NetworkAcls{NetworkAclId={{acl}}}.Entries{RuleNumber={{num}},Egress=false}.Protocol", value: "6"}
+      - {op: set, at: "NetworkAcls{NetworkAclId={{acl}}}.Entries{RuleNumber={{num}},Egress=false}.PortRange", value: {From: "<SERVICE_PORT>", To: "<SERVICE_PORT>"}}
+    rollback:
+      - >-
+        aws ec2 replace-network-acl-entry --network-acl-id {{acl}} --ingress --rule-number {{num}}
+        --protocol -1 --cidr-block 0.0.0.0/0 --rule-action allow
+    check: ["aws ec2 describe-network-acls --network-acl-ids {{acl}}"]
+    note: >-
+      The network ACL then admits only the service port; add a numbered entry for each further
+      service the subnet offers.
+
+  - id: nacl-egress
+    rule: FILTER-PERMIT-ANY-01
+    combine: true
+    each: '^NetworkAcls (?P<acl>\S+) Entries \d+ @ CidrBlock 0\.0\.0\.0/0 Egress true Protocol -1 RuleAction allow RuleNumber (?P<num>\d+)$'
+    each_in: evidence
+    change:
+      - >-
+        aws ec2 replace-network-acl-entry --network-acl-id {{acl}} --egress --rule-number {{num}}
+        --protocol tcp --port-range From=1024,To=65535 --cidr-block 0.0.0.0/0 --rule-action allow
+    edits:
+      - {op: set, at: "NetworkAcls{NetworkAclId={{acl}}}.Entries{RuleNumber={{num}},Egress=true}.Protocol", value: "6"}
+      - {op: set, at: "NetworkAcls{NetworkAclId={{acl}}}.Entries{RuleNumber={{num}},Egress=true}.PortRange", value: {From: "1024", To: "65535"}}
+    rollback:
+      - >-
+        aws ec2 replace-network-acl-entry --network-acl-id {{acl}} --egress --rule-number {{num}}
+        --protocol -1 --cidr-block 0.0.0.0/0 --rule-action allow
+    check: ["aws ec2 describe-network-acls --network-acl-ids {{acl}}"]
+    note: >-
+      Network ACLs are stateless, so replies leave on the clients' ephemeral ports (1024-65535);
+      outbound connections the subnet opens itself need entries of their own.
+
+  - id: sg-ingress-any
+    rule: FILTER-PERMIT-ANY-01
+    combine: true
+    each: '^SecurityGroups (?P<sg>\S+) IpPermissions (?P<n>\d+) IpRanges \d+ @ CidrIp 0\.0\.0\.0/0'
+    each_in: evidence
+    with_record: '^@ IpProtocol -1$'
+    change:
+      - >-
+        aws ec2 revoke-security-group-ingress --group-id {{sg}}
+        --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'
+    edits:
+      - {op: remove, at: "SecurityGroups{GroupId={{sg}}}.IpPermissions", where: {IpProtocol: "-1", "IpRanges.CidrIp": "0.0.0.0/0"}}
+    rollback:
+      - >-
+        aws ec2 authorize-security-group-ingress --group-id {{sg}}
+        --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'
+    check: ["aws ec2 describe-security-groups --group-ids {{sg}}"]
+    note: >-
+      Nothing from the internet may then reach this group on any port; authorise each service
+      the group must offer, from the sources that need it.
+
+  - id: sg-egress-any
+    rule: FILTER-PERMIT-ANY-01
+    combine: true
+    each: '^SecurityGroups (?P<sg>\S+) IpPermissionsEgress (?P<n>\d+) IpRanges \d+ @ CidrIp 0\.0\.0\.0/0'
+    each_in: evidence
+    with_record: '^@ IpProtocol -1$'
+    change:
+      - >-
+        aws ec2 revoke-security-group-egress --group-id {{sg}}
+        --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'
+      - >-
+        aws ec2 authorize-security-group-egress --group-id {{sg}}
+        --ip-permissions 'IpProtocol=tcp,FromPort=443,ToPort=443,IpRanges=[{CidrIp=0.0.0.0/0}]'
+    edits:
+      - {op: remove, at: "SecurityGroups{GroupId={{sg}}}.IpPermissionsEgress", where: {IpProtocol: "-1", "IpRanges.CidrIp": "0.0.0.0/0"}}
+      - op: append
+        at: "SecurityGroups{GroupId={{sg}}}.IpPermissionsEgress"
+        value: {FromPort: "443", IpProtocol: tcp, IpRanges: [{CidrIp: 0.0.0.0/0}], Ipv6Ranges: [], PrefixListIds: [], ToPort: "443", UserIdGroupPairs: []}
+    rollback:
+      - >-
+        aws ec2 revoke-security-group-egress --group-id {{sg}}
+        --ip-permissions 'IpProtocol=tcp,FromPort=443,ToPort=443,IpRanges=[{CidrIp=0.0.0.0/0}]'
+      - >-
+        aws ec2 authorize-security-group-egress --group-id {{sg}}
+        --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'
+    check: ["aws ec2 describe-security-groups --group-ids {{sg}}"]
+    note: >-
+      AWS gives every security group an allow-all outbound rule; this narrows it to HTTPS. Add
+      what the workload also needs outbound (DNS, NTP, updates) before you revoke the old rule.
+
+  # --- References ----------------------------------------------------------------------------
+  - id: peer-group-to-cidr
+    rule: REF-DANGLING-01
+    each: '^SecurityGroups (?P<sg>\S+) IpPermissions (?P<n>\d+) UserIdGroupPairs \d+ @ .*\bGroupId (?P<peer>sg-[0-9a-f]+)'
+    each_in: evidence
+    with_record: '^@ FromPort (?P<from>\d+) IpProtocol (?P<proto>\S+) ToPort (?P<to>\d+)$'
+    change:
+      - >-
+        aws ec2 authorize-security-group-ingress --group-id {{sg}}
+        --ip-permissions 'IpProtocol={{proto}},FromPort={{from}},ToPort={{to}},IpRanges=[{CidrIp=<PEER_CIDR>,Description=peered-vpc}]'
+      - >-
+        aws ec2 revoke-security-group-ingress --group-id {{sg}}
+        --ip-permissions 'IpProtocol={{proto}},FromPort={{from}},ToPort={{to}},UserIdGroupPairs=[{GroupId={{peer}}}]'
+    edits:
+      - {op: remove, at: "SecurityGroups{GroupId={{sg}}}.IpPermissions[{{n}}].UserIdGroupPairs", where: {GroupId: "{{peer}}"}}
+      - {op: append, at: "SecurityGroups{GroupId={{sg}}}.IpPermissions[{{n}}].IpRanges", value: {CidrIp: "<PEER_CIDR>", Description: peered-vpc}}
+    rollback:
+      - >-
+        aws ec2 authorize-security-group-ingress --group-id {{sg}}
+        --ip-permissions 'IpProtocol={{proto}},FromPort={{from}},ToPort={{to}},UserIdGroupPairs=[{GroupId={{peer}}}]'
+      - >-
+        aws ec2 revoke-security-group-ingress --group-id {{sg}}
+        --ip-permissions 'IpProtocol={{proto}},FromPort={{from}},ToPort={{to}},IpRanges=[{CidrIp=<PEER_CIDR>}]'
+    check: ["aws ec2 describe-security-groups --group-ids {{sg}}"]
+    note: >-
+      The group named here isn't in this export: it belongs to a peered VPC, so what it lets in
+      can't be audited. Either audit that VPC's export alongside this one, or allow the peer
+      by its address range as here. The new rule is added before the old one is revoked.

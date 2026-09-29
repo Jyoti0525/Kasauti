@@ -306,6 +306,20 @@ def _print_summary(result: AuditResult, written: Sequence[Path]) -> None:
         if rule.status in (Status.FAIL, Status.REVIEW):
             severity = found.get(rule.rule_id, rule.severity).value
             print(f"  {rule.status.value:<6} {severity:<8} {rule.rule_id}: {rule.title}")
+    rem = result.remediation
+    if rem is not None:
+        verified = sum(1 for f in rem.fixes if f.proof.value == "verified")
+        line = f"  fixes: {len(rem.fixes)}, {verified} re-audit verified"
+        if rem.combined is not None:
+            line += (
+                f"; with every verified fix, failed checks {rem.combined.failed_before} -> "
+                f"{rem.combined.failed_after}"
+            )
+            if rem.combined.left_for_review:
+                line += f", {len(rem.combined.left_for_review)} left for review"
+        if rem.unfixed:
+            line += f"; {len(rem.unfixed)} finding(s) without a recipe"
+        print(line + " (steps in the JSON and PDF)")
     a = result.assurance
     print(f"  understood {a.understood}/{a.statements} statements; audit {result.audit_id}")
     for warning in result.warnings:

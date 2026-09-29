@@ -1,0 +1,31 @@
+# How a fix is entered, checked and undone on FortiOS (PLAN §14.5), and the site values its
+# recipes leave for the administrator. FortiOS applies and saves a change when its `end` is
+# typed. Examples (RFC 5737 addresses, EXAMPLE- names) are used only to re-audit each fix on a
+# copy; they must never occur in a real configuration.
+session:
+  enter: []
+  exit: []
+  save: []
+  save_note: FortiOS applies and saves each change as soon as you type `end`.
+  precheck: ["show {path}"]
+  verify: ["show {path}"]
+params:
+  - {name: MGMT_NET, means: "Network your administrators connect from", example: "192.0.2.0"}
+  - {name: MGMT_MASK, means: "Its netmask", example: "255.255.255.0"}
+  - {name: MGMT_NET6, means: "Its IPv6 prefix (or ::1/128 if administrators use no IPv6)", example: "2001:db8:10::/64"}
+  - {name: SERVER_NAME, means: "Name for the server this policy must reach", example: "EXAMPLE-WEB-SRV"}
+  - {name: PUBLIC_SERVER, means: "Its address", example: "192.0.2.80"}
+  - {name: SERVICE_NAME, means: "Name for the service it offers", example: "EXAMPLE-HTTPS"}
+  - {name: SERVICE_PORT, means: "Its TCP port", example: "443"}
+  - {name: SYSLOG_SERVER, means: "Your syslog or SIEM server", example: "192.0.2.50"}
+  - {name: NTP_KEY, means: "The NTP key shared with your time server", example: "Example-Ntp-Key-01"}
+  - {name: NTP_KEY_ENC, means: "The same key as FortiOS stores it", example: "ExampleNtpKeyEncoded"}
+  - {name: TACACS_SERVER, means: "Your TACACS+ server", example: "192.0.2.40"}
+  - {name: TACACS_KEY, means: "The TACACS+ shared secret", example: "Example-Tacacs-Key-01"}
+  - {name: TACACS_KEY_ENC, means: "The same secret as FortiOS stores it", example: "ExampleTacacsEncoded"}
+  - {name: NEW_PASSWORD, means: "A new password of 15 or more characters", example: "Example-Passphrase-2026"}
+  - {name: PBKDF2_HASH, means: "The PBKDF2 hash FortiOS stores", example: "PB2ExamplePbkdf2HashValue"}
+  - {name: SNMP_USER, means: "SNMPv3 user for your monitoring system", example: "example-nms"}
+  - {name: SNMP_AUTH_KEY, means: "Its authentication passphrase", example: "Example-Snmp-Auth-01"}
+  - {name: SNMP_PRIV_KEY, means: "Its privacy (encryption) passphrase", example: "Example-Snmp-Priv-01"}
+  - {name: SNMP_KEY_ENC, means: "A passphrase as FortiOS stores it", example: "ExampleSnmpEncoded"}

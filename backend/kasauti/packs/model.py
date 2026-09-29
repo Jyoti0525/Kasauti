@@ -13,6 +13,7 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    JsonValue,
     StringConstraints,
     model_validator,
 )
@@ -23,7 +24,7 @@ from kasauti.rules import regex
 from kasauti.rules.derivation import Derivation
 from kasauti.rules.enrich import Exposure, Inference
 from kasauti.rules.expr import Scalar, attribute_type
-from kasauti.rules.model import Domain, FixIntent, Role, Rule
+from kasauti.rules.model import Role, Rule
 from kasauti.sbm.entities import ENTITY_TYPES, SINGLETON_TYPES
 from kasauti.shape.model import ShapeFamily
 
@@ -356,22 +357,83 @@ class MappingFile(_Strict):
 # --- recipes/*.yaml (PLAN §14) -----------------------------------------------------------------
 
 
-class RecipeSteps(_Strict):
-    precheck: tuple[str, ...] = Field(min_length=1)
-    change: tuple[str, ...] = Field(min_length=1)
-    verify: tuple[str, ...] = Field(min_length=1)
-    save: tuple[str, ...] = ()
-    rollback: tuple[str, ...] = Field(min_length=1)
+ParamName = Annotated[str, StringConstraints(pattern=r"^[A-Z][A-Z0-9_]*$")]
+RuleIdText = Annotated[str, StringConstraints(pattern=r"^[A-Z][A-Z0-9\-]*-\d{2}$")]
+
+
+class JsonEdit(_Strict):
+    """One edit to a JSON/YAML export, for platforms whose commands aren't configuration lines
+    (the AWS CLI): the export is changed as the commands would change the platform, so the fix
+    can be re-audited. ``at`` is a path of keys; ``{Key=value,Other=value}`` picks the list item
+    holding those fields and ``[2]`` the third item. ``remove`` drops the list items under
+    ``at`` that hold every field of ``where``; ``set`` puts ``value`` at ``at``; ``append``
+    adds ``value`` to the list at ``at``. Values may be objects and lists."""
+
+    op: Literal["remove", "set", "append"]
+    at: str = Field(min_length=1)
+    where: dict[str, Scalar] = Field(default_factory=dict)
+    value: JsonValue = None
 
 
 class Recipe(_Strict):
+    """How one rule's failure is fixed on this vendor (PLAN §14). The first recipe whose
+    ``rule``, ``entity`` and ``os_versions`` match a failed finding is used.
+
+    ``change`` is what the administrator types, one command per line, in the vendor's own
+    configuration syntax. Templates fill ``{{name}}`` fields from the finding (``{{block}}``,
+    ``{{line}}``, ``{{key}}``, ``{{hostname}}``) and leave ``<PARAM>`` site values for the
+    administrator; :mod:`kasauti.remediation.engine` documents every field. The same lines are
+    applied to a copy of the configuration and re-audited, so what is shown is what is proven.
+    Pre-check, verify, save and rollback come from the pack's session (``verify.yaml``) and
+    from what the change actually altered."""
+
     id: EntryId
-    fix_intent: FixIntent
+    rule: RuleIdText
+    entity: str | None = None
+    """RE2 pattern the finding's entity id must match (``^LocalUser\\[enable\\]$``)."""
     os_versions: VersionRangeText = "*"
-    steps: RecipeSteps
-    """Jinja2 templates rendered in a SandboxedEnvironment with the entities in evidence."""
-    expect: str | None = None
+    each: str | None = None
+    """RE2 pattern over each statement's full path (``^line vty ``, ``^snmp community ``): the
+    change (with its edits and rollback) is written once per match, with ``{{line}}`` the
+    statement, ``{{block}}`` its outermost block, ``{{path}}`` its full path, ``{{parent}}`` the
+    path above it, and each named group of the pattern (``(?P<sg>sg-\\S+)`` → ``{{sg}}``)."""
+    each_in: Literal["file", "evidence"] = "file"
+    """Where ``each`` looks: the whole configuration, or only the finding's own evidence (the
+    catch-all term, not every ``then accept`` in the file)."""
+    with_record: str | None = None
+    """RE2 pattern over the records beside the matched statement's block, for fields the
+    statement itself doesn't carry: an AWS rule's ports, next to the group pair that matched."""
+    combine: bool = False
+    """Several recipes for one rule and entity, each ``combine``, fix a finding together: one
+    per kind of statement behind it (network ACL entries, security group ingress, egress). The
+    ones that find nothing to change here are left out."""
+    lines: str | None = None
+    """RE2 pattern: a ``change`` line holding ``{{lines}}`` is written once per matching
+    statement (in the finding's block, if it has one), to remove each (``no {{lines}}``)."""
+    change: tuple[str, ...] = Field(min_length=1)
+    replaces: tuple[str, ...] = ()
+    """Command prefixes the change overwrites in its block (``exec-timeout``)."""
+    edits: tuple[JsonEdit, ...] = ()
+    """For JSON/YAML platforms only: the export edits the commands stand for."""
+    rollback: tuple[str, ...] = ()
+    """Written out where the rollback can't be derived from the change (the AWS CLI)."""
+    check: tuple[str, ...] = ()
+    """The pre-check and verify commands, where the session's can't name what changed (an AWS
+    ``describe-security-groups --group-ids {{sg}}``)."""
+    note: str | None = None
+    """Shown with the fix: what the site must decide, or what to check first."""
     source: Literal["curated", "stig"] = "curated"
+
+    @model_validator(mode="after")
+    def _valid(self) -> Self:
+        for pattern in (self.entity, self.each, self.lines, self.with_record):
+            if pattern is not None:
+                regex.validate(pattern)
+        if self.each and self.lines:
+            raise ValueError("a recipe takes `each` or `lines`, not both")
+        if self.with_record and not self.each:
+            raise ValueError("`with_record` reads beside an `each` match, so it needs `each`")
+        return self
 
 
 class RecipeFile(_Strict):
@@ -381,13 +443,42 @@ class RecipeFile(_Strict):
 # --- verify.yaml -------------------------------------------------------------------------------
 
 
-class VerifyCommands(_Strict):
+class Session(_Strict):
+    """How a change is entered, checked and kept on this vendor (PLAN §14.5)."""
+
+    enter: tuple[str, ...] = ()
+    """Before the change (``configure terminal``)."""
+    exit: tuple[str, ...] = ()
+    """After it (``end``)."""
+    save: tuple[str, ...] = ()
+    """Make it survive a reload (``copy running-config startup-config``); empty where the
+    platform saves on its own."""
+    save_note: str | None = None
     precheck: tuple[str, ...] = Field(min_length=1)
+    """Show the configuration under ``{path}`` (the block or command the change touches, as
+    :mod:`kasauti.remediation.editors` gives it) before the change."""
     verify: tuple[str, ...] = Field(min_length=1)
+    """The same after it, before saving where the platform has a candidate (Junos, PAN-OS)."""
+    rollback: tuple[str, ...] = ()
+    """A platform's own undo (Junos ``rollback 1``), used instead of inverse commands."""
+    kept_negations: tuple[str, ...] = ()
+    """Indent family: ``no`` commands the running configuration keeps as a line
+    (``no ip http server``: a feature on by default, turned off). Any other ``no`` command
+    removes its line and leaves nothing (``no snmp-server community …``)."""
+
+
+class Param(_Strict):
+    """A value only the site can supply (its syslog server, its NTP key), written ``<NAME>`` in
+    a recipe. ``example`` is a documentation value, used only to re-audit the fix."""
+
+    name: ParamName
+    means: str = Field(min_length=1)
+    example: str = Field(min_length=1)
 
 
 class VerifyFile(_Strict):
-    domains: dict[Domain, VerifyCommands] = Field(default_factory=dict)
+    session: Session | None = None
+    params: tuple[Param, ...] = ()
 
 
 # --- rules/*.yaml and derivations/*.yaml ---------------------------------------------------------

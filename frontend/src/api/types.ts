@@ -262,6 +262,48 @@ export interface AuditResult {
     serial: string;
     source: string;
   }[];
+  /** Absent where nothing failed (and on results from before fixes existed). */
+  remediation?: Remediation | null;
+}
+
+// -- remediation (kasauti/remediation/model.py) --------------------------------------------------
+
+export type Proof = "verified" | "not_verified" | "not_checked";
+
+export interface FixStep {
+  commands: string[];
+  note: string | null;
+}
+
+export interface Fix {
+  rule_id: string;
+  entity_ids: string[];
+  recipe: string;
+  source: string;
+  precheck: FixStep;
+  change: FixStep;
+  verify: FixStep;
+  save: FixStep | null;
+  rollback: FixStep;
+  placeholders: { name: string; means: string }[];
+  note: string | null;
+  proof: Proof;
+  proof_detail: string;
+}
+
+export interface Remediation {
+  fixes: Fix[];
+  unfixed: string[];
+  combined: {
+    proof: Proof;
+    detail: string;
+    failed_before: number;
+    failed_after: number;
+    compliance_after_pct: number | null;
+    still_failing: string[];
+    left_for_review: string[];
+  } | null;
+  basis: string;
 }
 
 // -- knowledge base -----------------------------------------------------------------------------

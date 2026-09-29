@@ -1,0 +1,28 @@
+# How a fix is entered, checked, kept and undone on EOS (PLAN §14.5), and the site values its
+# recipes leave for the administrator. Examples (RFC 5737 addresses, EXAMPLE- names) are used
+# only to re-audit each fix on a copy; they must never occur in a real configuration.
+session:
+  enter: ["configure"]
+  exit: ["end"]
+  save: ["copy running-config startup-config"]
+  precheck: ["show running-config | section {path}"]
+  verify: ["show running-config | section {path}"]
+  # EOS keeps few `no` forms: most features it hardens are off by default.
+  kept_negations:
+    - no aaa root
+params:
+  - {name: MGMT_PREFIX, means: "Network your administrators connect from (prefix)", example: "192.0.2.0/24"}
+  - {name: INBOUND_ACL, means: "Inbound access list for the untrusted interface (deny by default)", example: "EXAMPLE-EDGE-IN"}
+  - {name: PUBLIC_SERVER, means: "An address this switch must expose (repeat the line for each)", example: "203.0.113.10"}
+  - {name: SERVICE_PORT, means: "Its TCP port", example: "443"}
+  - {name: SYSLOG_SERVER, means: "Your syslog or SIEM server", example: "192.0.2.50"}
+  - {name: NTP_KEY, means: "The NTP key shared with your time server", example: "Example-Ntp-Key-01"}
+  - {name: TACACS_SERVER, means: "Your TACACS+ server", example: "192.0.2.40"}
+  - {name: TACACS_KEY, means: "The TACACS+ shared secret", example: "Example-Tacacs-Key-01"}
+  - {name: TACACS_KEY_ENC, means: "The same secret as EOS stores it (type 7)", example: "0A1B2C3D4E5F"}
+  - {name: NEW_PASSWORD, means: "A new password of 15 or more characters", example: "Example-Passphrase-2026"}
+  - {name: SHA512_HASH, means: "The SHA-512 hash the switch stores", example: "$6$ExampleSalt$ExampleSha512HashValue"}
+  - {name: SNMP_USER, means: "SNMPv3 user for your monitoring system", example: "example-nms"}
+  - {name: SNMP_AUTH_KEY, means: "Its authentication passphrase", example: "Example-Snmp-Auth-01"}
+  - {name: SNMP_PRIV_KEY, means: "Its privacy (encryption) passphrase", example: "Example-Snmp-Priv-01"}
+  - {name: BANNER_TEXT, means: "Your organisation's warning notice", example: "Authorised access only. Activity is logged and monitored."}

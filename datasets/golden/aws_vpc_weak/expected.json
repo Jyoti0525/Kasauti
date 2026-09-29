@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "ba0568ce0d7e54e0d2eac3d7",
+  "audit_id": "6ab8bb9260e0df06129cd18a",
   "input": {
     "file": "weak.json",
     "sha256": "05fef695af33a827e42a23817015bd5f0ac3304ff99944e243342055269ea188",
@@ -52,7 +52,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "aws_vpc@1",
     "frameworks": {
@@ -4472,5 +4472,134 @@
   },
   "warnings": [],
   "companions": [],
-  "inventory": []
+  "inventory": [],
+  "remediation": {
+    "fixes": [
+      {
+        "rule_id": "FILTER-PERMIT-ANY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "aws_vpc/nacl-ingress + aws_vpc/nacl-egress + aws_vpc/sg-ingress-any + aws_vpc/sg-egress-any",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "aws ec2 describe-network-acls --network-acl-ids acl-0f1e2d3c4b5a69780",
+            "aws ec2 describe-security-groups --group-ids sg-0f1e2d3c4b5a69781",
+            "aws ec2 describe-security-groups --group-ids sg-0f1e2d3c4b5a69780",
+            "aws ec2 describe-security-groups --group-ids sg-0f1e2d3c4b5a69782"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "aws ec2 replace-network-acl-entry --network-acl-id acl-0f1e2d3c4b5a69780 --ingress --rule-number 100 --protocol tcp --port-range From=<SERVICE_PORT>,To=<SERVICE_PORT> --cidr-block 0.0.0.0/0 --rule-action allow",
+            "aws ec2 replace-network-acl-entry --network-acl-id acl-0f1e2d3c4b5a69780 --egress --rule-number 100 --protocol tcp --port-range From=1024,To=65535 --cidr-block 0.0.0.0/0 --rule-action allow",
+            "aws ec2 revoke-security-group-ingress --group-id sg-0f1e2d3c4b5a69781 --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 revoke-security-group-egress --group-id sg-0f1e2d3c4b5a69780 --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 authorize-security-group-egress --group-id sg-0f1e2d3c4b5a69780 --ip-permissions 'IpProtocol=tcp,FromPort=443,ToPort=443,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 revoke-security-group-egress --group-id sg-0f1e2d3c4b5a69781 --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 authorize-security-group-egress --group-id sg-0f1e2d3c4b5a69781 --ip-permissions 'IpProtocol=tcp,FromPort=443,ToPort=443,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 revoke-security-group-egress --group-id sg-0f1e2d3c4b5a69782 --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 authorize-security-group-egress --group-id sg-0f1e2d3c4b5a69782 --ip-permissions 'IpProtocol=tcp,FromPort=443,ToPort=443,IpRanges=[{CidrIp=0.0.0.0/0}]'"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "aws ec2 describe-network-acls --network-acl-ids acl-0f1e2d3c4b5a69780",
+            "aws ec2 describe-security-groups --group-ids sg-0f1e2d3c4b5a69781",
+            "aws ec2 describe-security-groups --group-ids sg-0f1e2d3c4b5a69780",
+            "aws ec2 describe-security-groups --group-ids sg-0f1e2d3c4b5a69782"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [],
+          "note": "Each AWS call takes effect as soon as it returns; there is nothing to save. Run them with the profile and region that hold this VPC (`--profile`, `--region`)."
+        },
+        "rollback": {
+          "commands": [
+            "aws ec2 replace-network-acl-entry --network-acl-id acl-0f1e2d3c4b5a69780 --ingress --rule-number 100 --protocol -1 --cidr-block 0.0.0.0/0 --rule-action allow",
+            "aws ec2 replace-network-acl-entry --network-acl-id acl-0f1e2d3c4b5a69780 --egress --rule-number 100 --protocol -1 --cidr-block 0.0.0.0/0 --rule-action allow",
+            "aws ec2 authorize-security-group-ingress --group-id sg-0f1e2d3c4b5a69781 --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 revoke-security-group-egress --group-id sg-0f1e2d3c4b5a69780 --ip-permissions 'IpProtocol=tcp,FromPort=443,ToPort=443,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 authorize-security-group-egress --group-id sg-0f1e2d3c4b5a69780 --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 revoke-security-group-egress --group-id sg-0f1e2d3c4b5a69781 --ip-permissions 'IpProtocol=tcp,FromPort=443,ToPort=443,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 authorize-security-group-egress --group-id sg-0f1e2d3c4b5a69781 --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 revoke-security-group-egress --group-id sg-0f1e2d3c4b5a69782 --ip-permissions 'IpProtocol=tcp,FromPort=443,ToPort=443,IpRanges=[{CidrIp=0.0.0.0/0}]'",
+            "aws ec2 authorize-security-group-egress --group-id sg-0f1e2d3c4b5a69782 --ip-permissions 'IpProtocol=-1,IpRanges=[{CidrIp=0.0.0.0/0}]'"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "SERVICE_PORT",
+            "means": "The TCP port clients must reach in this subnet"
+          }
+        ],
+        "note": "The network ACL then admits only the service port; add a numbered entry for each further service the subnet offers. Network ACLs are stateless, so replies leave on the clients' ephemeral ports (1024-65535); outbound connections the subnet opens itself need entries of their own. Nothing from the internet may then reach this group on any port; authorise each service the group must offer, from the sources that need it. AWS gives every security group an allow-all outbound rule; this narrows it to HTTPS. Add what the workload also needs outbound (DNS, NTP, updates) before you revoke the old rule.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 1 fixes to a copy of this configuration and re-audited: FILTER-PERMIT-ANY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "REF-DANGLING-01",
+        "entity_ids": [
+          "Reference[FilterRule[sg-0f1e2d3c4b5a69782:ingress:0].src -> sg-0c0ffee0c0ffee001]"
+        ],
+        "recipe": "aws_vpc/peer-group-to-cidr",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "aws ec2 describe-security-groups --group-ids sg-0f1e2d3c4b5a69782"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "aws ec2 authorize-security-group-ingress --group-id sg-0f1e2d3c4b5a69782 --ip-permissions 'IpProtocol=tcp,FromPort=8080,ToPort=8080,IpRanges=[{CidrIp=<PEER_CIDR>,Description=peered-vpc}]'",
+            "aws ec2 revoke-security-group-ingress --group-id sg-0f1e2d3c4b5a69782 --ip-permissions 'IpProtocol=tcp,FromPort=8080,ToPort=8080,UserIdGroupPairs=[{GroupId=sg-0c0ffee0c0ffee001}]'"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "aws ec2 describe-security-groups --group-ids sg-0f1e2d3c4b5a69782"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [],
+          "note": "Each AWS call takes effect as soon as it returns; there is nothing to save. Run them with the profile and region that hold this VPC (`--profile`, `--region`)."
+        },
+        "rollback": {
+          "commands": [
+            "aws ec2 authorize-security-group-ingress --group-id sg-0f1e2d3c4b5a69782 --ip-permissions 'IpProtocol=tcp,FromPort=8080,ToPort=8080,UserIdGroupPairs=[{GroupId=sg-0c0ffee0c0ffee001}]'",
+            "aws ec2 revoke-security-group-ingress --group-id sg-0f1e2d3c4b5a69782 --ip-permissions 'IpProtocol=tcp,FromPort=8080,ToPort=8080,IpRanges=[{CidrIp=<PEER_CIDR>}]'"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "PEER_CIDR",
+            "means": "The address range of the peered VPC"
+          }
+        ],
+        "note": "The group named here isn't in this export: it belongs to a peered VPC, so what it lets in can't be audited. Either audit that VPC's export alongside this one, or allow the peer by its address range as here. The new rule is added before the old one is revoked.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 1 fixes to a copy of this configuration and re-audited: REF-DANGLING-01 no longer fails for Reference[FilterRule[sg-0f1e2d3c4b5a69782:ingress:0].src -> sg-0c0ffee0c0ffee001], and no other check got worse."
+      }
+    ],
+    "unfixed": [],
+    "combined": {
+      "proof": "verified",
+      "detail": "All 2 verified fixes applied together to one copy and re-audited: 2 failed checks before, 0 after.",
+      "failed_before": 2,
+      "failed_after": 0,
+      "compliance_after_pct": 100.0,
+      "still_failing": [],
+      "left_for_review": []
+    },
+    "basis": "Verified against Kasauti's model of this device (the changed configuration re-parsed and re-audited), not on hardware. Review each change, fill in the <values>, and test it in a maintenance window. Kasauti never applies a change to a device."
+  }
 }

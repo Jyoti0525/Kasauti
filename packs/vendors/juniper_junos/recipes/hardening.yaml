@@ -1,0 +1,184 @@
+# Remediation recipes for Junos OS (PLAN §14.2 source 1: curated), from the Junos OS 23.4
+# documentation, the same source as datasets/authored/juniper_junos/hardened.conf. Each is a set
+# of configuration-mode commands, applied to a copy of the audited configuration (in its
+# `display set` form) and re-audited before it is shown as verified.
+recipes:
+  # --- Management plane ----------------------------------------------------------------------
+  - id: telnet-off
+    rule: MGMT-TELNET-01
+    change: ["delete system services telnet"]
+    note: Make sure SSH works for your administrators before you commit this.
+
+  - id: http-off
+    rule: MGMT-HTTP-01
+    change: ["delete system services web-management http"]
+
+  - id: web-http-off
+    rule: MGMT-WEB-ACL-01
+    entity: '^MgmtService\[http\]$'
+    change: ["delete system services web-management http"]
+
+  - id: login-class-timeout
+    rule: MGMT-SESSION-TIMEOUT-01
+    entity: '^MgmtSession\[class:super-user\]$'
+    each: "^system login user \\S+ class super-user$"
+    change:
+      - "set system login class NETADMIN idle-timeout 10"
+      - "set system login class NETADMIN permissions all"
+      - "set {{parent}} class NETADMIN"
+    replaces: ["set {{parent}} class"]
+    note: >-
+      The predefined super-user class can't take an idle timeout, so these administrators move
+      to a class with the same permissions and a 10-minute timeout.
+
+  - id: class-timeout
+    rule: MGMT-SESSION-TIMEOUT-01
+    entity: '^MgmtSession\[class:'
+    change: ["set system login class {{key|trim:class:}} idle-timeout 10"]
+    replaces: ["set system login class {{key|trim:class:}} idle-timeout"]
+
+  - id: banner
+    rule: MGMT-BANNER-01
+    change: ['set system login message "<BANNER_TEXT>"']
+
+  # --- Accounts ------------------------------------------------------------------------------
+  - id: root-password
+    rule: AAA-LOCAL-PASSWORD-HASH-01
+    entity: '^LocalUser\[root\]$'
+    change:
+      - >-
+        set system root-authentication plain-text-password
+        => set system root-authentication encrypted-password "<SHA512_HASH>"
+    replaces: ["set system root-authentication"]
+    note: Junos asks for the new password twice and stores it as a SHA-512 hash.
+
+  - id: user-password
+    rule: AAA-LOCAL-PASSWORD-HASH-01
+    change:
+      - >-
+        set system login user {{key}} authentication plain-text-password
+        => set system login user {{key}} authentication encrypted-password "<SHA512_HASH>"
+    replaces: ["set system login user {{key}} authentication"]
+    note: Junos asks for the new password twice and stores it as a SHA-512 hash.
+
+  - id: password-length
+    rule: AAA-PASSWORD-MIN-LENGTH-01
+    change: ["set system login password minimum-length 15"]
+    replaces: ["set system login password minimum-length"]
+
+  - id: lockout
+    rule: AAA-LOCKOUT-01
+    change:
+      - "set system login retry-options tries-before-disconnect 3"
+      - "set system login retry-options lockout-period 10"
+    replaces:
+      - "set system login retry-options tries-before-disconnect"
+      - "set system login retry-options lockout-period"
+
+  - id: central-auth
+    rule: AAA-CENTRAL-AUTH-01
+    change:
+      - >-
+        set system tacplus-server <TACACS_SERVER> secret "<TACACS_KEY>"
+        => set system tacplus-server <TACACS_SERVER> secret "<TACACS_KEY_ENC>"
+      - "set system authentication-order tacplus"
+      - "set system authentication-order password"
+    note: >-
+      `password` after `tacplus` keeps local accounts as the fallback when the TACACS+ server
+      can't be reached; test a TACACS+ login before you confirm the commit.
+
+  # --- Logging and time ----------------------------------------------------------------------
+  - id: remote-log
+    rule: LOG-REMOTE-01
+    change:
+      - "set system syslog host <SYSLOG_SERVER> any notice"
+      - "set system syslog host <SYSLOG_SERVER> authorization info"
+      - "set system syslog host <SYSLOG_SERVER> interactive-commands any"
+
+  - id: config-change-log
+    rule: LOG-CONFIG-CHANGE-01
+    change:
+      - "set system syslog file interactive-commands interactive-commands any"
+      - "set system syslog file messages authorization info"
+
+  - id: ntp-auth
+    rule: TIME-NTP-AUTH-01
+    change:
+      - >-
+        set system ntp authentication-key 1 type sha256 value "<NTP_KEY>"
+        => set system ntp authentication-key 1 type sha256 value "<NTP_KEY_ENC>"
+      - "set system ntp trusted-key 1"
+      - "set system ntp server {{key}} key 1"
+    replaces: ["set system ntp server {{key}}"]
+
+  # --- SNMP ----------------------------------------------------------------------------------
+  - id: snmp-v3
+    rule: SNMP-COMMUNITY-01
+    lines: "^snmp community \\S+$"
+    change:
+      - "delete {{lines_path}}"
+      - >-
+        set snmp v3 usm local-engine user <SNMP_USER> authentication-sha authentication-password
+        <SNMP_AUTH_KEY> => set snmp v3 usm local-engine user <SNMP_USER> authentication-sha
+        authentication-key "<SNMP_KEY_ENC>"
+      - >-
+        set snmp v3 usm local-engine user <SNMP_USER> privacy-aes128 privacy-password
+        <SNMP_PRIV_KEY> => set snmp v3 usm local-engine user <SNMP_USER> privacy-aes128
+        privacy-key "<SNMP_KEY_ENC>"
+    note: Point your monitoring system at SNMPv3 with the user above before you commit.
+
+  # --- Services and filtering ----------------------------------------------------------------
+  - id: legacy-services
+    rule: SVC-LEGACY-01
+    change:
+      - "delete system services finger"
+      - "delete system services ftp"
+
+  - id: proxy-arp
+    rule: SVC-PROXY-ARP-01
+    each: "proxy-arp"
+    each_in: evidence
+    change: ["delete {{parent}} proxy-arp"]
+
+  - id: permit-any
+    rule: FILTER-PERMIT-ANY-01
+    each: "^firewall .* then accept$"
+    each_in: evidence
+    change:
+      - "delete {{parent}}"
+      - "set {{above}} term ALLOW-SERVICE from destination-address <PUBLIC_SERVER>/32"
+      - "set {{above}} term ALLOW-SERVICE from protocol tcp"
+      - "set {{above}} term ALLOW-SERVICE from destination-port <SERVICE_PORT>"
+      - "set {{above}} term ALLOW-SERVICE then accept"
+      - "set {{above}} term DENY-REST then syslog"
+      - "set {{above}} term DENY-REST then discard"
+    note: >-
+      The term that accepted everything goes; add one ALLOW term per service this filter must
+      pass, before DENY-REST (`insert … before term DENY-REST`).
+
+  - id: untrusted-zone
+    rule: FILTER-UNTRUSTED-INGRESS-01
+    change: ["set security zones security-zone untrust interfaces {{key}}"]
+    note: >-
+      On an SRX the untrust zone denies inbound traffic unless a policy allows it. On a router
+      or switch, apply an input firewall filter instead
+      (`set interfaces … family inet filter input <FILTER>`).
+
+  - id: define-filter
+    rule: REF-DANGLING-01
+    entity: '\.filters_in -> '
+    change:
+      - "set firewall family inet filter {{name}} term ALLOW-SSH-MGMT from source-address <MGMT_PREFIX>"
+      - "set firewall family inet filter {{name}} term ALLOW-SSH-MGMT from protocol tcp"
+      - "set firewall family inet filter {{name}} term ALLOW-SSH-MGMT from destination-port ssh"
+      - "set firewall family inet filter {{name}} term ALLOW-SSH-MGMT then accept"
+      - "set firewall family inet filter {{name}} term ALLOW-NTP from source-address <NTP_SERVER_PREFIX>"
+      - "set firewall family inet filter {{name}} term ALLOW-NTP from protocol udp"
+      - "set firewall family inet filter {{name}} term ALLOW-NTP from port ntp"
+      - "set firewall family inet filter {{name}} term ALLOW-NTP then accept"
+      - "set firewall family inet filter {{name}} term DENY-REST then syslog"
+      - "set firewall family inet filter {{name}} term DENY-REST then discard"
+    note: >-
+      The filter was named but never defined. This one protects the routing engine: add a term
+      for every routing protocol and service the device runs (BGP, OSPF, SNMP) before
+      DENY-REST, or they will be cut off at commit.

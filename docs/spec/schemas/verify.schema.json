@@ -1,25 +1,61 @@
 {
   "$defs": {
-    "Domain": {
-      "description": "The ten rule domains (PLAN §12.3).",
-      "enum": [
-        "management_plane",
-        "aaa",
-        "logging",
-        "time",
-        "snmp",
-        "services",
-        "crypto",
-        "filtering",
-        "l2",
-        "routing_auth"
-      ],
-      "title": "Domain",
-      "type": "string"
-    },
-    "VerifyCommands": {
+    "Param": {
       "additionalProperties": false,
+      "description": "A value only the site can supply (its syslog server, its NTP key), written ``<NAME>`` in\na recipe. ``example`` is a documentation value, used only to re-audit the fix.",
       "properties": {
+        "example": {
+          "minLength": 1,
+          "title": "Example",
+          "type": "string"
+        },
+        "means": {
+          "minLength": 1,
+          "title": "Means",
+          "type": "string"
+        },
+        "name": {
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "means",
+        "example"
+      ],
+      "title": "Param",
+      "type": "object"
+    },
+    "Session": {
+      "additionalProperties": false,
+      "description": "How a change is entered, checked and kept on this vendor (PLAN §14.5).",
+      "properties": {
+        "enter": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Enter",
+          "type": "array"
+        },
+        "exit": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Exit",
+          "type": "array"
+        },
+        "kept_negations": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Kept Negations",
+          "type": "array"
+        },
         "precheck": {
           "items": {
             "type": "string"
@@ -27,6 +63,34 @@
           "minItems": 1,
           "title": "Precheck",
           "type": "array"
+        },
+        "rollback": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Rollback",
+          "type": "array"
+        },
+        "save": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Save",
+          "type": "array"
+        },
+        "save_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Save Note"
         },
         "verify": {
           "items": {
@@ -41,21 +105,30 @@
         "precheck",
         "verify"
       ],
-      "title": "VerifyCommands",
+      "title": "Session",
       "type": "object"
     }
   },
   "additionalProperties": false,
   "properties": {
-    "domains": {
-      "additionalProperties": {
-        "$ref": "#/$defs/VerifyCommands"
+    "params": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Param"
       },
-      "propertyNames": {
-        "$ref": "#/$defs/Domain"
-      },
-      "title": "Domains",
-      "type": "object"
+      "title": "Params",
+      "type": "array"
+    },
+    "session": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Session"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "title": "VerifyFile",

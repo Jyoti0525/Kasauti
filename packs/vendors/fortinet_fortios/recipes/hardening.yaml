@@ -1,0 +1,220 @@
+# Remediation recipes for FortiOS 7.4 (PLAN §14.2 source 1: curated), from the FortiOS 7.4 CLI
+# Reference and Administration Guide, the same sources as
+# datasets/authored/fortinet_fortios/hardened.conf. Each is applied to a copy of the audited
+# configuration and re-audited before it is shown as verified.
+recipes:
+  # --- Management plane ----------------------------------------------------------------------
+  # Telnet and HTTP both send an administrator's password in clear text, and both live on the
+  # same `allowaccess` line: each fix removes both, so the two agree when applied together.
+  - id: telnet-off
+    rule: MGMT-TELNET-01
+    each: '^config system interface edit \S+ set allowaccess .*\btelnet\b'
+    each_in: evidence
+    change:
+      - "config system interface"
+      - "    {{inner}}"
+      - "        set allowaccess {{line|drop:set,allowaccess,telnet,http}}"
+      - "    next"
+      - "end"
+    note: Also removes HTTP, which sends passwords in clear text too; HTTPS and SSH stay.
+
+  # FortiOS serves HTTP administration in clear only with the HTTPS redirect turned off.
+  - id: http-off
+    rule: MGMT-HTTP-01
+    change:
+      - "config system global"
+      - "    set admin-https-redirect enable"
+      - "end"
+    note: HTTP administration then only redirects to HTTPS.
+
+  - id: web-http-off
+    rule: MGMT-WEB-ACL-01
+    entity: '^MgmtService\[http\]$'
+    change:
+      - "config system global"
+      - "    set admin-https-redirect enable"
+      - "end"
+
+  - id: admin-trusthosts
+    rule: MGMT-WEB-ACL-01
+    each: '^config system admin edit \S+$'
+    change:
+      - "config system admin"
+      - "    {{line}}"
+      - "        set trusthost1 <MGMT_NET> <MGMT_MASK>"
+      - "        set ip6-trusthost1 <MGMT_NET6>"
+      - "    next"
+      - "end"
+    note: >-
+      Trusted hosts limit where each administrator may log in from, over HTTPS and SSH alike;
+      IPv6 is open to all until its own trusted host is set. Keep your own address in range,
+      or you will be locked out.
+
+  - id: ssh-v2
+    rule: MGMT-SSH-V2-01
+    change:
+      - "config system global"
+      - "    set admin-ssh-v1 disable"
+      - "end"
+
+  - id: session-timeout
+    rule: MGMT-SESSION-TIMEOUT-01
+    change:
+      - "config system global"
+      - "    set admintimeout 10"
+      - "end"
+
+  - id: banner
+    rule: MGMT-BANNER-01
+    change:
+      - "config system global"
+      - "    set pre-login-banner enable"
+      - "end"
+    note: >-
+      The text shown is the pre-login disclaimer replacement message: edit it under System >
+      Replacement Messages, or with `config system replacemsg admin "pre_admin-disclaimer-text"`.
+
+  # --- Accounts ------------------------------------------------------------------------------
+  - id: admin-password
+    rule: AAA-LOCAL-PASSWORD-HASH-01
+    change:
+      - "config system admin"
+      - '    edit "{{key}}"'
+      - "        set password <NEW_PASSWORD> => set password ENC <PBKDF2_HASH>"
+      - "    next"
+      - "end"
+    note: >-
+      Setting the password again makes FortiOS 7.4 store it with PBKDF2; the saved line then
+      reads `ENC PB2…`. Check it with the verify step.
+
+  - id: password-policy
+    rule: AAA-PASSWORD-MIN-LENGTH-01
+    change:
+      - "config system password-policy"
+      - "    set status enable"
+      - "    set minimum-length 15"
+      - "end"
+
+  - id: lockout
+    rule: AAA-LOCKOUT-01
+    change:
+      - "config system global"
+      - "    set admin-lockout-threshold 3"
+      - "    set admin-lockout-duration 900"
+      - "end"
+
+  - id: central-auth
+    rule: AAA-CENTRAL-AUTH-01
+    change:
+      - "config user tacacs+"
+      - '    edit "TACACS-1"'
+      - '        set server "<TACACS_SERVER>"'
+      - "        set key <TACACS_KEY> => set key ENC <TACACS_KEY_ENC>"
+      - "    next"
+      - "end"
+      - "config user group"
+      - '    edit "TACACS-ADMINS"'
+      - '        set member "TACACS-1"'
+      - "    next"
+      - "end"
+      - "config system admin"
+      - '    edit "tacacs-admins"'
+      - "        set remote-auth enable"
+      - '        set accprofile "super_admin"'
+      - "        set wildcard enable"
+      - '        set remote-group "TACACS-ADMINS"'
+      - "        set trusthost1 <MGMT_NET> <MGMT_MASK>"
+      - "        set ip6-trusthost1 <MGMT_NET6>"
+      - "    next"
+      - "end"
+    note: >-
+      TACACS+ administrators log in from the management network only, like the local ones.
+      Keep a local administrator for when the TACACS+ server can't be reached.
+
+  # --- Logging and time ----------------------------------------------------------------------
+  - id: remote-log
+    rule: LOG-REMOTE-01
+    change:
+      - "config log syslogd setting"
+      - "    set status enable"
+      - '    set server "<SYSLOG_SERVER>"'
+      - "    set mode reliable"
+      - "end"
+
+  - id: config-change-log
+    rule: LOG-CONFIG-CHANGE-01
+    change:
+      - "config log eventfilter"
+      - "    set system enable"
+      - "end"
+
+  - id: ntp-auth
+    rule: TIME-NTP-AUTH-01
+    each: '^config system ntp config ntpserver edit \S+$'
+    change:
+      - "config system ntp"
+      - "    config ntpserver"
+      - "        {{line}}"
+      - "            set authentication enable"
+      - "            set key-type SHA256"
+      - "            set key <NTP_KEY> => set key ENC <NTP_KEY_ENC>"
+      - "            set key-id 1"
+      - "        next"
+      - "    end"
+      - "end"
+
+  # --- SNMP ----------------------------------------------------------------------------------
+  - id: snmp-v3
+    rule: SNMP-COMMUNITY-01
+    each: '^config system snmp community edit \S+ set name '
+    each_in: evidence
+    change:
+      - "config system snmp community"
+      - "    delete {{inner|trim:edit}}"
+      - "end"
+      - "config system snmp user"
+      - '    edit "<SNMP_USER>"'
+      - "        set security-level auth-priv"
+      - "        set auth-proto sha256"
+      - "        set auth-pwd <SNMP_AUTH_KEY> => set auth-pwd ENC <SNMP_KEY_ENC>"
+      - "        set priv-proto aes256"
+      - "        set priv-pwd <SNMP_PRIV_KEY> => set priv-pwd ENC <SNMP_KEY_ENC>"
+      - "    next"
+      - "end"
+    note: Point your monitoring system at SNMPv3 with the user above before you delete the community.
+
+  # --- Services and filtering ----------------------------------------------------------------
+  - id: proxy-arp
+    rule: SVC-PROXY-ARP-01
+    each: '^config system proxy-arp edit \S+ set interface '
+    each_in: evidence
+    change:
+      - "config system proxy-arp"
+      - "    delete {{inner|trim:edit}}"
+      - "end"
+
+  - id: permit-any
+    rule: FILTER-PERMIT-ANY-01
+    each: '^config firewall policy edit \S+ set srcintf '
+    each_in: evidence
+    change:
+      - "config firewall address"
+      - '    edit "<SERVER_NAME>"'
+      - "        set subnet <PUBLIC_SERVER> 255.255.255.255"
+      - "    next"
+      - "end"
+      - "config firewall service custom"
+      - '    edit "<SERVICE_NAME>"'
+      - "        set tcp-portrange <SERVICE_PORT>"
+      - "    next"
+      - "end"
+      - "config firewall policy"
+      - "    {{inner}}"
+      - '        set dstaddr "<SERVER_NAME>"'
+      - '        set service "<SERVICE_NAME>"'
+      - "        set logtraffic all"
+      - "    next"
+      - "end"
+    note: >-
+      The policy now reaches one server on one service; add a policy per further service
+      rather than widening this one.

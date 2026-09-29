@@ -1,0 +1,207 @@
+# Remediation recipes for IOS XE (PLAN §14.2 source 1: curated). Commands follow the Cisco IOS XE
+# 17 configuration guides, the same sources as datasets/authored/cisco_ios_xe/hardened.cfg.
+# Each fix is applied to a copy of the audited configuration and re-audited before it is shown
+# as verified; a line `typed => stored` is typed one way and kept another (a secret as a hash).
+recipes:
+  # --- Management plane ----------------------------------------------------------------------
+  - id: telnet-off
+    rule: MGMT-TELNET-01
+    each: "^line vty [0-9 ]+$"
+    change:
+      - "{{line}}"
+      - " transport input ssh"
+    replaces: ["transport input"]
+    note: Make sure SSH works on every line (a key pair, `ip ssh version 2`) before you apply this.
+
+  - id: http-off
+    rule: MGMT-HTTP-01
+    change: ["no ip http server"]
+    note: >-
+      If you manage the device over its web UI, keep HTTPS (`ip http secure-server`) and restrict
+      it: `ip http access-class ipv4 <MGMT_ACL>`.
+
+  - id: web-http-off
+    rule: MGMT-WEB-ACL-01
+    entity: '^MgmtService\[http\]$'
+    change: ["no ip http server"]
+
+  - id: web-https-restrict
+    rule: MGMT-WEB-ACL-01
+    entity: '^MgmtService\[https\]$'
+    change:
+      - "ip access-list standard <MGMT_ACL>"
+      - " 10 permit <MGMT_NET> <MGMT_WILDCARD>"
+      - " 20 deny any log"
+      - "ip http access-class ipv4 <MGMT_ACL>"
+    note: If nobody uses the web UI, turn it off instead with `no ip http secure-server`.
+
+  - id: ssh-v2
+    rule: MGMT-SSH-V2-01
+    change: ["ip ssh version 2"]
+
+  - id: session-timeout
+    rule: MGMT-SESSION-TIMEOUT-01
+    change:
+      - "{{block}}"
+      - " exec-timeout 10 0"
+    replaces: ["exec-timeout"]
+
+  - id: vty-acl
+    rule: MGMT-VTY-ACL-01
+    change:
+      - "ip access-list standard <MGMT_ACL>"
+      - " 10 permit <MGMT_NET> <MGMT_WILDCARD>"
+      - " 20 deny any log"
+      - "{{block}}"
+      - " access-class <MGMT_ACL> in"
+    replaces: ["access-class"]
+
+  - id: banner
+    rule: MGMT-BANNER-01
+    change:
+      - "banner login ^C"
+      - "<BANNER_TEXT>"
+      - "^C"
+
+  # --- Accounts ------------------------------------------------------------------------------
+  - id: enable-secret
+    rule: AAA-LOCAL-PASSWORD-HASH-01
+    entity: '^LocalUser\[enable\]$'
+    change:
+      - "no enable password"
+      - "enable algorithm-type scrypt secret <NEW_PASSWORD> => enable secret 9 <SCRYPT_HASH>"
+
+  - id: line-password
+    rule: AAA-LOCAL-PASSWORD-HASH-01
+    entity: '^LocalUser\[line '
+    change:
+      - "{{block}}"
+      - " no password"
+      - " login local"
+    replaces: ["login"]
+    note: >-
+      The line then asks for a local account's name and password; keep at least one account
+      with a type 9 secret (see the account fixes).
+
+  - id: user-secret
+    rule: AAA-LOCAL-PASSWORD-HASH-01
+    change:
+      - >-
+        username {{key}} privilege {{privilege}} algorithm-type scrypt secret <NEW_PASSWORD>
+        => username {{key}} privilege {{privilege}} secret 9 <SCRYPT_HASH>
+    replaces: ["username {{key}}"]
+
+  - id: password-encryption
+    rule: AAA-PASSWORD-ENCRYPTION-01
+    change: ["service password-encryption"]
+
+  - id: password-length
+    rule: AAA-PASSWORD-MIN-LENGTH-01
+    change: ["security passwords min-length 15"]
+
+  - id: lockout
+    rule: AAA-LOCKOUT-01
+    change: ["login block-for 120 attempts 3 within 60"]
+
+  - id: central-auth
+    rule: AAA-CENTRAL-AUTH-01
+    change:
+      - "aaa new-model"
+      - "tacacs server TAC1"
+      - " address ipv4 <TACACS_SERVER>"
+      - " key <TACACS_KEY>"
+      - "aaa group server tacacs+ TACACS-GRP"
+      - " server name TAC1"
+      - "aaa authentication login default group TACACS-GRP local"
+      - "aaa authorization exec default group TACACS-GRP local"
+      - "aaa accounting exec default start-stop group TACACS-GRP"
+    note: >-
+      `local` after the group keeps local accounts as the fallback when the TACACS+ server
+      can't be reached; test a TACACS+ login before closing your session.
+
+  # --- Logging and time ----------------------------------------------------------------------
+  - id: remote-log
+    rule: LOG-REMOTE-01
+    change:
+      - "logging host <SYSLOG_SERVER>"
+      - "logging trap informational"
+
+  - id: timestamps
+    rule: LOG-TIMESTAMPS-01
+    change:
+      - "service timestamps log datetime msec localtime show-timezone"
+      - "service timestamps debug datetime msec localtime show-timezone"
+    replaces: ["service timestamps log", "service timestamps debug"]
+
+  - id: config-change-log
+    rule: LOG-CONFIG-CHANGE-01
+    change:
+      - "archive"
+      - " log config"
+      - "  logging enable"
+      - "  notify syslog contenttype plaintext"
+      - "  hidekeys"
+
+  - id: ntp-auth
+    rule: TIME-NTP-AUTH-01
+    change:
+      - "ntp authentication-key 1 hmac-sha2-256 <NTP_KEY>"
+      - "ntp authenticate"
+      - "ntp trusted-key 1"
+      - "ntp server {{key}} key 1"
+    replaces: ["ntp server {{key}}"]
+
+  # --- SNMP ----------------------------------------------------------------------------------
+  - id: snmp-v3
+    rule: SNMP-COMMUNITY-01
+    lines: "^snmp-server community "
+    change:
+      - "no {{lines}}"
+      - "snmp-server group NMS-GRP v3 priv"
+      - >-
+        snmp-server user <SNMP_USER> NMS-GRP v3 auth sha <SNMP_AUTH_KEY> priv aes 128
+        <SNMP_PRIV_KEY> =>
+    note: >-
+      Point your monitoring system at SNMPv3 with the user above before you remove the
+      communities. IOS keeps SNMPv3 users out of the running configuration by design.
+
+  # --- Services and filtering ----------------------------------------------------------------
+  - id: legacy-services
+    rule: SVC-LEGACY-01
+    change:
+      - "no service pad"
+      - "no ip bootp server"
+      - "no ip finger"
+      - "no service tcp-small-servers"
+      - "no service udp-small-servers"
+
+  - id: proxy-arp
+    rule: SVC-PROXY-ARP-01
+    change:
+      - "interface {{key}}"
+      - " no ip proxy-arp"
+
+  - id: permit-any
+    rule: FILTER-PERMIT-ANY-01
+    each: "permit ip any any$"
+    change:
+      - "{{block}}"
+      - " no {{line}}"
+      - " 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>"
+      - " 1000 deny ip any any log"
+    note: >-
+      Replace the catch-all with the traffic this interface must accept, one line per service;
+      everything else then meets the final deny.
+
+  - id: untrusted-ingress
+    rule: FILTER-UNTRUSTED-INGRESS-01
+    change:
+      - "ip access-list extended <INBOUND_ACL>"
+      - " 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>"
+      - " 1000 deny ip any any log"
+      - "interface {{key}}"
+      - " ip access-group <INBOUND_ACL> in"
+    replaces: ["ip access-group"]
+    note: >-
+      List what this interface must accept, one permit per service; everything else meets the
+      final deny. To use an access list you already have, name it and leave out its lines.

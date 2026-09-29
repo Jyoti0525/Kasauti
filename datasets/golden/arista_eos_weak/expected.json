@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "fe22a1d27d24534e790c98fb",
+  "audit_id": "4fe4c65ea23050dadb02f923",
   "input": {
     "file": "weak.cfg",
     "sha256": "03c0b8d475f96aeec21a923089f88c271174c1a4bf9b8bfc6ea66f67fd0c6a1d",
@@ -52,7 +52,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "arista_eos@1",
     "frameworks": {
@@ -3975,5 +3975,953 @@
   },
   "warnings": [],
   "companions": [],
-  "inventory": []
+  "inventory": [],
+  "remediation": {
+    "fixes": [
+      {
+        "rule_id": "AAA-CENTRAL-AUTH-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "arista_eos/central-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section tacacs-server host",
+            "show running-config | section aaa group server tacacs+ TACACS-GROUP",
+            "show running-config | section aaa authentication"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "tacacs-server host <TACACS_SERVER> key <TACACS_KEY>",
+            "aaa group server tacacs+ TACACS-GROUP",
+            " server <TACACS_SERVER>",
+            "aaa authentication login default group TACACS-GROUP local",
+            "aaa authorization exec default group TACACS-GROUP local",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section tacacs-server host",
+            "show running-config | section aaa group server tacacs+ TACACS-GROUP",
+            "show running-config | section aaa authentication"
+          ],
+          "note": "Expect: tacacs-server host <TACACS_SERVER> key 7 <TACACS_KEY_ENC>; server <TACACS_SERVER>; aaa authentication login default group TACACS-GROUP local; aaa authorization exec default group TACACS-GROUP local"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no aaa authorization exec default group TACACS-GROUP local",
+            "no aaa authentication login default group TACACS-GROUP local",
+            "no tacacs-server host <TACACS_SERVER> key 7 <TACACS_KEY_ENC>",
+            "no aaa group server tacacs+ TACACS-GROUP",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "TACACS_KEY",
+            "means": "The TACACS+ shared secret"
+          },
+          {
+            "name": "TACACS_SERVER",
+            "means": "Your TACACS+ server"
+          }
+        ],
+        "note": "`local` keeps local accounts as the fallback when the TACACS+ server can't be reached; test a TACACS+ login before closing your session.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: AAA-CENTRAL-AUTH-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+        "entity_ids": [
+          "LocalUser[admin]",
+          "LocalUser[netadmin]"
+        ],
+        "recipe": "arista_eos/user-secret",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section username admin",
+            "show running-config | section username netadmin"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "username admin privilege 15 role network-admin secret <NEW_PASSWORD>",
+            "username netadmin privilege 15 role network-admin secret <NEW_PASSWORD>",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section username admin",
+            "show running-config | section username netadmin"
+          ],
+          "note": "Expect: username admin privilege 15 role network-admin secret sha512 <SHA512_HASH>; username netadmin privilege 15 role network-admin secret sha512 <SHA512_HASH>"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "username admin privilege 15 role network-admin nopassword",
+            "username netadmin privilege 15 role network-admin secret 5 ****",
+            "end"
+          ],
+          "note": "Puts back what the change altered. **** is the secret the device had before, as its configuration holds it."
+        },
+        "placeholders": [
+          {
+            "name": "NEW_PASSWORD",
+            "means": "A new password of 15 or more characters"
+          }
+        ],
+        "note": "EOS stores the password as a SHA-512 hash; the account keeps its privilege and role.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: AAA-LOCAL-PASSWORD-HASH-01 no longer fails for all 2 of LocalUser[admin], LocalUser[netadmin], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCKOUT-01",
+        "entity_ids": [
+          "LockoutPolicy[lockout-policy]"
+        ],
+        "recipe": "arista_eos/lockout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section aaa authentication"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "aaa authentication policy lockout failure 3 duration 900",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section aaa authentication"
+          ],
+          "note": "Expect: aaa authentication policy lockout failure 3 duration 900"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no aaa authentication policy lockout failure 3 duration 900",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: AAA-LOCKOUT-01 no longer fails for LockoutPolicy[lockout-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+        "entity_ids": [
+          "PasswordPolicy[password-policy]"
+        ],
+        "recipe": "arista_eos/password-length",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section management security"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "management security",
+            " password minimum length 15",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section management security"
+          ],
+          "note": "Expect: password minimum length 15"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no management security",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: AAA-PASSWORD-MIN-LENGTH-01 no longer fails for PasswordPolicy[password-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "FILTER-PERMIT-ANY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "arista_eos/permit-any",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip access-list EDGE-IN"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "ip access-list EDGE-IN",
+            " no 10 permit ip any any",
+            " 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>",
+            " 1000 deny ip any any log",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip access-list EDGE-IN"
+          ],
+          "note": "Expect: 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>; 1000 deny ip any any log"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "ip access-list EDGE-IN",
+            " no 1000 deny ip any any log",
+            " no 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>",
+            " 10 permit ip any any",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "PUBLIC_SERVER",
+            "means": "An address this switch must expose (repeat the line for each)"
+          },
+          {
+            "name": "SERVICE_PORT",
+            "means": "Its TCP port"
+          }
+        ],
+        "note": "Replace the catch-all with the traffic this interface must accept, one line per service; everything else then meets the final deny.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: FILTER-PERMIT-ANY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+        "entity_ids": [
+          "Interface[Ethernet1]"
+        ],
+        "recipe": "arista_eos/untrusted-ingress",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip access-list <INBOUND_ACL>",
+            "show running-config | section interface Ethernet1"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "ip access-list <INBOUND_ACL>",
+            " 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>",
+            " 1000 deny ip any any log",
+            "interface Ethernet1",
+            " ip access-group <INBOUND_ACL> in",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip access-list <INBOUND_ACL>",
+            "show running-config | section interface Ethernet1"
+          ],
+          "note": "Expect: 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>; 1000 deny ip any any log; ip access-group <INBOUND_ACL> in"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "interface Ethernet1",
+            " no ip access-group <INBOUND_ACL> in",
+            " exit",
+            "no ip access-list <INBOUND_ACL>",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "INBOUND_ACL",
+            "means": "Inbound access list for the untrusted interface (deny by default)"
+          },
+          {
+            "name": "PUBLIC_SERVER",
+            "means": "An address this switch must expose (repeat the line for each)"
+          },
+          {
+            "name": "SERVICE_PORT",
+            "means": "Its TCP port"
+          }
+        ],
+        "note": "List what this interface must accept, one permit per service; everything else meets the final deny. To use an access list you already have, name it and leave out its lines.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: FILTER-UNTRUSTED-INGRESS-01 no longer fails for Interface[Ethernet1], and no other check got worse."
+      },
+      {
+        "rule_id": "LOG-REMOTE-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "arista_eos/remote-log",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section logging host"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "logging host <SYSLOG_SERVER>",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section logging host"
+          ],
+          "note": "Expect: logging host <SYSLOG_SERVER>"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no logging host <SYSLOG_SERVER>",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "SYSLOG_SERVER",
+            "means": "Your syslog or SIEM server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: LOG-REMOTE-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-BANNER-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "arista_eos/banner",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section banner login"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "banner login",
+            "<BANNER_TEXT>",
+            "EOF",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section banner login"
+          ],
+          "note": "Expect: banner login"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no banner login",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "BANNER_TEXT",
+            "means": "Your organisation's warning notice"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-BANNER-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-HTTP-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "arista_eos/http-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section management api http-commands"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "management api http-commands",
+            " no protocol http",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section management api http-commands"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "management api http-commands",
+            " protocol http",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-HTTP-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-SESSION-TIMEOUT-01",
+        "entity_ids": [
+          "MgmtSession[console]",
+          "MgmtSession[ssh]"
+        ],
+        "recipe": "arista_eos/session-timeout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section management console",
+            "show running-config | section management ssh"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "management console",
+            " idle-timeout 10",
+            "management ssh",
+            " idle-timeout 10",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section management console",
+            "show running-config | section management ssh"
+          ],
+          "note": "Expect: idle-timeout 10; idle-timeout 10"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "management console",
+            " idle-timeout 0",
+            " exit",
+            "management ssh",
+            " idle-timeout 0",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-SESSION-TIMEOUT-01 no longer fails for all 2 of MgmtSession[console], MgmtSession[ssh], and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-TELNET-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "arista_eos/telnet-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section management telnet"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "management telnet",
+            " shutdown",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section management telnet"
+          ],
+          "note": "Expect: shutdown"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "management telnet",
+            " no shutdown",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": "Make sure SSH works for your administrators before you apply this.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-TELNET-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-VTY-ACL-02",
+        "entity_ids": [
+          "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL]"
+        ],
+        "recipe": "arista_eos/define-mgmt-acl",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip access-list standard MGMT-ACL"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "ip access-list standard MGMT-ACL",
+            " 10 permit <MGMT_PREFIX>",
+            " 20 deny any log",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip access-list standard MGMT-ACL"
+          ],
+          "note": "Expect: 10 permit <MGMT_PREFIX>; 20 deny any log"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no ip access-list standard MGMT-ACL",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "MGMT_PREFIX",
+            "means": "Network your administrators connect from (prefix)"
+          }
+        ],
+        "note": "The access list was named but never defined; this defines it for your management network.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-VTY-ACL-02 no longer fails for Reference[MgmtSession[ssh].access_filter -> MGMT-ACL], and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-WEB-ACL-01",
+        "entity_ids": [
+          "MgmtService[http]"
+        ],
+        "recipe": "arista_eos/web-http-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section management api http-commands"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "management api http-commands",
+            " no protocol http",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section management api http-commands"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "management api http-commands",
+            " protocol http",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-WEB-ACL-01 no longer fails for MgmtService[http], and no other check got worse."
+      },
+      {
+        "rule_id": "REF-DANGLING-01",
+        "entity_ids": [
+          "Reference[MgmtSession[ssh].access_filter -> MGMT-ACL]"
+        ],
+        "recipe": "arista_eos/define-missing",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip access-list standard MGMT-ACL"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "ip access-list standard MGMT-ACL",
+            " 10 permit <MGMT_PREFIX>",
+            " 20 deny any log",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip access-list standard MGMT-ACL"
+          ],
+          "note": "Expect: 10 permit <MGMT_PREFIX>; 20 deny any log"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no ip access-list standard MGMT-ACL",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "MGMT_PREFIX",
+            "means": "Network your administrators connect from (prefix)"
+          }
+        ],
+        "note": "The access list was named but never defined; this defines it for your management network.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: REF-DANGLING-01 no longer fails for Reference[MgmtSession[ssh].access_filter -> MGMT-ACL], and no other check got worse."
+      },
+      {
+        "rule_id": "SNMP-COMMUNITY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "arista_eos/snmp-v3",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section snmp-server group"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "no snmp-server community **** ro",
+            "no snmp-server community **** rw",
+            "snmp-server group NMS-GRP v3 priv",
+            "snmp-server user <SNMP_USER> NMS-GRP v3 auth sha <SNMP_AUTH_KEY> priv aes <SNMP_PRIV_KEY>",
+            "end"
+          ],
+          "note": "**** hides a secret copied from the configuration (line 16, 17): type the value the device's own configuration holds."
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section snmp-server group"
+          ],
+          "note": "Expect: snmp-server group NMS-GRP v3 priv"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no snmp-server group NMS-GRP v3 priv",
+            "snmp-server community **** ro",
+            "snmp-server community **** rw",
+            "end"
+          ],
+          "note": "Puts back what the change altered. **** is the secret the device had before, as its configuration holds it."
+        },
+        "placeholders": [
+          {
+            "name": "SNMP_AUTH_KEY",
+            "means": "Its authentication passphrase"
+          },
+          {
+            "name": "SNMP_PRIV_KEY",
+            "means": "Its privacy (encryption) passphrase"
+          },
+          {
+            "name": "SNMP_USER",
+            "means": "SNMPv3 user for your monitoring system"
+          }
+        ],
+        "note": "Point your monitoring system at SNMPv3 with the user above before you remove the communities.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: SNMP-COMMUNITY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "SVC-PROXY-ARP-01",
+        "entity_ids": [
+          "Interface[Ethernet1]"
+        ],
+        "recipe": "arista_eos/proxy-arp",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section interface Ethernet1"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "interface Ethernet1",
+            " no ip proxy-arp",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section interface Ethernet1"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "interface Ethernet1",
+            " ip proxy-arp",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: SVC-PROXY-ARP-01 no longer fails for Interface[Ethernet1], and no other check got worse."
+      },
+      {
+        "rule_id": "TIME-NTP-AUTH-01",
+        "entity_ids": [
+          "TimeSource[10.30.10.70]"
+        ],
+        "recipe": "arista_eos/ntp-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ntp trusted-key",
+            "show running-config | section ntp authenticate",
+            "show running-config | section ntp server"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "ntp authentication-key 1 sha1 <NTP_KEY>",
+            "ntp trusted-key 1",
+            "ntp authenticate",
+            "ntp server 10.30.10.70 iburst key 1",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ntp trusted-key",
+            "show running-config | section ntp authenticate",
+            "show running-config | section ntp server"
+          ],
+          "note": "Expect: ntp authentication-key 1 sha1 <NTP_KEY>; ntp trusted-key 1; ntp authenticate; ntp server 10.30.10.70 iburst key 1"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "no ntp authenticate",
+            "no ntp trusted-key 1",
+            "no ntp authentication-key 1 sha1 <NTP_KEY>",
+            "ntp server 10.30.10.70 iburst",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "NTP_KEY",
+            "means": "The NTP key shared with your time server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: TIME-NTP-AUTH-01 no longer fails for TimeSource[10.30.10.70], and no other check got worse."
+      }
+    ],
+    "unfixed": [],
+    "combined": {
+      "proof": "verified",
+      "detail": "All 17 verified fixes applied together to one copy and re-audited: 17 failed checks before, 0 after.",
+      "failed_before": 17,
+      "failed_after": 0,
+      "compliance_after_pct": 100.0,
+      "still_failing": [],
+      "left_for_review": []
+    },
+    "basis": "Verified against Kasauti's model of this device (the changed configuration re-parsed and re-audited), not on hardware. Review each change, fill in the <values>, and test it in a maintenance window. Kasauti never applies a change to a device."
+  }
 }

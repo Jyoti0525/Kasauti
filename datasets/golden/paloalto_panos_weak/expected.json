@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "1d32c6b28de11f2bdbeae360",
+  "audit_id": "15834b1e99092f6a40d53ca4",
   "input": {
     "file": "weak.xml",
     "sha256": "845b94ce8f00e3c62b19f9b4435d7e0a1cf980a608d3e9a4d8fb9ca36bceb75f",
@@ -51,7 +51,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
@@ -4741,5 +4741,732 @@
   },
   "warnings": [],
   "companions": [],
-  "inventory": []
+  "inventory": [],
+  "remediation": {
+    "fixes": [
+      {
+        "rule_id": "AAA-CENTRAL-AUTH-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "paloalto_panos/central-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show shared server-profile tacplus TACACS server tacacs-1",
+            "show shared authentication-profile TACACS-AUTH method tacplus",
+            "show shared authentication-profile TACACS-AUTH allow-list"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set shared server-profile tacplus TACACS server tacacs-1 address <TACACS_SERVER>",
+            "set shared server-profile tacplus TACACS server tacacs-1 secret <TACACS_KEY>",
+            "set shared authentication-profile TACACS-AUTH method tacplus server-profile TACACS",
+            "set shared authentication-profile TACACS-AUTH allow-list all",
+            "set shared authentication-profile TACACS-AUTH lockout failed-attempts 5",
+            "set shared authentication-profile TACACS-AUTH lockout lockout-time 30",
+            "set deviceconfig system authentication-profile TACACS-AUTH"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show shared server-profile tacplus TACACS server tacacs-1",
+            "show shared authentication-profile TACACS-AUTH method tacplus",
+            "show shared authentication-profile TACACS-AUTH allow-list"
+          ],
+          "note": "Expect: set shared server-profile tacplus TACACS server tacacs-1 address <TACACS_SERVER>; set shared server-profile tacplus TACACS server tacacs-1 secret <TACACS_KEY_ENC>; set shared authentication-profile TACACS-AUTH method tacplus server-profile TACACS; set shared authentication-profile TACACS-AUTH allow-list [ all ]; set shared authentication-profile TACACS-AUTH lockout failed-attempts 5; set shared authentication-profile TACACS-AUTH lockout lockout-time 30"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "delete shared server-profile",
+            "delete shared server-profile tacplus TACACS server tacacs-1 secret",
+            "delete shared authentication-profile",
+            "delete shared authentication-profile TACACS-AUTH allow-list",
+            "delete shared authentication-profile TACACS-AUTH lockout",
+            "delete shared authentication-profile TACACS-AUTH lockout lockout-time",
+            "delete deviceconfig system authentication-profile",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "TACACS_KEY",
+            "means": "The TACACS+ shared secret"
+          },
+          {
+            "name": "TACACS_SERVER",
+            "means": "Your TACACS+ server"
+          }
+        ],
+        "note": "Administrators logging in through the profile are locked out by its own settings, so it carries a lockout too. Keep a local administrator for when the TACACS+ server can't be reached, and test a TACACS+ login before you close your session after the commit.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: AAA-CENTRAL-AUTH-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+        "entity_ids": [
+          "LocalUser[admin]"
+        ],
+        "recipe": "paloalto_panos/admin-password",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show mgt-config users admin"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set mgt-config users admin password"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show mgt-config users admin"
+          ],
+          "note": "Expect: set mgt-config users admin phash <SHA256_HASH>"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "set mgt-config users admin phash ****",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered. **** is the secret the device had before, as its configuration holds it."
+        },
+        "placeholders": [],
+        "note": "PAN-OS asks for the new password twice and stores it as a SHA-256 crypt hash.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: AAA-LOCAL-PASSWORD-HASH-01 no longer fails for LocalUser[admin], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCKOUT-01",
+        "entity_ids": [
+          "LockoutPolicy[lockout-policy]"
+        ],
+        "recipe": "paloalto_panos/lockout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show deviceconfig setting management admin-lockout"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set deviceconfig setting management admin-lockout failed-attempts 5",
+            "set deviceconfig setting management admin-lockout lockout-time 30"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show deviceconfig setting management admin-lockout"
+          ],
+          "note": "Expect: set deviceconfig setting management admin-lockout failed-attempts 5; set deviceconfig setting management admin-lockout lockout-time 30"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "delete deviceconfig setting management admin-lockout",
+            "delete deviceconfig setting management admin-lockout lockout-time",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied on its own to a copy of this configuration and re-audited: AAA-LOCKOUT-01 no longer fails for LockoutPolicy[lockout-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+        "entity_ids": [
+          "PasswordPolicy[password-policy]"
+        ],
+        "recipe": "paloalto_panos/password-policy",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show mgt-config password-complexity"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set mgt-config password-complexity enabled yes",
+            "set mgt-config password-complexity minimum-length 15"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show mgt-config password-complexity"
+          ],
+          "note": "Expect: set mgt-config password-complexity minimum-length 15"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "set mgt-config password-complexity minimum-length 8",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: AAA-PASSWORD-MIN-LENGTH-01 no longer fails for PasswordPolicy[password-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "FILTER-PERMIT-ANY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "paloalto_panos/permit-any",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show rulebase security rules allow-all destination",
+            "show rulebase security rules allow-all application",
+            "show rulebase security rules allow-all service"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set rulebase security rules allow-all destination <PUBLIC_SERVER>",
+            "set rulebase security rules allow-all application <APPLICATION>",
+            "set rulebase security rules allow-all service application-default",
+            "set rulebase security rules allow-all log-end yes"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show rulebase security rules allow-all destination",
+            "show rulebase security rules allow-all application",
+            "show rulebase security rules allow-all service"
+          ],
+          "note": "Expect: set rulebase security rules allow-all destination [ <PUBLIC_SERVER> ]; set rulebase security rules allow-all application [ <APPLICATION> ]; set rulebase security rules allow-all service [ application-default ]; set rulebase security rules allow-all log-end yes"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "delete rulebase security rules allow-all log-end",
+            "set rulebase security rules allow-all destination [ any ]",
+            "set rulebase security rules allow-all application [ any ]",
+            "set rulebase security rules allow-all service [ any ]",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "APPLICATION",
+            "means": "The application it offers (App-ID, e.g. ssl, web-browsing)"
+          },
+          {
+            "name": "PUBLIC_SERVER",
+            "means": "The server this rule must reach"
+          }
+        ],
+        "note": "The rule now reaches one server with one application on its standard ports; add a rule per further service rather than widening this one.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: FILTER-PERMIT-ANY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "LOG-REMOTE-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "paloalto_panos/forward-logs",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show shared log-settings system match-list system-to-siem send-syslog",
+            "show shared log-settings config match-list config-to-siem send-syslog"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set shared log-settings system match-list system-to-siem filter \"All Logs\"",
+            "set shared log-settings system match-list system-to-siem send-syslog SIEM",
+            "set shared log-settings config match-list config-to-siem filter \"All Logs\"",
+            "set shared log-settings config match-list config-to-siem send-syslog SIEM"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show shared log-settings system match-list system-to-siem send-syslog",
+            "show shared log-settings config match-list config-to-siem send-syslog"
+          ],
+          "note": "Expect: set shared log-settings system match-list system-to-siem filter \"All Logs\"; set shared log-settings system match-list system-to-siem send-syslog [ SIEM ]; set shared log-settings config match-list config-to-siem filter \"All Logs\"; set shared log-settings config match-list config-to-siem send-syslog [ SIEM ]"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "delete shared log-settings system",
+            "delete shared log-settings system match-list system-to-siem send-syslog",
+            "delete shared log-settings config",
+            "delete shared log-settings config match-list config-to-siem send-syslog",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": "The syslog profile existed but no log was sent to it: system and configuration logs now are. Consider SSL transport on port 6514 for the profile itself.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: LOG-REMOTE-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-BANNER-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "paloalto_panos/banner",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show deviceconfig system"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set deviceconfig system login-banner \"<BANNER_TEXT>\""
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show deviceconfig system"
+          ],
+          "note": "Expect: set deviceconfig system login-banner \"<BANNER_TEXT>\""
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "delete deviceconfig system login-banner",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "BANNER_TEXT",
+            "means": "Your organisation's warning notice"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: MGMT-BANNER-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-HTTP-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "paloalto_panos/http-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show deviceconfig system service"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set deviceconfig system service disable-http yes"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show deviceconfig system service"
+          ],
+          "note": "Expect: set deviceconfig system service disable-http yes"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "set deviceconfig system service disable-http no",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: MGMT-HTTP-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-SESSION-TIMEOUT-01",
+        "entity_ids": [
+          "MgmtSession[admin]"
+        ],
+        "recipe": "paloalto_panos/session-timeout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show deviceconfig setting management"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set deviceconfig setting management idle-timeout 10"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show deviceconfig setting management"
+          ],
+          "note": "Expect: set deviceconfig setting management idle-timeout 10"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "set deviceconfig setting management idle-timeout 0",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: MGMT-SESSION-TIMEOUT-01 no longer fails for MgmtSession[admin], and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-TELNET-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "paloalto_panos/telnet-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show deviceconfig system service"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set deviceconfig system service disable-telnet yes"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show deviceconfig system service"
+          ],
+          "note": "Expect: set deviceconfig system service disable-telnet yes"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "set deviceconfig system service disable-telnet no",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": "Make sure SSH works for your administrators before you commit this.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: MGMT-TELNET-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-WEB-ACL-01",
+        "entity_ids": [
+          "MgmtService[http]",
+          "MgmtService[https]"
+        ],
+        "recipe": "paloalto_panos/web-http-off + paloalto_panos/web-restrict",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show deviceconfig system service",
+            "show deviceconfig system permitted-ip",
+            "show network profiles interface-management-profile ALLOW-MGMT permitted-ip"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set deviceconfig system service disable-http yes",
+            "set deviceconfig system permitted-ip <MGMT_PREFIX>",
+            "set network profiles interface-management-profile ALLOW-MGMT permitted-ip <MGMT_PREFIX>"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show deviceconfig system service",
+            "show deviceconfig system permitted-ip",
+            "show network profiles interface-management-profile ALLOW-MGMT permitted-ip"
+          ],
+          "note": "Expect: set deviceconfig system service disable-http yes; set deviceconfig system permitted-ip <MGMT_PREFIX>; set network profiles interface-management-profile ALLOW-MGMT permitted-ip <MGMT_PREFIX>"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "delete deviceconfig system permitted-ip <MGMT_PREFIX>",
+            "delete network profiles interface-management-profile ALLOW-MGMT permitted-ip <MGMT_PREFIX>",
+            "set deviceconfig system service disable-http no",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "MGMT_PREFIX",
+            "means": "Network your administrators connect from (prefix)"
+          }
+        ],
+        "note": "Only the management network may then reach the web interface, on the MGT port and on every interface with a management profile. Keep your own address in the range, or you will be locked out at commit.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: MGMT-WEB-ACL-01 no longer fails for all 2 of MgmtService[http], MgmtService[https], and no other check got worse."
+      },
+      {
+        "rule_id": "SNMP-COMMUNITY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "paloalto_panos/snmp-community",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show deviceconfig system snmp-setting access-setting version v2c"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set deviceconfig system snmp-setting access-setting version v2c snmp-community-string <SNMP_COMMUNITY>"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show deviceconfig system snmp-setting access-setting version v2c"
+          ],
+          "note": "Expect: set deviceconfig system snmp-setting access-setting version v2c snmp-community-string <SNMP_COMMUNITY>"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "set deviceconfig system snmp-setting access-setting version v2c snmp-community-string ****",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered. **** is the secret the device had before, as its configuration holds it."
+        },
+        "placeholders": [
+          {
+            "name": "SNMP_COMMUNITY",
+            "means": "A long random community string known only to your monitoring system"
+          }
+        ],
+        "note": "Replaces the well-known community with one only your monitoring system knows. SNMPv3 (Device > Setup > Operations > SNMP Setup) is better still: it authenticates and encrypts.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: SNMP-COMMUNITY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "TIME-NTP-AUTH-01",
+        "entity_ids": [
+          "TimeSource[primary-ntp-server]"
+        ],
+        "recipe": "paloalto_panos/ntp-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "configure",
+            "show deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm sha1"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm sha1 authentication-key <NTP_KEY>",
+            "set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key key-id 1"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm sha1"
+          ],
+          "note": "Expect: set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key algorithm sha1 authentication-key <NTP_KEY_ENC>; set deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key key-id 1"
+        },
+        "save": {
+          "commands": [
+            "commit",
+            "exit"
+          ],
+          "note": "The change takes effect at `commit`; until then `revert config` discards it."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "delete deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key",
+            "delete deviceconfig system ntp-servers primary-ntp-server authentication-type symmetric-key key-id",
+            "commit",
+            "exit"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "NTP_KEY",
+            "means": "The NTP key shared with your time server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 12 fixes to a copy of this configuration and re-audited: TIME-NTP-AUTH-01 no longer fails for TimeSource[primary-ntp-server], and no other check got worse."
+      }
+    ],
+    "unfixed": [],
+    "combined": {
+      "proof": "verified",
+      "detail": "All 13 verified fixes applied together to one copy and re-audited: 13 failed checks before, 0 after; 1 left for a person to review (AAA-LOCKOUT-01).",
+      "failed_before": 13,
+      "failed_after": 0,
+      "compliance_after_pct": 100.0,
+      "still_failing": [],
+      "left_for_review": [
+        "AAA-LOCKOUT-01"
+      ]
+    },
+    "basis": "Verified against Kasauti's model of this device (the changed configuration re-parsed and re-audited), not on hardware. Review each change, fill in the <values>, and test it in a maintenance window. Kasauti never applies a change to a device."
+  }
 }

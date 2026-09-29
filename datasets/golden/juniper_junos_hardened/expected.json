@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "84263736348142e7005c92fd",
+  "audit_id": "8205117e6d20036555d8f240",
   "input": {
     "file": "hardened.conf",
     "sha256": "05abcfd1240c747141e1677c8e61c5bfb91db119abb34dbc269dd3f759454191",
@@ -54,7 +54,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
@@ -4389,5 +4389,6 @@
   },
   "warnings": [],
   "companions": [],
-  "inventory": []
+  "inventory": [],
+  "remediation": null
 }

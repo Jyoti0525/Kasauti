@@ -2,7 +2,8 @@
 
 Sections follow §15.1: cover and device profile, executive summary (Compliance % *and*
 Coverage %), control matrix, detailed findings (FAIL first, with expected vs actual and the
-evidence lines), policy analysis, assurance and transparency, appendix.
+evidence lines), remediation (a five-step, re-audit verified fix for every failed check), policy
+analysis, assurance and transparency, appendix.
 
 Security: every string that came from a configuration is escaped before it reaches ReportLab,
 whose Paragraph markup would otherwise interpret ``<a href=…>``, ``<img>`` or ``<font>`` in a
@@ -40,6 +41,7 @@ from reportlab.platypus import (
 )
 
 from kasauti.audit import AuditResult, effective_severity
+from kasauti.remediation.model import Fix, Proof
 from kasauti.rules.evaluate import display
 from kasauti.rules.model import Finding, Severity, Status
 
@@ -99,6 +101,7 @@ def render_pdf(result: AuditResult, rules_by_id: dict[str, Any], *, generated: s
     story += _summary(result, s)
     story += _control_matrix(result, s)
     story += _findings(result, rules_by_id, s)
+    story += _remediation(result, s)
     story += _policy(s)
     story += _assurance(result, s)
     story += _appendix(result, s)
@@ -508,6 +511,11 @@ def _findings(r: AuditResult, rules_by_id: dict[str, Any], s: _Styles) -> list[A
         ),
     ]
     shown = [f for f in r.findings if f.status in (Status.FAIL, Status.REVIEW)]
+    fixes = {
+        (x.rule_id, e): x
+        for x in (r.remediation.fixes if r.remediation else ())
+        for e in x.entity_ids
+    }
     shown.sort(
         key=lambda f: (
             _STATUS_ORDER[f.status],
@@ -520,7 +528,8 @@ def _findings(r: AuditResult, rules_by_id: dict[str, Any], s: _Styles) -> list[A
         out.append(_p("Nothing failed and nothing needs review.", s.body))
     for f in shown:
         out.append(CondPageBreak(45 * mm))
-        out.append(KeepTogether(_finding_block(f, rules_by_id.get(f.rule_id), s)))
+        fix = fixes.get((f.rule_id, f.entity_id))
+        out.append(KeepTogether(_finding_block(f, rules_by_id.get(f.rule_id), s, fix)))
     passed = [f for f in r.findings if f.status in (Status.PASS, Status.NOT_APPLICABLE)]
     if passed:
         out += [Spacer(1, 4 * mm), _p("Passed and not applicable", s.h2)]
@@ -539,7 +548,7 @@ def _findings(r: AuditResult, rules_by_id: dict[str, Any], s: _Styles) -> list[A
     return out
 
 
-def _finding_block(f: Finding, rule: Any, s: _Styles) -> list[Any]:
+def _finding_block(f: Finding, rule: Any, s: _Styles, fix: Fix | None) -> list[Any]:
     title = rule.title if rule is not None else f.rule_id
     block: list[Any] = [
         _p(f"{f.rule_id}: {title}", s.h2),
@@ -576,15 +585,123 @@ def _finding_block(f: Finding, rule: Any, s: _Styles) -> list[Any]:
         block.append(_table(rows, (14 * mm, 104 * mm, 56 * mm)))
     if f.defaults_used:
         block.append(_p("Vendor defaults relied on: " + ", ".join(f.defaults_used), s.small))
-    if rule is not None and rule.fix_intent is not None and f.status is Status.FAIL:
+    if f.status is Status.FAIL and fix is not None:
+        block.append(
+            _p(f"How to fix: see Remediation, {f.rule_id} ({_PROOF_WORD[fix.proof]}).", s.small)
+        )
+    elif rule is not None and rule.fix_intent is not None and f.status is Status.FAIL:
         block.append(
             _p(
                 f"Fix intent: make {rule.fix_intent.make} = {display(rule.fix_intent.equal)}. "
-                "Vendor-specific remediation steps arrive in a later release.",
+                "This vendor pack has no command recipe for it; see Remediation.",
                 s.small,
             )
         )
     block.append(Spacer(1, 3 * mm))
+    return block
+
+
+# --- 5. remediation (R-07c) -----------------------------------------------------------------------
+
+_PROOF_WORD = {
+    Proof.VERIFIED: "re-audit verified",
+    Proof.NOT_VERIFIED: "didn't hold when re-audited",
+    Proof.NOT_CHECKED: "not re-audited",
+}
+_PROOF_COLOUR = {
+    Proof.VERIFIED: _STATUS_COLOUR[Status.PASS],
+    Proof.NOT_VERIFIED: _STATUS_COLOUR[Status.FAIL],
+    Proof.NOT_CHECKED: _STATUS_COLOUR[Status.REVIEW],
+}
+_STEPS = (
+    ("1. Pre-check", "precheck"),
+    ("2. Change", "change"),
+    ("3. Verify", "verify"),
+    ("4. Save", "save"),
+    ("5. Rollback", "rollback"),
+)
+
+
+def _rich(text: str, style: ParagraphStyle) -> Paragraph:
+    """Prose from a pack, with its `code` spans set in Courier."""
+    parts = _safe(text).split("`")
+    return Paragraph(
+        "".join(
+            f'<font name="Courier">{part}</font>' if i % 2 else part for i, part in enumerate(parts)
+        ),
+        style,
+    )
+
+
+def _commands(lines: Sequence[str], style: ParagraphStyle) -> Paragraph:
+    """Commands one per line, their indentation kept (a sub-mode's depth matters)."""
+    shown = []
+    for line in lines:
+        body = line.lstrip(" ")
+        shown.append("&nbsp;" * (len(line) - len(body)) + _safe(body))
+    return Paragraph("<br/>".join(shown) or "-", style)
+
+
+def _remediation(r: AuditResult, s: _Styles) -> list[Any]:
+    rem = r.remediation
+    out: list[Any] = [_p("Remediation", s.h1)]
+    if rem is None:
+        out += [_p("Nothing failed, so there is nothing to fix.", s.body), PageBreak()]
+        return out
+    out.append(_p(rem.basis, s.small))
+    if rem.combined is not None:
+        c = rem.combined
+        after = f"; compliance {_pct(c.compliance_after_pct)}" if c.compliance_after_pct else ""
+        out += [
+            Spacer(1, 2 * mm),
+            _p(
+                f"With every verified fix applied to one copy: failed checks "
+                f"{c.failed_before} -> {c.failed_after}{after}.",
+                s.h2,
+            ),
+            _p(c.detail, s.small),
+        ]
+    titles = {x.rule_id: x.title for x in r.rules}
+    for fix in rem.fixes:
+        out.append(CondPageBreak(60 * mm))
+        out.append(KeepTogether(_fix_block(fix, titles.get(fix.rule_id, fix.rule_id), s)))
+    if rem.unfixed:
+        out += [_p("Failures without a command recipe", s.h2)]
+        out += [_p(u, s.small) for u in rem.unfixed]
+    out.append(PageBreak())
+    return out
+
+
+def _fix_block(fix: Fix, title: str, s: _Styles) -> list[Any]:
+    colour = _PROOF_COLOUR[fix.proof].hexval()[2:]
+    named = ["the device as a whole" if e == "Device[device]" else e for e in fix.entity_ids]
+    entities = ", ".join(named[:6]) + (
+        f" and {len(fix.entity_ids) - 6} more" if len(fix.entity_ids) > 6 else ""
+    )
+    block: list[Any] = [
+        _p(f"{fix.rule_id}: {title}", s.h2),
+        Paragraph(
+            f'<font color="#{colour}"><b>{escape(_PROOF_WORD[fix.proof].upper())}</b></font>'
+            f" &nbsp;{_safe(fix.proof_detail)}",
+            s.small,
+        ),
+        _p(f"Fixes: {entities}. Recipe: {fix.recipe} ({fix.source}).", s.small),
+    ]
+    if fix.note:
+        block.append(_rich(fix.note, s.body))
+    if fix.placeholders:
+        rows = [[_p("Fill in", s.cell), _p("Meaning", s.cell)]]
+        rows += [[_p(f"<{p.name}>", s.code), _p(p.means, s.cell)] for p in fix.placeholders]
+        block.append(_table(rows, (48 * mm, 126 * mm)))
+    rows = [[_p("Step", s.cell), _p("Commands", s.cell), _p("Note", s.cell)]]
+    for label, name in _STEPS:
+        step = getattr(fix, name)
+        if step is None:
+            continue
+        rows.append(
+            [_p(label, s.cell), _commands(step.commands, s.code), _rich(step.note or "", s.small)]
+        )
+    block += [Spacer(1, 1 * mm), _table(rows, (22 * mm, 102 * mm, 50 * mm)), Spacer(1, 3 * mm)]
     return block
 
 

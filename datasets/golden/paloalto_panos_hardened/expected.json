@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "22a3412724f1e969da09eb98",
+  "audit_id": "1a40146a4ee6f9f43a3d0845",
   "input": {
     "file": "hardened.xml",
     "sha256": "c79f6fb5b4fae21ee65923120642d734f6c8d67979269222c00a1ee7936a4cf5",
@@ -51,7 +51,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "paloalto_panos@1",
     "frameworks": {
@@ -7370,5 +7370,6 @@
   },
   "warnings": [],
   "companions": [],
-  "inventory": []
+  "inventory": [],
+  "remediation": null
 }

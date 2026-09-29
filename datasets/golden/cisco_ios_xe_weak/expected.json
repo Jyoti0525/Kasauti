@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "323ac855c8f63f2dc85d8912",
+  "audit_id": "53b7cd878c1f8083746f313c",
   "input": {
     "file": "weak.cfg",
     "sha256": "ba77cc7a6b22126ec539f23cc647198f19b00583afcc4d7f22e191ec10e43937",
@@ -52,7 +52,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "cisco_ios_xe@2",
     "frameworks": {
@@ -4266,5 +4266,1239 @@
   },
   "warnings": [],
   "companions": [],
-  "inventory": []
+  "inventory": [],
+  "remediation": {
+    "fixes": [
+      {
+        "rule_id": "AAA-CENTRAL-AUTH-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/central-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section aaa new-model",
+            "show running-config | section tacacs server TAC1",
+            "show running-config | section aaa group server tacacs+ TACACS-GRP"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "aaa new-model",
+            "tacacs server TAC1",
+            " address ipv4 <TACACS_SERVER>",
+            " key <TACACS_KEY>",
+            "aaa group server tacacs+ TACACS-GRP",
+            " server name TAC1",
+            "aaa authentication login default group TACACS-GRP local",
+            "aaa authorization exec default group TACACS-GRP local",
+            "aaa accounting exec default start-stop group TACACS-GRP",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section aaa new-model",
+            "show running-config | section tacacs server TAC1",
+            "show running-config | section aaa group server tacacs+ TACACS-GRP"
+          ],
+          "note": "Expect: aaa new-model; address ipv4 <TACACS_SERVER>; key <TACACS_KEY>; server name TAC1; aaa authentication login default group TACACS-GRP local; aaa authorization exec default group TACACS-GRP local"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no aaa accounting exec default start-stop group TACACS-GRP",
+            "no aaa authorization exec default group TACACS-GRP local",
+            "no aaa authentication login default group TACACS-GRP local",
+            "no aaa new-model",
+            "no tacacs server TAC1",
+            "no aaa group server tacacs+ TACACS-GRP",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "TACACS_KEY",
+            "means": "The TACACS+ shared secret"
+          },
+          {
+            "name": "TACACS_SERVER",
+            "means": "Your TACACS+ server"
+          }
+        ],
+        "note": "`local` after the group keeps local accounts as the fallback when the TACACS+ server can't be reached; test a TACACS+ login before closing your session.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: AAA-CENTRAL-AUTH-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+        "entity_ids": [
+          "LocalUser[enable]",
+          "LocalUser[line vty 0-4]",
+          "LocalUser[netadmin]"
+        ],
+        "recipe": "cisco_ios_xe/enable-secret + cisco_ios_xe/line-password + cisco_ios_xe/user-secret",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section enable",
+            "show running-config | section line vty 0 4",
+            "show running-config | section username netadmin"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "no enable password",
+            "enable algorithm-type scrypt secret <NEW_PASSWORD>",
+            "line vty 0 4",
+            " no password",
+            " login local",
+            "username netadmin privilege 15 algorithm-type scrypt secret <NEW_PASSWORD>",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section enable",
+            "show running-config | section line vty 0 4",
+            "show running-config | section username netadmin"
+          ],
+          "note": "Expect: enable secret 9 <SCRYPT_HASH>; login local; username netadmin privilege 15 secret 9 <SCRYPT_HASH>"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no enable secret 9 <SCRYPT_HASH>",
+            "username netadmin privilege 15 password 7 ****",
+            "enable password 0 ****",
+            "line vty 0 4",
+            " login",
+            " password 7 ****",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered. **** is the secret the device had before, as its configuration holds it."
+        },
+        "placeholders": [
+          {
+            "name": "NEW_PASSWORD",
+            "means": "A new password of 15 or more characters"
+          }
+        ],
+        "note": "The line then asks for a local account's name and password; keep at least one account with a type 9 secret (see the account fixes).",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: AAA-LOCAL-PASSWORD-HASH-01 no longer fails for all 3 of LocalUser[enable], LocalUser[line vty 0-4], LocalUser[netadmin], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCKOUT-01",
+        "entity_ids": [
+          "LockoutPolicy[lockout-policy]"
+        ],
+        "recipe": "cisco_ios_xe/lockout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section login block-for"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "login block-for 120 attempts 3 within 60",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section login block-for"
+          ],
+          "note": "Expect: login block-for 120 attempts 3 within 60"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no login block-for 120 attempts 3 within 60",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: AAA-LOCKOUT-01 no longer fails for LockoutPolicy[lockout-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-PASSWORD-ENCRYPTION-01",
+        "entity_ids": [
+          "PasswordPolicy[password-policy]"
+        ],
+        "recipe": "cisco_ios_xe/password-encryption",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section service"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "service password-encryption",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section service"
+          ],
+          "note": "Expect: service password-encryption"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no service password-encryption",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: AAA-PASSWORD-ENCRYPTION-01 no longer fails for PasswordPolicy[password-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+        "entity_ids": [
+          "PasswordPolicy[password-policy]"
+        ],
+        "recipe": "cisco_ios_xe/password-length",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section security passwords"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "security passwords min-length 15",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section security passwords"
+          ],
+          "note": "Expect: security passwords min-length 15"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no security passwords min-length 15",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: AAA-PASSWORD-MIN-LENGTH-01 no longer fails for PasswordPolicy[password-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "FILTER-PERMIT-ANY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/permit-any",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip access-list extended EDGE-IN"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "ip access-list extended EDGE-IN",
+            " no 10 permit ip any any",
+            " 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>",
+            " 1000 deny ip any any log",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip access-list extended EDGE-IN"
+          ],
+          "note": "Expect: 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>; 1000 deny ip any any log"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "ip access-list extended EDGE-IN",
+            " no 1000 deny ip any any log",
+            " no 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>",
+            " 10 permit ip any any",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "PUBLIC_SERVER",
+            "means": "An address this edge must expose (repeat the line for each)"
+          },
+          {
+            "name": "SERVICE_PORT",
+            "means": "Its TCP port"
+          }
+        ],
+        "note": "Replace the catch-all with the traffic this interface must accept, one line per service; everything else then meets the final deny.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: FILTER-PERMIT-ANY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+        "entity_ids": [
+          "Interface[GigabitEthernet1]"
+        ],
+        "recipe": "cisco_ios_xe/untrusted-ingress",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip access-list extended <INBOUND_ACL>",
+            "show running-config | section interface GigabitEthernet1"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "ip access-list extended <INBOUND_ACL>",
+            " 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>",
+            " 1000 deny ip any any log",
+            "interface GigabitEthernet1",
+            " ip access-group <INBOUND_ACL> in",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip access-list extended <INBOUND_ACL>",
+            "show running-config | section interface GigabitEthernet1"
+          ],
+          "note": "Expect: 10 permit tcp any host <PUBLIC_SERVER> eq <SERVICE_PORT>; 1000 deny ip any any log; ip access-group <INBOUND_ACL> in"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "interface GigabitEthernet1",
+            " no ip access-group <INBOUND_ACL> in",
+            " exit",
+            "no ip access-list extended <INBOUND_ACL>",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "INBOUND_ACL",
+            "means": "Inbound access list for the untrusted interface (deny by default)"
+          },
+          {
+            "name": "PUBLIC_SERVER",
+            "means": "An address this edge must expose (repeat the line for each)"
+          },
+          {
+            "name": "SERVICE_PORT",
+            "means": "Its TCP port"
+          }
+        ],
+        "note": "List what this interface must accept, one permit per service; everything else meets the final deny. To use an access list you already have, name it and leave out its lines.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: FILTER-UNTRUSTED-INGRESS-01 no longer fails for Interface[GigabitEthernet1], and no other check got worse."
+      },
+      {
+        "rule_id": "LOG-CONFIG-CHANGE-01",
+        "entity_ids": [
+          "LoggingPolicy[logging-policy]"
+        ],
+        "recipe": "cisco_ios_xe/config-change-log",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section archive"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "archive",
+            " log config",
+            "  logging enable",
+            "  notify syslog contenttype plaintext",
+            "  hidekeys",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section archive"
+          ],
+          "note": "Expect: log config; logging enable; notify syslog contenttype plaintext; hidekeys"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no archive",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: LOG-CONFIG-CHANGE-01 no longer fails for LoggingPolicy[logging-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "LOG-REMOTE-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/remote-log",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section logging host",
+            "show running-config | section logging trap"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "logging host <SYSLOG_SERVER>",
+            "logging trap informational",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section logging host",
+            "show running-config | section logging trap"
+          ],
+          "note": "Expect: logging host <SYSLOG_SERVER>; logging trap informational"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no logging trap informational",
+            "no logging host <SYSLOG_SERVER>",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "SYSLOG_SERVER",
+            "means": "Your syslog or SIEM server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: LOG-REMOTE-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "LOG-TIMESTAMPS-01",
+        "entity_ids": [
+          "LoggingPolicy[logging-policy]"
+        ],
+        "recipe": "cisco_ios_xe/timestamps",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section service timestamps"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "service timestamps log datetime msec localtime show-timezone",
+            "service timestamps debug datetime msec localtime show-timezone",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section service timestamps"
+          ],
+          "note": "Expect: service timestamps log datetime msec localtime show-timezone; service timestamps debug datetime msec localtime show-timezone"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no service timestamps debug datetime msec localtime show-timezone",
+            "no service timestamps log datetime msec localtime show-timezone",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: LOG-TIMESTAMPS-01 no longer fails for LoggingPolicy[logging-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-BANNER-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/banner",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section banner login"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "banner login ^C",
+            "<BANNER_TEXT>",
+            "^C",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section banner login"
+          ],
+          "note": "Expect: banner login ^C"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no banner login",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "BANNER_TEXT",
+            "means": "Your organisation's warning notice"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: MGMT-BANNER-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-HTTP-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/http-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip http"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "no ip http server",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip http"
+          ],
+          "note": "Expect: no ip http server"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "ip http server",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": "If you manage the device over its web UI, keep HTTPS (`ip http secure-server`) and restrict it: `ip http access-class ipv4 <MGMT_ACL>`.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: MGMT-HTTP-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-SESSION-TIMEOUT-01",
+        "entity_ids": [
+          "MgmtSession[con 0]",
+          "MgmtSession[vty 0-4]",
+          "MgmtSession[vty 5-15]"
+        ],
+        "recipe": "cisco_ios_xe/session-timeout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section line con 0",
+            "show running-config | section line vty 0 4",
+            "show running-config | section line vty 5 15"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "line con 0",
+            " exec-timeout 10 0",
+            "line vty 0 4",
+            " exec-timeout 10 0",
+            "line vty 5 15",
+            " exec-timeout 10 0",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section line con 0",
+            "show running-config | section line vty 0 4",
+            "show running-config | section line vty 5 15"
+          ],
+          "note": "Expect: exec-timeout 10 0; exec-timeout 10 0; exec-timeout 10 0"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "line con 0",
+            " exec-timeout 0 0",
+            " exit",
+            "line vty 0 4",
+            " exec-timeout 0 0",
+            " exit",
+            "line vty 5 15",
+            " exec-timeout 30 0",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: MGMT-SESSION-TIMEOUT-01 no longer fails for all 3 of MgmtSession[con 0], MgmtSession[vty 0-4], MgmtSession[vty 5-15], and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-SSH-V2-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/ssh-v2",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip ssh"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "ip ssh version 2",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip ssh"
+          ],
+          "note": "Expect: ip ssh version 2"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no ip ssh version 2",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: MGMT-SSH-V2-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-TELNET-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/telnet-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section line vty 0 4",
+            "show running-config | section line vty 5 15"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "line vty 0 4",
+            " transport input ssh",
+            "line vty 5 15",
+            " transport input ssh",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section line vty 0 4",
+            "show running-config | section line vty 5 15"
+          ],
+          "note": "Expect: transport input ssh; transport input ssh"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "line vty 0 4",
+            " transport input ssh telnet",
+            " exit",
+            "line vty 5 15",
+            " transport input telnet",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": "Make sure SSH works on every line (a key pair, `ip ssh version 2`) before you apply this.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: MGMT-TELNET-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-VTY-ACL-01",
+        "entity_ids": [
+          "MgmtSession[vty 0-4]",
+          "MgmtSession[vty 5-15]"
+        ],
+        "recipe": "cisco_ios_xe/vty-acl",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip access-list standard <MGMT_ACL>",
+            "show running-config | section line vty 0 4",
+            "show running-config | section line vty 5 15"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "ip access-list standard <MGMT_ACL>",
+            " 10 permit <MGMT_NET> <MGMT_WILDCARD>",
+            " 20 deny any log",
+            "line vty 0 4",
+            " access-class <MGMT_ACL> in",
+            "line vty 5 15",
+            " access-class <MGMT_ACL> in",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip access-list standard <MGMT_ACL>",
+            "show running-config | section line vty 0 4",
+            "show running-config | section line vty 5 15"
+          ],
+          "note": "Expect: 10 permit <MGMT_NET> <MGMT_WILDCARD>; 20 deny any log; access-class <MGMT_ACL> in; access-class <MGMT_ACL> in"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "line vty 5 15",
+            " no access-class <MGMT_ACL> in",
+            " exit",
+            "line vty 0 4",
+            " no access-class <MGMT_ACL> in",
+            " exit",
+            "no ip access-list standard <MGMT_ACL>",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "MGMT_ACL",
+            "means": "Name for the management access list"
+          },
+          {
+            "name": "MGMT_NET",
+            "means": "Network your administrators connect from"
+          },
+          {
+            "name": "MGMT_WILDCARD",
+            "means": "Its wildcard mask"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: MGMT-VTY-ACL-01 no longer fails for all 2 of MgmtSession[vty 0-4], MgmtSession[vty 5-15], and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-WEB-ACL-01",
+        "entity_ids": [
+          "MgmtService[http]",
+          "MgmtService[https]"
+        ],
+        "recipe": "cisco_ios_xe/web-http-off + cisco_ios_xe/web-https-restrict",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ip http",
+            "show running-config | section ip access-list standard <MGMT_ACL>"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "no ip http server",
+            "ip access-list standard <MGMT_ACL>",
+            " 10 permit <MGMT_NET> <MGMT_WILDCARD>",
+            " 20 deny any log",
+            "ip http access-class ipv4 <MGMT_ACL>",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ip http",
+            "show running-config | section ip access-list standard <MGMT_ACL>"
+          ],
+          "note": "Expect: no ip http server; 10 permit <MGMT_NET> <MGMT_WILDCARD>; 20 deny any log; ip http access-class ipv4 <MGMT_ACL>"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no ip http access-class ipv4 <MGMT_ACL>",
+            "ip http server",
+            "no ip access-list standard <MGMT_ACL>",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "MGMT_ACL",
+            "means": "Name for the management access list"
+          },
+          {
+            "name": "MGMT_NET",
+            "means": "Network your administrators connect from"
+          },
+          {
+            "name": "MGMT_WILDCARD",
+            "means": "Its wildcard mask"
+          }
+        ],
+        "note": "If nobody uses the web UI, turn it off instead with `no ip http secure-server`.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: MGMT-WEB-ACL-01 no longer fails for all 2 of MgmtService[http], MgmtService[https], and no other check got worse."
+      },
+      {
+        "rule_id": "SNMP-COMMUNITY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/snmp-v3",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section snmp-server group"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "no snmp-server community **** RO",
+            "no snmp-server community **** RW",
+            "snmp-server group NMS-GRP v3 priv",
+            "snmp-server user <SNMP_USER> NMS-GRP v3 auth sha <SNMP_AUTH_KEY> priv aes 128 <SNMP_PRIV_KEY>",
+            "end"
+          ],
+          "note": "**** hides a secret copied from the configuration (line 44, 45): type the value the device's own configuration holds."
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section snmp-server group"
+          ],
+          "note": "Expect: snmp-server group NMS-GRP v3 priv"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no snmp-server group NMS-GRP v3 priv",
+            "snmp-server community **** RO",
+            "snmp-server community **** RW",
+            "end"
+          ],
+          "note": "Puts back what the change altered. **** is the secret the device had before, as its configuration holds it."
+        },
+        "placeholders": [
+          {
+            "name": "SNMP_AUTH_KEY",
+            "means": "Its authentication passphrase"
+          },
+          {
+            "name": "SNMP_PRIV_KEY",
+            "means": "Its privacy (encryption) passphrase"
+          },
+          {
+            "name": "SNMP_USER",
+            "means": "SNMPv3 user for your monitoring system"
+          }
+        ],
+        "note": "Point your monitoring system at SNMPv3 with the user above before you remove the communities. IOS keeps SNMPv3 users out of the running configuration by design.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: SNMP-COMMUNITY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "SVC-LEGACY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "cisco_ios_xe/legacy-services",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section service pad",
+            "show running-config | section ip bootp",
+            "show running-config | section ip finger"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "no service pad",
+            "no ip bootp server",
+            "no ip finger",
+            "no service tcp-small-servers",
+            "no service udp-small-servers",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section service pad",
+            "show running-config | section ip bootp",
+            "show running-config | section ip finger"
+          ],
+          "note": "Expect: no service pad; no ip bootp server; no ip finger; no service tcp-small-servers; no service udp-small-servers"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "service udp-small-servers",
+            "service tcp-small-servers",
+            "ip finger",
+            "ip bootp server",
+            "service pad",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: SVC-LEGACY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "SVC-PROXY-ARP-01",
+        "entity_ids": [
+          "Interface[GigabitEthernet1]",
+          "Interface[GigabitEthernet2]",
+          "Interface[GigabitEthernet3]"
+        ],
+        "recipe": "cisco_ios_xe/proxy-arp",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section interface GigabitEthernet1",
+            "show running-config | section interface GigabitEthernet2",
+            "show running-config | section interface GigabitEthernet3"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "interface GigabitEthernet1",
+            " no ip proxy-arp",
+            "interface GigabitEthernet2",
+            " no ip proxy-arp",
+            "interface GigabitEthernet3",
+            " no ip proxy-arp",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section interface GigabitEthernet1",
+            "show running-config | section interface GigabitEthernet2",
+            "show running-config | section interface GigabitEthernet3"
+          ],
+          "note": "Expect: no ip proxy-arp; no ip proxy-arp; no ip proxy-arp"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "interface GigabitEthernet3",
+            " ip proxy-arp",
+            " exit",
+            "interface GigabitEthernet2",
+            " ip proxy-arp",
+            " exit",
+            "interface GigabitEthernet1",
+            " ip proxy-arp",
+            " exit",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: SVC-PROXY-ARP-01 no longer fails for all 3 of Interface[GigabitEthernet1], Interface[GigabitEthernet2], Interface[GigabitEthernet3], and no other check got worse."
+      },
+      {
+        "rule_id": "TIME-NTP-AUTH-01",
+        "entity_ids": [
+          "TimeSource[10.10.10.70]"
+        ],
+        "recipe": "cisco_ios_xe/ntp-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show running-config | section ntp authenticate",
+            "show running-config | section ntp trusted-key",
+            "show running-config | section ntp server"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure terminal",
+            "ntp authentication-key 1 hmac-sha2-256 <NTP_KEY>",
+            "ntp authenticate",
+            "ntp trusted-key 1",
+            "ntp server 10.10.10.70 key 1",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show running-config | section ntp authenticate",
+            "show running-config | section ntp trusted-key",
+            "show running-config | section ntp server"
+          ],
+          "note": "Expect: ntp authentication-key 1 hmac-sha2-256 <NTP_KEY>; ntp authenticate; ntp trusted-key 1; ntp server 10.10.10.70 key 1"
+        },
+        "save": {
+          "commands": [
+            "copy running-config startup-config"
+          ],
+          "note": null
+        },
+        "rollback": {
+          "commands": [
+            "configure terminal",
+            "no ntp trusted-key 1",
+            "no ntp authenticate",
+            "no ntp authentication-key 1 hmac-sha2-256 <NTP_KEY>",
+            "ntp server 10.10.10.70",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "NTP_KEY",
+            "means": "The NTP key shared with your time server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 20 fixes to a copy of this configuration and re-audited: TIME-NTP-AUTH-01 no longer fails for TimeSource[10.10.10.70], and no other check got worse."
+      }
+    ],
+    "unfixed": [],
+    "combined": {
+      "proof": "verified",
+      "detail": "All 21 verified fixes applied together to one copy and re-audited: 21 failed checks before, 0 after.",
+      "failed_before": 21,
+      "failed_after": 0,
+      "compliance_after_pct": 100.0,
+      "still_failing": [],
+      "left_for_review": []
+    },
+    "basis": "Verified against Kasauti's model of this device (the changed configuration re-parsed and re-audited), not on hardware. Review each change, fill in the <values>, and test it in a maintenance window. Kasauti never applies a change to a device."
+  }
 }

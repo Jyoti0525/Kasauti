@@ -19,11 +19,12 @@ import { failedBySeverity } from "../lib/fleet";
 import { shortHash, sourceLabel, titleCase } from "../lib/format";
 import { Config } from "./device/Config";
 import { Findings } from "./device/Findings";
+import { Fixes } from "./device/Fixes";
 import { Model } from "./device/Model";
 import { Provenance } from "./device/Provenance";
 import { Controls, Coverage, Policy } from "./device/Tabs";
 
-type Tab = "findings" | "controls" | "config" | "policy" | "model" | "coverage";
+type Tab = "findings" | "fixes" | "controls" | "config" | "policy" | "model" | "coverage";
 
 const IDENTITY = ["hostname", "vendor", "os_version", "model", "serial", "hardware"];
 
@@ -175,6 +176,7 @@ export function DevicePage() {
         onChange={(t) => setParams({ tab: t }, { replace: true })}
         tabs={[
           { id: "findings", label: "Findings", count: r.findings.length },
+          { id: "fixes", label: "Fixes", count: r.remediation?.fixes.length ?? 0 },
           { id: "controls", label: "Controls", count: r.controls.length },
           { id: "config", label: "Configuration" },
           { id: "policy", label: "Filtering policy", count: filterRules },
@@ -185,13 +187,28 @@ export function DevicePage() {
       <div className={cx(tab !== "findings" && "hidden")}>
         <Findings result={r} onOpen={setOpen} />
       </div>
+      {tab === "fixes" && (
+        <Fixes key={params.get("fix") ?? ""} result={r} focus={params.get("fix")} />
+      )}
       {tab === "controls" && <Controls result={r} />}
       {tab === "config" && <Config result={r} onOpen={setOpen} />}
       {tab === "policy" && <Policy result={r} />}
       {tab === "model" && <Model result={r} />}
       {tab === "coverage" && <Coverage result={r} />}
 
-      <Provenance finding={open} result={r} onClose={close} />
+      <Provenance
+        finding={open}
+        result={r}
+        onClose={close}
+        onFix={(ruleId) => {
+          setOpen(null);
+          setParams({ tab: "fixes", fix: ruleId }, { replace: true });
+          window.setTimeout(
+            () => document.getElementById(`fix-${ruleId}`)?.scrollIntoView({ block: "start" }),
+            50,
+          );
+        }}
+      />
     </>
   );
 }

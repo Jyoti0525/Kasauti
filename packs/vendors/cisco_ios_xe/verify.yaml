@@ -1,0 +1,42 @@
+# How a fix is entered, checked, kept and undone on IOS XE (PLAN §14.5), and the site values
+# its recipes leave for the administrator. Examples are documentation values (RFC 5737
+# addresses, EXAMPLE- names), used only to re-audit each fix on a copy of the configuration:
+# they must never occur in a real configuration, or the rollback would show them as <values>.
+session:
+  enter: ["configure terminal"]
+  exit: ["end"]
+  save: ["copy running-config startup-config"]
+  precheck: ["show running-config | section {path}"]
+  verify: ["show running-config | section {path}"]
+  # `no` forms IOS XE keeps as a line: features that are on by default, turned off.
+  kept_negations:
+    - no ip http server
+    - no ip http secure-server
+    - no service pad
+    - no service password-encryption
+    - no service tcp-small-servers
+    - no service udp-small-servers
+    - no ip proxy-arp
+    - no ip bootp server
+    - no ip finger
+    - no ip source-route
+    - no ip redirects
+    - no ip unreachables
+    - no cdp enable
+params:
+  - {name: MGMT_NET, means: "Network your administrators connect from", example: "192.0.2.0"}
+  - {name: MGMT_WILDCARD, means: "Its wildcard mask", example: "0.0.0.255"}
+  - {name: MGMT_ACL, means: "Name for the management access list", example: "EXAMPLE-MGMT-ACL"}
+  - {name: INBOUND_ACL, means: "Inbound access list for the untrusted interface (deny by default)", example: "EXAMPLE-EDGE-IN"}
+  - {name: PUBLIC_SERVER, means: "An address this edge must expose (repeat the line for each)", example: "203.0.113.10"}
+  - {name: SERVICE_PORT, means: "Its TCP port", example: "443"}
+  - {name: SYSLOG_SERVER, means: "Your syslog or SIEM server", example: "192.0.2.50"}
+  - {name: NTP_KEY, means: "The NTP key shared with your time server", example: "Example-Ntp-Key-01"}
+  - {name: TACACS_SERVER, means: "Your TACACS+ server", example: "192.0.2.40"}
+  - {name: TACACS_KEY, means: "The TACACS+ shared secret", example: "Example-Tacacs-Key-01"}
+  - {name: NEW_PASSWORD, means: "A new password of 15 or more characters", example: "Example-Passphrase-2026"}
+  - {name: SCRYPT_HASH, means: "The type 9 hash the device stores", example: "$9$ExampleSalt$ExampleScryptHashValue"}
+  - {name: SNMP_USER, means: "SNMPv3 user for your monitoring system", example: "example-nms"}
+  - {name: SNMP_AUTH_KEY, means: "Its authentication passphrase", example: "Example-Snmp-Auth-01"}
+  - {name: SNMP_PRIV_KEY, means: "Its privacy (encryption) passphrase", example: "Example-Snmp-Priv-01"}
+  - {name: BANNER_TEXT, means: "Your organisation's warning notice", example: "Authorised access only. Activity is logged and monitored."}

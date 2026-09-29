@@ -1,0 +1,31 @@
+# How a fix is entered, checked, committed and undone on Junos (PLAN §14.5), and the site
+# values its recipes leave for the administrator. Changes go into the candidate configuration
+# and take effect at commit; `commit confirmed` undoes itself unless confirmed. Examples
+# (RFC 5737 addresses, EXAMPLE- names) are used only to re-audit each fix on a copy.
+session:
+  enter: ["configure"]
+  exit: []
+  save: ["commit confirmed 5", "commit", "exit"]
+  save_note: >-
+    `commit confirmed 5` rolls the change back by itself unless you confirm it with `commit`
+    within 5 minutes, so a change that locks you out undoes itself.
+  precheck: ["show configuration {path} | display set"]
+  verify: ["show {path} | display set", "show | compare"]
+  rollback: ["configure", "rollback 1", "commit", "exit"]
+params:
+  - {name: MGMT_PREFIX, means: "Network your administrators connect from (prefix)", example: "192.0.2.0/24"}
+  - {name: NTP_SERVER_PREFIX, means: "Your NTP server (prefix)", example: "192.0.2.123/32"}
+  - {name: PUBLIC_SERVER, means: "An address this edge must expose (repeat the term for each)", example: "203.0.113.10"}
+  - {name: SERVICE_PORT, means: "Its TCP port", example: "443"}
+  - {name: SYSLOG_SERVER, means: "Your syslog or SIEM server", example: "192.0.2.50"}
+  - {name: NTP_KEY, means: "The NTP key shared with your time server", example: "Example-Ntp-Key-01"}
+  - {name: NTP_KEY_ENC, means: "The same key as Junos stores it ($9$)", example: "$9$ExampleNtpKeyEncoded"}
+  - {name: TACACS_SERVER, means: "Your TACACS+ server", example: "192.0.2.40"}
+  - {name: TACACS_KEY, means: "The TACACS+ shared secret", example: "Example-Tacacs-Key-01"}
+  - {name: TACACS_KEY_ENC, means: "The same secret as Junos stores it ($9$)", example: "$9$ExampleTacacsEncoded"}
+  - {name: SHA512_HASH, means: "The SHA-512 hash Junos stores for the new password", example: "$6$ExampleSalt$ExampleSha512HashValue"}
+  - {name: SNMP_USER, means: "SNMPv3 user for your monitoring system", example: "example-nms"}
+  - {name: SNMP_AUTH_KEY, means: "Its authentication passphrase", example: "Example-Snmp-Auth-01"}
+  - {name: SNMP_PRIV_KEY, means: "Its privacy (encryption) passphrase", example: "Example-Snmp-Priv-01"}
+  - {name: SNMP_KEY_ENC, means: "A passphrase as Junos stores it ($9$)", example: "$9$ExampleSnmpEncoded"}
+  - {name: BANNER_TEXT, means: "Your organisation's warning notice", example: "Authorised access only. Activity is logged and monitored."}

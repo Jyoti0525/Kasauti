@@ -39,6 +39,9 @@ from kasauti.packs.loader import (
     load_ruleset,
     load_vendor_packs,
 )
+from kasauti.remediation.engine import EntityFacts, Outcome, remediate
+from kasauti.remediation.lint import recipe_problems
+from kasauti.remediation.model import Remediation
 from kasauti.rules.engine import NOTHING_IN_SCOPE, evaluate_rules
 from kasauti.rules.enrich import apply_default_role, apply_inferences
 from kasauti.rules.evaluate import with_derived
@@ -52,7 +55,7 @@ from kasauti.rules.scoring import (
     rule_statuses,
 )
 from kasauti.sbm.document import OUTSIDE, SecurityBaselineModel
-from kasauti.sbm.entities import ENTITY_TYPES, SINGLETON_TYPES
+from kasauti.sbm.entities import ENTITY_TYPES, SINGLETON_TYPES, Entity, attribute_names
 from kasauti.sbm.facts import Evidence
 from kasauti.shape.model import Statement
 
@@ -105,6 +108,9 @@ def load_kb(packs_root: Path) -> KnowledgeBase:
                 "run from the repository root or pass --packs"
             ]
         )
+    problems = [p for pack in vendor.values() for p in recipe_problems(pack, ruleset)]
+    if problems:
+        raise PackError(problems)
     return KnowledgeBase(
         vendor_packs=vendor,
         ruleset=ruleset,
@@ -266,6 +272,8 @@ class AuditResult(_Out):
     warnings: tuple[str, ...] = ()
     companions: tuple[CompanionInfo, ...] = ()
     inventory: tuple[InventoryItem, ...] = ()
+    remediation: Remediation | None = None
+    """How to fix each failed finding, each fix re-audited on a copy (PLAN §14, R-07c)."""
 
     def canonical_json(self) -> str:
         return self.model_dump_json(indent=2) + "\n"
@@ -299,12 +307,15 @@ def audit(
     frameworks: Sequence[str] = (NIST,),
     companions: Sequence[Artifact] = (),
     entered: Mapping[str, object] | None = None,
+    fixes: bool = True,
 ) -> AuditResult:
     """Audit ``artifact``, a configuration. ``companions`` are command outputs from the same
     device (``show version``…), read for its identity and hardware; one that isn't recognised
     for the chosen vendor, or names another host, is listed with the reason and not used.
     ``entered`` are device details typed by hand (:mod:`kasauti.identity.manual`): shown in
-    the identity where no file gives them, never used to judge a rule."""
+    the identity where no file gives them, never used to judge a rule. With ``fixes``, each
+    failed finding gets its remediation, proven by re-auditing a changed copy (the re-audits
+    themselves run without)."""
     unknown = [f for f in frameworks if f not in kb.frameworks]
     if unknown:
         raise AuditError(f"framework(s) not installed: {', '.join(unknown)}")
@@ -366,7 +377,45 @@ def audit(
     given = "".join(f"|{c.sha256}" for c in sorted(companions, key=lambda c: c.sha256))
     if by_hand:
         given += "|" + json.dumps(by_hand, sort_keys=True)
+    remedy: Remediation | None = None
+    if fixes and tree.family is pack.manifest.shape_family and not tree.partial:
+
+        def reaudit(text: str) -> Outcome:
+            copy = Artifact(
+                name=artifact.name,
+                text=text,
+                sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+                encoding="utf-8",
+            )
+            again = audit(
+                copy,
+                kb,
+                vendor=pack.manifest.id,
+                frameworks=frameworks,
+                companions=companions,
+                entered=entered,
+                fixes=False,
+            )
+            return _outcome(again)
+
+        remedy = remediate(
+            findings,
+            tree=tree,
+            text=artifact.text,
+            pack=pack,
+            device=(ident.device.os_version.value, ident.device.hostname.value),
+            entities={e.entity_id: _facts(e) for e in sbm.entities},
+            original=_outcome_of(
+                findings,
+                statuses,
+                _framework_score(kb, statuses, frameworks[0]).compliance_pct
+                if frameworks
+                else None,
+            ),
+            reaudit=reaudit,
+        )
     return AuditResult(
+        remediation=remedy,
         audit_id=hashlib.sha256(
             f"{artifact.sha256}|{kb.version}|{__version__}|{pack.manifest.id}{given}".encode()
         ).hexdigest()[:24],
@@ -460,6 +509,51 @@ def _may_be_elsewhere(actual: str, writable: frozenset[str]) -> bool:
         return False
     m = _MISSING.match(actual)
     return m is None or m.group(1) in writable
+
+
+def _outcome(r: AuditResult) -> Outcome:
+    """A re-audit, as the remediator compares it."""
+    return _outcome_of(
+        r.findings,
+        {x.rule_id: x.status for x in r.rules},
+        r.scores[0].compliance_pct if r.scores else None,
+    )
+
+
+def _outcome_of(
+    findings: Sequence[Finding], rules: Mapping[str, Status], compliance: float | None
+) -> Outcome:
+    """The worst status of each rule and entity, and the failed checks (rules) counted."""
+    rank = {Status.FAIL: 3, Status.REVIEW: 2, Status.PASS: 1, Status.NOT_APPLICABLE: 0}
+    statuses: dict[tuple[str, str], Status] = {}
+    for f in findings:
+        key = (f.rule_id, f.entity_id)
+        if key not in statuses or rank[f.status] > rank[statuses[key]]:
+            statuses[key] = f.status
+    return Outcome(
+        statuses=statuses,
+        failed=sum(1 for s in rules.values() if s is Status.FAIL),
+        compliance_pct=compliance,
+    )
+
+
+def _facts(entity: Entity) -> EntityFacts:
+    """An entity's known facts as text, for filling in a recipe (``{{privilege}}``), and where
+    it is: the lines that opened it, then those its facts were read from."""
+    out: dict[str, str] = {}
+    lines = [e.line_start for e in entity.evidence]
+    for name in attribute_names(type(entity).__name__):
+        lines += [e.line_start for e in getattr(entity, name).evidence]
+        value = getattr(entity, name).value
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            out[name] = "true" if value else "false"
+        elif isinstance(value, (tuple, frozenset, set, list)):
+            out[name] = " ".join(sorted(str(v) for v in value))
+        else:
+            out[name] = str(value)
+    return EntityFacts(attrs=out, lines=tuple(dict.fromkeys(lines)))
 
 
 def _not_read(findings: Sequence[Finding], ruleset: RuleSet, family: str) -> tuple[Finding, ...]:

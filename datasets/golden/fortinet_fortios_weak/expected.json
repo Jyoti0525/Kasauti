@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "0bf2bd43fbb1042685565e9e",
+  "audit_id": "9eebfc91b230dd1f3c833aa9",
   "input": {
     "file": "weak.conf",
     "sha256": "dfa553492c4e201c7b6defe3117908f93dee2bbd1709f3ee0ecf7c39dbb0edb8",
@@ -52,7 +52,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "fortinet_fortios@1",
     "frameworks": {
@@ -4013,5 +4013,921 @@
   },
   "warnings": [],
   "companions": [],
-  "inventory": []
+  "inventory": [],
+  "remediation": {
+    "fixes": [
+      {
+        "rule_id": "AAA-CENTRAL-AUTH-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "fortinet_fortios/central-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show user tacacs+ TACACS-1",
+            "show user group TACACS-ADMINS",
+            "show system admin tacacs-admins"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config user tacacs+",
+            "    edit \"TACACS-1\"",
+            "        set server \"<TACACS_SERVER>\"",
+            "        set key <TACACS_KEY>",
+            "    next",
+            "end",
+            "config user group",
+            "    edit \"TACACS-ADMINS\"",
+            "        set member \"TACACS-1\"",
+            "    next",
+            "end",
+            "config system admin",
+            "    edit \"tacacs-admins\"",
+            "        set remote-auth enable",
+            "        set accprofile \"super_admin\"",
+            "        set wildcard enable",
+            "        set remote-group \"TACACS-ADMINS\"",
+            "        set trusthost1 <MGMT_NET> <MGMT_MASK>",
+            "        set ip6-trusthost1 <MGMT_NET6>",
+            "    next",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show user tacacs+ TACACS-1",
+            "show user group TACACS-ADMINS",
+            "show system admin tacacs-admins"
+          ],
+          "note": "Expect: set server \"<TACACS_SERVER>\"; set key ENC <TACACS_KEY_ENC>; set member \"TACACS-1\"; set remote-auth enable; set accprofile \"super_admin\"; set wildcard enable"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config user tacacs+",
+            "    delete \"TACACS-1\"",
+            "end",
+            "config user group",
+            "    delete \"TACACS-ADMINS\"",
+            "end",
+            "config system admin",
+            "    delete \"tacacs-admins\"",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "MGMT_MASK",
+            "means": "Its netmask"
+          },
+          {
+            "name": "MGMT_NET",
+            "means": "Network your administrators connect from"
+          },
+          {
+            "name": "MGMT_NET6",
+            "means": "Its IPv6 prefix (or ::1/128 if administrators use no IPv6)"
+          },
+          {
+            "name": "TACACS_KEY",
+            "means": "The TACACS+ shared secret"
+          },
+          {
+            "name": "TACACS_SERVER",
+            "means": "Your TACACS+ server"
+          }
+        ],
+        "note": "TACACS+ administrators log in from the management network only, like the local ones. Keep a local administrator for when the TACACS+ server can't be reached.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: AAA-CENTRAL-AUTH-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+        "entity_ids": [
+          "LocalUser[admin]"
+        ],
+        "recipe": "fortinet_fortios/admin-password",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system admin admin"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system admin",
+            "    edit \"admin\"",
+            "        set password <NEW_PASSWORD>",
+            "    next",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system admin admin"
+          ],
+          "note": "Expect: set password ENC <PBKDF2_HASH>"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system admin",
+            "    edit \"admin\"",
+            "        set password ENC ****",
+            "    next",
+            "end"
+          ],
+          "note": "Puts back what the change altered. **** is the secret the device had before, as its configuration holds it."
+        },
+        "placeholders": [
+          {
+            "name": "NEW_PASSWORD",
+            "means": "A new password of 15 or more characters"
+          }
+        ],
+        "note": "Setting the password again makes FortiOS 7.4 store it with PBKDF2; the saved line then reads `ENC PB2…`. Check it with the verify step.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: AAA-LOCAL-PASSWORD-HASH-01 no longer fails for LocalUser[admin], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCKOUT-01",
+        "entity_ids": [
+          "LockoutPolicy[lockout-policy]"
+        ],
+        "recipe": "fortinet_fortios/lockout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system global"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system global",
+            "    set admin-lockout-threshold 3",
+            "    set admin-lockout-duration 900",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system global"
+          ],
+          "note": "Expect: set admin-lockout-threshold 3; set admin-lockout-duration 900"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system global",
+            "    unset admin-lockout-duration",
+            "    set admin-lockout-threshold 10",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: AAA-LOCKOUT-01 no longer fails for LockoutPolicy[lockout-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+        "entity_ids": [
+          "PasswordPolicy[password-policy]"
+        ],
+        "recipe": "fortinet_fortios/password-policy",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system password-policy"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system password-policy",
+            "    set status enable",
+            "    set minimum-length 15",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system password-policy"
+          ],
+          "note": "Expect: set status enable; set minimum-length 15"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system password-policy",
+            "    unset status",
+            "    unset minimum-length",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: AAA-PASSWORD-MIN-LENGTH-01 no longer fails for PasswordPolicy[password-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "FILTER-PERMIT-ANY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "fortinet_fortios/permit-any",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show firewall address <SERVER_NAME>",
+            "show firewall service custom <SERVICE_NAME>",
+            "show firewall policy 1"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config firewall address",
+            "    edit \"<SERVER_NAME>\"",
+            "        set subnet <PUBLIC_SERVER> 255.255.255.255",
+            "    next",
+            "end",
+            "config firewall service custom",
+            "    edit \"<SERVICE_NAME>\"",
+            "        set tcp-portrange <SERVICE_PORT>",
+            "    next",
+            "end",
+            "config firewall policy",
+            "    edit 1",
+            "        set dstaddr \"<SERVER_NAME>\"",
+            "        set service \"<SERVICE_NAME>\"",
+            "        set logtraffic all",
+            "    next",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show firewall address <SERVER_NAME>",
+            "show firewall service custom <SERVICE_NAME>",
+            "show firewall policy 1"
+          ],
+          "note": "Expect: set subnet <PUBLIC_SERVER> 255.255.255.255; set tcp-portrange <SERVICE_PORT>; set dstaddr \"<SERVER_NAME>\"; set service \"<SERVICE_NAME>\"; set logtraffic all"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config firewall policy",
+            "    edit 1",
+            "        unset logtraffic",
+            "        set dstaddr \"ANY-NET\"",
+            "        set service \"ALL\"",
+            "    next",
+            "end",
+            "config firewall address",
+            "    delete \"<SERVER_NAME>\"",
+            "end",
+            "config firewall service custom",
+            "    delete \"<SERVICE_NAME>\"",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "PUBLIC_SERVER",
+            "means": "Its address"
+          },
+          {
+            "name": "SERVER_NAME",
+            "means": "Name for the server this policy must reach"
+          },
+          {
+            "name": "SERVICE_NAME",
+            "means": "Name for the service it offers"
+          },
+          {
+            "name": "SERVICE_PORT",
+            "means": "Its TCP port"
+          }
+        ],
+        "note": "The policy now reaches one server on one service; add a policy per further service rather than widening this one.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: FILTER-PERMIT-ANY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "LOG-CONFIG-CHANGE-01",
+        "entity_ids": [
+          "LoggingPolicy[logging-policy]"
+        ],
+        "recipe": "fortinet_fortios/config-change-log",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show log eventfilter"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config log eventfilter",
+            "    set system enable",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show log eventfilter"
+          ],
+          "note": "Expect: set system enable"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config log eventfilter",
+            "    set system disable",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: LOG-CONFIG-CHANGE-01 no longer fails for LoggingPolicy[logging-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "LOG-REMOTE-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "fortinet_fortios/remote-log",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show log syslogd setting"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config log syslogd setting",
+            "    set status enable",
+            "    set server \"<SYSLOG_SERVER>\"",
+            "    set mode reliable",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show log syslogd setting"
+          ],
+          "note": "Expect: set status enable; set server \"<SYSLOG_SERVER>\"; set mode reliable"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config log syslogd setting",
+            "    unset status",
+            "    unset mode",
+            "    set server \"10.30.10.50\"",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "SYSLOG_SERVER",
+            "means": "Your syslog or SIEM server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: LOG-REMOTE-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-BANNER-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "fortinet_fortios/banner",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system global"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system global",
+            "    set pre-login-banner enable",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system global"
+          ],
+          "note": "Expect: set pre-login-banner enable"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system global",
+            "    unset pre-login-banner",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": "The text shown is the pre-login disclaimer replacement message: edit it under System > Replacement Messages, or with `config system replacemsg admin \"pre_admin-disclaimer-text\"`.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: MGMT-BANNER-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-HTTP-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "fortinet_fortios/http-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system global"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system global",
+            "    set admin-https-redirect enable",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system global"
+          ],
+          "note": "Expect: set admin-https-redirect enable"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system global",
+            "    set admin-https-redirect disable",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": "HTTP administration then only redirects to HTTPS.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: MGMT-HTTP-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-SESSION-TIMEOUT-01",
+        "entity_ids": [
+          "MgmtSession[admin]"
+        ],
+        "recipe": "fortinet_fortios/session-timeout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system global"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system global",
+            "    set admintimeout 10",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system global"
+          ],
+          "note": "Expect: set admintimeout 10"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system global",
+            "    set admintimeout 480",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: MGMT-SESSION-TIMEOUT-01 no longer fails for MgmtSession[admin], and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-SSH-V2-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "fortinet_fortios/ssh-v2",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system global"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system global",
+            "    set admin-ssh-v1 disable",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system global"
+          ],
+          "note": "Expect: set admin-ssh-v1 disable"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system global",
+            "    set admin-ssh-v1 enable",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: MGMT-SSH-V2-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-TELNET-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "fortinet_fortios/telnet-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system interface wan1"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system interface",
+            "    edit \"wan1\"",
+            "        set allowaccess ping https ssh",
+            "    next",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system interface wan1"
+          ],
+          "note": "Expect: set allowaccess ping https ssh"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system interface",
+            "    edit \"wan1\"",
+            "        set allowaccess ping https ssh http telnet",
+            "    next",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": "Also removes HTTP, which sends passwords in clear text too; HTTPS and SSH stay.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: MGMT-TELNET-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-WEB-ACL-01",
+        "entity_ids": [
+          "MgmtService[http]",
+          "MgmtService[https]"
+        ],
+        "recipe": "fortinet_fortios/web-http-off + fortinet_fortios/admin-trusthosts",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system global",
+            "show system admin admin"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system global",
+            "    set admin-https-redirect enable",
+            "end",
+            "config system admin",
+            "    edit \"admin\"",
+            "        set trusthost1 <MGMT_NET> <MGMT_MASK>",
+            "        set ip6-trusthost1 <MGMT_NET6>",
+            "    next",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system global",
+            "show system admin admin"
+          ],
+          "note": "Expect: set admin-https-redirect enable; set trusthost1 <MGMT_NET> <MGMT_MASK>; set ip6-trusthost1 <MGMT_NET6>"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system admin",
+            "    edit \"admin\"",
+            "        unset trusthost1",
+            "        unset ip6-trusthost1",
+            "    next",
+            "end",
+            "config system global",
+            "    set admin-https-redirect disable",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "MGMT_MASK",
+            "means": "Its netmask"
+          },
+          {
+            "name": "MGMT_NET",
+            "means": "Network your administrators connect from"
+          },
+          {
+            "name": "MGMT_NET6",
+            "means": "Its IPv6 prefix (or ::1/128 if administrators use no IPv6)"
+          }
+        ],
+        "note": "Trusted hosts limit where each administrator may log in from, over HTTPS and SSH alike; IPv6 is open to all until its own trusted host is set. Keep your own address in range, or you will be locked out.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: MGMT-WEB-ACL-01 no longer fails for all 2 of MgmtService[http], MgmtService[https], and no other check got worse."
+      },
+      {
+        "rule_id": "SNMP-COMMUNITY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "fortinet_fortios/snmp-v3",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system snmp user <SNMP_USER>"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system snmp community",
+            "    delete 1",
+            "end",
+            "config system snmp user",
+            "    edit \"<SNMP_USER>\"",
+            "        set security-level auth-priv",
+            "        set auth-proto sha256",
+            "        set auth-pwd <SNMP_AUTH_KEY>",
+            "        set priv-proto aes256",
+            "        set priv-pwd <SNMP_PRIV_KEY>",
+            "    next",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system snmp user <SNMP_USER>"
+          ],
+          "note": "Expect: set security-level auth-priv; set auth-proto sha256; set auth-pwd ENC <SNMP_KEY_ENC>; set priv-proto aes256; set priv-pwd ENC <SNMP_KEY_ENC>"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system snmp community",
+            "    edit 1",
+            "        set name \"****\"",
+            "    next",
+            "end",
+            "config system snmp user",
+            "    delete \"<SNMP_USER>\"",
+            "end"
+          ],
+          "note": "Puts back what the change altered. **** is the secret the device had before, as its configuration holds it."
+        },
+        "placeholders": [
+          {
+            "name": "SNMP_AUTH_KEY",
+            "means": "Its authentication passphrase"
+          },
+          {
+            "name": "SNMP_PRIV_KEY",
+            "means": "Its privacy (encryption) passphrase"
+          },
+          {
+            "name": "SNMP_USER",
+            "means": "SNMPv3 user for your monitoring system"
+          }
+        ],
+        "note": "Point your monitoring system at SNMPv3 with the user above before you delete the community.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: SNMP-COMMUNITY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "SVC-PROXY-ARP-01",
+        "entity_ids": [
+          "Interface[wan1]"
+        ],
+        "recipe": "fortinet_fortios/proxy-arp",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system proxy-arp"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system proxy-arp",
+            "    delete 1",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system proxy-arp"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system proxy-arp",
+            "    edit 1",
+            "        set interface \"wan1\"",
+            "        set ip 198.51.100.8",
+            "    next",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: SVC-PROXY-ARP-01 no longer fails for Interface[wan1], and no other check got worse."
+      },
+      {
+        "rule_id": "TIME-NTP-AUTH-01",
+        "entity_ids": [
+          "TimeSource[ntp-1]"
+        ],
+        "recipe": "fortinet_fortios/ntp-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show system ntp ntpserver"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "config system ntp",
+            "    config ntpserver",
+            "        edit 1",
+            "            set authentication enable",
+            "            set key-type SHA256",
+            "            set key <NTP_KEY>",
+            "            set key-id 1",
+            "        next",
+            "    end",
+            "end"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system ntp ntpserver"
+          ],
+          "note": "Expect: set authentication enable; set key-type SHA256; set key ENC <NTP_KEY_ENC>; set key-id 1"
+        },
+        "save": {
+          "commands": [],
+          "note": "FortiOS applies and saves each change as soon as you type `end`."
+        },
+        "rollback": {
+          "commands": [
+            "config system ntp",
+            "    config ntpserver",
+            "        edit 1",
+            "            unset authentication",
+            "            unset key-type",
+            "            unset key",
+            "            unset key-id",
+            "        next",
+            "    end",
+            "end"
+          ],
+          "note": "Puts back what the change altered."
+        },
+        "placeholders": [
+          {
+            "name": "NTP_KEY",
+            "means": "The NTP key shared with your time server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 15 fixes to a copy of this configuration and re-audited: TIME-NTP-AUTH-01 no longer fails for TimeSource[ntp-1], and no other check got worse."
+      }
+    ],
+    "unfixed": [],
+    "combined": {
+      "proof": "verified",
+      "detail": "All 16 verified fixes applied together to one copy and re-audited: 16 failed checks before, 0 after.",
+      "failed_before": 16,
+      "failed_after": 0,
+      "compliance_after_pct": 100.0,
+      "still_failing": [],
+      "left_for_review": []
+    },
+    "basis": "Verified against Kasauti's model of this device (the changed configuration re-parsed and re-audited), not on hardware. Review each change, fill in the <values>, and test it in a maintenance window. Kasauti never applies a change to a device."
+  }
 }

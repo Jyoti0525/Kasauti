@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "audit_id": "bb0f85ea0075f65f67705d5c",
+  "audit_id": "a14bb266f4e18a30727146af",
   "input": {
     "file": "weak_set.conf",
     "sha256": "3bbd619977af8589de5e36d38d0f90f9ac06d6d0ebdceac6979485e059acbf9e",
@@ -52,7 +52,7 @@
   },
   "kb": {
     "kasauti_version": "0.1.0",
-    "kb_version": "48c84ffd4515fdbb9d9ffe48026a9aad00f710fe299d94e85cde07f1669c8b21",
+    "kb_version": "5e1d054a710bfa0174f38279c249cb4a0c2513b04541b64fafd0a78879b58c13",
     "ruleset_version": "46068146e6361994c03492db32c233a945bf3a102b89fc649d56ef54a4eccc0d",
     "vendor_pack": "juniper_junos@1",
     "frameworks": {
@@ -3413,5 +3413,941 @@
   },
   "warnings": [],
   "companions": [],
-  "inventory": []
+  "inventory": [],
+  "remediation": {
+    "fixes": [
+      {
+        "rule_id": "AAA-CENTRAL-AUTH-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "juniper_junos/central-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system tacplus-server <TACACS_SERVER> | display set",
+            "show configuration system authentication-order | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set system tacplus-server <TACACS_SERVER> secret \"<TACACS_KEY>\"",
+            "set system authentication-order tacplus",
+            "set system authentication-order password"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system tacplus-server <TACACS_SERVER> | display set",
+            "show | compare",
+            "show system authentication-order | display set"
+          ],
+          "note": "Expect: set system tacplus-server <TACACS_SERVER> secret \"<TACACS_KEY_ENC>\"; set system authentication-order tacplus; set system authentication-order password"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [
+          {
+            "name": "TACACS_KEY",
+            "means": "The TACACS+ shared secret"
+          },
+          {
+            "name": "TACACS_SERVER",
+            "means": "Your TACACS+ server"
+          }
+        ],
+        "note": "`password` after `tacplus` keeps local accounts as the fallback when the TACACS+ server can't be reached; test a TACACS+ login before you confirm the commit.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: AAA-CENTRAL-AUTH-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCAL-PASSWORD-HASH-01",
+        "entity_ids": [
+          "LocalUser[root]"
+        ],
+        "recipe": "juniper_junos/root-password",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system root-authentication | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set system root-authentication plain-text-password"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system root-authentication | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set system root-authentication encrypted-password \"<SHA512_HASH>\""
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": "Junos asks for the new password twice and stores it as a SHA-512 hash.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: AAA-LOCAL-PASSWORD-HASH-01 no longer fails for LocalUser[root], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-LOCKOUT-01",
+        "entity_ids": [
+          "LockoutPolicy[lockout-policy]"
+        ],
+        "recipe": "juniper_junos/lockout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system login retry-options | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set system login retry-options tries-before-disconnect 3",
+            "set system login retry-options lockout-period 10"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system login retry-options | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set system login retry-options tries-before-disconnect 3; set system login retry-options lockout-period 10"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: AAA-LOCKOUT-01 no longer fails for LockoutPolicy[lockout-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "AAA-PASSWORD-MIN-LENGTH-01",
+        "entity_ids": [
+          "PasswordPolicy[password-policy]"
+        ],
+        "recipe": "juniper_junos/password-length",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system login | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set system login password **** 15"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system login | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set system login password **** 15"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: AAA-PASSWORD-MIN-LENGTH-01 no longer fails for PasswordPolicy[password-policy], and no other check got worse."
+      },
+      {
+        "rule_id": "FILTER-PERMIT-ANY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "juniper_junos/permit-any",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration firewall family inet | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "delete firewall family inet filter ALLOW-ALL term ANY",
+            "set firewall family inet filter ALLOW-ALL term ALLOW-SERVICE from destination-address <PUBLIC_SERVER>/32",
+            "set firewall family inet filter ALLOW-ALL term ALLOW-SERVICE from protocol tcp",
+            "set firewall family inet filter ALLOW-ALL term ALLOW-SERVICE from destination-port <SERVICE_PORT>",
+            "set firewall family inet filter ALLOW-ALL term ALLOW-SERVICE then accept",
+            "set firewall family inet filter ALLOW-ALL term DENY-REST then syslog",
+            "set firewall family inet filter ALLOW-ALL term DENY-REST then discard"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show firewall family inet | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set firewall family inet filter ALLOW-ALL term ALLOW-SERVICE from destination-address <PUBLIC_SERVER>/32; set firewall family inet filter ALLOW-ALL term ALLOW-SERVICE from protocol tcp; set firewall family inet filter ALLOW-ALL term ALLOW-SERVICE from destination-port <SERVICE_PORT>; set firewall family inet filter ALLOW-ALL term ALLOW-SERVICE then accept; set firewall family inet filter ALLOW-ALL term DENY-REST then syslog; set firewall family inet filter ALLOW-ALL term DENY-REST then discard"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [
+          {
+            "name": "PUBLIC_SERVER",
+            "means": "An address this edge must expose (repeat the term for each)"
+          },
+          {
+            "name": "SERVICE_PORT",
+            "means": "Its TCP port"
+          }
+        ],
+        "note": "The term that accepted everything goes; add one ALLOW term per service this filter must pass, before DENY-REST (`insert … before term DENY-REST`).",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: FILTER-PERMIT-ANY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "FILTER-UNTRUSTED-INGRESS-01",
+        "entity_ids": [
+          "Interface[ge-0/0/0.0]"
+        ],
+        "recipe": "juniper_junos/untrusted-zone",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration security zones security-zone | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set security zones security-zone untrust interfaces ge-0/0/0.0"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show security zones security-zone | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set security zones security-zone untrust interfaces ge-0/0/0.0"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": "On an SRX the untrust zone denies inbound traffic unless a policy allows it. On a router or switch, apply an input firewall filter instead (`set interfaces … family inet filter input <FILTER>`).",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: FILTER-UNTRUSTED-INGRESS-01 no longer fails for Interface[ge-0/0/0.0], and no other check got worse."
+      },
+      {
+        "rule_id": "LOG-REMOTE-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "juniper_junos/remote-log",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system syslog host | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set system syslog host <SYSLOG_SERVER> any notice",
+            "set system syslog host <SYSLOG_SERVER> authorization info",
+            "set system syslog host <SYSLOG_SERVER> interactive-commands any"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system syslog host | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set system syslog host <SYSLOG_SERVER> any notice; set system syslog host <SYSLOG_SERVER> authorization info; set system syslog host <SYSLOG_SERVER> interactive-commands any"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [
+          {
+            "name": "SYSLOG_SERVER",
+            "means": "Your syslog or SIEM server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: LOG-REMOTE-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-BANNER-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "juniper_junos/banner",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system login message | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set system login message \"<BANNER_TEXT>\""
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system login message | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set system login message \"<BANNER_TEXT>\""
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [
+          {
+            "name": "BANNER_TEXT",
+            "means": "Your organisation's warning notice"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-BANNER-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-HTTP-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "juniper_junos/http-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system services web-management | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "delete system services web-management http"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system services web-management | display set",
+            "show | compare"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-HTTP-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-SESSION-TIMEOUT-01",
+        "entity_ids": [
+          "MgmtSession[class:super-user]"
+        ],
+        "recipe": "juniper_junos/login-class-timeout",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system login class | display set",
+            "show configuration system login user | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set system login class NETADMIN idle-timeout 10",
+            "set system login class NETADMIN permissions all",
+            "set system login user netadmin class NETADMIN"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system login class | display set",
+            "show | compare",
+            "show system login user | display set"
+          ],
+          "note": "Expect: set system login class NETADMIN idle-timeout 10; set system login class NETADMIN permissions all; set system login user netadmin class NETADMIN"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": "The predefined super-user class can't take an idle timeout, so these administrators move to a class with the same permissions and a 10-minute timeout.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-SESSION-TIMEOUT-01 no longer fails for MgmtSession[class:super-user], and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-TELNET-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "juniper_junos/telnet-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system services | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "delete system services telnet"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system services | display set",
+            "show | compare"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": "Make sure SSH works for your administrators before you commit this.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-TELNET-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "MGMT-WEB-ACL-01",
+        "entity_ids": [
+          "MgmtService[http]"
+        ],
+        "recipe": "juniper_junos/web-http-off",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system services web-management | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "delete system services web-management http"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system services web-management | display set",
+            "show | compare"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: MGMT-WEB-ACL-01 no longer fails for MgmtService[http], and no other check got worse."
+      },
+      {
+        "rule_id": "REF-DANGLING-01",
+        "entity_ids": [
+          "Reference[Interface[lo0.0].filters_in -> PROTECT-RE]"
+        ],
+        "recipe": "juniper_junos/define-filter",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration firewall family inet | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set firewall family inet filter PROTECT-RE term ALLOW-SSH-MGMT from source-address <MGMT_PREFIX>",
+            "set firewall family inet filter PROTECT-RE term ALLOW-SSH-MGMT from protocol tcp",
+            "set firewall family inet filter PROTECT-RE term ALLOW-SSH-MGMT from destination-port ssh",
+            "set firewall family inet filter PROTECT-RE term ALLOW-SSH-MGMT then accept",
+            "set firewall family inet filter PROTECT-RE term ALLOW-NTP from source-address <NTP_SERVER_PREFIX>",
+            "set firewall family inet filter PROTECT-RE term ALLOW-NTP from protocol udp",
+            "set firewall family inet filter PROTECT-RE term ALLOW-NTP from port ntp",
+            "set firewall family inet filter PROTECT-RE term ALLOW-NTP then accept",
+            "set firewall family inet filter PROTECT-RE term DENY-REST then syslog",
+            "set firewall family inet filter PROTECT-RE term DENY-REST then discard"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show firewall family inet | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set firewall family inet filter PROTECT-RE term ALLOW-SSH-MGMT from source-address <MGMT_PREFIX>; set firewall family inet filter PROTECT-RE term ALLOW-SSH-MGMT from protocol tcp; set firewall family inet filter PROTECT-RE term ALLOW-SSH-MGMT from destination-port ssh; set firewall family inet filter PROTECT-RE term ALLOW-SSH-MGMT then accept; set firewall family inet filter PROTECT-RE term ALLOW-NTP from source-address <NTP_SERVER_PREFIX>; set firewall family inet filter PROTECT-RE term ALLOW-NTP from protocol udp"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [
+          {
+            "name": "MGMT_PREFIX",
+            "means": "Network your administrators connect from (prefix)"
+          },
+          {
+            "name": "NTP_SERVER_PREFIX",
+            "means": "Your NTP server (prefix)"
+          }
+        ],
+        "note": "The filter was named but never defined. This one protects the routing engine: add a term for every routing protocol and service the device runs (BGP, OSPF, SNMP) before DENY-REST, or they will be cut off at commit.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: REF-DANGLING-01 no longer fails for Reference[Interface[lo0.0].filters_in -> PROTECT-RE], and no other check got worse."
+      },
+      {
+        "rule_id": "SNMP-COMMUNITY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "juniper_junos/snmp-v3",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration snmp v3 usm | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "delete snmp community ****",
+            "set snmp v3 usm local-engine user <SNMP_USER> authentication-sha authentication-password <SNMP_AUTH_KEY>",
+            "set snmp v3 usm local-engine user <SNMP_USER> privacy-aes128 privacy-password <SNMP_PRIV_KEY>"
+          ],
+          "note": "**** hides a secret copied from the configuration (line 23): type the value the device's own configuration holds."
+        },
+        "verify": {
+          "commands": [
+            "show snmp v3 usm | display set",
+            "show | compare"
+          ],
+          "note": "Expect: set snmp v3 usm local-engine user <SNMP_USER> authentication-sha authentication-key \"<SNMP_KEY_ENC>\"; set snmp v3 usm local-engine user <SNMP_USER> privacy-aes128 privacy-key \"<SNMP_KEY_ENC>\""
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [
+          {
+            "name": "SNMP_AUTH_KEY",
+            "means": "Its authentication passphrase"
+          },
+          {
+            "name": "SNMP_PRIV_KEY",
+            "means": "Its privacy (encryption) passphrase"
+          },
+          {
+            "name": "SNMP_USER",
+            "means": "SNMPv3 user for your monitoring system"
+          }
+        ],
+        "note": "Point your monitoring system at SNMPv3 with the user above before you commit.",
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: SNMP-COMMUNITY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "SVC-LEGACY-01",
+        "entity_ids": [
+          "Device[device]"
+        ],
+        "recipe": "juniper_junos/legacy-services",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system services | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "delete system services finger",
+            "delete system services ftp"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system services | display set",
+            "show | compare"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: SVC-LEGACY-01 no longer fails for this device, and no other check got worse."
+      },
+      {
+        "rule_id": "SVC-PROXY-ARP-01",
+        "entity_ids": [
+          "Interface[ge-0/0/0.0]"
+        ],
+        "recipe": "juniper_junos/proxy-arp",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration interfaces ge-0/0/0 unit | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "delete interfaces ge-0/0/0 unit 0 family inet proxy-arp"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show interfaces ge-0/0/0 unit | display set",
+            "show | compare"
+          ],
+          "note": null
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: SVC-PROXY-ARP-01 no longer fails for Interface[ge-0/0/0.0], and no other check got worse."
+      },
+      {
+        "rule_id": "TIME-NTP-AUTH-01",
+        "entity_ids": [
+          "TimeSource[10.20.10.70]"
+        ],
+        "recipe": "juniper_junos/ntp-auth",
+        "source": "curated",
+        "precheck": {
+          "commands": [
+            "show configuration system ntp trusted-key | display set",
+            "show configuration system ntp server | display set"
+          ],
+          "note": null
+        },
+        "change": {
+          "commands": [
+            "configure",
+            "set system ntp authentication-key 1 type sha256 value \"<NTP_KEY>\"",
+            "set system ntp trusted-key 1",
+            "set system ntp server 10.20.10.70 key 1"
+          ],
+          "note": null
+        },
+        "verify": {
+          "commands": [
+            "show system ntp trusted-key | display set",
+            "show | compare",
+            "show system ntp server | display set"
+          ],
+          "note": "Expect: set system ntp authentication-key 1 type sha256 value \"<NTP_KEY_ENC>\"; set system ntp trusted-key 1; set system ntp server 10.20.10.70 key 1"
+        },
+        "save": {
+          "commands": [
+            "commit confirmed 5",
+            "commit",
+            "exit"
+          ],
+          "note": "`commit confirmed 5` rolls the change back by itself unless you confirm it with `commit` within 5 minutes, so a change that locks you out undoes itself."
+        },
+        "rollback": {
+          "commands": [
+            "configure",
+            "rollback 1",
+            "commit",
+            "exit"
+          ],
+          "note": "The platform's own undo: the configuration as it was before this change."
+        },
+        "placeholders": [
+          {
+            "name": "NTP_KEY",
+            "means": "The NTP key shared with your time server"
+          }
+        ],
+        "note": null,
+        "proof": "verified",
+        "proof_detail": "Applied together with the other 16 fixes to a copy of this configuration and re-audited: TIME-NTP-AUTH-01 no longer fails for TimeSource[10.20.10.70], and no other check got worse."
+      }
+    ],
+    "unfixed": [],
+    "combined": {
+      "proof": "verified",
+      "detail": "All 17 verified fixes applied together to one copy and re-audited: 17 failed checks before, 0 after.",
+      "failed_before": 17,
+      "failed_after": 0,
+      "compliance_after_pct": 100.0,
+      "still_failing": [],
+      "left_for_review": []
+    },
+    "basis": "Verified against Kasauti's model of this device (the changed configuration re-parsed and re-audited), not on hardware. Review each change, fill in the <values>, and test it in a maintenance window. Kasauti never applies a change to a device."
+  }
 }
