@@ -5,7 +5,7 @@
 
 # Junos golden expected.json: the pattern key is the name of the SNMPv3 AES-128 privacy
 # keyword in an unrecognised-line summary, not a key; the key itself is masked.
-3133bfd4dff0eb9613c38c3e8de4c9b053ed07da:datasets/golden/juniper_junos_hardened/expected.json:generic-api-key:1482
+4d10ba78f23872ff3a3c356597a1d232e333216f:datasets/golden/juniper_junos_hardened/expected.json:generic-api-key:1482
 
 # SBM entity test: the entity key is a Cisco gigabit interface name.
-524c9427e8addf99af7dca1cc5ca93f143c66547:backend/tests/sbm/test_entities_and_document.py:generic-api-key:101
+45a594b20167faa62a69027524bda15932af28d0:backend/tests/sbm/test_entities_and_document.py:generic-api-key:101
