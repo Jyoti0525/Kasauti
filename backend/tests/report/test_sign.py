@@ -15,7 +15,7 @@ from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
 from kasauti.audit import audit, load_kb
 from kasauti.ingest.read import read_file
 from kasauti.report import sign
-from kasauti.report.pdf import render_pdf
+from kasauti.report.pdf import _cover, _Styles, render_pdf
 from kasauti.report.sign import SigningError, load_or_create, sign_pdf, verify_pdf
 
 REPO = Path(__file__).resolve().parents[3]
@@ -128,3 +128,16 @@ def test_signing_does_not_change_what_was_rendered(tmp_path: Path, report: bytes
     key = load_or_create(tmp_path / "signing", host="lab")
     assert sign_pdf(report, key).startswith(report)
     assert os.environ.get(sign.P12_ENV) is None
+
+
+def test_the_cover_says_whether_the_report_is_signed(tmp_path: Path) -> None:
+    kb = load_kb(REPO / "packs")
+    result = audit(read_file(WEAK), kb)
+    key = load_or_create(tmp_path / "signing", host="lab")
+
+    def signature(flowables: list[object]) -> str:
+        rows = next(f for f in flowables if hasattr(f, "_cellvalues") and len(f._cellvalues) > 8)
+        return next(r[1].text for r in rows._cellvalues if r[0].text == "Signature")
+
+    assert signature(_cover(result, _Styles(), "", key.by)).startswith("PAdES, by Kasauti report")
+    assert signature(_cover(result, _Styles(), "")) == "none: this report is not digitally signed"

@@ -106,7 +106,7 @@ def render_pdf(
     )
     s = _Styles()
     story: list[Any] = []
-    story += _cover(result, s, generated)
+    story += _cover(result, s, generated, signed_by)
     story += _summary(result, s)
     story += _control_matrix(result, s)
     story += _findings(result, rules_by_id, s)
@@ -319,7 +319,9 @@ def _pct(value: float | None) -> str:
 # --- 1. cover and device profile -----------------------------------------------------------------
 
 
-def _cover(r: AuditResult, s: _Styles, generated: str) -> list[Any]:
+def _cover(
+    r: AuditResult, s: _Styles, generated: str, signed_by: SignedBy | None = None
+) -> list[Any]:
     host = r.identity["hostname"].value or r.input.file
     out: list[Any] = [
         _p("Compliance report", s.title),
@@ -387,7 +389,12 @@ def _cover(r: AuditResult, s: _Styles, generated: str) -> list[Any]:
             "Frameworks",
             ", ".join(f"{sc.title} ({r.kb.frameworks.get(sc.framework, '?')})" for sc in r.scores),
         ),
-        ("Signature", "none: this report is not digitally signed"),
+        (
+            "Signature",
+            f"PAdES, by {signed_by.name}: see Digital signature in the appendix"
+            if signed_by
+            else "none: this report is not digitally signed",
+        ),
     ]
     out.append(
         _table(
